@@ -1,0 +1,8 @@
+__pycache__/*
+*.pyc
+
+react/node_modules
+
+.DS_Store
+.ipynb_checkpoints/*
+*.ipynb
