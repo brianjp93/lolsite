@@ -1,5 +1,7 @@
 from django.db import models
 
+from django.utils import timezone
+
 
 class Rito(models.Model):
     token = models.CharField(max_length=256, default='', blank=True)
@@ -70,7 +72,6 @@ class ReforgedTree(models.Model):
     class Meta:
         unique_together = ('_id', 'language', 'version')
 
-
     def __str__(self):
         return f'ReforgedTree(_id={self._id}, language="{self.language}", version="{self.version}")'
 
@@ -111,6 +112,16 @@ class Item(models.Model):
     class Meta:
         unique_together = ('_id', 'version', 'language')
 
+    def __str__(self):
+        return f'Item(name="{self.name}", version="{self.version}", language="{self.language}")'
+
+    def image_url(self):
+        url = ''
+        try:
+            url = self.image.image_url
+        except:
+            pass
+        return url
 
 class ItemEffect(models.Model):
     item = models.ForeignKey('Item', on_delete=models.CASCADE, related_name='effects')
@@ -119,6 +130,9 @@ class ItemEffect(models.Model):
 
     class Meta:
         unique_together = ('item', 'key')
+
+    def __str__(self):
+        return f'ItemEffect(item={self.item._id})'
 
 
 class FromItem(models.Model):
@@ -149,6 +163,11 @@ class ItemImage(models.Model):
     x = models.IntegerField()
     y = models.IntegerField()
 
+    def image_url(self):
+        """Get item image url.
+        """
+        return f'http://ddragon.leagueoflegends.com/cdn/{self.item.version}/img/item/{self.full}'
+
 
 class ItemMap(models.Model):
     item = models.ForeignKey('Item', on_delete=models.CASCADE, related_name='maps')
@@ -178,3 +197,246 @@ class ItemRune(models.Model):
     is_rune = models.BooleanField(default=False)
     tier = models.IntegerField()
     _type = models.CharField(max_length=128, default='', blank=True)
+
+
+class ProfileIcon(models.Model):
+    _id = models.IntegerField(db_index=True)
+    version = models.CharField(max_length=128, default='', blank=True, db_index=True)
+    language = models.CharField(max_length=128, default='', blank=True, db_index=True)
+    full = models.CharField(max_length=128, default='', blank=True)
+    group = models.CharField(max_length=128, default='', blank=True)
+    h = models.IntegerField()
+    sprite = models.CharField(max_length=128, default='', blank=True)
+    w = models.IntegerField()
+    x = models.IntegerField()
+    y = models.IntegerField()
+
+    class Meta:
+        unique_together = ('_id', 'version', 'language')
+
+    def __str__(self):
+        return f'ProfileIcon(_id={self._id}, version="{self.version}", language="{self.language}")'
+
+    def image_url(self):
+        return f'http://ddragon.leagueoflegends.com/cdn/{self.version}/img/profileicon/{self.full}'
+
+
+class Champion(models.Model):
+    _id = models.CharField(max_length=128, default='', blank=True, db_index=True)
+    version = models.CharField(max_length=128, default='', blank=True, db_index=True)
+    language = models.CharField(max_length=128, default='', blank=True, db_index=True)
+    key = models.IntegerField(db_index=True)
+    name = models.CharField(max_length=128, default='', blank=True)
+    partype = models.CharField(max_length=128, default='', blank=True)
+    title = models.CharField(max_length=128, default='', blank=True)
+    lore = models.CharField(max_length=2048, default='', blank=True)
+
+    created_date = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = ('_id', 'version', 'language')
+
+    def __str__(self):
+        return f'Champion(_id="{self._id}", version="{self.version}", language="{self.language}")'
+
+    def image_url(self):
+        url = ''
+        try:
+            url = self.image.image_url()
+        except:
+            pass
+        return url
+
+
+class ChampionImage(models.Model):
+    champion = models.OneToOneField('Champion', on_delete=models.CASCADE, related_name='image')
+    full = models.CharField(max_length=128, default='', blank=True)
+    group = models.CharField(max_length=128, default='', blank=True)
+    h = models.IntegerField()
+    sprite = models.CharField(max_length=128, default='', blank=True)
+    w = models.IntegerField()
+    x = models.IntegerField()
+    y = models.IntegerField()
+
+    def __str__(self):
+        return f'ChampionImage(champion="{self.champion._id}")'
+
+    def image_url(self):
+        return f'http://ddragon.leagueoflegends.com/cdn/{self.champion.version}/img/champion/{self.full}'
+
+    def splash_url(self, skin=0):
+        return f'http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{self.champion._id}_{skin}.jpg'
+
+    def loading_art_url(self, skin=0):
+        return f'http://ddragon.leagueoflegends.com/cdn/img/champion/loading/{self.champion._id}_{skin}.jpg'
+
+
+class ChampionInfo(models.Model):
+    champion = models.OneToOneField('Champion', on_delete=models.CASCADE, related_name='info')
+    attack = models.IntegerField()
+    defense = models.IntegerField()
+    difficulty = models.IntegerField()
+    magic = models.IntegerField()
+
+    def __str__(self):
+        return f'ChampionInfo(champion="{self.champion._id}")'
+
+
+class ChampionStats(models.Model):
+    champion = models.OneToOneField('Champion', on_delete=models.CASCADE, related_name='stats')
+    armor = models.FloatField()
+    armor_per_level = models.FloatField()
+    attack_damage = models.FloatField()
+    attack_damage_per_level = models.FloatField()
+    attack_range = models.FloatField()
+    attack_speed = models.FloatField()
+    attack_speed_per_level = models.FloatField()
+    crit = models.FloatField()
+    crit_per_level = models.FloatField()
+    hp = models.FloatField()
+    hp_per_level = models.FloatField()
+    hp_regen = models.FloatField()
+    hp_regen_per_level = models.FloatField()
+    move_speed = models.FloatField()
+    mp = models.FloatField()
+    mp_per_level = models.FloatField()
+    mp_regen = models.FloatField()
+    mp_regen_per_level = models.FloatField()
+    spell_block = models.FloatField()
+    spell_block_per_level = models.FloatField()
+
+    def __str__(self):
+        return f'ChampionStats(champion={self.champion.name}, version={self.champion.version}, language={self.champion.language})'
+
+
+class ChampionTag(models.Model):
+    champions = models.ManyToManyField('Champion', related_name='tags')
+    name = models.CharField(max_length=128, default='', unique=True)
+
+    def __str__(self):
+        return f'ChampionTag(name={self.name})'
+
+
+class ChampionPassive(models.Model):
+    champion = models.OneToOneField('Champion', on_delete=models.CASCADE, related_name='passive')
+    description = models.CharField(max_length=1024, default='', blank=True)
+    name = models.CharField(max_length=128, default='', blank=True)
+
+    def __str__(self):
+        return f'ChampionPassive(champion="{self.champion._id}", name="{self.name}", version="{self.champion.version}", language="{self.champion.language}")'
+
+
+class ChampionPassiveImage(models.Model):
+    passive = models.OneToOneField('ChampionPassive', on_delete=models.CASCADE, related_name='image')
+    full = models.CharField(max_length=128, default='', blank=True)
+    group = models.CharField(max_length=128, default='', blank=True)
+    h = models.IntegerField()
+    sprite = models.CharField(max_length=128, default='', blank=True)
+    w = models.IntegerField()
+    x = models.IntegerField()
+    y = models.IntegerField()
+
+    def __str__(self):
+        return f'ChampionPassiveImage(passive="{self.passive.name}", version="{self.passive.champion.version}", language="{self.passive.champion.language}")'
+
+    def image_url(self):
+        return f'http://ddragon.leagueoflegends.com/cdn/{self.passive.champion.version}/img/passive/{self.full}'
+
+
+class ChampionSkin(models.Model):
+    champion = models.ForeignKey('Champion', related_name='skins', on_delete=models.CASCADE)
+    _id = models.IntegerField()
+    chromas = models.BooleanField(default=False)
+    name = models.CharField(max_length=128, default='', blank=True)
+    num = models.IntegerField()
+
+    class Meta:
+        unique_together = ('champion', '_id')
+
+    def __str__(self):
+        return f'ChampionSkin(champion="{self.champion._id}", _id={self._id}, num={self.num}, version="{self.champion.version}", language="{self.champion.language}")'
+
+    def splash_url(self):
+        try:
+            return self.champion.image.splash_url(skin=self.num)
+        except:
+            return ''
+
+    def loading_art_url(self):
+        try:
+            return self.champion.image.loading_art_url(skin=self.num)
+        except:
+            return ''
+
+
+class ChampionSpell(models.Model):
+    champion = models.ForeignKey('Champion', on_delete=models.CASCADE, related_name='spells')
+    _id = models.CharField(max_length=128, default='', blank=True)
+    cooldown_burn = models.CharField(max_length=128, default='', blank=True)
+    cost_burn = models.CharField(max_length=128, default='', blank=True)
+    cost_type = models.CharField(max_length=128, default='', blank=True)
+    # data_values
+    description = models.CharField(max_length=1024, default='', blank=True)
+    max_ammo = models.CharField(max_length=128, default='', blank=True)
+    max_rank = models.IntegerField()
+    name = models.CharField(max_length=128, default='', blank=True)
+    range_burn = models.CharField(max_length=128, default='', blank=True)
+    resource = models.CharField(max_length=128, default='', blank=True)
+    tooltip = models.CharField(max_length=2048, default='', blank=True)
+
+
+    class Meta:
+        unique_together = ('champion', '_id')
+
+    def __str__(self):
+        return f'ChampionSpell(champion="{self.champion._id}", _id="{self._id}")'
+
+    def get_effect(self):
+        """Get the effect list, in ascending order.
+        """
+        query = self.effect_burn.all().order_by('sort_int')
+        out = [x.value for x in query]
+        return out
+
+
+class ChampionSpellImage(models.Model):
+    spell = models.OneToOneField('ChampionSpell', on_delete=models.CASCADE, related_name='image')
+    full = models.CharField(max_length=256, default='', blank=True)
+    group = models.CharField(max_length=128, default='', blank=True)
+    h = models.IntegerField()
+    sprite = models.CharField(max_length=128, default='', blank=True)
+    w = models.IntegerField()
+    x = models.IntegerField()
+    y = models.IntegerField()
+
+    def __str__(self):
+        return f'ChampionSpellImage(champion="{self.spell.champion._id}", spell="{self.spell._id}")'
+
+    def image_url(self):
+        return f'http://ddragon.leagueoflegends.com/cdn/{self.spell.champion.version}/img/spell/{self.full}'
+
+
+class ChampionEffectBurn(models.Model):
+    spell = models.ForeignKey('ChampionSpell', on_delete=models.CASCADE, related_name='effect_burn')
+    sort_int = models.IntegerField()
+    value = models.CharField(max_length=128, default=None, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('spell', 'sort_int')
+
+    def __str__(self):
+        return f'ChampionEffectBurn(champion="{self.spell.champion._id}", spell="{self.spell._id}")'
+
+
+class ChampionSpellVar(models.Model):
+    spell = models.ForeignKey('ChampionSpell', on_delete=models.CASCADE, related_name='vars')
+    coeff = models.CharField(max_length=256, default='', blank=True)
+    key = models.CharField(max_length=32, default='', blank=True)
+    link = models.CharField(max_length=128, default='', blank=True)
+    sort_int = models.IntegerField()
+
+    class Meta:
+        unique_together = ('spell', 'sort_int')
+
+    def __str__(self):
+        return f'ChampionSpellVar(spell="{self.spell._id}", key="{self.key}")'

@@ -2,7 +2,7 @@ from .models import Summoner
 from match.tasks import get_riot_api
 
 
-def get_summoner(region, account_id=None, name=None, summoner_id=None, puuid=None):
+def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=None):
     """Import a summoner by one a several identifiers.
 
     Parameters

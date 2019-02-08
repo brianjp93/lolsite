@@ -8,6 +8,8 @@ from data.models import Rito
 from ext.lol.riot import Riot as RiotAPI
 
 import logging
+import time
+
 
 logger = logging.getLogger(__name__)
 
@@ -235,6 +237,7 @@ def get_season_matches(season_id, account_id, region, **kwargs):
     season_id : ID
     account_id : ID
         the encrypted account ID
+    queue : int
 
     Returns
     -------
@@ -265,10 +268,64 @@ def get_season_matches(season_id, account_id, region, **kwargs):
                         try:
                             get_match(match_id, region)
                         except Exception as error:
-                            print(f'There was an error importing game id {match_id}')
-                            print(error)
+                            time.sleep(5)
+                            get_match(match_id, region)
                     else:
                         print(f'skipping {match_id}')
+            else:
+                has_more = False
+            index += size
+
+
+def import_recent_matches(count, account_id, region, **kwargs):
+    """Get recent matches for an account_id.
+
+    Parameters
+    ----------
+    season_id : ID
+    account_id : ID
+        the encrypted account ID
+    queue : int
+
+    Returns
+    -------
+    None
+
+    """
+    has_more = True
+    api = get_riot_api()
+    if api:
+        index = 0
+        size = 100
+        import_count = 0
+        please_continue = True
+        while has_more and please_continue:
+            kwargs['beginIndex'] = index
+            kwargs['endIndex'] = index + size
+            r = api.match.filter(account_id, region=region, **kwargs)
+            try:
+                matches = r.json()['matches']
+            except Exception as error:
+                print(r.content)
+                print(r.headers)
+                raise error
+            if len(matches) > 0:
+                for match in r.json()['matches']:
+                    match_id = match['gameId']
+                    query = Match.objects.filter(_id=match_id)
+                    # if it doesn't exist, import it
+                    if not query.exists():
+                        print(f'importing {match_id}')
+                        try:
+                            get_match(match_id, region)
+                        except Exception as error:
+                            time.sleep(5)
+                            get_match(match_id, region)
+                    else:
+                        print(f'skipping {match_id}')
+                    import_count += 1
+                    if import_count >= count:
+                        please_continue = False
             else:
                 has_more = False
             index += size
