@@ -440,3 +440,82 @@ class ChampionSpellVar(models.Model):
 
     def __str__(self):
         return f'ChampionSpellVar(spell="{self.spell._id}", key="{self.key}")'
+
+
+class SummonerSpell(models.Model):
+    _id = models.CharField(max_length=128, default='', blank=True, db_index=True)
+    key = models.IntegerField(db_index=True)
+    version = models.CharField(max_length=128, db_index=True)
+    language = models.CharField(max_length=128, db_index=True)
+    cooldown_burn = models.CharField(max_length=128, default='', blank=True)
+    cost_burn = models.CharField(max_length=128, default='', blank=True)
+    cost_type = models.CharField(max_length=128, default='', blank=True)
+    description = models.CharField(max_length=2048, default='', blank=True)
+    max_ammo = models.CharField(max_length=128, default='', blank=True)
+    max_rank = models.IntegerField()
+    name = models.CharField(max_length=128, default='', blank=True)
+    range_burn = models.CharField(max_length=256, default='', blank=True)
+    resource = models.CharField(max_length=128, default='', blank=True, null=True)
+    summoner_level = models.IntegerField()
+    tooltip = models.TextField(max_length=2048, default='', blank=True)
+
+    class Meta:
+        unique_together = ('key', 'version', 'language')
+
+    def __str__(self):
+        return f'SummonerSpell(_id="{self._id}", version="{self.version}", language="{self.language}")'
+
+
+class SummonerSpellEffectBurn(models.Model):
+    spell = models.ForeignKey('SummonerSpell', on_delete=models.CASCADE, related_name='effect_burn')
+    value = models.CharField(max_length=32, default='', blank=True)
+    sort_int = models.IntegerField()
+
+    class Meta:
+        unique_together = ('spell', 'sort_int')
+
+    def __str__(self):
+        return f'SummonerSpellEffectBurn(spell="{self.spell._id}", sort_int={self.sort_int})'
+
+
+class SummonerSpellImage(models.Model):
+    spell = models.OneToOneField('SummonerSpell', on_delete=models.CASCADE, related_name='image')
+    full = models.CharField(max_length=256, default='', blank=True)
+    group = models.CharField(max_length=128, default='', blank=True)
+    h = models.IntegerField()
+    sprite = models.CharField(max_length=128, default='', blank=True)
+    w = models.IntegerField()
+    x = models.IntegerField()
+    y = models.IntegerField()
+
+    def __str__(self):
+        return f'SummonerSpellImage(spell="{self.spell._id}")'
+
+    def image_url(self):
+        return f'http://ddragon.leagueoflegends.com/cdn/{self.spell.version}/img/spell/{self.full}'
+
+
+class SummonerSpellMode(models.Model):
+    spell = models.ForeignKey('SummonerSpell', on_delete=models.CASCADE, related_name='modes')
+    name = models.CharField(max_length=128, default='', blank=True)
+    sort_int = models.IntegerField()
+
+    class Meta:
+        unique_together = ('spell', 'name')
+
+    def __str__(self):
+        return f'SummonerSpellMode(spell="{self.spell._id}", name="{self.name}")'
+
+
+class SummonerSpellVar(models.Model):
+    spell = models.ForeignKey('SummonerSpell', on_delete=models.CASCADE, related_name='vars')
+    coeff = models.CharField(max_length=1024, default='', blank=True)
+    key = models.CharField(max_length=128, default='', blank=True)
+    link = models.CharField(max_length=128, default='', blank=True)
+    sort_int = models.IntegerField()
+
+    class Meta:
+        unique_together = ('spell', 'sort_int')
+
+    def __str__(self):
+        return f'SummonerSpellVar(spell="{self.spell._id}", key="{self.key}", sort_int={self.sort_int})'

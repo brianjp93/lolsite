@@ -47,6 +47,8 @@ def import_all(version, language='en_US', overwrite=False):
 
     # require api connection
     import_items(version=version, language=language, overwrite=overwrite)
+    import_champions(version=version, language=language, overwrite=overwrite)
+    import_all_champion_advanced(version, language=language, overwrite=overwrite)
 
 
 def import_seasons():
@@ -645,3 +647,9 @@ def import_all_champion_advanced(version, language='en_US', overwrite=False):
                 print(e)
                 time.sleep(5)
                 import_champion_advanced(champion.id, overwrite=overwrite)
+
+
+def import_summoner_spells(version='', language='en_US', overwrite=False):
+    """Import summoner spells from datadragon.
+    """
+    pass

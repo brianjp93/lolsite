@@ -33,7 +33,7 @@ def get_riot_api():
     return api
 
 
-def get_match(match_id, region, refresh=False):
+def import_match(match_id, region, refresh=False):
     """Import a match by its ID.
 
     Parameters
@@ -266,10 +266,10 @@ def get_season_matches(season_id, account_id, region, **kwargs):
                     if not query.exists():
                         print(f'importing {match_id}')
                         try:
-                            get_match(match_id, region)
+                            import_match(match_id, region)
                         except Exception as error:
                             time.sleep(5)
-                            get_match(match_id, region)
+                            import_match(match_id, region)
                     else:
                         print(f'skipping {match_id}')
             else:
@@ -317,10 +317,10 @@ def import_recent_matches(count, account_id, region, **kwargs):
                     if not query.exists():
                         print(f'importing {match_id}')
                         try:
-                            get_match(match_id, region)
+                            import_match(match_id, region)
                         except Exception as error:
                             time.sleep(5)
-                            get_match(match_id, region)
+                            import_match(match_id, region)
                     else:
                         print(f'skipping {match_id}')
                     import_count += 1

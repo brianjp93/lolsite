@@ -91,7 +91,7 @@ class LolStaticData:
         return r
 
 
-    def summoner_spells(self, version='', language=''):
+    def summoner_spells(self, version='', language='en_US'):
         """Get summoner spells.
         """
         url = f'{self.base}/cdn/{version}/data/{language}/summoner.json'

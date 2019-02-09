@@ -25,6 +25,7 @@ SECRET_KEY = '6cs%&oj!lvxpvj44r63-#ie=-%er1hs@%sbt1k9=lf7-b_mlxv'
 # SECURITY WARNING: don't run with debug turned on in production!
 env = os.environ
 
+REACT_DEV = False
 if env.get('LOLSITE_HOST', None) == 'dev':
     DEV = True
     DEBUG = True
@@ -38,6 +39,16 @@ if DEV:
 else:
     ALLOWED_HOSTS = []
 
+GIT_BUILD = 'na'
+try:
+    with open(os.path.join(BASE_DIR, '.git', 'logs', 'HEAD')) as git_log:
+        line = [line for line in git_log][-1]
+        GIT_BUILD = line.split()[1][:7]
+except:
+    GIT_BUILD = 1
+
+VERSION = [0, 0, 1, GIT_BUILD]
+VERSION_STRING = '.'.join(list(map(str, VERSION)))
 
 # Application definition
 
@@ -48,6 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'lolsite',
     'data',
     'match',
     'player',
@@ -68,7 +80,7 @@ ROOT_URLCONF = 'lolsite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,6 +88,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'lolsite.context_processors.react_data_processor',
+                'lolsite.context_processors.version_processor',
             ],
         },
     },

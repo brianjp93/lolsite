@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import registerServiceWorker from './registerServiceWorker';
+import * as serviceWorker from "./serviceWorker";
 import './index.css';
 
 const APPS = {
@@ -17,7 +17,6 @@ function renderAppInElement(elt) {
     };
     const props = Object.assign({}, elt.dataset);
     ReactDOM.render(<App {...props} />, elt);
-    registerServiceWorker();
 }
 
 window.onload = function() {
