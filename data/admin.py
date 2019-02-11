@@ -16,6 +16,10 @@ from .models import ChampionPassive, ChampionPassiveImage
 from .models import ChampionSkin, ChampionSpell, ChampionSpellImage
 from .models import ChampionEffectBurn, ChampionSpellVar
 
+from .models import SummonerSpell, SummonerSpellImage
+from .models import SummonerSpellMode, SummonerSpellEffectBurn
+from .models import SummonerSpellVar
+
 
 class RitoAdmin(admin.ModelAdmin):
     list_display = ('token',)
@@ -170,6 +174,34 @@ class ChampionSpellVarAdmin(admin.ModelAdmin):
     list_filter = ('spell__champion___id', 'spell__champion__version', 'spell__champion__language')
 
 
+class SummonerSpellAdmin(admin.ModelAdmin):
+    list_display = ('key', 'version', 'language')
+    list_filter = ('version', 'language')
+
+
+class SummonerSpellImageAdmin(admin.ModelAdmin):
+    list_display = ('spell', 'image_url')
+    raw_id_fields = ('spell',)
+
+
+class SummonerSpellModeAdmin(admin.ModelAdmin):
+    list_display = ('spell', 'name')
+    raw_id_fields = ('spell',)
+    list_filter = ('spell__version', 'spell__language')
+
+
+class SummonerSpellEffectBurnAdmin(admin.ModelAdmin):
+    list_display = ('spell', 'value', 'sort_int')
+    raw_id_fields = ('spell',)
+    list_filter = ('spell__version', 'spell__language')
+
+
+class SummonerSpellVarAdmin(admin.ModelAdmin):
+    list_display = ('spell', 'key', 'coeff')
+    raw_id_fields = ('spell',)
+    list_filter = ('spell__version', 'spell__language')
+
+
 admin.site.register(Rito, RitoAdmin)
 admin.site.register(Queue, QueueAdmin)
 admin.site.register(Season, SeasonAdmin)
@@ -205,3 +237,9 @@ admin.site.register(ChampionSpell, ChampionSpellAdmin)
 admin.site.register(ChampionSpellImage, ChampionSpellImageAdmin)
 admin.site.register(ChampionEffectBurn, ChampionEffectBurnAdmin)
 admin.site.register(ChampionSpellVar, ChampionSpellVarAdmin)
+
+admin.site.register(SummonerSpell, SummonerSpellAdmin)
+admin.site.register(SummonerSpellImage, SummonerSpellImageAdmin)
+admin.site.register(SummonerSpellMode, SummonerSpellModeAdmin)
+admin.site.register(SummonerSpellEffectBurn, SummonerSpellEffectBurnAdmin)
+admin.site.register(SummonerSpellVar, SummonerSpellVarAdmin)

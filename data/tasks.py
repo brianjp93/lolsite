@@ -15,6 +15,9 @@ from .models import ChampionStats, ChampionTag
 from .models import ChampionPassive, ChampionPassiveImage
 from .models import ChampionSkin, ChampionSpell, ChampionSpellImage
 from .models import ChampionEffectBurn, ChampionSpellVar
+from .models import SummonerSpell, SummonerSpellImage
+from .models import SummonerSpellMode, SummonerSpellEffectBurn
+from .models import SummonerSpellVar
 
 from django.db.utils import IntegrityError
 
@@ -47,8 +50,10 @@ def import_all(version, language='en_US', overwrite=False):
 
     # require api connection
     import_items(version=version, language=language, overwrite=overwrite)
+    import_profile_icons(version=version, language=language, overwrite=overwrite)
     import_champions(version=version, language=language, overwrite=overwrite)
     import_all_champion_advanced(version, language=language, overwrite=overwrite)
+    import_summoner_spells(version=version, language=language, overwrite=overwrite)
 
 
 def import_seasons():
@@ -652,4 +657,86 @@ def import_all_champion_advanced(version, language='en_US', overwrite=False):
 def import_summoner_spells(version='', language='en_US', overwrite=False):
     """Import summoner spells from datadragon.
     """
-    pass
+    api = get_riot_api()
+    if api:
+        r = api.lolstaticdata.summoner_spells(version=version, language=language)
+        data = r.json()['data']
+        for _id, _spell in data.items():
+            spell_model_data = {
+                '_id': _spell['id'],
+                'key': _spell['key'],
+                'version': version,
+                'language': language,
+                'cooldown_burn': _spell['cooldownBurn'],
+                'cost_burn': _spell['costBurn'],
+                'cost_type': _spell['costType'],
+                'description': _spell['description'],
+                'max_ammo': _spell['maxammo'],
+                'max_rank': _spell['maxrank'],
+                'name': _spell['name'],
+                'resource': _spell.get('resource', None),
+                'summoner_level': _spell['summonerLevel'],
+                'tooltip': _spell['tooltip'],
+            }
+            spell_model = SummonerSpell(**spell_model_data)
+            try:
+                spell_model.save()
+            except IntegrityError as error:
+                if overwrite:
+                    query = SummonerSpell.objects.filter(version=version, language=language, key=_spell['key'])
+                    if query.exists():
+                        query.first().delete()
+                        spell_model.save()
+                    else:
+                        raise Exception("Couldn't find the correct model to overwrite")
+                else:
+                    raise error
+
+            for i, effect_burn_data in enumerate(_spell['effectBurn']):
+                effect_burn_model_data = {
+                    'spell': spell_model,
+                    'value': effect_burn_data,
+                    'sort_int': i,
+                }
+                effect_burn_model = SummonerSpellEffectBurn(**effect_burn_model_data)
+                effect_burn_model.save()
+
+            image_data = _spell['image']
+            image_model_data = {
+                'spell': spell_model,
+                'full': image_data['full'],
+                'group': image_data['group'],
+                'h': image_data['h'],
+                'sprite': image_data['sprite'],
+                'x': image_data['x'],
+                'w': image_data['w'],
+                'y': image_data['y'],
+            }
+            image_model = SummonerSpellImage(**image_model_data)
+            image_model.save()
+
+            for i, mode_data in enumerate(_spell['modes']):
+                mode_model_data = {
+                    'spell': spell_model,
+                    'name': mode_data,
+                    'sort_int': i,
+                }
+                mode_model = SummonerSpellMode(**mode_model_data)
+                mode_model.save()
+
+            _vars = _spell['vars']
+            for i, var in enumerate(_vars):
+                coeffs = var['coeff']
+                if type(coeffs) == list:
+                    coeffs = '/'.join([str(x) for x in coeffs])
+                else:
+                    coeffs = str(coeffs)
+                var_model_data = {
+                    'spell': spell_model,
+                    'coeff': coeffs,
+                    'link': var['link'],
+                    'key': var['key'],
+                    'sort_int': i,
+                }
+                var_model = SummonerSpellVar(**var_model_data)
+                var_model.save()

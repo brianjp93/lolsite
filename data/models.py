@@ -468,7 +468,7 @@ class SummonerSpell(models.Model):
 
 class SummonerSpellEffectBurn(models.Model):
     spell = models.ForeignKey('SummonerSpell', on_delete=models.CASCADE, related_name='effect_burn')
-    value = models.CharField(max_length=32, default='', blank=True)
+    value = models.CharField(max_length=32, default='', blank=True, null=True)
     sort_int = models.IntegerField()
 
     class Meta:
