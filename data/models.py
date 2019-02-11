@@ -44,6 +44,27 @@ class Map(models.Model):
     def __str__(self):
         return f'Map(name="{self.name}")'
 
+    def minimap_url(self, version=''):
+        """Get minimap image url.
+
+        Parameters
+        ----------
+        version : str
+            if none is provided, try to get latest image
+
+        Returns
+        -------
+        str
+
+        """
+        if version:
+            pass
+        else:
+            query = Item.objects.all().order_by('version')
+            if query.exists():
+                version = query.first().version
+        return f'http://ddragon.leagueoflegends.com/cdn/{version}/img/map/map{self._id}.png'
+
 
 class GameMode(models.Model):
     name = models.CharField(unique=True, max_length=128, default='', blank=True)
@@ -324,6 +345,14 @@ class ChampionPassive(models.Model):
 
     def __str__(self):
         return f'ChampionPassive(champion="{self.champion._id}", name="{self.name}", version="{self.champion.version}", language="{self.champion.language}")'
+
+    def image_url(self):
+        url = ''
+        try:
+            url = self.image.image_url()
+        except:
+            pass
+        return url
 
 
 class ChampionPassiveImage(models.Model):

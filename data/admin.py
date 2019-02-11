@@ -34,7 +34,7 @@ class SeasonAdmin(admin.ModelAdmin):
 
 
 class MapAdmin(admin.ModelAdmin):
-    list_display = ('name', '_id')
+    list_display = ('name', '_id', 'minimap_url')
 
 
 class GameModeAdmin(admin.ModelAdmin):
@@ -138,7 +138,7 @@ class ChampionTagAdmin(admin.ModelAdmin):
 
 
 class ChampionPassiveAdmin(admin.ModelAdmin):
-    list_display = ('champion', 'name')
+    list_display = ('champion', 'name', 'image_url')
     raw_id_fields = ('champion',)
 
 

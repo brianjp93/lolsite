@@ -22,3 +22,7 @@
 8. Run dev server
     * `python manage.py rundev`
         * this call will automatically run the react server, and tell django to use React's development files instead of the build files.
+    * if this doesn't work, we can run the two servers manually
+        * `python manage.py runserver`
+        * change to react directory - `cd react`
+        * start react server - `npm start`
