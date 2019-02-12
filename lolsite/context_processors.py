@@ -29,7 +29,14 @@ def react_data_processor(request):
         except:
             print('Could not find your ip address.  React components will only work on the local machine.')
             ip = 'localhost'
-        react_data = {'react_dev': {'js': 'http://{}:3000/static/js/bundle.js'.format(ip), 'css': 'http://{}:3000/static/css/bundle.css'.format(ip)}}
+        react_data = {
+            'react_dev': {
+                'js': f'http://{ip}:3000/static/js/bundle.js',
+                'chunk_0': f'http://{ip}:3000/static/js/0.chunk.js',
+                'main_chunk': f'http://{ip}:3000/static/js/main.chunk.js',
+                'css': f'http://{ip}:3000/static/css/bundle.css',
+            }
+        }
     else:
         react_data = {'react_data': {'js': '', 'css': ''}}
         try:
@@ -37,7 +44,13 @@ def react_data_processor(request):
             js_dir = os.path.join(base, 'js')
             css_dir = os.path.join(base, 'css')
             for f in os.listdir(js_dir):
-                if f.endswith('.js'):
+                if 'runtime' in f and f.endswith('.js'):
+                    runtime_path = os.path.join('js', f)
+                    react_data['react_data']['runtime'] = runtime_path
+                elif 'main' in f and 'chunk' in f and f.endswith('.js'):
+                    chunk_path = os.path.join('js', f)
+                    react_data['react_data']['chunk'] = chunk_path
+                elif f.endswith('.js'):
                     js_path = os.path.join('js', f)
                     react_data['react_data']['js'] = js_path
             for f in os.listdir(css_dir):

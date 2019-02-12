@@ -2,9 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as serviceWorker from "./serviceWorker";
 import './index.css';
+import Main from './Main';
 
 const APPS = {
-    
+    'Main': Main,
 };
 
 function renderAppInElement(elt) {

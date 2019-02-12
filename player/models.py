@@ -7,6 +7,7 @@ class Summoner(models.Model):
     region = models.CharField(max_length=8, default='', blank=True, db_index=True)
     account_id = models.CharField(max_length=128, default='', blank=True, unique=True, db_index=True)
     name = models.CharField(max_length=32, default='', blank=True, db_index=True)
+    simple_name = models.CharField(max_length=32, default='', blank=True, db_index=True)
     profile_icon_id = models.IntegerField(default=0)
     puuid = models.CharField(max_length=256, default='', blank=True, unique=True)
     revision_date = models.BigIntegerField(default=0, db_index=True)
@@ -19,6 +20,11 @@ class Summoner(models.Model):
 
     def __str__(self):
         return f'Summoner(name="{self.name}", region={self.region})'
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.simple_name = ''.join(self.name.split()).lower()
+        super(Summoner, self).save(*args, **kwargs)
 
 
 class NameChange(models.Model):

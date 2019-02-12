@@ -6,6 +6,8 @@ from .models import Timeline, Team, Ban
 
 class MatchAdmin(admin.ModelAdmin):
     list_display = ('_id', 'get_creation', 'queue_id', 'game_version')
+    list_filter = ('platform_id', 'major')
+    search_fields = ('participants__summoner_name', 'participants__summoner_id')
 
 
 class ParticipantAdmin(admin.ModelAdmin):

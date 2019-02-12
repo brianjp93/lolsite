@@ -2,6 +2,7 @@ __pycache__/*
 *.pyc
 
 react/node_modules
+react/build/
 
 .DS_Store
 .ipynb_checkpoints/*

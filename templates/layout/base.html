@@ -1,0 +1,40 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=.8"/>
+    <meta name="description" content="{% block metadescription %}{% endblock metadescription %}"/>
+
+    {# REACT #}
+    {# js and css bundles loaded through context processors to take into account their hash #}
+    {% if react_dev.js %}
+        <script src="{{ react_dev.js }}"></script>
+        <script src="{{ react_dev.chunk_0 }}"></script>
+        <script src="{{ react_dev.main_chunk }}"></script>
+        {# <link rel='stylesheet' href='{{ react_dev.css }}' > #}
+    {% else %}
+        <script src="{% static react_data.js %}"></script>
+        <script src="{% static react_data.chunk %}"></script>
+        <script src="{% static react_data.runtime %}"></script>
+        <link rel='stylesheet' href='{% static react_data.css %}' >
+    {% endif %}
+    <title>{% block title %}{% endblock title %}</title>
+
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon-suitesale.ico' %}">
+
+    {% block header %}{% endblock header %}
+</head>
+    
+<body>
+    {% block body %}
+    {% endblock body %}
+
+    {% block htmlfooter %}
+    {% endblock htmlfooter %}
+    
+    {% block footer %}{% endblock footer %}
+
+</body>
+</html>

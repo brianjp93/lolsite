@@ -7,6 +7,7 @@ from data.models import Rito
 
 from ext.lol.riot import Riot as RiotAPI
 
+from celery import task
 import logging
 import time
 
@@ -72,15 +73,27 @@ def import_match(match_id, region, refresh=False):
 
             _p_data['match'] = match_model
             participant_model = Participant(**_p_data)
-            participant_model.save()
+            try:
+                participant_model.save()
+            except Exception as error:
+                match_model.delete()
+                raise error
             for _t_data in timelines_data:
                 _t_data['participant'] = participant_model
                 timeline_model = Timeline(**_t_data)
-                timeline_model.save()
+                try:
+                    timeline_model.save()
+                except Exception as error:
+                    match_model.delete()
+                    raise error
             for _s_data in stats_data:
                 _s_data['participant'] = participant_model
                 stat_model = Stat(**_s_data)
-                stat_model.save()
+                try:
+                    stat_model.save()
+                except Exception as error:
+                    match_model.delete()
+                    raise error
 
         teams = parsed.pop('teams')
         for _t_data in teams:
@@ -88,13 +101,19 @@ def import_match(match_id, region, refresh=False):
             bans = _t_data.pop('bans')
 
             team_model = Team(**_t_data)
-            team_model.save()
+            try:
+                stat_model.save()
+            except Exception as error:
+                team_model.delete()
+                raise error
             for _ban_data in bans:
                 _ban_data['team'] = team_model
                 ban_model = Ban(**_ban_data)
-                ban_model.save()
-
-
+                try:
+                    stat_model.save()
+                except Exception as error:
+                    ban_model.delete()
+                    raise error
 
 
 def parse_match(data):
@@ -145,7 +164,7 @@ def parse_match(data):
                 p = _p
                 break
 
-        timeline = p['timeline']
+        timeline = p.get('timeline', {})
         tls = []
         for t_key, t_val in timeline.items():
             if 'deltas' in t_key.lower():
@@ -174,7 +193,7 @@ def parse_match(data):
             'current_platform_id': player['currentPlatformId'],
             'match_history_uri': player['matchHistoryUri'],
             'platform_id': player['platformId'],
-            'summoner_id': player['summonerId'],
+            'summoner_id': player.get('summonerId', None),
             'summoner_name': player['summonerName'],
 
             'champion_id': p['championId'],
@@ -182,8 +201,8 @@ def parse_match(data):
             'spell_1_id': p['spell1Id'],
             'spell_2_id': p['spell2Id'],
             'team_id': p['teamId'],
-            'lane': timeline['lane'],
-            'role': timeline['role'],
+            'lane': timeline.get('lane', ''),
+            'role': timeline.get('role', ''),
 
             'timelines': list(tls),
             'stats': list(stats),
@@ -203,7 +222,7 @@ def parse_match(data):
                     'pick_turn': _ban['pickTurn'],
                 })
 
-        win = True if _team['win'] == 'Win' else False
+        win = True if _team.get('win', 'Fail') == 'Win' else False
         team = {
             '_id': _team['teamId'],
             'baron_kills': _team['baronKills'],
@@ -220,7 +239,7 @@ def parse_match(data):
             'tower_kills': _team['towerKills'],
             'vilemaw_kills': _team['vilemawKills'],
             'win': win,
-            'win_str': _team['win'],
+            'win_str': _team.get('win', 'Fail'),
 
             'bans': list(bans),
         }
@@ -229,7 +248,7 @@ def parse_match(data):
     return out
 
 
-def get_season_matches(season_id, account_id, region, **kwargs):
+def import_season_matches(season_id, account_id, region, **kwargs):
     """Get season matches for a specific account_id.
 
     Parameters
@@ -278,7 +297,7 @@ def get_season_matches(season_id, account_id, region, **kwargs):
 
 
 def import_recent_matches(count, account_id, region, **kwargs):
-    """Get recent matches for an account_id.
+    """Import recent matches for an account_id.
 
     Parameters
     ----------

@@ -155,6 +155,8 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "lolsite/static"),
+    os.path.join(BASE_DIR, 'react/src/static'),
+    os.path.join(BASE_DIR, 'react/build/static'),
 ]
 
 # CELERY
