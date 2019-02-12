@@ -26,3 +26,13 @@
         * `python manage.py runserver`
         * change to react directory - `cd react`
         * start react server - `npm start`
+
+### Run Task Queue
+
+Periodic tasks will be run using SQS on AWS, and redis/celery locally.  To run the local task queue, we need to run a redis-server, and also boot up a worker.
+
+1. Start redis-server
+    * Find redis on your computer (install if necessary), and run the redis-server
+2. Boot up a worker node
+    * In the `lolsite` project directory, run `celery worker -A lolsite -l info`
+    * note that this will have to be manually restarted if changes are made to the project.

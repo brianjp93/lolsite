@@ -22,6 +22,7 @@ from .models import SummonerSpellVar
 from django.db.utils import IntegrityError
 
 from . import constants
+from celery import task
 from match.tasks import get_riot_api
 import time
 
@@ -111,6 +112,7 @@ def import_gametypes():
             continue
 
 
+@task(name='data.tasks.import_reforgedrunes')
 def import_reforgedrunes(version='', language='en_US', overwrite=False):
     """Import reforged runes through api.
 
