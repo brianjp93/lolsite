@@ -3,33 +3,35 @@ import ReactDOM from 'react-dom';
 import {BrowserRouter} from 'react-router-dom';
 import * as serviceWorker from "./serviceWorker";
 import './index.css';
-import Main from './Main';
+import './theme/dark.css';
+import './theme/light.css';
+import App from './App';
 
 const APPS = {
-    'Main': Main,
+    'App': App,
 };
 
 function renderAppInElement(elt) {
-    var App = APPS[elt.id];
+    var AppComponent = APPS[elt.id];
     var name = elt.id;
-    if (!App) {
+    if (!AppComponent) {
         name = elt.getAttribute('app-name');
-        App = APPS[name];
-        if (!App) {
+        AppComponent = APPS[name];
+        if (!AppComponent) {
             return;
         }
     };
     const props = Object.assign({}, elt.dataset);
-    if (name === 'Main') {
+    if (name === 'App') {
         ReactDOM.render((
             <BrowserRouter>
-                <App {...props} />
+                <AppComponent {...props} />
             </BrowserRouter>
             ), elt
         );
     }
     else {
-        ReactDOM.render(<App {...props} />, elt);
+        ReactDOM.render(<AppComponent {...props} />, elt);
     }
 }
 

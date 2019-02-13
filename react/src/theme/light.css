@@ -1,0 +1,23 @@
+/* default colors for a dark theme */
+
+body.light {
+    background-image: linear-gradient( 178deg,  rgba(201,234,252,0.51) 14.9%, rgba(139,192,216,0.73) 80% );
+    
+    color: #3c5857;
+}
+
+div.light.background {
+    height:100%;
+
+    background-image: linear-gradient( 178deg,  rgba(201,234,252,0.51) 14.9%, rgba(139,192,216,0.73) 80% );
+    
+    color: #3c5857;
+}
+
+input.light {
+    color: #3c5857;
+}
+
+label.light {
+    color: #6b6b6b;
+}
