@@ -7,12 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=.8"/>
     <meta name="description" content="{% block metadescription %}{% endblock metadescription %}"/>
 
+    <script src="{% static 'materialize/js/materialize.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'materialize/css/materialize.min.css' %}" >
+
     {# REACT #}
     {# js and css bundles loaded through context processors to take into account their hash #}
-    {% if react_dev.js %}
-        <script src="{{ react_dev.js }}"></script>
-        <script src="{{ react_dev.chunk_0 }}"></script>
-        <script src="{{ react_dev.main_chunk }}"></script>
+    {% if react_dev.scripts %}
+        {{ react_dev.scripts|safe }}
         {# <link rel='stylesheet' href='{{ react_dev.css }}' > #}
     {% else %}
         <script src="{% static react_data.js %}"></script>
@@ -27,7 +28,7 @@
     {% block header %}{% endblock header %}
 </head>
     
-<body>
+<body id="body-wrap">
     {% block body %}
     {% endblock body %}
 

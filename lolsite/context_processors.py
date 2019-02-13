@@ -1,6 +1,7 @@
 import os
 from django.conf import settings
 import socket
+import requests
 
 BASE_DIR = settings.BASE_DIR
 
@@ -29,11 +30,20 @@ def react_data_processor(request):
         except:
             print('Could not find your ip address.  React components will only work on the local machine.')
             ip = 'localhost'
+
+        # get all the scripts from the react-dev server and load them into our base.html page
+        r = requests.get(f'http://{ip}:3000')
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(r.content, features='html.parser')
+        scripts = []
+        for sc in soup.find_all('script'):
+            sc['src'] = f'http://{ip}:3000{sc["src"]}'
+            scripts.append(str(sc))
+        scripts = ''.join(scripts)
+
         react_data = {
             'react_dev': {
-                'js': f'http://{ip}:3000/static/js/bundle.js',
-                'chunk_0': f'http://{ip}:3000/static/js/0.chunk.js',
-                'main_chunk': f'http://{ip}:3000/static/js/main.chunk.js',
+                'scripts': scripts,
                 'css': f'http://{ip}:3000/static/css/bundle.css',
             }
         }
