@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import {Link} from 'react-router-dom';
+import React, { Component } from 'react'
+import NavBar from '../general/NavBar'
 
 class Themes extends Component {
     constructor(props)  {
@@ -11,9 +11,7 @@ class Themes extends Component {
     render()  {
         return (
             <div>
-                <div className="row">
-                    <Link to='/'>Go Back Home</Link>
-                </div>
+                <NavBar store={this.props.store}/>
                 <div className="row">
                     {this.state.choices.map((choice, key) => {
                         return (

@@ -39,13 +39,13 @@ if DEV:
 else:
     ALLOWED_HOSTS = []
 
-GIT_BUILD = 'na'
+GIT_BUILD = 0
 try:
     with open(os.path.join(BASE_DIR, '.git', 'logs', 'HEAD')) as git_log:
         line = [line for line in git_log][-1]
         GIT_BUILD = line.split()[1][:7]
 except:
-    GIT_BUILD = 1
+    pass
 
 VERSION = [0, 0, 1, GIT_BUILD]
 VERSION_STRING = '.'.join(list(map(str, VERSION)))

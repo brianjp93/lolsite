@@ -1,23 +1,36 @@
-/* default colors for a dark theme */
+/* default colors for a light theme */
+
+.light {
+    --c1: #3c5857;
+    --gradient-main: linear-gradient(to  top left, #f3ebd0 0%, #e0e1ff 99%, #e3eeff 100%);;
+    --gradient-nav: linear-gradient(-20deg, #e8e6f4 0%, #343656 100%, #faaca8 100%);
+}
+
+blockquote.light {
+    color: #7d838e;
+    border-left-color: #8d8c8c;
+}
 
 body.light {
-    background-image: linear-gradient( 178deg,  rgba(201,234,252,0.51) 14.9%, rgba(139,192,216,0.73) 80% );
+    background: var(--gradient-main); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
     
-    color: #3c5857;
+    color: var(--c1);
 }
 
 div.light.background {
     height:100%;
-
-    background-image: linear-gradient( 178deg,  rgba(201,234,252,0.51) 14.9%, rgba(139,192,216,0.73) 80% );
-    
-    color: #3c5857;
+    background: var(--gradient-main); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    color: var(--c1);
 }
 
 input.light {
-    color: #3c5857;
+    color: var(--c1);
 }
 
-label.light {
-    color: #6b6b6b;
+div.input-field.light>div>input.select-dropdown {
+    color: var(--c1);
+}
+
+nav.light {
+    background-image: var(--gradient-nav);
 }

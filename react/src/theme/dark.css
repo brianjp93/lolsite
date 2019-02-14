@@ -1,23 +1,36 @@
 /* default colors for a dark theme */
 
+.dark {
+    --c1: #c9d9f7;
+    --gradient-main: linear-gradient(to bottom, #292E49, #536976);
+    --gradient-nav: linear-gradient(to right, #212e3e 0%, #373e52 100%);
+}
+
+blockquote.dark {
+    color: #7d838e;
+    border-left-color: #8d8c8c;
+}
+
 body.dark {
-    background: #536976;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to bottom, #292E49, #536976);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to bottom, #292E49, #536976); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--gradient-main); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
     
-    color: #c9d9f7;
+    color: var(--c1);
 }
 
 div.dark.background {
     height:100%;
-
-    background: #536976;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to bottom, #292E49, #536976);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to bottom, #292E49, #536976); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    
-    color: #c9d9f7;
+    background: var(--gradient-main); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    color: var(--c1);
 }
 
 input.dark {
-    color: #c9d9f7;
+    color: var(--c1);
+}
+
+div.input-field.dark>div>input.select-dropdown {
+    color: var(--c1);
+}
+
+nav.dark {
+    background-image: var(--gradient-nav);
 }
