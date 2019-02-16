@@ -58,23 +58,145 @@ class Participant(models.Model):
         return f'Participant(summoner_name={self.summoner_name}, match={self.match._id})'
 
 
-class Stat(models.Model):
-    type_choices = (
-        ('bool', 'bool'),
-        ('int', 'int'),
-        )
-    participant = models.ForeignKey('Participant', on_delete=models.CASCADE, related_name='stats')
-    key = models.CharField(max_length=128, default='', blank=True)
-    value_type = models.CharField(choices=type_choices, max_length=16, default='int', blank=True)
-    value_bool = models.BooleanField(default=False, blank=True)
-    value_int = models.BigIntegerField(default=0, blank=True)
+# class Stat(models.Model):
+#     type_choices = (
+#         ('bool', 'bool'),
+#         ('int', 'int'),
+#         )
+#     participant = models.ForeignKey('Participant', on_delete=models.CASCADE, related_name='stats')
+#     key = models.CharField(max_length=128, default='', blank=True)
+#     value_type = models.CharField(choices=type_choices, max_length=16, default='int', blank=True)
+#     value_bool = models.BooleanField(default=False, blank=True)
+#     value_int = models.BigIntegerField(default=0, blank=True)
 
-    class Meta:
-        unique_together = ('participant', 'key')
+#     class Meta:
+#         unique_together = ('participant', 'key')
 
+
+#     def __str__(self):
+        # return f'Stat(participant={self.participant.summoner_name}, match={self.participant.match._id}, key={self.key})'
+
+
+class Stats(models.Model):
+    participant = models.OneToOneField('Participant', on_delete=models.CASCADE)
+
+    assists = models.IntegerField(default=0, blank=True)
+    champ_level = models.IntegerField(default=0, null=True, blank=True)
+    combat_player_score = models.IntegerField(default=0, blank=True)
+    damage_dealt_to_objectives = models.IntegerField(default=0, blank=True)
+    damage_dealt_to_turrets = models.IntegerField(default=0, blank=True)
+    damage_self_mitigated = models.IntegerField(default=0, blank=True)
+    deaths = models.IntegerField(default=0, blank=True)
+    double_kills = models.IntegerField(default=0, blank=True)
+    first_blood_assist = models.BooleanField(default=False, blank=True)
+    first_blood_kill = models.BooleanField(default=False, blank=True)
+    first_inhibitor_assist = models.BooleanField(default=False, blank=True)
+    first_inhibitor_kill = models.BooleanField(default=False, blank=True)
+    first_tower_assist = models.BooleanField(default=False, blank=True)
+    first_tower_kill = models.BooleanField(default=False, blank=True)
+    gold_earned = models.IntegerField(default=0, blank=True)
+    gold_spent = models.IntegerField(default=0, blank=True)
+    inhibitor_kills = models.IntegerField(default=0, blank=True)
+    item_0 = models.IntegerField(default=0, blank=True)
+    item_1 = models.IntegerField(default=0, blank=True)
+    item_2 = models.IntegerField(default=0, blank=True)
+    item_3 = models.IntegerField(default=0, blank=True)
+    item_4 = models.IntegerField(default=0, blank=True)
+    item_5 = models.IntegerField(default=0, blank=True)
+    item_6 = models.IntegerField(default=0, blank=True)
+    killing_sprees = models.IntegerField(default=0, blank=True)
+    kills = models.IntegerField(default=0, blank=True)
+    largest_critical_strike = models.IntegerField(default=0, blank=True)
+    largest_killing_spree = models.IntegerField(default=0, blank=True)
+    largest_multi_kill = models.IntegerField(default=0, blank=True)
+    longest_time_spent_living = models.IntegerField(default=0, blank=True)
+    magic_damage_dealt = models.IntegerField(default=0, blank=True)
+    magic_damage_dealt_to_champions = models.IntegerField(default=0, blank=True)
+    magical_damage_taken = models.IntegerField(default=0, blank=True)
+    neutral_minions_killed = models.IntegerField(default=0, blank=True)
+    neutral_minions_killed_enemy_jungle = models.IntegerField(default=0, blank=True)
+    neutral_minions_killed_team_jungle = models.IntegerField(default=0, blank=True)
+    objective_player_score = models.IntegerField(default=0, blank=True)
+    penta_kills = models.IntegerField(default=0, blank=True)
+
+    perk_0 = models.IntegerField(default=0, blank=True)
+    perk_0_var_1 = models.IntegerField(default=0, blank=True)
+    perk_0_var_2 = models.IntegerField(default=0, blank=True)
+    perk_0_var_3 = models.IntegerField(default=0, blank=True)
+
+    perk_1 = models.IntegerField(default=0, blank=True)
+    perk_1_var_1 = models.IntegerField(default=0, blank=True)
+    perk_1_var_2 = models.IntegerField(default=0, blank=True)
+    perk_1_var_3 = models.IntegerField(default=0, blank=True)
+
+    perk_2 = models.IntegerField(default=0, blank=True)
+    perk_2_var_1 = models.IntegerField(default=0, blank=True)
+    perk_2_var_2 = models.IntegerField(default=0, blank=True)
+    perk_2_var_3 = models.IntegerField(default=0, blank=True)
+
+    perk_3 = models.IntegerField(default=0, blank=True)
+    perk_3_var_1 = models.IntegerField(default=0, blank=True)
+    perk_3_var_2 = models.IntegerField(default=0, blank=True)
+    perk_3_var_3 = models.IntegerField(default=0, blank=True)
+
+    perk_4 = models.IntegerField(default=0, blank=True)
+    perk_4_var_1 = models.IntegerField(default=0, blank=True)
+    perk_4_var_2 = models.IntegerField(default=0, blank=True)
+    perk_4_var_3 = models.IntegerField(default=0, blank=True)
+
+    perk_5 = models.IntegerField(default=0, blank=True)
+    perk_5_var_1 = models.IntegerField(default=0, blank=True)
+    perk_5_var_2 = models.IntegerField(default=0, blank=True)
+    perk_5_var_3 = models.IntegerField(default=0, blank=True)
+
+    perk_primary_style = models.IntegerField(default=0, blank=True)
+    perk_sub_style = models.IntegerField(default=0, blank=True)
+    physical_damage_dealt = models.IntegerField(default=0, blank=True)
+    physical_damage_dealt_to_champions = models.IntegerField(default=0, blank=True)
+    physical_damage_taken = models.IntegerField(default=0, blank=True)
+
+    player_score_0 = models.IntegerField(default=0, blank=True)
+    player_score_1 = models.IntegerField(default=0, blank=True)
+    player_score_2 = models.IntegerField(default=0, blank=True)
+    player_score_3 = models.IntegerField(default=0, blank=True)
+    player_score_4 = models.IntegerField(default=0, blank=True)
+    player_score_5 = models.IntegerField(default=0, blank=True)
+    player_score_6 = models.IntegerField(default=0, blank=True)
+    player_score_7 = models.IntegerField(default=0, blank=True)
+    player_score_8 = models.IntegerField(default=0, blank=True)
+    player_score_9 = models.IntegerField(default=0, blank=True)
+
+    quadra_kills = models.IntegerField(default=0, blank=True)
+    sight_wards_bought_in_game = models.IntegerField(default=0, blank=True)
+
+    stat_perk_0 = models.IntegerField(default=0, blank=True)
+    stat_perk_1 = models.IntegerField(default=0, blank=True)
+    stat_perk_2 = models.IntegerField(default=0, blank=True)
+
+    time_ccing_others = models.IntegerField(default=0, blank=True)
+    total_damage_dealt = models.IntegerField(default=0, blank=True)
+    total_damage_dealt_to_champions = models.IntegerField(default=0, blank=True)
+    total_damage_taken = models.IntegerField(default=0, blank=True)
+    total_heal = models.IntegerField(default=0, blank=True)
+    total_minions_killed = models.IntegerField(default=0, blank=True)
+    total_player_score = models.IntegerField(default=0, blank=True)
+    total_score_rank = models.IntegerField(default=0, blank=True)
+    total_time_crowd_control_dealt = models.IntegerField(default=0, blank=True)
+    total_units_healed = models.IntegerField(default=0, blank=True)
+    triple_kills = models.IntegerField(default=0, blank=True)
+    true_damage_dealt = models.IntegerField(default=0, blank=True)
+    true_damage_dealt_to_champions = models.IntegerField(default=0, blank=True)
+    true_damage_taken = models.IntegerField(default=0, blank=True)
+    turret_kills = models.IntegerField(default=0, blank=True)
+    unreal_kills = models.IntegerField(default=0, blank=True)
+    vision_score = models.IntegerField(default=0, blank=True)
+    vision_wards_bought_in_game = models.IntegerField(default=0, blank=True)
+    wards_killed = models.IntegerField(default=0, blank=True)
+    wards_placed = models.IntegerField(default=0, blank=True)
+    win = models.BooleanField(default=False, blank=True)
 
     def __str__(self):
-        return f'Stat(participant={self.participant.summoner_name}, match={self.participant.match._id}, key={self.key})'
+        return f'Stats(participant={self.participant.summoner_name})'
 
 
 class Timeline(models.Model):

@@ -4,6 +4,9 @@
     --c1: #3c5857;
     --gradient-main: linear-gradient(to  top left, #f3ebd0 0%, #e0e1ff 99%, #e3eeff 100%);;
     --gradient-nav: linear-gradient(-20deg, #e8e6f4 0%, #343656 100%, #faaca8 100%);
+    --card-background1: white;
+    --card-color1: #674757;
+    --sidenav-color1: #615773;
 }
 
 blockquote.light {
@@ -12,14 +15,18 @@ blockquote.light {
 }
 
 body.light {
-    background: var(--gradient-main); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    
+    background: var(--gradient-main);
     color: var(--c1);
+}
+
+.card-panel.light {
+    background: var(--card-background1);
+    color: var(--card-color1);
 }
 
 div.light.background {
     height:100%;
-    background: var(--gradient-main); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--gradient-main);
     color: var(--c1);
 }
 
@@ -33,4 +40,12 @@ div.input-field.light>div>input.select-dropdown {
 
 nav.light {
     background-image: var(--gradient-nav);
+}
+
+ul.sidenav.light {
+    background: var(--gradient-main);
+}
+
+.sidenav.light li>a {
+    color: var(--sidenav-color1);
 }

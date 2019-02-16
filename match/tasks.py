@@ -1,9 +1,12 @@
-from .models import Match, Participant, Stat
+from django.db.utils import IntegrityError
+from django.db.models import Count, Subquery, OuterRef
+
+from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
 
-from django.db.utils import IntegrityError
-
 from data.models import Rito
+
+from player.models import Summoner
 
 from ext.lol.riot import Riot as RiotAPI
 
@@ -14,6 +17,8 @@ import time
 
 logger = logging.getLogger(__name__)
 
+class RateLimitError(Exception):
+    pass
 
 def get_riot_api():
     """Get an instance of the RiotAPI wrapper.
@@ -53,6 +58,10 @@ def import_match(match_id, region, refresh=False):
     if api:
         r = api.match.get(match_id, region=region)
         match = r.json()
+
+        if r.status_code == 429:
+            return 'throttled'
+        
         parsed = parse_match(match)
         
         match_data = parsed.pop('match')
@@ -72,12 +81,16 @@ def import_match(match_id, region, refresh=False):
             stats_data = _p_data.pop('stats')
 
             _p_data['match'] = match_model
+
+            # PARTICIPANT
             participant_model = Participant(**_p_data)
             try:
                 participant_model.save()
             except Exception as error:
                 match_model.delete()
                 raise error
+
+            # TIMELINES
             for _t_data in timelines_data:
                 _t_data['participant'] = participant_model
                 timeline_model = Timeline(**_t_data)
@@ -86,15 +99,17 @@ def import_match(match_id, region, refresh=False):
                 except Exception as error:
                     match_model.delete()
                     raise error
-            for _s_data in stats_data:
-                _s_data['participant'] = participant_model
-                stat_model = Stat(**_s_data)
-                try:
-                    stat_model.save()
-                except Exception as error:
-                    match_model.delete()
-                    raise error
 
+            # STATS
+            stats_data['participant'] = participant_model
+            stats_model = Stats(**stats_data)
+            try:
+                stats_model.save()
+            except IntegrityError as error:
+                match_model.delete()
+                raise error
+
+        # TEAMS
         teams = parsed.pop('teams')
         for _t_data in teams:
             _t_data['match'] = match_model
@@ -102,15 +117,17 @@ def import_match(match_id, region, refresh=False):
 
             team_model = Team(**_t_data)
             try:
-                stat_model.save()
+                team_model.save()
             except Exception as error:
                 team_model.delete()
                 raise error
+
+            # BANS
             for _ban_data in bans:
                 _ban_data['team'] = team_model
                 ban_model = Ban(**_ban_data)
                 try:
-                    stat_model.save()
+                    ban_model.save()
                 except Exception as error:
                     ban_model.delete()
                     raise error
@@ -175,16 +192,126 @@ def parse_match(data):
                     tl['value'] = round(time_value, 1)
                 tls.append(dict(tl))
 
-        stats = []
-        for _s_key, _s_val in p['stats'].items():
-            stat = {'key': _s_key}
-            if _s_val is True or _s_val is False:
-                stat['value_type'] = 'bool'
-                stat['value_bool'] = _s_val
-            else:
-                stat['value_type'] = 'int'
-                stat['value_int'] = _s_val
-            stats.append(dict(stat))
+        _s = p['stats']
+        stats = {
+            'assists': _s['assists'],
+            'champ_level': _s['champLevel'],
+            'combat_player_score': _s['combatPlayerScore'],
+            'damage_dealt_to_objectives': _s['damageDealtToObjectives'],
+            'damage_dealt_to_turrets': _s['damageDealtToTurrets'],
+            'damage_self_mitigated': _s['damageSelfMitigated'],
+            'deaths': _s['deaths'],
+            'double_kills': _s['doubleKills'],
+
+            'first_blood_assist': _s.get('firstBloodAssist', False),
+            'first_blood_kill': _s.get('firstBloodKill', False),
+            'first_inhibitor_assist': _s.get('firstInhibitorAssist', False),
+            'first_inhibitor_kill': _s.get('firstInhibitorKill', False),
+            'first_tower_assist': _s.get('firstTowerAssist', False),
+            'first_tower_kill': _s.get('firstTowerKill', False),
+
+            'gold_earned': _s['goldEarned'],
+            'gold_spent': _s['goldSpent'],
+            'inhibitor_kills': _s['inhibitorKills'],
+            'item_0': _s['item0'],
+            'item_1': _s['item1'],
+            'item_2': _s['item2'],
+            'item_3': _s['item3'],
+            'item_4': _s['item4'],
+            'item_5': _s['item5'],
+            'item_6': _s['item6'],
+            'killing_sprees': _s['killingSprees'],
+            'kills': _s['kills'],
+            'largest_critical_strike': _s['largestCriticalStrike'],
+            'largest_killing_spree': _s['largestKillingSpree'],
+            'largest_multi_kill': _s['largestMultiKill'],
+            'longest_time_spent_living': _s['longestTimeSpentLiving'],
+            'magic_damage_dealt': _s['magicDamageDealt'],
+            'magic_damage_dealt_to_champions': _s['magicDamageDealtToChampions'],
+            'magical_damage_taken': _s['magicalDamageTaken'],
+            'neutral_minions_killed': _s['neutralMinionsKilled'],
+            'neutral_minions_killed_enemy_jungle': _s.get('neutralMinionsKilledEnemyJungle', 0),
+            'neutral_minions_killed_team_jungle': _s.get('neutralMinionsKilledTeamJungle', 0),
+            'objective_player_score': _s['objectivePlayerScore'],
+            'penta_kills': _s['pentaKills'],
+
+            'perk_0': _s.get('perk0', 0),
+            'perk_0_var_1': _s.get('perk0Var1', 0),
+            'perk_0_var_2': _s.get('perk0Var2', 0),
+            'perk_0_var_3': _s.get('perk0Var3', 0),
+
+            'perk_1': _s.get('perk1', 0),
+            'perk_1_var_1': _s.get('perk1Var1', 0),
+            'perk_1_var_2': _s.get('perk1Var2', 0),
+            'perk_1_var_3': _s.get('perk1Var3', 0),
+
+            'perk_2': _s.get('perk2', 0),
+            'perk_2_var_1': _s.get('perk2Var1', 0),
+            'perk_2_var_2': _s.get('perk2Var2', 0),
+            'perk_2_var_3': _s.get('perk2Var3', 0),
+
+            'perk_3': _s.get('perk3', 0),
+            'perk_3_var_1': _s.get('perk3Var1', 0),
+            'perk_3_var_2': _s.get('perk3Var2', 0),
+            'perk_3_var_3': _s.get('perk3Var3', 0),
+
+            'perk_4': _s.get('perk4', 0),
+            'perk_4_var_1': _s.get('perk4Var1', 0),
+            'perk_4_var_2': _s.get('perk4Var2', 0),
+            'perk_4_var_3': _s.get('perk4Var3', 0),
+
+            'perk_5': _s.get('perk5', 0),
+            'perk_5_var_1': _s.get('perk5Var1', 0),
+            'perk_5_var_2': _s.get('perk5Var2', 0),
+            'perk_5_var_3': _s.get('perk5Var3', 0),
+
+            'perk_primary_style': _s.get('perkPrimaryStyle', 0),
+            'perk_sub_style': _s.get('perkSubStyle', 0),
+
+            'physical_damage_dealt': _s['physicalDamageDealt'],
+            'physical_damage_dealt_to_champions': _s['physicalDamageDealtToChampions'],
+            'physical_damage_taken': _s['physicalDamageTaken'],
+
+            'player_score_0': _s['playerScore0'],
+            'player_score_1': _s['playerScore1'],
+            'player_score_2': _s['playerScore2'],
+            'player_score_3': _s['playerScore3'],
+            'player_score_4': _s['playerScore4'],
+            'player_score_5': _s['playerScore5'],
+            'player_score_6': _s['playerScore6'],
+            'player_score_7': _s['playerScore7'],
+            'player_score_8': _s['playerScore8'],
+            'player_score_9': _s['playerScore9'],
+
+            'quadra_kills': _s['quadraKills'],
+            'sight_wards_bought_in_game': _s['sightWardsBoughtInGame'],
+
+            'stat_perk_0': _s.get('statPerk0', 0),
+            'stat_perk_1': _s.get('statPerk1', 0),
+            'stat_perk_2': _s.get('statPerk2', 0),
+
+            'time_ccing_others': _s['timeCCingOthers'],
+            'total_damage_dealt': _s['totalDamageDealt'],
+            'total_damage_dealt_to_champions': _s['totalDamageDealtToChampions'],
+            'total_damage_taken': _s['totalDamageTaken'],
+            'total_heal': _s['totalHeal'],
+            'total_minions_killed': _s['totalMinionsKilled'],
+            'total_player_score': _s['totalPlayerScore'],
+            'total_score_rank': _s['totalScoreRank'],
+            'total_time_crowd_control_dealt': _s['totalTimeCrowdControlDealt'],
+            'total_units_healed': _s['totalUnitsHealed'],
+            'triple_kills': _s['tripleKills'],
+            'true_damage_dealt': _s['trueDamageDealt'],
+            'true_damage_dealt_to_champions': _s['trueDamageDealtToChampions'],
+            'true_damage_taken': _s['trueDamageTaken'],
+            'turret_kills': _s['turretKills'],
+            'unreal_kills': _s['unrealKills'],
+            'vision_score': _s['visionScore'],
+            'vision_wards_bought_in_game': _s['visionWardsBoughtInGame'],
+            'wards_killed': _s.get('wardsKilled', 0),
+            'wards_placed': _s.get('wardsPlaced', 0),
+            'win': _s['win'],
+        }
 
         participant = {
             '_id': pi['participantId'],
@@ -205,7 +332,7 @@ def parse_match(data):
             'role': timeline.get('role', ''),
 
             'timelines': list(tls),
-            'stats': list(stats),
+            'stats': dict(stats),
         }
         participants.append(dict(participant))
     
@@ -270,13 +397,15 @@ def import_season_matches(season_id, account_id, region, **kwargs):
         size = 100
         while has_more:
             kwargs['beginIndex'] = index
+            print('getting list')
             r = api.match.filter(account_id, region=region, season=season_id, **kwargs)
             try:
                 matches = r.json()['matches']
             except Exception as error:
                 print(r.content)
                 print(r.headers)
-                raise error
+                r = api.match.filter(account_id, region=region, season=season_id, **kwargs)
+                matches = r.json()['matches']
             if len(matches) > 0:
                 for match in r.json()['matches']:
                     match_id = match['gameId']
@@ -286,8 +415,9 @@ def import_season_matches(season_id, account_id, region, **kwargs):
                         print(f'importing {match_id}')
                         try:
                             import_match(match_id, region)
-                        except Exception as error:
-                            time.sleep(5)
+                        except KeyError as error:
+                            print('Waiting...')
+                            time.sleep(10)
                             import_match(match_id, region)
                     else:
                         print(f'skipping {match_id}')
@@ -296,11 +426,13 @@ def import_season_matches(season_id, account_id, region, **kwargs):
             index += size
 
 
-def import_recent_matches(count, account_id, region, **kwargs):
+def import_recent_matches(start, end, account_id, region, **kwargs):
     """Import recent matches for an account_id.
 
     Parameters
     ----------
+    start : int
+    end : int
     season_id : ID
     account_id : ID
         the encrypted account ID
@@ -314,9 +446,8 @@ def import_recent_matches(count, account_id, region, **kwargs):
     has_more = True
     api = get_riot_api()
     if api:
-        index = 0
+        index = start
         size = 100
-        import_count = 0
         please_continue = True
         while has_more and please_continue:
             kwargs['beginIndex'] = index
@@ -327,7 +458,9 @@ def import_recent_matches(count, account_id, region, **kwargs):
             except Exception as error:
                 print(r.content)
                 print(r.headers)
-                raise error
+                time.sleep(10)
+                r = api.match.filter(account_id, region=region, **kwargs)
+                matches = r.json()['matches']
             if len(matches) > 0:
                 for match in r.json()['matches']:
                     match_id = match['gameId']
@@ -335,16 +468,79 @@ def import_recent_matches(count, account_id, region, **kwargs):
                     # if it doesn't exist, import it
                     if not query.exists():
                         print(f'importing {match_id}')
-                        try:
-                            import_match(match_id, region)
-                        except Exception as error:
-                            time.sleep(5)
-                            import_match(match_id, region)
+
+                        r = import_match(match_id, region)
+                        retries = 0
+                        while r == 'throttled' and retries < 10:
+                            time.sleep(10)
+                            r = import_match(match_id, region)
+                            retries += 1
+                        if r == 'throttled':
+                            raise Exception(f'Throttled while importing {match_id}')
+                        
                     else:
                         print(f'skipping {match_id}')
-                    import_count += 1
-                    if import_count >= count:
-                        please_continue = False
             else:
                 has_more = False
             index += size
+            if index >= end:
+                please_continue = False
+
+
+def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, recent=None, group_by='summoner_name'):
+    """
+
+    Parameters
+    ----------
+    summoner_id : int
+        The *internal* Summoner ID
+    team : bool
+        Only count players who were on the same team
+    season_id : int
+    queue_id : int
+    recent : int
+        count of most recent games to check
+
+    Returns
+    -------
+    query of counts
+
+    """
+    summoner = Summoner.objects.get(id=summoner_id)
+
+    p = Participant.objects.all()
+    if season_id is not None:
+        p = p.filter(match__season_id=season_id)
+    if queue_id is not None:
+        p = p.filter(match__queue_id=queue_id)
+
+    if recent is not None:
+        m = Match.objects.all()
+        if season_id is not None:
+            m = m.filter(season_id=season_id)
+        if queue_id is not None:
+            m = m.filter(queue_id=queue_id)
+        m_id_list = [x.id for x in m[:recent]]
+
+        p = p.filter(match__id__in=m_id_list)
+
+    # get all participants that were in a match with the given summoner
+    p = p.filter(match__participants__account_id=summoner.account_id)
+
+    # exclude the summoner
+    p = p.exclude(account_id=summoner.account_id)
+
+    # I could include and `if team` condition, but I am assuming the top
+    # values will be the same as the totals
+    if not team:
+        p = p.exclude(
+            team_id=Subquery(
+                Participant.objects.filter(match__participants__id=OuterRef('id'), account_id=summoner.account_id)
+                .values('team_id')[:1]
+            )
+        )
+
+    p = p.values(group_by).annotate(count=Count(group_by))
+    p = p.order_by('-count')
+
+    return p

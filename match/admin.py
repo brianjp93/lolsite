@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Match, Participant, Stat
+from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
 
 
@@ -15,8 +15,8 @@ class ParticipantAdmin(admin.ModelAdmin):
     raw_id_fields = ('match',)
 
 
-class StatAdmin(admin.ModelAdmin):
-    list_display = ('key', 'value_bool', 'value_int')
+class StatsAdmin(admin.ModelAdmin):
+    list_display = ('participant',)
     raw_id_fields = ('participant',)
 
 
@@ -39,7 +39,7 @@ class BanAdmin(admin.ModelAdmin):
 
 admin.site.register(Match, MatchAdmin)
 admin.site.register(Participant, ParticipantAdmin)
-admin.site.register(Stat, StatAdmin)
+admin.site.register(Stats, StatsAdmin)
 admin.site.register(Timeline, TimelineAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(Ban, BanAdmin)

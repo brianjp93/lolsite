@@ -1,5 +1,8 @@
 # data constants to add to DB
 
+TRUTHY = ['true', 'True', 'TRUE', True]
+FALSEY = ['false', 'False', 'FALSE', False]
+
 SEASONS = [
     {
         '_id': 0,
@@ -48,6 +51,14 @@ SEASONS = [
     {
         '_id': 11,
         'name': 'SEASON 2018',
+    },
+    {
+        '_id': 12,
+        'name': 'PRESEASON 2019',
+    },
+    {
+        '_id': 13,
+        'name': 'SEASON 2019',
     },
 ]
 

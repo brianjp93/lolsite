@@ -1,7 +1,10 @@
-from .models import Summoner
+from celery import task
+
+from .models import Summoner, NameChange
 from match.tasks import get_riot_api
 
 
+@task(name='player.tasks.import_summoner')
 def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=None):
     """Import a summoner by one a several identifiers.
 
@@ -45,6 +48,11 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         query = Summoner.objects.filter(region=region.lower(), account_id=data['accountId'])
         if query.exists():
             summoner_model = query.first()
+
+            if summoner_model.name != data['name']:
+                name_change = NameChange(summoner=summoner_model, old_name=summoner_model.name)
+                name_change.save()
+
             summoner_model.profile_icon_id = data['profileIconId']
             summoner_model.revision_date = data['revisionDate']
             summoner_model.name = data['name']

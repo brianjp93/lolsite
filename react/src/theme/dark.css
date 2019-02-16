@@ -4,6 +4,9 @@
     --c1: #c9d9f7;
     --gradient-main: linear-gradient(to bottom, #292E49, #536976);
     --gradient-nav: linear-gradient(to right, #212e3e 0%, #373e52 100%);
+    --card-background1: #43434e;
+    --card-color1: #cecece;
+    --sidenav-color1: white;
 }
 
 blockquote.dark {
@@ -12,14 +15,18 @@ blockquote.dark {
 }
 
 body.dark {
-    background: var(--gradient-main); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    
+    background: var(--gradient-main);
     color: var(--c1);
+}
+
+.card-panel.dark {
+    background: var(--card-background1);
+    color: var(--card-color1);
 }
 
 div.dark.background {
     height:100%;
-    background: var(--gradient-main); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--gradient-main);
     color: var(--c1);
 }
 
@@ -33,4 +40,12 @@ div.input-field.dark>div>input.select-dropdown {
 
 nav.dark {
     background-image: var(--gradient-nav);
+}
+
+ul.sidenav.dark {
+    background: var(--gradient-main);
+}
+
+.sidenav.dark li>a {
+    color: var(--sidenav-color1);
 }

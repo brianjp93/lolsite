@@ -4,24 +4,39 @@ import PropTypes from 'prop-types'
 
 
 class NavBar extends Component {
+    componentDidMount() {
+        window.$('.sidenav').sidenav()
+    }
     render() {
         return (
-            <nav className={`${this.props.store.state.theme}`}>
-                <div className="nav-wrapper">
-                    <Link
-                        to='/'
-                        className='left'
-                        style={{marginLeft:10, padding:'0px 15px'}}
-                    >
-                        Logo
-                    </Link>
-                    <ul className="left hide-on-med-and-down">
-                        <li>
-                            <Link to='/themes/'>Themes</Link>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <span>
+                <nav className={`${this.props.store.state.theme}`}>
+                    <div className="nav-wrapper">
+                        <Link
+                            to='/'
+                            className='left'
+                            style={{marginLeft:10, padding:'0px 15px'}}
+                        >
+                            Logo
+                        </Link>
+                        <a style={{cursor: 'pointer'}} data-target="mobile-navbar" className="sidenav-trigger">
+                            <i className="material-icons">menu</i>
+                        </a>
+                        <ul className="left hide-on-med-and-down">
+                            <li>
+                                <Link to='/themes/'>Themes</Link>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                {/* MOBILE BAR */}
+                <ul className={`sidenav ${this.props.store.state.theme}`} id="mobile-navbar">
+                    <li>
+                        <Link to='/themes/'>Themes</Link>
+                    </li>
+                </ul>
+            </span>
         )
     }
 }
