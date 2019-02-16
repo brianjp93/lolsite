@@ -1,5 +1,11 @@
 html {
-    height: 100%;
+    min-height: 100%;
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    background-repeat:no-repeat;
 }
 
 body {
@@ -12,6 +18,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   min-height: 100%;
+}
+
+.horizontal-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
 }
 
 code {

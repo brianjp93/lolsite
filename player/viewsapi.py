@@ -123,8 +123,16 @@ def get_summoner_page(request, format=None):
             pt.import_summoner.delay(region, name=name)
 
         if summoner:
-            summoner_ser = SummonerSerializer(summoner)
-            summoner_data = summoner_ser.data
+            # summoner_ser = SummonerSerializer(summoner)
+            summoner_data = {
+                '_id': summoner._id,
+                'id': summoner.id,
+                'account_id': summoner.account_id,
+                'name': summoner.name,
+                'simple_name': summoner.simple_name,
+                'profile_icon_id': summoner.profile_icon_id,
+                'summoner_level': summoner.summoner_level,
+            }
 
             query = ProfileIcon.objects.filter(_id=summoner.profile_icon_id)
             if query.exists():

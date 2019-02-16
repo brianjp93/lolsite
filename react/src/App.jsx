@@ -15,11 +15,30 @@ class App extends Component {
             language: 'en_US',
         }
     }
-    ComponentWillMount() {
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.theme !== this.state.theme) {
+            this.removeTheme(prevState.theme)
+            this.setTheme(this.state.theme)
+        }
+    }
+    componentDidMount() {
+        this.setTheme(this.state.theme)
+    }
+    componentWillUnmount() {
+    }
+    setTheme(theme) {
+        var elt = document.getElementsByTagName('html')[0]
+        elt.classList.add(theme)
+        elt.classList.add('background')
+    }
+    removeTheme(theme) {
+        var elt = document.getElementsByTagName('html')[0]
+        elt.classList.remove(theme)
+        elt.classList.remove('background')
     }
     render() {
         return (
-            <div className={`${this.state.theme} background`}>
+            <div id='background-div'>
                 <Routes store={this} />
             </div>
         );

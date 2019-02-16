@@ -9,6 +9,7 @@ class League:
 
     def __init__(self, base):
         self.base = base
+        self.version = 'v4'
 
     def challenger(self, queue, region=None):
         """Get the challenger league for a given queue

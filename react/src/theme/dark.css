@@ -24,8 +24,7 @@ body.dark {
     color: var(--card-color1);
 }
 
-div.dark.background {
-    height:100%;
+.dark.background {
     background: var(--gradient-main);
     color: var(--c1);
 }
