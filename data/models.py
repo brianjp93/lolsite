@@ -96,6 +96,11 @@ class ReforgedTree(models.Model):
     def __str__(self):
         return f'ReforgedTree(_id={self._id}, language="{self.language}", version="{self.version}")'
 
+    def image_url(self):
+        """Return image url.
+        """
+        return f'http://ddragon.leagueoflegends.com/cdn/img/{self.icon}'
+
 
 class ReforgedRune(models.Model):
     reforgedtree = models.ForeignKey('ReforgedTree', on_delete=models.CASCADE, related_name='reforgedrunes')
@@ -110,6 +115,11 @@ class ReforgedRune(models.Model):
 
     class Meta:
         unique_together = ('reforgedtree', '_id')
+
+    def image_url(self):
+        """Return image url.
+        """
+        return f'http://ddragon.leagueoflegends.com/cdn/img/{self.icon}'
 
 
 class Item(models.Model):
@@ -139,7 +149,7 @@ class Item(models.Model):
     def image_url(self):
         url = ''
         try:
-            url = self.image.image_url
+            url = self.image.image_url()
         except:
             pass
         return url
@@ -427,6 +437,14 @@ class ChampionSpell(models.Model):
         out = [x.value for x in query]
         return out
 
+    def image_url(self):
+        url = ''
+        try:
+            url = self.image.image_url()
+        except:
+            pass
+        return url
+
 
 class ChampionSpellImage(models.Model):
     spell = models.OneToOneField('ChampionSpell', on_delete=models.CASCADE, related_name='image')
@@ -493,6 +511,14 @@ class SummonerSpell(models.Model):
 
     def __str__(self):
         return f'SummonerSpell(_id="{self._id}", version="{self.version}", language="{self.language}")'
+
+    def image_url(self):
+        url = ''
+        try:
+            url = self.image.image_url()
+        except:
+            pass
+        return url
 
 
 class SummonerSpellEffectBurn(models.Model):

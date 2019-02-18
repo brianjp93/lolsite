@@ -4,7 +4,7 @@
     --c1: #3c5857;
     --gradient-main: linear-gradient(to  top left, #f3ebd0 0%, #e0e1ff 99%, #e3eeff 100%);;
     --gradient-nav: linear-gradient(-20deg, #e8e6f4 0%, #343656 100%, #faaca8 100%);
-    --card-background1: white;
+    --card-background1: linear-gradient(to top right, #f3ebeb 0%, #e9f7fb 99%, #e3eeff 100%);
     --card-color1: #674757;
     --sidenav-color1: #615773;
 }

@@ -1,5 +1,10 @@
 from django.db import models
 from django.utils import timezone
+
+from data.models import ReforgedTree, ReforgedRune
+from data.models import Item
+from data.models import SummonerSpell
+
 import pytz
 
 
@@ -57,24 +62,25 @@ class Participant(models.Model):
     def __str__(self):
         return f'Participant(summoner_name={self.summoner_name}, match={self.match._id})'
 
+    def spell_1_image_url(self):
+        """
+        """
+        url = ''
+        query = SummonerSpell.objects.filter(key=self.spell_1_id)
+        if query.exists():
+            spell = query.first()
+            url = spell.image_url()
+        return url
 
-# class Stat(models.Model):
-#     type_choices = (
-#         ('bool', 'bool'),
-#         ('int', 'int'),
-#         )
-#     participant = models.ForeignKey('Participant', on_delete=models.CASCADE, related_name='stats')
-#     key = models.CharField(max_length=128, default='', blank=True)
-#     value_type = models.CharField(choices=type_choices, max_length=16, default='int', blank=True)
-#     value_bool = models.BooleanField(default=False, blank=True)
-#     value_int = models.BigIntegerField(default=0, blank=True)
-
-#     class Meta:
-#         unique_together = ('participant', 'key')
-
-
-#     def __str__(self):
-        # return f'Stat(participant={self.participant.summoner_name}, match={self.participant.match._id}, key={self.key})'
+    def spell_2_image_url(self):
+        """
+        """
+        url = ''
+        query = SummonerSpell.objects.filter(key=self.spell_2_id)
+        if query.exists():
+            spell = query.first()
+            url = spell.image_url()
+        return url
 
 
 class Stats(models.Model):
@@ -197,6 +203,106 @@ class Stats(models.Model):
 
     def __str__(self):
         return f'Stats(participant={self.participant.summoner_name})'
+
+    def perk_primary_style_image_url(self):
+        """
+        """
+        url = ''
+        query = ReforgedTree.objects.filter(_id=self.perk_primary_style)
+        if query.exists():
+            perk = query.first()
+            url = perk.image_url()
+        return url
+
+    def perk_sub_style_image_url(self):
+        """
+        """
+        url = ''
+        query = ReforgedTree.objects.filter(_id=self.perk_sub_style)
+        if query.exists():
+            perk = query.first()
+            url = perk.image_url()
+        return url
+
+    def perk_0_image_url(self):
+        """
+        """
+        url = ''
+        query = ReforgedRune.objects.filter(_id=self.perk_0)
+        if query.exists():
+            perk = query.first()
+            url = perk.image_url()
+        return url
+
+    def item_0_image_url(self):
+        """
+        """
+        url = ''
+        query = Item.objects.filter(_id=self.item_0)
+        if query.exists():
+            item = query.first()
+            url = item.image_url()
+        return url
+
+    def item_1_image_url(self):
+        """
+        """
+        url = ''
+        query = Item.objects.filter(_id=self.item_1)
+        if query.exists():
+            item = query.first()
+            url = item.image_url()
+        return url
+
+    def item_2_image_url(self):
+        """
+        """
+        url = ''
+        query = Item.objects.filter(_id=self.item_2)
+        if query.exists():
+            item = query.first()
+            url = item.image_url()
+        return url
+
+    def item_3_image_url(self):
+        """
+        """
+        url = ''
+        query = Item.objects.filter(_id=self.item_3)
+        if query.exists():
+            item = query.first()
+            url = item.image_url()
+        return url
+
+    def item_4_image_url(self):
+        """
+        """
+        url = ''
+        query = Item.objects.filter(_id=self.item_4)
+        if query.exists():
+            item = query.first()
+            url = item.image_url()
+        return url
+
+    def item_5_image_url(self):
+        """
+        """
+        url = ''
+        query = Item.objects.filter(_id=self.item_5)
+        if query.exists():
+            item = query.first()
+            url = item.image_url()
+        return url
+
+    def item_6_image_url(self):
+        """
+        """
+        url = ''
+        query = Item.objects.filter(_id=self.item_6)
+        if query.exists():
+            item = query.first()
+            url = item.image_url()
+        return url
 
 
 class Timeline(models.Model):
