@@ -374,8 +374,8 @@ class Summoner extends Component {
                                             <div
                                                 style={{
                                                     height:4,
-                                                    borderTop: `4px solid ${this.topBarColor(match)}`,
-                                                    borderRadius: '2px'
+                                                    background: `${this.topBarColor(match)}`,
+                                                    borderRadius: 2,
                                                 }} >
                                             </div>
                                             <div className="row">
@@ -387,9 +387,9 @@ class Summoner extends Component {
                                                     <div
                                                         style={{
                                                             marginRight: 5,
-                                                            height:4,
-                                                            borderTop: `3px solid ${this.getTeam100Color(match)}`,
-                                                            borderRadius: '1px'
+                                                            height:3,
+                                                            background: `${this.getTeam100Color(match)}`,
+                                                            borderRadius: '2px'
                                                         }} >
                                                     </div>
                                                 </div>
@@ -401,9 +401,9 @@ class Summoner extends Component {
                                                     <div
                                                         style={{
                                                             marginLeft: 5,
-                                                            height:4,
-                                                            borderTop: `3px solid ${this.getTeam200Color(match)}`,
-                                                            borderRadius: '1px'
+                                                            height:3,
+                                                            background: `${this.getTeam200Color(match)}`,
+                                                            borderRadius: '2px'
                                                         }} >
                                                     </div>
                                                 </div>

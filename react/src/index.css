@@ -30,3 +30,9 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
       monospace;
 }
+
+hr {
+    border-style: none;
+    height: 1px;
+    background: white;
+}
