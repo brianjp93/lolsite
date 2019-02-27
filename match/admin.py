@@ -7,17 +7,19 @@ from .models import Timeline, Team, Ban
 class MatchAdmin(admin.ModelAdmin):
     list_display = ('_id', 'get_creation', 'queue_id', 'game_version')
     list_filter = ('platform_id', 'major')
-    search_fields = ('participants__summoner_name', 'participants__summoner_id')
+    search_fields = ('participants__summoner_name', 'participants__summoner_id', 'participants__account_id', '_id')
 
 
 class ParticipantAdmin(admin.ModelAdmin):
     list_display = ('_id', 'summoner_name', 'champion_id', 'team_id')
     raw_id_fields = ('match',)
+    search_fields = ('summoner_name', 'match___id')
 
 
 class StatsAdmin(admin.ModelAdmin):
     list_display = ('participant',)
     raw_id_fields = ('participant',)
+    search_fields = ('participant__match___id', 'participant__summoner_name')
 
 
 class TimelineAdmin(admin.ModelAdmin):

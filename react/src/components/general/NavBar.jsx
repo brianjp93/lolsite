@@ -19,7 +19,12 @@ class NavBar extends Component {
                         >
                             Logo
                         </Link>
-                        <a style={{cursor: 'pointer'}} data-target="mobile-navbar" className="sidenav-trigger">
+                        {
+                            // eslint-disable-next-line
+                        }<a
+                            href='#' style={{cursor: 'pointer'}}
+                            data-target="mobile-navbar"
+                            className="sidenav-trigger" >
                             <i className="material-icons">menu</i>
                         </a>
                         <ul className="left hide-on-med-and-down">

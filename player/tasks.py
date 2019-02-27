@@ -4,6 +4,21 @@ from .models import Summoner, NameChange
 from match.tasks import get_riot_api
 
 
+def simplify(name):
+    """Return the lowercase, no space version of a string.
+
+    Parameters
+    ----------
+    name : str
+
+    Returns
+    -------
+    str
+
+    """
+    return ''.join(name.split()).lower()
+
+
 @task(name='player.tasks.import_summoner')
 def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=None):
     """Import a summoner by one a several identifiers.
@@ -34,7 +49,7 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
             kwargs['encrypted_puuid'] = puuid
         r = api.summoner.get(region=region, **kwargs)
 
-        if r.status_code >= 400 or r.status_code < 500:
+        if r.status_code >= 400 and r.status_code < 500:
             raise Exception(f'The request returned a {r.status_code} status.')
 
         data = r.json()

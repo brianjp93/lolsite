@@ -7,6 +7,10 @@
     --card-background1: linear-gradient(to top right, #f3ebeb 0%, #e9f7fb 99%, #e3eeff 100%);
     --card-color1: #674757;
     --sidenav-color1: #615773;
+    --highlight1: #38a4e4;
+    --highlight2: #51af6f;
+    --highlight3: #ff7474;
+    --highlight4: #27a28e;
 }
 
 blockquote.light {
@@ -47,4 +51,20 @@ ul.sidenav.light {
 
 .sidenav.light li>a {
     color: var(--sidenav-color1);
+}
+
+.light.highlight1 {
+    color: var(--highlight1);
+}
+
+.light.highlight2 {
+    color: var(--highlight2);
+}
+
+.light.highlight3 {
+    color: var(--highlight3);
+}
+
+.light.highlight4 {
+    color: var(--highlight4);
 }

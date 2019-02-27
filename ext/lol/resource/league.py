@@ -2,10 +2,10 @@ import requests
 
 
 class League:
-    '''
+    """
     LEAGUE-V4
     https://developer.riotgames.com/api-methods/#league-v4
-    '''
+    """
 
     def __init__(self, base):
         self.base = base

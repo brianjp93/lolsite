@@ -1,8 +1,15 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import NavBar from '../general/NavBar'
+import numeral from 'numeral'
+import moment from 'moment'
 
 import api from '../../api/api'
+
+
+function formatDatetime(epoch) {
+    return moment(epoch).format('MMM DD h:mm a')
+}
 
 
 class Summoner extends Component {
@@ -13,12 +20,18 @@ class Summoner extends Component {
             summoner: {},
             icon: {},
             matches: [],
+            match_ids: new Set(),
+            count: 10,
+            next_page: 2,
 
             is_requesting_page: false,
+            is_requesting_next_page: false,
 
             victory_color: '#68b568',
             loss_color: '#c33c3c',
             neutral_color: 'lightblue',
+
+            positions: [],
         }
 
         this.getSummonerPage = this.getSummonerPage.bind(this)
@@ -30,9 +43,14 @@ class Summoner extends Component {
         this.rightTeamChampion = this.rightTeamChampion.bind(this)
         this.getTeam100Color = this.getTeam100Color.bind(this)
         this.getTeam200Color = this.getTeam200Color.bind(this)
+        this.getTimeline = this.getTimeline.bind(this)
+        this.getNextPage = this.getNextPage.bind(this)
+        this.setQueueDict = this.setQueueDict.bind(this)
+        this.getPositions = this.getPositions.bind(this)
     }
     componentDidMount() {
-        this.getSummonerPage()
+        this.getSummonerPage(this.getPositions)
+        this.setQueueDict()
     }
     getSummonerPage(callback) {
         this.setState({is_requesting_page: true})
@@ -40,6 +58,8 @@ class Summoner extends Component {
             summoner_name: this.props.route.match.params.summoner_name,
             region: this.props.region,
             update: true,
+            count: this.state.count,
+            trigger_import: true,
         }
         api.player.getSummonerPage(data)
             .then((response) => {
@@ -48,6 +68,7 @@ class Summoner extends Component {
                     region: this.props.region,
                     icon: response.data.profile_icon,
                     matches: response.data.matches,
+                    match_ids: new Set(response.data.matches.map(x => x.id)),
                     is_requesting_page: false,
                 }, () => {
                     if (callback !== undefined) {
@@ -59,6 +80,59 @@ class Summoner extends Component {
                 window.alert('No summoner with that name was found.')
                 this.setState({is_requesting_page: false})
             })
+    }
+    getNextPage() {
+        this.setState({is_requesting_next_page: true})
+        var data = {
+            summoner_name: this.props.route.match.params.summoner_name,
+            region: this.props.region,
+            update: false,
+            count: this.state.count,
+            page: this.state.next_page,
+            trigger_import: true,
+            after_index: this.state.matches.length,
+        }
+        api.player.getSummonerPage(data)
+            .then((response) => {
+                var new_matches = []
+                var new_match_ids = this.state.match_ids
+                for (var m of response.data.matches) {
+                    if (new_match_ids.has(m.id)) {
+                        // ignore
+                    }
+                    else {
+                        new_match_ids.add(m.id)
+                        new_matches.push(m)
+                    }
+                }
+                this.setState({
+                    summoner: response.data.summoner,
+                    region: this.props.region,
+                    icon: response.data.profile_icon,
+                    matches: [...this.state.matches, ...new_matches],
+                    next_page: this.state.next_page + 1,
+                    is_requesting_next_page: false,
+                })
+            })
+    }
+    getPositions() {
+        var data = {
+            summoner_id: this.state.summoner._id,
+            region: this.props.region,
+        }
+        api.player.getPositions(data)
+            .then(response => this.setState({positions: response.data.data}))
+            .catch(error => {})
+    }
+    setQueueDict() {
+        var queue_elt = document.getElementById('queues')
+        var queues = JSON.parse(queue_elt.innerHTML)
+        var qdict = {}
+        for (var q of queues) {
+            q.description = q.description.replace('games', '').trim()
+            qdict[q._id] = q
+        }
+        this.setState({queues: qdict})
     }
     getMyPart(match) {
         // get my participant
@@ -92,6 +166,13 @@ class Summoner extends Component {
             }
         }
         return false
+    }
+    getTimeline(match) {
+        var data = {match_id: match._id, region: this.props.region}
+        api.match.timeline(data)
+            .then((response) => {
+                console.log(response)
+            })
     }
     topBarColor(match) {
         if (this.isVictory(match)) {
@@ -213,6 +294,40 @@ class Summoner extends Component {
                 src={image_url} alt=""/>
         )
     }
+    kda(part) {
+        var k = part.stats.kills
+        var a = part.stats.assists
+        var d = part.stats.deaths
+        if (d < 1) {
+            d = 1
+        }
+        var kda = (k + a) / d
+        kda = Math.round(kda * 100) / 100
+        return kda
+    }
+    matchHighlightColor(match) {
+        var out = ''
+        // ranked 5v5 solo
+        if (match.queue_id === 420) {
+            out = 'highlight1'
+        }
+        // norms draft
+        else if (match.queue_id === 400) {
+            out = ''
+        }
+        // ranked 5v5 flex
+        else if (match.queue_id === 440) {
+            out = 'highlight2'
+        }
+        // aram
+        else if ([100, 450].indexOf(match.queue_id) >= 0) {
+            out = 'highlight3'
+        }
+        else if ([900, 1010].indexOf(match.queue_id) >= 0) {
+            out = 'highlight4'
+        }
+        return out
+    }
     render() {
         return (
             <div>
@@ -232,9 +347,9 @@ class Summoner extends Component {
                 }
                 {!this.state.is_requesting_page &&
                     <span>
-                        <div style={{width:450, marginLeft:10}}>
+                        <div style={{width:400, marginLeft:10}}>
                             {this.state.summoner.name !== undefined &&
-                                <SummonerCard icon={this.state.icon} summoner={this.state.summoner} store={this.props.store} pageStore={this} />
+                                <SummonerCard positions={this.state.positions} icon={this.state.icon} summoner={this.state.summoner} store={this.props.store} pageStore={this} />
                             }
                         </div>
 
@@ -247,7 +362,14 @@ class Summoner extends Component {
                                     return (
                                         <div
                                             key={`${key}-${match._id}`}
-                                            style={{width:300, height:500, display: 'inline-block', margin: '0px 10px 25px 10px', paddingTop:15}}
+                                            style={{
+                                                width:300,
+                                                height:500,
+                                                display:'inline-block',
+                                                margin:'0px 10px 25px 10px',
+                                                paddingTop:15,
+                                                position:'relative',
+                                            }}
                                             className={`card-panel ${this.props.store.state.theme}`}>
                                             <div
                                                 style={{
@@ -337,15 +459,75 @@ class Summoner extends Component {
                                                     </div>
                                                 </span>
 
-                                                <span style={{display: 'inline-block', verticalAlign:'top'}}>
+                                                <div
+                                                    style={{
+                                                        display: 'inline-block',
+                                                        verticalAlign:'top',
+                                                        width: 90,
+                                                        textAlign: 'center',
+                                                    }}>
                                                     <span style={{verticalAlign:'top'}}>
-                                                        {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
+                                                        <span>
+                                                            {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
+                                                        </span>
+                                                        <br/>
+                                                        <span>
+                                                            {numeral(this.kda(mypart)).format('0.00')} kda
+                                                        </span>
                                                     </span>
-                                                </span>
+
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div>perk_0_var_1 : {mypart.stats.perk_0_var_1}</div>
+                                                <div>perk_0_var_2 : {mypart.stats.perk_0_var_2}</div>
+                                                <div>perk_0_var_3 : {mypart.stats.perk_0_var_3}</div>
+                                            </div>
+
+                                            {/* match card footer */}
+                                            <div style={{position:'absolute', bottom:5, left:0, right:0}}>
+                                                <div style={{float:'left', paddingLeft:10}}>
+                                                    <small>
+                                                        {`${Math.floor(match.game_duration / 60)}m ${match.game_duration % 60}s`}
+                                                    </small>
+                                                    <br/>
+                                                    <small>
+                                                        {formatDatetime(match.game_creation)}
+                                                    </small>
+                                                </div>
+
+                                                <div style={{position:'absolute', bottom:0, right:0, paddingRight:10}}>
+                                                    <small className={`${this.props.store.state.theme} ${this.matchHighlightColor(match)}`}>
+                                                        {this.state.queues[match.queue_id].description}
+                                                    </small>
+                                                </div>
                                             </div>
                                         </div>
                                     )
                                 })}
+
+                                <div
+                                    style={{
+                                        width:100, height:500,
+                                        display: 'inline-block',
+                                        margin: '0px 10px 25px 10px',
+                                        paddingTop:15,
+                                        verticalAlign: 'top',
+                                        cursor: 'pointer',
+                                        position: 'relative',
+                                    }}
+                                    onClick={this.getNextPage}
+                                    className={`card-panel ${this.props.store.state.theme}`}>
+                                    <div style={{height: '100%', paddingTop: 100, textAlign: 'center'}}>
+                                        {this.state.is_requesting_next_page &&
+                                            <span>Loading...</span>
+                                        }
+                                        {!this.state.is_requesting_next_page &&
+                                            <span style={{fontWeight:'bold', textDecoration:'underline'}}>More</span>
+                                        }
+                                    </div>
+                                </div>
 
                                 <div style={{display: 'inline-block', width: 200}}></div>
                             </div>
@@ -363,11 +545,123 @@ class SummonerCard extends Component {
         super(props)
 
         this.state = {}
+
+        this.positionalRankImage = this.positionalRankImage.bind(this)
+        this.generalRankImage = this.generalRankImage.bind(this)
+        this.soloPositions = this.soloPositions.bind(this)
+        this.miniSeries = this.miniSeries.bind(this)
+    }
+    positionalRankImage(position, tier) {
+        position = position.toLowerCase()
+        tier = tier.toLowerCase()
+        
+        var pos_convert = {
+            'top': 'Top',
+            'bottom': 'Bot',
+            'middle': 'Mid',
+            'jungle': 'Jungle',
+            'utility': 'Support',
+            'support': 'Support',
+        }
+        position = pos_convert[position]
+
+        var tier_convert = {
+            'iron': 'Iron',
+            'bronze': 'Bronze',
+            'silver': 'Silver',
+            'gold': 'Gold',
+            'platinum': 'Plat',
+            'diamond': 'Diamond',
+            'master': 'Master',
+            'grandmaster': 'Grandmaster',
+            'challenger': 'Challenger',
+        }
+        tier = tier_convert[tier]
+
+        return `${this.props.store.state.static}ranked-emblems/positions/Position_${tier}-${position}.png`
+    }
+    generalRankImage(tier) {
+        tier = tier.toLowerCase()
+        var tier_convert = {
+            'iron': 'Iron',
+            'bronze': 'Bronze',
+            'silver': 'Silver',
+            'gold': 'Gold',
+            'platinum': 'Plat',
+            'diamond': 'Diamond',
+            'master': 'Master',
+            'grandmaster': 'Grandmaster',
+            'challenger': 'Challenger',
+        }
+        tier = tier_convert[tier]
+
+        return `${this.props.store.state.static}ranked-emblems/emblems/Emblem_${tier}.png`
+    }
+    soloPositions() {
+        var pos = []
+        for (var p of this.props.positions) {
+            if (p.position !== 'NONE') {
+                pos.push(p)
+            }
+        }
+        return pos
+    }
+    miniSeries(progress) {
+        var letters = []
+        for (var l of progress) {
+            letters.push(l)
+        }
+        return (
+            letters.map((letter, key) => {
+                var shared_styles = {
+                    margin:'0 2px',
+                    display: 'inline-block',
+                    height:14, width:14,
+                    borderRadius:7,
+                    borderWidth:1,
+                    borderStyle:'solid',
+                    borderColor:'grey',
+                }
+                if (letter === 'W') {
+                    return (
+                        <div
+                            key={key}
+                            style={{
+                                ...shared_styles,
+                                background: this.props.pageStore.state.victory_color,
+                            }}>
+                        </div>
+                    )
+                }
+                else if (letter === 'L') {
+                    return (
+                        <div
+                            key={key}
+                            style={{
+                                ...shared_styles,
+                                background: this.props.pageStore.state.loss_color,
+                            }}>
+                        </div>
+                    )
+                }
+                else {
+                    return (
+                        <div
+                            key={key}
+                            style={{
+                                ...shared_styles,
+                                background: 'grey',
+                            }}>
+                        </div>
+                    )
+                }
+            })
+        )
     }
     render() {
         return (
             <span>
-                <div className={`card-panel ${this.props.store.state.theme}`}>
+                <div style={{position:'relative', padding:18}} className={`card-panel ${this.props.store.state.theme}`}>
                     {this.props.icon.image_url !== undefined &&
                         <img
                             style={{
@@ -382,7 +676,7 @@ class SummonerCard extends Component {
                     <div
                         style={{
                             display: 'inline-block',
-                            width:350,
+                            width:300,
                             maxWidth:'87%',
                             textAlign: 'center',
                             verticalAlign: 'middle',
@@ -391,6 +685,100 @@ class SummonerCard extends Component {
                             fontWeight: 'bold',
                         }}>
                         {this.props.summoner.name}
+                    </div>
+
+                    {this.soloPositions().length > 0 &&
+                        <hr/>
+                    }
+
+                    <div>
+                        {this.props.positions.map(pos => {
+                            if (pos.position !== 'NONE') {
+                                return (
+                                    <div key={`${pos.position}-${this.props.summoner._id}`}>
+                                        <div>
+                                            <div style={{display: 'inline-block', width:50}}>
+                                                <img
+                                                    src={this.positionalRankImage(pos.position, pos.tier)}
+                                                    style={{height:40}}
+                                                    alt=""/>
+                                            </div>
+                                            <div style={{display: 'inline-block', lineHeight:1, verticalAlign:'super'}}>
+                                                <span>
+                                                    {pos.tier} {pos.rank}
+                                                </span>
+                                                <br/>
+                                                <small>
+                                                    {pos.wins} wins / {pos.losses} losses
+                                                </small>
+                                            </div>
+                                            <div style={{
+                                                display: 'inline-block',
+                                                position:'absolute',
+                                                right:18,
+                                                }}>
+                                                <span style={{
+                                                    background: 'gray',
+                                                    borderRadius: 5,
+                                                    padding: '0 5px'}}>
+                                                    {pos.leaguePoints} LP
+                                                </span>
+                                                {pos.miniSeries !== undefined &&
+                                                    <div>
+                                                        {this.miniSeries(pos.miniSeries.progress)}
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            }
+                            return null
+                        })}
+                        {this.props.positions.map(pos => {
+                            if (pos.position === 'NONE') {
+                                return (
+                                    <div key={`${pos.position}-${this.props.summoner._id}`}>
+                                        <hr/>
+                                        <div>
+                                            <div style={{display: 'inline-block', width:50}}>
+                                                <img
+                                                    src={this.generalRankImage(pos.tier)}
+                                                    style={{height:40}}
+                                                    alt=""/>
+                                            </div>
+                                            <div style={{display: 'inline-block', lineHeight:1, verticalAlign:'super'}}>
+                                                <span>
+                                                    {pos.tier} {pos.rank}
+                                                </span>
+                                                <br/>
+                                                <small>
+                                                    {pos.wins} wins / {pos.losses} losses
+                                                </small>
+                                            </div>
+                                            <div style={{
+                                                display: 'inline-block',
+                                                position:'absolute',
+                                                right:18,
+                                                }}>
+                                                <span style={{
+                                                    background: 'gray',
+                                                    borderRadius: 5,
+                                                    padding: '0 5px'}}>
+                                                    {pos.leaguePoints} LP
+                                                </span>
+                                                {pos.miniSeries !== undefined &&
+                                                    <div>
+                                                        {this.miniSeries(pos.miniSeries.progress)}
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            }
+                            return null
+                        })}
                     </div>
                 </div>
             </span>

@@ -62,75 +62,82 @@ def import_match(match_id, region, refresh=False):
         if r.status_code == 429:
             return 'throttled'
         
-        parsed = parse_match(match)
+        import_match_from_data(match, refresh=refresh)
         
-        match_data = parsed.pop('match')
-        match_model = Match(**match_data)
-        try:
+
+
+def import_match_from_data(data, refresh=False):
+    """Import a match given the riot data response json.
+    """
+    parsed = parse_match(data)
+    
+    match_data = parsed.pop('match')
+    match_model = Match(**match_data)
+    try:
+        match_model.save()
+    except IntegrityError as error:
+        if refresh:
+            Match.objects.get(_id=match_data['_id']).delete()
             match_model.save()
+        else:
+            raise error
+
+    participants_data = parsed.pop('participants')
+    for _p_data in participants_data:
+        timelines_data = _p_data.pop('timelines')
+        stats_data = _p_data.pop('stats')
+
+        _p_data['match'] = match_model
+
+        # PARTICIPANT
+        participant_model = Participant(**_p_data)
+        try:
+            participant_model.save()
+        except Exception as error:
+            match_model.delete()
+            raise error
+
+        # TIMELINES
+        for _t_data in timelines_data:
+            _t_data['participant'] = participant_model
+            timeline_model = Timeline(**_t_data)
+            try:
+                timeline_model.save()
+            except Exception as error:
+                match_model.delete()
+                raise error
+
+        # STATS
+        stats_data['participant'] = participant_model
+        stats_model = Stats(**stats_data)
+        try:
+            stats_model.save()
         except IntegrityError as error:
-            if refresh:
-                Match.objects.get(_id=match_data['_id']).delete()
-                match_model.save()
-            else:
-                raise error
+            match_model.delete()
+            raise error
 
-        participants_data = parsed.pop('participants')
-        for _p_data in participants_data:
-            timelines_data = _p_data.pop('timelines')
-            stats_data = _p_data.pop('stats')
+    # TEAMS
+    teams = parsed.pop('teams')
+    for _t_data in teams:
+        _t_data['match'] = match_model
+        bans = _t_data.pop('bans')
 
-            _p_data['match'] = match_model
+        team_model = Team(**_t_data)
+        try:
+            team_model.save()
+        except Exception as error:
+            team_model.delete()
+            raise error
 
-            # PARTICIPANT
-            participant_model = Participant(**_p_data)
+        # BANS
+        for _ban_data in bans:
+            _ban_data['team'] = team_model
+            ban_model = Ban(**_ban_data)
             try:
-                participant_model.save()
+                ban_model.save()
             except Exception as error:
-                match_model.delete()
+                ban_model.delete()
                 raise error
-
-            # TIMELINES
-            for _t_data in timelines_data:
-                _t_data['participant'] = participant_model
-                timeline_model = Timeline(**_t_data)
-                try:
-                    timeline_model.save()
-                except Exception as error:
-                    match_model.delete()
-                    raise error
-
-            # STATS
-            stats_data['participant'] = participant_model
-            stats_model = Stats(**stats_data)
-            try:
-                stats_model.save()
-            except IntegrityError as error:
-                match_model.delete()
-                raise error
-
-        # TEAMS
-        teams = parsed.pop('teams')
-        for _t_data in teams:
-            _t_data['match'] = match_model
-            bans = _t_data.pop('bans')
-
-            team_model = Team(**_t_data)
-            try:
-                team_model.save()
-            except Exception as error:
-                team_model.delete()
-                raise error
-
-            # BANS
-            for _ban_data in bans:
-                _ban_data['team'] = team_model
-                ban_model = Ban(**_ban_data)
-                try:
-                    ban_model.save()
-                except Exception as error:
-                    ban_model.delete()
-                    raise error
 
 
 def parse_match(data):
@@ -212,7 +219,7 @@ def parse_match(data):
 
             'gold_earned': _s['goldEarned'],
             'gold_spent': _s['goldSpent'],
-            'inhibitor_kills': _s['inhibitorKills'],
+            'inhibitor_kills': _s.get('inhibitorKills', 0),
             'item_0': _s['item0'],
             'item_1': _s['item1'],
             'item_2': _s['item2'],
@@ -304,7 +311,7 @@ def parse_match(data):
             'true_damage_dealt': _s['trueDamageDealt'],
             'true_damage_dealt_to_champions': _s['trueDamageDealtToChampions'],
             'true_damage_taken': _s['trueDamageTaken'],
-            'turret_kills': _s['turretKills'],
+            'turret_kills': _s.get('turretKills', 0),
             'unreal_kills': _s['unrealKills'],
             'vision_score': _s['visionScore'],
             'vision_wards_bought_in_game': _s['visionWardsBoughtInGame'],
@@ -437,6 +444,8 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
     account_id : ID
         the encrypted account ID
     queue : int
+    beginTime : Epoch in ms
+    endTime : Epoch in ms
 
     Returns
     -------
@@ -451,7 +460,11 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
         please_continue = True
         while has_more and please_continue:
             kwargs['beginIndex'] = index
-            kwargs['endIndex'] = index + size
+            end_index = index + size
+            if end_index > end:
+                end_index = end
+            kwargs['endIndex'] = end_index
+            print(kwargs)
             r = api.match.filter(account_id, region=region, **kwargs)
             try:
                 matches = r.json()['matches']
@@ -520,6 +533,7 @@ def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, r
             m = m.filter(season_id=season_id)
         if queue_id is not None:
             m = m.filter(queue_id=queue_id)
+        m = m.order_by('-game_creation')
         m_id_list = [x.id for x in m[:recent]]
 
         p = p.filter(match__id__in=m_id_list)

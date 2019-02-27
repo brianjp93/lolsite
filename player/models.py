@@ -13,6 +13,7 @@ class Summoner(models.Model):
     revision_date = models.BigIntegerField(default=0, db_index=True)
     summoner_level = models.IntegerField(default=0, db_index=True)
 
+    last_summoner_page_import = models.DateTimeField(null=True)
     created_date = models.DateTimeField(default=timezone.now)
 
     class Meta:

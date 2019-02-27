@@ -35,7 +35,7 @@ else:
 
 
 if DEV:
-    ALLOWED_HOSTS = ['localhost',]
+    ALLOWED_HOSTS = ['localhost', '192.168.0.24']
 else:
     ALLOWED_HOSTS = []
 
@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'match',
     'player',
     'fun',
+    'pro',
 ]
 
 MIDDLEWARE = [

@@ -7,6 +7,10 @@
     --card-background1: #43434e;
     --card-color1: #cecece;
     --sidenav-color1: white;
+    --highlight1: #38a4e4;
+    --highlight2: #51af6f;
+    --highlight3: #ff7474;
+    --highlight4: #27a28e;
 }
 
 blockquote.dark {
@@ -47,4 +51,20 @@ ul.sidenav.dark {
 
 .sidenav.dark li>a {
     color: var(--sidenav-color1);
+}
+
+.dark.highlight1 {
+    color: var(--highlight1);
+}
+
+.dark.highlight2 {
+    color: var(--highlight2);
+}
+
+.dark.highlight3 {
+    color: var(--highlight3);
+}
+
+.dark.highlight4 {
+    color: var(--highlight4);
 }

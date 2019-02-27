@@ -23,6 +23,12 @@ class App extends Component {
     }
     componentDidMount() {
         this.setTheme(this.state.theme)
+
+        var queue_elt = document.getElementById('queues')
+        this.setState({queues: JSON.parse(queue_elt.innerHTML)})
+
+        var static_base = document.getElementById('static-base')
+        this.setState({static: static_base.innerHTML.trim()})
     }
     componentWillUnmount() {
     }

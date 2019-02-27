@@ -1,4 +1,14 @@
 {% extends 'layout/base.html' %}
+{% load staticfiles %}
+
+{% block header %}
+<script id='queues' type='application/json'>
+    {{ queues|safe }}
+</script>
+<script id='static-base' type='text'>
+    {% static "" %}
+</script>
+{% endblock header %}
 
 {% block body %}
     <div

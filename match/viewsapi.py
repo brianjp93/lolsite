@@ -1,38 +1,39 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
+from match.tasks import get_riot_api
+
 from .models import Match
 from .serializers import FullMatchSerializer
 
 
 @api_view(['POST'])
-def get_full_match(request, format=None):
-    """Get match, including all related models.
+def get_match_timeline(request, format=None):
+    """Gets match timeline from Riot's API.
+
+    This is a tunnel.
 
     POST Parameters
     ---------------
-    match_id : str
-    
+    match_id : ID
+    region : str
+
     Returns
     -------
-    JSON Match Data
+    JSON Timeline Data
 
     """
+    required = ['match_id', 'region']
     data = {}
     status_code = 200
-
-    if request.method == 'POST':
+    api = get_riot_api()
+    if api:
         match_id = request.data.get('match_id', None)
-        if match_id is not None:
-            query = Match.objects.filter(_id=match_id)
-            if query.exists():
-                match = query.first()
-                serializer = FullMatchSerializer(match)
-                data['data'] = serializer.data
-            else:
-                data['error'] = "match_id could not be found"
-                status_code = 404
-        else:
-            data['error'] = "Must provide a match_id"
-            status_code = 400
+        region = request.data.get('region', None)
+        if request.method == 'POST':
+            r = api.match.timeline(match_id, region=region)
+            if r.status_code == 429:
+                time.sleep(10)
+                r = api.match.timeline(match_id, region=region)
+            data = {'data': r.json()}
     return Response(data, status=status_code)

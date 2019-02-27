@@ -16,8 +16,14 @@ function getSummonerPage(data) {
     return axios.post(url, data)
 }
 
+function getPositions(data) {
+    var url = `/api/${version}/player/positions/`
+    return axios.post(url, data)
+}
+
 
 export default {
     getSummoner,
     getSummonerPage,
+    getPositions,
 }
