@@ -11,6 +11,15 @@
     --highlight2: #51af6f;
     --highlight3: #ff7474;
     --highlight4: #27a28e;
+    --link-color: #88b5d7;
+}
+
+a.light {
+    color: var(--link-color);
+}
+
+a.light.silent {
+    color: var(--card-color1);
 }
 
 blockquote.light {

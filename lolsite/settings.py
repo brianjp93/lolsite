@@ -15,6 +15,19 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# try to get environment variables from AWS env bash script
+try:
+    with open(os.path.join(os.path.dirname(BASE_DIR), 'env'), 'rb') as env_file:
+        for line in env_file:
+            line = line.strip()
+            if line == '':
+                continue
+            line = line.split('export ')[1]
+            key = line.split('=')[0]
+            value = ''.join(line.split('=')[1:]).strip('"')
+            os.environ[key] = value
+except:
+    print('Unable to set environment variables through env bash script')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -24,6 +37,8 @@ SECRET_KEY = '6cs%&oj!lvxpvj44r63-#ie=-%er1hs@%sbt1k9=lf7-b_mlxv'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 env = os.environ
+
+ENVNAME = os.environ.get('ENVNAME', None)
 
 REACT_DEV = False
 if env.get('LOLSITE_HOST', None) == 'dev':
@@ -37,7 +52,7 @@ else:
 if DEV:
     ALLOWED_HOSTS = ['localhost', '192.168.0.24']
 else:
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = ['.elasticbeanstalk.com']
 
 GIT_BUILD = 0
 try:
@@ -116,7 +131,17 @@ if DEV:
         }
     }
 else:
-    pass
+    if ENVNAME in ['lolsite']:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ['LOLSITE_DB_NAME'],
+                'USER': os.environ['LOLSITE_DB_USER'],
+                'PASSWORD': os.environ['LOLSITE_DB_PASS'],
+                'HOST': os.environ['LOLSITE_DB_HOST'],
+                'PORT': os.environ['LOLSITE_DB_PORT'],
+            }
+        }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -151,6 +176,11 @@ USE_L10N = True
 USE_TZ = True
 
 
+# aws access keys
+AWS_ACCESS_KEY_ID = 'AKIAJADAEJNHT3SNA6XA'
+AWS_SECRET_ACCESS_KEY = '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'
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
@@ -162,5 +192,15 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'react/build/static'),
 ]
 
-# CELERY
-CELERY_BROKER_URL = 'redis://localhost'
+# CELERY SETTINGS
+if 'RDS_DB_NAME' in os.environ or ENVNAME in ['lolsite', 'lolsite-beat']:
+    BROKER_TRANSPORT_OPTIONS = {
+        'region': 'us-west-2'
+    }
+    BROKER_URL = 'sqs://{}:{}@'.format(urllib.quote(AWS_ACCESS_KEY_ID, safe=''), urllib.quote(AWS_SECRET_ACCESS_KEY, safe=''))
+else:
+    CELERY_BROKER_URL = 'redis://localhost'
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
