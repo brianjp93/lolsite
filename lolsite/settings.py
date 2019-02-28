@@ -178,8 +178,9 @@ USE_TZ = True
 
 
 # aws access keys
-AWS_ACCESS_KEY_ID = os.environ['AWS_KEY']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET']
+if ENVNAME in ['lolsite', 'lolsite-beat']:
+    AWS_ACCESS_KEY_ID = os.environ['AWS_KEY']
+    AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET']
 
 
 # Static files (CSS, JavaScript, Images)
