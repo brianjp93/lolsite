@@ -36,3 +36,18 @@ hr {
     height: 1px;
     background: white;
 }
+
+/* LOW PROFILE SCROLLBAR */
+.quiet-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: #F5F5F500;
+}
+.quiet-scroll::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: #2525257d;
+}
+.quiet-scroll::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background-color: #F5F5F500;
+}

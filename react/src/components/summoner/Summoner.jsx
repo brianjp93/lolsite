@@ -12,6 +12,32 @@ function formatDatetime(epoch) {
     return moment(epoch).format('MMM DD h:mm a')
 }
 
+function convertVerticalScroll(event)  {
+    var elt = event.currentTarget
+    var delta = (event.deltaX === 0 ? event.deltaY : event.deltaX)
+    
+    if (delta < 0) {
+        if (elt.scrollLeft === 0) {
+            elt.scrollLeft += delta
+            event.preventDefault()
+        }
+        else {
+            elt.scrollLeft += delta
+            event.preventDefault()
+        }
+    }
+    else {
+        if ((elt.scrollLeft + elt.clientWidth) === elt.scrollWidth) {
+            elt.scrollLeft += delta
+            event.preventDefault()
+        }
+        else {
+            elt.scrollLeft += delta
+            event.preventDefault()
+        }
+    }
+}
+
 
 class Summoner extends Component {
     constructor(props) {
@@ -409,7 +435,9 @@ class Summoner extends Component {
                         </div>
 
                         <div>
-                            <div className="horizontal-scroll">
+                            <div
+                                className="horizontal-scroll quiet-scroll"
+                                onWheel={convertVerticalScroll} >
                                 
                                 {/* MATCH CARD */}
                                 {this.state.matches.map((match, key) => {
@@ -422,7 +450,7 @@ class Summoner extends Component {
                                                 width:300,
                                                 height:500,
                                                 display:'inline-block',
-                                                margin:'0px 10px 25px 10px',
+                                                margin:'0px 10px 10px 10px',
                                                 paddingTop:15,
                                                 position:'relative',
                                                 verticalAlign: 'bottom'
@@ -569,7 +597,7 @@ class Summoner extends Component {
                                     style={{
                                         width:100, height:500,
                                         display: 'inline-block',
-                                        margin: '0px 10px 25px 10px',
+                                        margin: '0px 10px 10px 10px',
                                         paddingTop:15,
                                         verticalAlign: 'top',
                                         cursor: 'pointer',
@@ -909,7 +937,7 @@ class RecentlyPlayedWith extends Component {
                 </div>{' '}
                 <small>{this.props.matches.length} games</small>
                 <br/>
-                <div style={{overflowY: 'scroll', maxHeight:'85%'}}>
+                <div className='quiet-scroll' style={{overflowY: 'scroll', maxHeight:'85%'}}>
                     <table>
                         {this.sortPlayers().map(data => {
                             var td_style = {padding: '3px 5px'}
