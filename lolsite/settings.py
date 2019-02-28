@@ -135,12 +135,12 @@ else:
     if ENVNAME in ['lolsite']:
         DATABASES = {
             'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': os.environ['LOLSITE_DB_NAME'],
-                'USER': os.environ['LOLSITE_DB_USER'],
-                'PASSWORD': os.environ['LOLSITE_DB_PASS'],
-                'HOST': os.environ['LOLSITE_DB_HOST'],
-                'PORT': os.environ['LOLSITE_DB_PORT'],
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': os.environ['RDS_DB_NAME'],
+                'USER': os.environ['RDS_USERNAME'],
+                'PASSWORD': os.environ['RDS_PASSWORD'],
+                'HOST': os.environ['RDS_HOSTNAME'],
+                'PORT': os.environ['RDS_PORT'],
             }
         }
 
