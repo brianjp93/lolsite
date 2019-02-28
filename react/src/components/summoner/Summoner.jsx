@@ -14,10 +14,11 @@ function formatDatetime(epoch) {
 
 function convertVerticalScroll(event)  {
     var elt = event.currentTarget
-    var delta = (event.deltaX === 0 ? event.deltaY : event.deltaX)
+    var delta = (Math.abs(event.deltaX) < Math.abs(event.deltaY) ? event.deltaY : event.deltaX)
     
     if (delta < 0) {
         if (elt.scrollLeft === 0) {
+            // comment out to revert to vertical scroll when we hit the left edge
             elt.scrollLeft += delta
             event.preventDefault()
         }
@@ -28,6 +29,7 @@ function convertVerticalScroll(event)  {
     }
     else {
         if ((elt.scrollLeft + elt.clientWidth) === elt.scrollWidth) {
+            // comment out to revert to vertical scroll when we hit the right edge
             elt.scrollLeft += delta
             event.preventDefault()
         }
