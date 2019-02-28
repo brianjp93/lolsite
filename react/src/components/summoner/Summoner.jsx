@@ -414,6 +414,7 @@ class Summoner extends Component {
                                                 margin:'0px 10px 25px 10px',
                                                 paddingTop:15,
                                                 position:'relative',
+                                                verticalAlign: 'bottom',
                                             }}
                                             className={`card-panel ${this.props.store.state.theme}`}>
                                             <div

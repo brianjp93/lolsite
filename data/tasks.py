@@ -55,6 +55,7 @@ def import_all(version, language='en_US', overwrite=False):
     import_champions(version=version, language=language, overwrite=overwrite)
     import_all_champion_advanced(version, language=language, overwrite=overwrite)
     import_summoner_spells(version=version, language=language, overwrite=overwrite)
+    import_reforgedrunes(version=version, language=language, overwrite=overwrite)
 
 
 def import_seasons():
