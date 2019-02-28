@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import urllib.parse
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -197,7 +198,7 @@ if 'RDS_DB_NAME' in os.environ or ENVNAME in ['lolsite', 'lolsite-beat']:
     BROKER_TRANSPORT_OPTIONS = {
         'region': 'us-west-2'
     }
-    BROKER_URL = 'sqs://{}:{}@'.format(urllib.quote(AWS_ACCESS_KEY_ID, safe=''), urllib.quote(AWS_SECRET_ACCESS_KEY, safe=''))
+    BROKER_URL = 'sqs://{}:{}@'.format(urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''), urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe=''))
 else:
     CELERY_BROKER_URL = 'redis://localhost'
 
