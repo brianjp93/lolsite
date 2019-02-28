@@ -33,6 +33,9 @@ class Summoner extends Component {
             neutral_color: 'lightblue',
 
             positions: [],
+
+            
+            delete_later: '',
         }
 
         this.getSummonerPage = this.getSummonerPage.bind(this)

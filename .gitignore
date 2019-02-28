@@ -8,6 +8,7 @@ static/
 .DS_Store
 .ipynb_checkpoints/*
 *.ipynb
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
