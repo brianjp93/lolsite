@@ -410,7 +410,8 @@ def get_summoner_page(request, format=None):
                 status_code = 404
 
         if update:
-            pt.import_summoner.delay(region, name=name)
+            # pt.import_summoner.delay(region, name=name)
+            pass
 
         if summoner:
             # summoner_ser = SummonerSerializer(summoner)

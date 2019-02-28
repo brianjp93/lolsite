@@ -652,7 +652,7 @@ def import_all_champion_advanced(version, language='en_US', overwrite=False):
                 import_champion_advanced(champion.id, overwrite=overwrite)
             except Exception as e:
                 print(e)
-                time.sleep(5)
+                time.sleep(20)
                 import_champion_advanced(champion.id, overwrite=overwrite)
 
 
