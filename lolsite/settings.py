@@ -178,8 +178,8 @@ USE_TZ = True
 
 
 # aws access keys
-AWS_ACCESS_KEY_ID = 'AKIAJADAEJNHT3SNA6XA'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = os.environ['AWS_KEY']
+AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET']
 
 
 # Static files (CSS, JavaScript, Images)
