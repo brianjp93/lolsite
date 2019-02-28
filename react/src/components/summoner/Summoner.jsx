@@ -33,9 +33,6 @@ class Summoner extends Component {
             neutral_color: 'lightblue',
 
             positions: [],
-
-            
-            delete_later: '',
         }
 
         this.getSummonerPage = this.getSummonerPage.bind(this)
@@ -271,9 +268,11 @@ class Summoner extends Component {
         }
         return parts
     }
-    leftTeamChampion(part) {
+    leftTeamChampion(part, team_size) {
+        var full_height = 140
+        var partial = Math.round(full_height / team_size)
         return (
-            <div>
+            <div style={{height: partial}}>
                 <img
                     style={{height:20, verticalAlign:'bottom', borderRadius:10}}
                     src={part.champion.image_url}
@@ -296,9 +295,11 @@ class Summoner extends Component {
             </div>
         )
     }
-    rightTeamChampion(part) {
+    rightTeamChampion(part, team_size) {
+        var full_height = 140
+        var partial = Math.round(full_height / team_size)
         return (
-            <div style={{textAlign: 'right'}}>
+            <div style={{textAlign: 'right', height: partial}}>
                 <span>
                     {part.account_id === this.state.summoner.account_id &&
                         <small style={{fontWeight:'bold'}}>
@@ -368,6 +369,12 @@ class Summoner extends Component {
         }
         return out
     }
+    getTeamSize(match) {
+        var team1 = this.getTeam100(match)
+        var team2 = this.getTeam200(match)
+        var max = Math.max(team1.length, team2.length)
+        return max
+    }
     render() {
         return (
             <div>
@@ -407,6 +414,7 @@ class Summoner extends Component {
                                 {/* MATCH CARD */}
                                 {this.state.matches.map((match, key) => {
                                     let mypart = this.getMyPart(match)
+                                    var team_size = this.getTeamSize(match)
                                     return (
                                         <div
                                             key={`${key}-${match._id}`}
@@ -434,9 +442,7 @@ class Summoner extends Component {
                                                 }}
                                                 className="row">
                                                 <div style={{padding:'10px 0px 0px 0px'}} className="col s6">
-                                                    {this.getTeam100(match).map((part, key) =>  <div key={`${key}-${part.account_id}`}>{this.leftTeamChampion(part)}</div>)}
-
-                                                    <div style={{height:10}}></div>
+                                                    {this.getTeam100(match).map((part, key) => <div key={`${key}-${part.account_id}`}>{this.leftTeamChampion(part, team_size)}</div>)}
                                                     
                                                     <div
                                                         style={{
@@ -448,9 +454,7 @@ class Summoner extends Component {
                                                     </div>
                                                 </div>
                                                 <div style={{padding:'10px 0px 0px 0px'}} className="col s6">
-                                                    {this.getTeam200(match).map((part, key) =>  <div key={`${key}-${part.account_id}`}>{this.rightTeamChampion(part)}</div>)}
-                                                    
-                                                    <div style={{height:10}}></div>
+                                                    {this.getTeam200(match).map((part, key) =>  <div key={`${key}-${part.account_id}`}>{this.rightTeamChampion(part, team_size)}</div>)}
 
                                                     <div
                                                         style={{
