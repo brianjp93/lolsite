@@ -190,9 +190,10 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "lolsite/static"),
-    os.path.join(BASE_DIR, 'react/src/static'),
     os.path.join(BASE_DIR, 'react/build/static'),
 ]
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # CELERY SETTINGS
 if 'RDS_DB_NAME' in os.environ or ENVNAME in ['lolsite', 'lolsite-beat']:

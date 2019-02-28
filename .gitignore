@@ -3,6 +3,8 @@ __pycache__/*
 
 react/node_modules
 
+static/
+
 .DS_Store
 .ipynb_checkpoints/*
 *.ipynb
