@@ -358,9 +358,18 @@ class Summoner extends Component {
     }
     item(id, image_url) {
         return (
-            <img
-                style={{height:28, borderRadius: 10, padding:'0px 2px'}}
-                src={image_url} alt=""/>
+            <div style={{
+                display: 'inline-block',
+                height:28, width:28,
+                borderRadius:10,
+                margin:'0px 2px',
+                borderStyle:'solid',
+                borderColor:'#2d2e31',
+                borderWidth:1}}>
+                <img
+                    style={{height:'100%', borderRadius:10, display:'inline-block'}}
+                    src={image_url} alt=""/>
+            </div>
         )
     }
     kda(part) {
@@ -394,6 +403,10 @@ class Summoner extends Component {
         }
         else if ([900, 1010].indexOf(match.queue_id) >= 0) {
             out = 'highlight4'
+        }
+        // 3v3 ranked
+        else if ([470].indexOf(match.queue_id) >= 0) {
+            out = 'highlight5'
         }
         return out
     }

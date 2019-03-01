@@ -11,6 +11,7 @@
     --highlight2: #51af6f;
     --highlight3: #ff7474;
     --highlight4: #27a28e;
+    --highlight5: #debe9c;
     --link-color: #88b5d7;
 }
 
@@ -76,4 +77,8 @@ ul.sidenav.dark {
 
 .dark.highlight4 {
     color: var(--highlight4);
+}
+
+.dark.highlight5 {
+    color: var(--highlight5);
 }
