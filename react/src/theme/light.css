@@ -79,6 +79,12 @@ ul.sidenav.light {
     color: var(--highlight4);
 }
 
-.dark.highlight5 {
+.light.highlight5 {
     color: var(--highlight5);
+}
+
+.light.pill {
+    background: gray;
+    border-radius: 5px;
+    padding: 0 5px;
 }

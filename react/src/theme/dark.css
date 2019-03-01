@@ -82,3 +82,9 @@ ul.sidenav.dark {
 .dark.highlight5 {
     color: var(--highlight5);
 }
+
+.dark.pill {
+    background: gray;
+    border-radius: 5px;
+    padding: 0 5px;
+}

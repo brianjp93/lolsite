@@ -59,6 +59,7 @@ class Summoner extends Component {
             victory_color: '#68b568',
             loss_color: '#c33c3c',
             neutral_color: 'lightblue',
+            match_card_height: 400,
 
             positions: [],
         }
@@ -462,12 +463,12 @@ class Summoner extends Component {
                                         <div
                                             key={`${key}-${match._id}`}
                                             style={{
-                                                width:300,
-                                                height:500,
-                                                display:'inline-block',
-                                                margin:'0px 10px 10px 10px',
-                                                paddingTop:15,
-                                                position:'relative',
+                                                width: 300,
+                                                height: this.state.match_card_height,
+                                                display: 'inline-block',
+                                                margin: '0px 10px 10px 10px',
+                                                paddingTop: 15,
+                                                position: 'relative',
                                                 verticalAlign: 'bottom'
                                             }}
                                             className={`card-panel ${this.props.store.state.theme}`}>
@@ -526,13 +527,21 @@ class Summoner extends Component {
                                                         </div>
                                                     </div>
                                                     <img
-                                                        style={{height:20, verticalAlign:'top'}}
+                                                        style={{height: 20, verticalAlign: 'top'}}
                                                         src={mypart.stats.perk_0_image_url}
                                                         alt=""/>
                                                     <img
-                                                        style={{height:20, verticalAlign:'top'}}
+                                                        style={{height: 20, verticalAlign: 'top'}}
                                                         src={mypart.stats.perk_sub_style_image_url}
                                                         alt=""/>
+                                                    <img
+                                                        style={{
+                                                            height: 20,
+                                                            verticalAlign: 'top',
+                                                            marginLeft: 4,
+                                                            borderRadius: 5,
+                                                        }}
+                                                        src={mypart.stats.item_6_image_url} alt=""/>
                                                 </div>
 
                                                 <span style={{display: 'inline-block'}}>
@@ -610,7 +619,7 @@ class Summoner extends Component {
 
                                 <div
                                     style={{
-                                        width:100, height:500,
+                                        width:100, height: this.state.match_card_height,
                                         display: 'inline-block',
                                         margin: '0px 10px 10px 10px',
                                         paddingTop:15,
@@ -759,6 +768,18 @@ class SummonerCard extends Component {
             })
         )
     }
+    queueName(queue) {
+        var out = queue
+        var convert = {
+            'RANKED_SOLO_5x5': 'Solo/Duo',
+            'RANKED_FLEX_SR': '5v5 Flex',
+            'RANKED_FLEX_TT': '3v3 Flex',
+        }
+        if (convert[queue] !== undefined) {
+            out = convert[queue]
+        }
+        return out
+    }
     render() {
         return (
             <span>
@@ -795,15 +816,23 @@ class SummonerCard extends Component {
 
                     <div>
                         {this.props.positions.map(pos => {
-                            if (pos.position !== 'NONE') {
+                            if (pos.queueType === 'RANKED_SOLO_5x5') {
                                 return (
                                     <div key={`${pos.position}-${this.props.summoner._id}`}>
                                         <div>
                                             <div style={{display: 'inline-block', width:50}}>
-                                                <img
-                                                    src={this.positionalRankImage(pos.position, pos.tier)}
-                                                    style={{height:40}}
-                                                    alt=""/>
+                                                {pos.position !== 'NONE' &&
+                                                    <img
+                                                        src={this.positionalRankImage(pos.position, pos.tier)}
+                                                        style={{height:40}}
+                                                        alt=""/>
+                                                }
+                                                {pos.position === 'NONE' &&
+                                                    <img
+                                                        src={this.generalRankImage(pos.tier)}
+                                                        style={{height:40}}
+                                                        alt=""/>
+                                                }
                                             </div>
                                             <div style={{display: 'inline-block', lineHeight:1, verticalAlign:'super'}}>
                                                 <span>
@@ -819,14 +848,14 @@ class SummonerCard extends Component {
                                                 position:'absolute',
                                                 right:18,
                                                 }}>
-                                                <span style={{
-                                                    background: 'gray',
-                                                    borderRadius: 5,
-                                                    padding: '0 5px'}}>
+                                                <small className={`${this.props.store.state.theme} pill`}>
+                                                    {this.queueName(pos.queueType)}
+                                                </small>{' '}
+                                                <span className={`${this.props.store.state.theme} pill`}>
                                                     {pos.leaguePoints} LP
                                                 </span>
                                                 {pos.miniSeries !== undefined &&
-                                                    <div>
+                                                    <div style={{textAlign: 'right'}}>
                                                         {this.miniSeries(pos.miniSeries.progress)}
                                                     </div>
                                                 }
@@ -838,7 +867,7 @@ class SummonerCard extends Component {
                             return null
                         })}
                         {this.props.positions.map(pos => {
-                            if (pos.position === 'NONE') {
+                            if (pos.queueType !== 'RANKED_SOLO_5x5') {
                                 return (
                                     <div key={`${pos.position}-${this.props.summoner._id}`}>
                                         <hr/>
@@ -863,14 +892,14 @@ class SummonerCard extends Component {
                                                 position:'absolute',
                                                 right:18,
                                                 }}>
-                                                <span style={{
-                                                    background: 'gray',
-                                                    borderRadius: 5,
-                                                    padding: '0 5px'}}>
+                                                <small className={`${this.props.store.state.theme} pill`}>
+                                                    {this.queueName(pos.queueType)}
+                                                </small>{' '}
+                                                <span className={`${this.props.store.state.theme} pill`}>
                                                     {pos.leaguePoints} LP
                                                 </span>
                                                 {pos.miniSeries !== undefined &&
-                                                    <div>
+                                                    <div style={{textAlign: 'right'}}>
                                                         {this.miniSeries(pos.miniSeries.progress)}
                                                     </div>
                                                 }
