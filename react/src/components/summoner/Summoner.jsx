@@ -484,7 +484,7 @@ class Summoner extends Component {
                                                     padding: '0 4px',
                                                 }}
                                                 className="row">
-                                                <div style={{padding:'10px 0px 0px 0px'}} className="col s6">
+                                                <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
                                                     {this.getTeam100(match).map((part, key) => <div key={`${key}-${part.account_id}`}>{this.leftTeamChampion(part, team_size)}</div>)}
                                                     
                                                     <div
@@ -496,7 +496,7 @@ class Summoner extends Component {
                                                         }} >
                                                     </div>
                                                 </div>
-                                                <div style={{padding:'10px 0px 0px 0px'}} className="col s6">
+                                                <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
                                                     {this.getTeam200(match).map((part, key) =>  <div key={`${key}-${part.account_id}`}>{this.rightTeamChampion(part, team_size)}</div>)}
 
                                                     <div
