@@ -443,7 +443,7 @@ def get_summoner_page(request, format=None):
                 if after_index is not None:
                     start_index = after_index
                 end_index = start_index + count
-                mt.import_recent_matches(start_index, end_index, summoner.account_id, region, **kwargs)
+                mt.import_recent_matches(start_index, end_index, unicode(summoner.account_id), region, **kwargs)
                 if queue is None and after_index in [None, 0]:
                     summoner.last_summoner_page_import = timezone.now()
                     summoner.save()
