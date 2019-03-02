@@ -94,7 +94,7 @@ def match_filter(request, account_id=None):
         summoner = query.first()
         account_id = summoner.account_id
 
-    matches = Match.objects.filter(participants__account_id=account_id)
+    matches = Match.objects.filter(participants__current_account_id=account_id)
     if queue_in:
         matches = matches.filter(queue_id__in=queue_in)
 
@@ -113,7 +113,7 @@ def match_filter(request, account_id=None):
                 if query.exists():
                     friend = query.first()
                     with_account_ids.add(friend.account_id)
-        matches = matches.filter(participants__account_id__in=with_account_ids)
+        matches = matches.filter(participants__current_account_id__in=with_account_ids)
     return matches
 
 
@@ -166,7 +166,7 @@ def serialize_matches(match_query, account_id):
 
             participant_data = {
                 'summoner_name': participant.summoner_name,
-                'account_id': participant.account_id,
+                'account_id': participant.current_account_id,
                 'lane': participant.lane,
                 'role': participant.role,
                 'team_id': participant.team_id,
@@ -190,7 +190,7 @@ def serialize_matches(match_query, account_id):
 
             participant_data['stats'] = {}
             # only add stats if it's for the current summoner
-            if participant.account_id == account_id:
+            if participant.current_account_id == account_id:
                 try:
                     stats = participant.stats
                 except:
@@ -424,7 +424,9 @@ def get_summoner_page(request, format=None):
                 status_code = 404
 
         if update:
+            # enable delay when celery is working
             # pt.import_summoner.delay(region, name=name)
+            pt.import_summoner(region, name=name)
             pass
 
         if summoner:

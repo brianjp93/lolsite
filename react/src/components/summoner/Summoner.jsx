@@ -725,12 +725,12 @@ class Summoner extends Component {
                                                             {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
                                                         </span>
                                                         <br/>
-                                                        <small className={`${this.props.store.state.theme} pill`}>
+                                                        <small title={'(Kills + Assists) / Deaths'} className={`${this.props.store.state.theme} pill`}>
                                                             {numeral(this.kda(mypart)).format('0.00')} kda
                                                         </small>
                                                         <br/>
-                                                        <small className={`${this.props.store.state.theme} pill`}>
-                                                            {numeral(this.getKp(match, mypart)).format('0.00')} %kp
+                                                        <small title='% Kill Participation' className={`${this.props.store.state.theme} pill`}>
+                                                            {numeral(this.getKp(match, mypart)).format('0.00')}% kp
                                                         </small>
                                                     </span>
 

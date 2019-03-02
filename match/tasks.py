@@ -62,11 +62,26 @@ def import_match(match_id, region, refresh=False):
         if r.status_code == 429:
             return 'throttled'
         
-        import_match_from_data(match, refresh=refresh)
+        import_match_from_data(match, refresh=refresh, region=region)
         
 
+def import_summoner_from_participant(part, region):
+    """
+    """
+    query = Summoner.objects.filter(account_id=part['current_account_id'], _id=part['summoner_id'])
+    if query.exists():
+        # don't need to create it again
+        pass
+    else:
+        account_id = part['current_account_id']
+        name = part['summoner_name']
+        _id = part['summoner_id']
+        summoner = Summoner(_id=_id, name=name, account_id=account_id, region=region.lower())
+        summoner.save()
 
-def import_match_from_data(data, refresh=False):
+
+
+def import_match_from_data(data, refresh=False, region=''):
     """Import a match given the riot data response json.
     """
     parsed = parse_match(data)
@@ -84,6 +99,13 @@ def import_match_from_data(data, refresh=False):
 
     participants_data = parsed.pop('participants')
     for _p_data in participants_data:
+
+        try:
+            import_summoner_from_participant(_p_data, region)
+        except IntegrityError as error:
+            match_model.delete()
+            raise error        
+
         timelines_data = _p_data.pop('timelines')
         stats_data = _p_data.pop('stats')
 
@@ -464,7 +486,7 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
             if end_index > end:
                 end_index = end
             kwargs['endIndex'] = end_index
-            print(kwargs)
+            # print(kwargs)
             r = api.match.filter(account_id, region=region, **kwargs)
             try:
                 matches = r.json()['matches']
@@ -539,17 +561,17 @@ def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, r
         p = p.filter(match__id__in=m_id_list)
 
     # get all participants that were in a match with the given summoner
-    p = p.filter(match__participants__account_id=summoner.account_id)
+    p = p.filter(match__participants__current_account_id=summoner.account_id)
 
     # exclude the summoner
-    p = p.exclude(account_id=summoner.account_id)
+    p = p.exclude(current_account_id=summoner.account_id)
 
     # I could include and `if team` condition, but I am assuming the top
     # values will be the same as the totals
     if not team:
         p = p.exclude(
             team_id=Subquery(
-                Participant.objects.filter(match__participants__id=OuterRef('id'), account_id=summoner.account_id)
+                Participant.objects.filter(match__participants__id=OuterRef('id'), current_account_id=summoner.account_id)
                 .values('team_id')[:1]
             )
         )

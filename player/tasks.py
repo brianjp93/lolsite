@@ -1,22 +1,23 @@
 from celery import task
 
 from .models import Summoner, NameChange
+from .models import simplify
 from match.tasks import get_riot_api
 
 
-def simplify(name):
-    """Return the lowercase, no space version of a string.
+# def simplify(name):
+#     """Return the lowercase, no space version of a string.
 
-    Parameters
-    ----------
-    name : str
+#     Parameters
+#     ----------
+#     name : str
 
-    Returns
-    -------
-    str
+#     Returns
+#     -------
+#     str
 
-    """
-    return ''.join(name.split()).lower()
+#     """
+#     return ''.join(name.split()).lower()
 
 
 @task(name='player.tasks.import_summoner')
@@ -68,13 +69,8 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         if query.exists():
             summoner_model = query.first()
 
-            if summoner_model.name != data['name']:
-                name_change = NameChange(summoner=summoner_model, old_name=summoner_model.name)
-                name_change.save()
-
-            summoner_model.profile_icon_id = data['profileIconId']
-            summoner_model.revision_date = data['revisionDate']
-            summoner_model.name = data['name']
+            for attr in model_data:
+                setattr(summoner_model, attr, model_data[attr])
         else:
             summoner_model = Summoner(**model_data)
         summoner_model.save()
