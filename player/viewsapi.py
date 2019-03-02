@@ -313,7 +313,21 @@ def serialize_matches(match_query, account_id):
                         'total_damage_dealt_to_champions': stats.total_damage_dealt_to_champions,
                     }
                     participant_data['stats'] = stats_data
-
+            else:
+                # general data for all participants
+                try:
+                    stats = participant.stats
+                except:
+                    pass
+                else:
+                    stats_data = {
+                        'kills': stats.kills,
+                        'deaths': stats.deaths,
+                        'assists': stats.assists,
+                        'champ_level': stats.champ_level,
+                        'total_damage_dealt_to_champions': stats.total_damage_dealt_to_champions,
+                    }
+                    participant_data['stats'] = stats_data
             participants.append(participant_data)
 
         # SORT PARTICIPANTS SO THAT LANES MATCH UP (imperfect)

@@ -78,6 +78,11 @@ class Summoner extends Component {
         this.setQueueDict = this.setQueueDict.bind(this)
         this.getPositions = this.getPositions.bind(this)
         this.setDefaults = this.setDefaults.bind(this)
+        this.getTotalKills = this.getTotalKills.bind(this)
+        this.getKp = this.getKp.bind(this)
+        this.getDamagePercentage = this.getDamagePercentage.bind(this)
+        this.getTeamMaxKp = this.getTeamMaxKp.bind(this)
+        this.getTeamKpPercentage = this.getTeamKpPercentage.bind(this)
     }
     componentDidMount() {
         this.getSummonerPage(this.getPositions)
@@ -297,23 +302,63 @@ class Summoner extends Component {
         }
         return parts
     }
-    leftTeamChampion(part, team_size) {
+    leftTeamChampion(part, team_size, match) {
         var full_height = 140
         var partial = Math.round(full_height / team_size)
+        var dmg_perc = this.getDamagePercentage(part, match)
+        var wid = dmg_perc * .92
+
+        var kp = this.getKp(match, part)
+        var kp_perc = this.getTeamKpPercentage(match, part)
+        var kp_wid = kp_perc * .92
+
+        if (kp_wid < 0) {
+            kp_wid = 0
+        }
+        if (wid < 0) {
+            wid = 0
+        }
+
+        var is_me = false
+        if (part.account_id === this.state.summoner.account_id) {
+            is_me = true
+        }
         return (
-            <div style={{height: partial}}>
+            <div style={{height: partial, position: 'relative'}}>
+                {/* KP PERCENTAGE WIDTH */}
+                <div
+                    title={`${numeral(kp).format('0')}% kp`}
+                    style={{
+                        position: 'absolute',
+                        left: 8,
+                        top: 4,
+                        height: 3,
+                        borderRadius: 10,
+                        width: `${kp_wid}%`,
+                        background: is_me ? '#4b9bcd': '#4b9bcd40'}}>
+                </div>
+                {/* DAMAGE PERCENTAGE */}
+                <div style={{
+                    position: 'absolute',
+                    left:8,
+                    top: 19,
+                    height: 3,
+                    borderRadius: 10,
+                    width: `${wid}%`,
+                    background: is_me ? '#dc5f5f': '#dc5f5f40'}}>
+                </div>
                 <img
-                    style={{height:20, verticalAlign:'bottom', borderRadius:10}}
+                    style={{height:20, verticalAlign:'bottom', borderRadius:10, position: 'relative'}}
                     src={part.champion.image_url}
                     alt={part.champion.name}
                     title={part.champion.name} />{' '}
                 <span>
-                    {part.account_id === this.state.summoner.account_id &&
+                    {is_me &&
                         <small style={{fontWeight:'bold'}}>
                             {this.formattedName(part.summoner_name)}
                         </small>
                     }
-                    {part.account_id !== this.state.summoner.account_id &&
+                    {!is_me &&
                         <small>
                             <Link className={`${this.props.store.state.theme} silent`} to={`/${this.props.region}/${part.summoner_name}/`}>
                                 {this.formattedName(part.summoner_name)}
@@ -324,18 +369,57 @@ class Summoner extends Component {
             </div>
         )
     }
-    rightTeamChampion(part, team_size) {
+    rightTeamChampion(part, team_size, match) {
         var full_height = 140
         var partial = Math.round(full_height / team_size)
+        var dmg_perc = this.getDamagePercentage(part, match)
+        var wid = dmg_perc * .92
+
+        var kp = this.getKp(match, part)
+        var kp_perc = this.getTeamKpPercentage(match, part)
+        var kp_wid = kp_perc * .92
+
+        if (kp_wid < 0) {
+            wid = 0
+        }
+        if (wid < 0) {
+            wid = 0
+        }
+
+        var is_me = false
+        if (part.account_id === this.state.summoner.account_id) {
+            is_me = true
+        }
         return (
-            <div style={{textAlign: 'right', height: partial}}>
+            <div style={{textAlign: 'right', height: partial, position: 'relative'}}>
+                <div
+                    title={`${numeral(kp).format('0')}% kp`}
+                    style={{
+                        title: `${kp}% kp`,
+                        position: 'absolute',
+                        right: 8,
+                        top: 4,
+                        height: 3,
+                        borderRadius: 10,
+                        width: `${kp_wid}%`,
+                        background: is_me ? '#4b9bcd': '#4b9bcd40'}}>
+                </div>
+                <div style={{
+                    position: 'absolute',
+                    right:8,
+                    top: 19,
+                    height: 3,
+                    borderRadius: 10,
+                    width: `${wid}%`,
+                    background: is_me ? '#dc5f5f': '#dc5f5f40'}}>
+                </div>
                 <span>
-                    {part.account_id === this.state.summoner.account_id &&
+                    {is_me &&
                         <small style={{fontWeight:'bold'}}>
                             {this.formattedName(part.summoner_name)}
                         </small>
                     }
-                    {part.account_id !== this.state.summoner.account_id &&
+                    {!is_me &&
                         <small>
                             <Link className={`${this.props.store.state.theme} silent`} to={`/${this.props.region}/${part.summoner_name}/`}>
                                 {this.formattedName(part.summoner_name)}
@@ -344,12 +428,45 @@ class Summoner extends Component {
                     }
                 </span>{' '}
                 <img
-                    style={{height:20, verticalAlign:'bottom', borderRadius:10}}
+                    style={{height:20, verticalAlign:'bottom', borderRadius:10, position: 'relative'}}
                     src={part.champion.image_url}
                     alt={part.champion.name}
                     title={part.champion.name} />
             </div>
         )
+    }
+    getMaxDamage(match) {
+        var max = 0
+        for (var player of match.participants) {
+            if (player.stats.total_damage_dealt_to_champions > max) {
+                max = player.stats.total_damage_dealt_to_champions
+            }
+        }
+        return max
+    }
+    getDamagePercentage(part, match) {
+        var perc = part.stats.total_damage_dealt_to_champions / this.getMaxDamage(match) * 100
+        perc = Math.round(perc)
+        return perc
+    }
+    getTeamMaxKp(match, team_id) {
+        var max = 0
+        var kp
+        for (var part of match.participants) {
+            if (part.team_id === team_id) {
+                kp = this.getKp(match, part)
+                if (kp > max) {
+                    max = kp
+                }
+            }
+        }
+        return max
+    }
+    getTeamKpPercentage(match, part) {
+        var kp = this.getKp(match, part)
+        var max = this.getTeamMaxKp(match, part.team_id)
+        var perc = kp / max * 100
+        return perc
     }
     formattedName(name) {
         if (name.length >= 14) {
@@ -416,6 +533,33 @@ class Summoner extends Component {
         var team2 = this.getTeam200(match)
         var max = Math.max(team1.length, team2.length)
         return max
+    }
+    getTotalKills(match) {
+        var team100 = this.getTeam100(match)
+        var team200 = this.getTeam200(match)
+
+        var kills = {
+            100: 0,
+            200: 0
+        }
+        var part
+        for (part of team100) {
+            kills[100] = kills[100] + part.stats.kills
+        }
+        for (part of team200) {
+            kills[200] = kills[200] + part.stats.kills
+        }
+        return kills
+    }
+    getKp(match, part) {
+        var team_id = part.team_id
+        var total = this.getTotalKills(match)[team_id]
+        var kills_and_assists = part.stats.kills + part.stats.assists
+        var percentage = 0
+        if (total > 0) {
+            percentage = (kills_and_assists / total) * 100
+        }
+        return percentage
     }
     render() {
         return (
@@ -486,7 +630,7 @@ class Summoner extends Component {
                                                 }}
                                                 className="row">
                                                 <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
-                                                    {this.getTeam100(match).map((part, key) => <div key={`${key}-${part.account_id}`}>{this.leftTeamChampion(part, team_size)}</div>)}
+                                                    {this.getTeam100(match).map((part, key) => <div key={`${key}-${part.account_id}`}>{this.leftTeamChampion(part, team_size, match)}</div>)}
                                                     
                                                     <div
                                                         style={{
@@ -498,7 +642,7 @@ class Summoner extends Component {
                                                     </div>
                                                 </div>
                                                 <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
-                                                    {this.getTeam200(match).map((part, key) =>  <div key={`${key}-${part.account_id}`}>{this.rightTeamChampion(part, team_size)}</div>)}
+                                                    {this.getTeam200(match).map((part, key) =>  <div key={`${key}-${part.account_id}`}>{this.rightTeamChampion(part, team_size, match)}</div>)}
 
                                                     <div
                                                         style={{
@@ -581,9 +725,13 @@ class Summoner extends Component {
                                                             {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
                                                         </span>
                                                         <br/>
-                                                        <span>
+                                                        <small className={`${this.props.store.state.theme} pill`}>
                                                             {numeral(this.kda(mypart)).format('0.00')} kda
-                                                        </span>
+                                                        </small>
+                                                        <br/>
+                                                        <small className={`${this.props.store.state.theme} pill`}>
+                                                            {numeral(this.getKp(match, mypart)).format('0.00')} %kp
+                                                        </small>
                                                     </span>
 
                                                 </div>
