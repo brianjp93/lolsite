@@ -12,6 +12,7 @@ from ext.lol.riot import Riot as RiotAPI
 
 from celery import task
 import logging
+from multiprocessing.dummy import Pool as ThreadPool
 import time
 
 
@@ -486,35 +487,19 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
             if end_index > end:
                 end_index = end
             kwargs['endIndex'] = end_index
-            # print(kwargs)
             r = api.match.filter(account_id, region=region, **kwargs)
             try:
                 matches = r.json()['matches']
             except Exception as error:
-                print(r.content)
-                print(r.headers)
                 time.sleep(10)
                 r = api.match.filter(account_id, region=region, **kwargs)
                 matches = r.json()['matches']
             if len(matches) > 0:
-                for match in r.json()['matches']:
-                    match_id = match['gameId']
-                    query = Match.objects.filter(_id=match_id)
-                    # if it doesn't exist, import it
-                    if not query.exists():
-                        print(f'importing {match_id}')
-
-                        r = import_match(match_id, region)
-                        retries = 0
-                        while r == 'throttled' and retries < 10:
-                            time.sleep(10)
-                            r = import_match(match_id, region)
-                            retries += 1
-                        if r == 'throttled':
-                            raise Exception(f'Throttled while importing {match_id}')
-                        
-                    else:
-                        print(f'skipping {match_id}')
+                threads = 5
+                new_matches = [x for x in matches if not Match.objects.filter(_id=x['gameId']).exists()]
+                pool = ThreadPool(5)
+                vals = pool.map(lambda x: import_match(x['gameId'], region), new_matches)
+                # print(vals)
             else:
                 has_more = False
             index += size
