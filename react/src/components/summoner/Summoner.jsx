@@ -731,7 +731,7 @@ class Summoner extends Component {
                                                         </small>
                                                         <br/>
                                                         <small title='% Kill Participation' className={`${this.props.store.state.theme} pill`}>
-                                                            {numeral(this.getKp(match, mypart)).format('0.00')}% kp
+                                                            {numeral(this.getKp(match, mypart)).format('0')}% kp
                                                         </small>
                                                     </span>
 
