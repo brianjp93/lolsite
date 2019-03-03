@@ -51,11 +51,6 @@ class Summoner(models.Model):
         if self.name:
             self.simple_name = simplify(self.name)
 
-        # if self.account_id != self.__original_account_id and self.__original_name is not None:
-        #     print('Account ID Change')
-        #     query = Participant.objects.filter(current_account_id=self.__original_account_id)
-        #     query.update(current_account_id=self.account_id)
-
         if self.name != self.__original_name and self.__original_name is not None:
             namechange = NameChange(summoner=self, old_name=self.__original_name)
             namechange.save()

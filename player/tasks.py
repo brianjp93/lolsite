@@ -54,6 +54,7 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
             raise Exception(f'The request returned a {r.status_code} status.')
 
         data = r.json()
+        print(data)
 
         model_data = {
             '_id': data['id'],
@@ -68,9 +69,11 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         query = Summoner.objects.filter(region=region.lower(), account_id=data['accountId'])
         if query.exists():
             summoner_model = query.first()
+            print(summoner_model)
 
-            for attr in model_data:
-                setattr(summoner_model, attr, model_data[attr])
+            for attr, val in model_data.items():
+                setattr(summoner_model, attr, val)
         else:
             summoner_model = Summoner(**model_data)
+        print(summoner_model.profile_icon_id)
         summoner_model.save()

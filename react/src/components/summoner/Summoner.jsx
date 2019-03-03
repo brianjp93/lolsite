@@ -469,6 +469,7 @@ class Summoner extends Component {
         return perc
     }
     formattedName(name) {
+        name = name.trim()
         if (name.length >= 14) {
             return `${name.slice(0, 11)}...`
         }
