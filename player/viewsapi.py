@@ -426,7 +426,8 @@ def get_summoner_page(request, format=None):
         if update:
             # enable delay when celery is working
             # pt.import_summoner.delay(region, name=name)
-            pt.import_summoner(region, name=name)
+            summoner__id = pt.import_summoner(region, name=name)
+            summoner = Summoner.objects.get(id=summoner__id)
 
         if summoner:
             # summoner_ser = SummonerSerializer(summoner)
