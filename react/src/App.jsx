@@ -13,6 +13,8 @@ class App extends Component {
         this.state = {
             theme: 'dark',
             language: 'en_US',
+
+            items: {},
         }
     }
     componentDidUpdate(prevProps, prevState) {

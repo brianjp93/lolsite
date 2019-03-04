@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import NavBar from '../general/NavBar'
+import Item from '../data/Item'
 import numeral from 'numeral'
 import moment from 'moment'
 
@@ -83,6 +84,8 @@ class Summoner extends Component {
         this.getDamagePercentage = this.getDamagePercentage.bind(this)
         this.getTeamMaxKp = this.getTeamMaxKp.bind(this)
         this.getTeamKpPercentage = this.getTeamKpPercentage.bind(this)
+        this.getItem = this.getItem.bind(this)
+        this.retrieveItem = this.retrieveItem.bind(this)
     }
     componentDidMount() {
         this.getSummonerPage(this.getPositions)
@@ -475,21 +478,79 @@ class Summoner extends Component {
         }
         return name
     }
-    item(id, image_url) {
+    item(id, image_url, match) {
+        var item = this.retrieveItem(id, match.major, match.minor)
         return (
-            <div style={{
-                display: 'inline-block',
-                height:28, width:28,
-                borderRadius:10,
-                margin:'0px 2px',
-                borderStyle:'solid',
-                borderColor:'#2d2e31',
-                borderWidth:1}}>
-                <img
-                    style={{height:'100%', borderRadius:10, display:'inline-block'}}
-                    src={image_url} alt=""/>
-            </div>
+            <Item.ItemPopover
+                style={{
+                    display: 'inline-block',
+                    height:28, width:28,
+                    margin:'0px 2px',
+                }}
+                item={item}
+                pageStore={this}
+                item_id={id}
+                major={match.major}
+                minor={match.minor}>
+                <div style={{
+                    display: 'inline-block',
+                    height:28, width:28,
+                    borderRadius:10,
+                    margin:'0px 2px',
+                    borderStyle:'solid',
+                    borderColor:'#2d2e31',
+                    borderWidth:1}}>
+                    <img
+                        style={{height:'100%', borderRadius:10, display:'inline-block'}}
+                        src={image_url} alt=""/>
+                </div>
+            </Item.ItemPopover>
         )
+    }
+    retrieveItem(item_id, major, minor) {
+        // get item from store
+        var version = `${major}.${minor}`
+        var store = this.props.store
+        var item = null
+        var items = store.state.items
+        if (items[version] !== undefined) {
+            if (items[version][item_id] !== undefined) {
+                item = items[version][item_id]
+            }
+        }
+        return item
+    }
+    getItem(item_id, major, minor) {
+        // request item info if it isn't in the store
+        var version = `${major}.${minor}`
+        var store = this.props.store
+        var item = null
+        var items = store.state.items
+
+        // if the item already exists, set item equal to it
+        if (items[version] !== undefined) {
+            if (items[version][item_id] !== undefined) {
+                item = items[version][item_id]
+            }
+        }
+
+        // if the item doesn't exists yet, get it
+        if (item === null) {
+            var data = {
+                item_id,
+                major,
+                minor,
+            }
+            api.data.getItem(data)
+                .then(response => {
+                    if (items[version] === undefined) {
+                        items[version] = {}
+                    }
+                    items[version][item_id] = response.data.data
+                    store.setState({items: items})
+                })
+        }
+        return item
     }
     kda(part) {
         var k = part.stats.kills
@@ -692,24 +753,24 @@ class Summoner extends Component {
                                                 <span style={{display: 'inline-block'}}>
                                                     <div style={{width:100}}>
                                                         <span>
-                                                            {this.item(mypart.stats.item_0, mypart.stats.item_0_image_url)}
+                                                            {this.item(mypart.stats.item_0, mypart.stats.item_0_image_url, match)}
                                                         </span>
                                                         <span>
-                                                            {this.item(mypart.stats.item_1, mypart.stats.item_1_image_url)}
+                                                            {this.item(mypart.stats.item_1, mypart.stats.item_1_image_url, match)}
                                                         </span>
                                                         <span>
-                                                            {this.item(mypart.stats.item_2, mypart.stats.item_2_image_url)}
+                                                            {this.item(mypart.stats.item_2, mypart.stats.item_2_image_url, match)}
                                                         </span>
                                                     </div>
                                                     <div style={{width:100}}>
                                                         <span>
-                                                            {this.item(mypart.stats.item_3, mypart.stats.item_3_image_url)}
+                                                            {this.item(mypart.stats.item_3, mypart.stats.item_3_image_url, match)}
                                                         </span>
                                                         <span>
-                                                            {this.item(mypart.stats.item_4, mypart.stats.item_4_image_url)}
+                                                            {this.item(mypart.stats.item_4, mypart.stats.item_4_image_url, match)}
                                                         </span>
                                                         <span>
-                                                            {this.item(mypart.stats.item_5, mypart.stats.item_5_image_url)}
+                                                            {this.item(mypart.stats.item_5, mypart.stats.item_5_image_url, match)}
                                                         </span>
                                                     </div>
                                                 </span>

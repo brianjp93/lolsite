@@ -145,6 +145,8 @@ def serialize_matches(match_query, account_id):
             'game_duration': match.game_duration,
             'game_creation': match.game_creation,
             'queue_id': match.queue_id,
+            'major': match.major,
+            'minor': match.minor,
         }
 
         participants = []

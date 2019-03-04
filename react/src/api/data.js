@@ -11,6 +11,12 @@ function getProfileIcon(data) {
     return axios.post(url, data)
 }
 
+function getItem(data) {
+    var url = `/api/${version}/data/item/`
+    return axios.post(url, data)
+}
+
 export default {
     getProfileIcon,
+    getItem,
 }

@@ -3,9 +3,10 @@ from rest_framework.decorators import api_view
 
 from .models import ProfileIcon
 from match.models import Match, Participant, Stats
-from match.models import Timeline, Team, Ban
+from match.models import Timeline, Team, Ban, Item
 
-from .serializers import ProfileIconSerializer
+from .serializers import ProfileIconSerializer, ItemSerializer
+from .serializers import ItemGoldSerializer, ItemStatSerializer
 
 
 def get_summoner_page(request, format=None):
@@ -54,4 +55,51 @@ def get_profile_icon(request, format=None):
         else:
             data['error'] = "Couldn't find a ProfileIcon with the id given."
             status_code = 404
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_item(request, format=None):
+    """
+
+    POST Parameters
+    ---------------
+    item_id : int
+    major : int
+        major version - 9.4.1 => 9
+    minor : int
+        minor version - 9.4.1 => 4
+
+    Returns
+    -------
+    Item JSON
+
+    """
+    data = {}
+    status_code = 200
+
+    item_id = request.data['item_id']
+    major = request.data['major']
+    minor = request.data['minor']
+
+    version = f'{major}.{minor}.1'
+    query = Item.objects.filter(_id=item_id, version=version)
+    if query.exists():
+        item = query.first()
+        item_data = ItemSerializer(item).data
+        item_data['stats'] = []
+        for stat in item.stats.all():
+            stat_data = ItemStatSerializer(stat).data
+            item_data['stats'].append(stat_data)
+        item_data['gold'] = {}
+        try:
+            item_gold_data = ItemGoldSerializer(item.gold).data
+            item_data['gold'] = item_gold_data
+        except:
+            pass
+        data['data'] = item_data
+    else:
+        status_code = 404
+        data = {'message': 'Item not found.'}
+
     return Response(data, status=status_code)
