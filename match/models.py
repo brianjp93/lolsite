@@ -348,3 +348,78 @@ class Ban(models.Model):
 
     def __str__(self):
         return f'Ban(team={self.team._id}, match={self.team.match._id})'
+
+
+# ADVANCED TIMELINE MODELS
+class AdvancedTimeline(models.Model):
+    # interval in milliseconds
+    match = models.OneToOneField('Match', on_delete=models.CASCADE)
+    frame_interval = models.IntegerField(default=60000, blank=True)
+
+
+class Frame(models.Model):
+    timeline = models.ForeignKey('AdvancedTimeline', on_delete=models.CASCADE, related_name='frames')
+    sort_int = models.IntegerField(default=0, db_index=True, blank=True)
+
+
+class ParticipantFrame(models.Model):
+    frame = models.ForeignKey('Frame', on_delete=models.CASCADE, related_name='participantframes')
+    participant_id = models.IntegerField(default=0, blank=True)
+    current_gold = models.IntegerField(default=0, blank=True)
+    dominion_score = models.IntegerField(default=0, blank=True)
+    jungle_minions_killed = models.IntegerField(default=0, blank=True)
+    level = models.IntegerField(default=1, blank=True)
+    minions_killed = models.IntegerField(default=0, blank=True)
+
+
+class Position(models.Model):
+    participantframe = models.OneToOneField('ParticipantFrame', on_delete=models.CASCADE)
+    x = models.IntegerField(default=0, blank=True)
+    y = models.IntegerField(default=0, blank=True)
+    team_score = models.IntegerField(default=0, blank=True)
+    total_gold = models.IntegerField(default=0, blank=True)
+    xp = models.IntegerField(default=0, blank=True)
+
+
+class Event(models.Model):
+    frame = models.ForeignKey('Frame', related_name='events', on_delete=models.CASCADE)
+    _type = models.CharField(max_length=128, default='', blank=True)
+    participant_id = models.IntegerField(default=0, blank=True)
+    timestamp = models.IntegerField(default=0, blank=True)
+
+    # ITEM_PURCHASED, ITEM_DESTROYED, ITEM_SOLD
+    item_id = models.IntegerField(null=True, blank=True)
+
+    # SKILL_LEVEL_UP
+    level_up_type = models.CharField(max_length=128, null=True, blank=True)
+    skill_slot = models.IntegerField(null=True, blank=True)
+
+    # WARD_PLACED
+    ward_type = models.CharField(max_length=128, null=True, blank=True)
+
+    # ITEM_UNDO
+    before_id = models.IntegerField(null=True, blank=True)
+    after_id = models.IntegerField(null=True, blank=True)
+
+    # CHAMPION_KILL
+    killer_id = models.IntegerField(null=True, blank=True)
+    victim_id = models.IntegerField(null=True, blank=True)
+    x = models.IntegerField(null=True, blank=True)
+    y = models.IntegerField(null=True, blank=True)
+
+    # ELITE_MONSTER_KILL
+    monster_type = models.CharField(max_length=128, null=True, blank=True)
+    monster_sub_type = models.CharField(max_length=128, null=True, blank=True)
+
+    # BUILDING_KILL
+    building_type = models.CharField(max_length=128, null=True, blank=True)
+    lane_type = models.CharField(max_length=32, null=True, blank=True)
+    team_id = models.IntegerField(null=True, blank=True)
+    tower_type = models.CharField(max_length=128, null=True, blank=True)
+
+
+class AssistingParticipants(models.Model):
+    event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='assistingparticipants')
+    participant_id = models.IntegerField(default=0, blank=True)
+
+# END ADVANCED TIMELINE MODELS
