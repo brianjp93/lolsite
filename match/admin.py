@@ -3,6 +3,9 @@ from django.contrib import admin
 from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
 
+from .models import AdvancedTimeline, Frame, ParticipantFrame
+from .models import Position, Event, AssistingParticipants
+
 
 class MatchAdmin(admin.ModelAdmin):
     list_display = ('_id', 'get_creation', 'queue_id', 'game_version')
@@ -39,9 +42,51 @@ class BanAdmin(admin.ModelAdmin):
     search_fields = ('team__match___id',)
 
 
+# ADVANCEDTIMELINE STUFF
+
+class AdvancedTimelineAdmin(admin.ModelAdmin):
+    list_display = ('match', )
+
+    raw_id_fields = ('match',)
+
+
+class FrameAdmin(admin.ModelAdmin):
+    list_display = ('timestamp',)
+    search_fields = ('timeline__match___id', )
+    raw_id_fields = ('timeline',)
+
+
+class ParticipantFrameAdmin(admin.ModelAdmin):
+    list_display = ('participant_id',)
+    search_fields = ('frame__timeline__match___id', )
+    raw_id_fields = ('frame',)
+
+
+class PositionAdmin(admin.ModelAdmin):
+    list_display = ('x', 'y', 'total_gold', 'xp')
+    raw_id_fields = ('participantframe',)
+
+
+class EventAdmin(admin.ModelAdmin):
+    list_display = ('_type', 'participant_id', 'timestamp')
+    raw_id_fields = ('frame',)
+
+
+class AssistingParticipantsAdmin(admin.ModelAdmin):
+    list_display = ('participant_id',)
+    raw_id_fields = ('event',)
+
+
 admin.site.register(Match, MatchAdmin)
 admin.site.register(Participant, ParticipantAdmin)
 admin.site.register(Stats, StatsAdmin)
 admin.site.register(Timeline, TimelineAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(Ban, BanAdmin)
+
+admin.site.register(AdvancedTimeline, AdvancedTimelineAdmin)
+admin.site.register(Frame, FrameAdmin)
+admin.site.register(ParticipantFrame, ParticipantFrameAdmin)
+admin.site.register(Position, PositionAdmin)
+admin.site.register(Event, EventAdmin)
+admin.site.register(AssistingParticipants, AssistingParticipantsAdmin)

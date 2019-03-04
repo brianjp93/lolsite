@@ -356,20 +356,28 @@ class AdvancedTimeline(models.Model):
     match = models.OneToOneField('Match', on_delete=models.CASCADE)
     frame_interval = models.IntegerField(default=60000, blank=True)
 
+    def __str__(self):
+        return f'AdvancedTimeline(match={self.match._id})'
 
 class Frame(models.Model):
     timeline = models.ForeignKey('AdvancedTimeline', on_delete=models.CASCADE, related_name='frames')
-    sort_int = models.IntegerField(default=0, db_index=True, blank=True)
+    timestamp = models.IntegerField(null=True, blank=True, db_index=True)
+
+    def __str__(self):
+        return f'Frame(match={self.timeline.match._id}, timestamp={self.timestamp})'
 
 
 class ParticipantFrame(models.Model):
     frame = models.ForeignKey('Frame', on_delete=models.CASCADE, related_name='participantframes')
     participant_id = models.IntegerField(default=0, blank=True)
     current_gold = models.IntegerField(default=0, blank=True)
-    dominion_score = models.IntegerField(default=0, blank=True)
+    dominion_score = models.IntegerField(null=True, blank=True)
     jungle_minions_killed = models.IntegerField(default=0, blank=True)
     level = models.IntegerField(default=1, blank=True)
     minions_killed = models.IntegerField(default=0, blank=True)
+
+    def __str__(self):
+        return f'ParticipantFrame(match={self.frame.timeline.match._id}, frame={self.frame.id}, participant_id={self.participant_id})'
 
 
 class Position(models.Model):
@@ -380,11 +388,14 @@ class Position(models.Model):
     total_gold = models.IntegerField(default=0, blank=True)
     xp = models.IntegerField(default=0, blank=True)
 
+    def __str__(self):
+        return f'Position(match={self.participantframe.frame.timeline.match._id}, x={self.x}, y={self.y})'
+
 
 class Event(models.Model):
     frame = models.ForeignKey('Frame', related_name='events', on_delete=models.CASCADE)
     _type = models.CharField(max_length=128, default='', blank=True)
-    participant_id = models.IntegerField(default=0, blank=True)
+    participant_id = models.IntegerField(null=True, blank=True)
     timestamp = models.IntegerField(default=0, blank=True)
 
     # ITEM_PURCHASED, ITEM_DESTROYED, ITEM_SOLD
@@ -417,9 +428,15 @@ class Event(models.Model):
     team_id = models.IntegerField(null=True, blank=True)
     tower_type = models.CharField(max_length=128, null=True, blank=True)
 
+    def __str__(self):
+        return f'Event(_type={self._type}, participant_id={self.participant_id}, timestamp={self.timestamp})'
+
 
 class AssistingParticipants(models.Model):
     event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='assistingparticipants')
     participant_id = models.IntegerField(default=0, blank=True)
+
+    def __str__(self):
+        return f'AssistingParticipants(participant_id={self.participant_id})'
 
 # END ADVANCED TIMELINE MODELS

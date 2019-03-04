@@ -4,6 +4,9 @@ from django.db.models import Count, Subquery, OuterRef
 from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
 
+from .models import AdvancedTimeline, Frame, ParticipantFrame
+from .models import Position, Event, AssistingParticipants
+
 from data.models import Rito
 
 from player.models import Summoner
@@ -565,3 +568,98 @@ def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, r
     p = p.order_by('-count')
 
     return p
+
+
+@task(name='match.tasks.import_advanced_timeline')
+def import_advanced_timeline(match_id=None, overwrite=False):
+    """
+
+    Parameters
+    ----------
+    match_id : ID
+        Internal Match ID
+
+    Returns
+    -------
+    None
+
+    """
+    match = Match.objects.get(id=match_id)
+    try:
+        match.advancedtimeline
+        if overwrite:
+            match.advancedtimeline.delete()
+    except:
+        # we haven't imported it yet.
+        pass
+    api = get_riot_api()
+    if api:
+        region = match.platform_id
+        alpha = 'abcdefghijklmnopqrstuvwxyz'
+        region = region.lower()
+        region = ''.join([x for x in region if x in alpha])
+        r = api.match.timeline(match._id, region=region)
+        data = r.json()
+        frame_interval = data['frameInterval']
+        at = AdvancedTimeline(match=match, frame_interval=frame_interval)
+        at.save()
+
+        for _frame in data['frames']:
+            timestamp = _frame['timestamp']
+            frame = Frame(timeline=at, timestamp=timestamp)
+            frame.save()
+            for i, p_frame in _frame['participantFrames'].items():
+
+                p_frame_data = {
+                    'frame': frame,
+                    'participant_id': p_frame['participantId'],
+                    'current_gold': p_frame['currentGold'],
+                    'dominion_score': p_frame.get('dominionScore', None),
+                    'jungle_minions_killed': p_frame['jungleMinionsKilled'],
+                    'level': p_frame['level'],
+                    'minions_killed': p_frame['minionsKilled'],
+                }
+                participant_frame = ParticipantFrame(**p_frame_data)
+                participant_frame.save()
+                pos = p_frame.get('position', None)
+                if pos is not None:
+                    pos_data = {
+                        'participantframe': participant_frame,
+                        'x': pos['x'],
+                        'y': pos['y'],
+                        'team_score': pos.get('teamScore', 0),
+                        'total_gold': pos.get('totalGold', 0),
+                        'xp': pos.get('xp', 0),
+                    }
+                    position = Position(**pos_data)
+                    position.save()
+
+            for _event in _frame['events']:
+                participant_id = _event.get('participantId', None)
+                if participant_id is None:
+                    participant_id = _event.get('creatorId', None)
+                pos = _event.get('position', {})
+                event_data = {
+                    'frame': frame,
+                    '_type': _event['type'],
+                    'participant_id': participant_id,
+                    'timestamp': _event.get('timestamp', None),
+                    'item_id': _event.get('itemId', None),
+                    'level_up_type': _event.get('levelUpType', None),
+                    'skill_slot': _event.get('skillSlot', None),
+                    'ward_type': _event.get('wardType', None),
+                    'before_id': _event.get('beforeId', None),
+                    'after_id': _event.get('afterId', None),
+                    'killer_id': _event.get('killerId', None),
+                    'victim_id': _event.get('victimId', None),
+                    'x': pos.get('x', None),
+                    'y': pos.get('y', None),
+                    'monster_type': _event.get('monsterType', None),
+                    'monster_sub_type': _event.get('monsterSubType', None),
+                    'building_type': _event.get('buildingType', None),
+                    'lane_type': _event.get('laneType', None),
+                    'team_id': _event.get('teamId', None),
+                    'tower_type': _event.get('towerType', None),
+                }
+                event = Event(**event_data)
+                event.save()
