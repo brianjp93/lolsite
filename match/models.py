@@ -375,21 +375,14 @@ class ParticipantFrame(models.Model):
     jungle_minions_killed = models.IntegerField(default=0, blank=True)
     level = models.IntegerField(default=1, blank=True)
     minions_killed = models.IntegerField(default=0, blank=True)
-
-    def __str__(self):
-        return f'ParticipantFrame(match={self.frame.timeline.match._id}, frame={self.frame.id}, participant_id={self.participant_id})'
-
-
-class Position(models.Model):
-    participantframe = models.OneToOneField('ParticipantFrame', on_delete=models.CASCADE)
-    x = models.IntegerField(default=0, blank=True)
-    y = models.IntegerField(default=0, blank=True)
     team_score = models.IntegerField(default=0, blank=True)
     total_gold = models.IntegerField(default=0, blank=True)
     xp = models.IntegerField(default=0, blank=True)
+    x = models.IntegerField(default=0, blank=True)
+    y = models.IntegerField(default=0, blank=True)
 
     def __str__(self):
-        return f'Position(match={self.participantframe.frame.timeline.match._id}, x={self.x}, y={self.y})'
+        return f'ParticipantFrame(match={self.frame.timeline.match._id}, frame={self.frame.id}, participant_id={self.participant_id})'
 
 
 class Event(models.Model):

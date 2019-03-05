@@ -5,6 +5,9 @@ import api from '../../api/api'
 import numeral from 'numeral'
 import moment from 'moment'
 import Item from '../data/Item'
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+} from 'recharts'
 
 
 function formatDatetime(epoch) {
@@ -21,7 +24,12 @@ class MatchCard extends Component {
 
             is_expanded: false,
 
-            card_horizontal_padding: 18, 
+            card_horizontal_padding: 18,
+
+            is_attempt_get_full_match: false,
+            is_loading_full_match: false,
+            full_match: null,
+            timeline: null,
         }
         
         this.getMyPart = this.getMyPart.bind(this)
@@ -41,6 +49,11 @@ class MatchCard extends Component {
         this.getItem = this.getItem.bind(this)
         this.retrieveItem = this.retrieveItem.bind(this)
         this.getCardWidth = this.getCardWidth.bind(this)
+        this.toggleExpand = this.toggleExpand.bind(this)
+        this.isFullMatchLoaded = this.isFullMatchLoaded.bind(this)
+        this.addTeamGoldToTimeline = this.addTeamGoldToTimeline.bind(this)
+        this.getMyTeamDataKey = this.getMyTeamDataKey.bind(this)
+        this.getOffset = this.getOffset.bind(this)
     }
     getMyPart() {
         // get my participant
@@ -127,6 +140,7 @@ class MatchCard extends Component {
         return this.props.pageStore.state.neutral_color
     }
     getTeam100(match) {
+        match = this.props.match
         var parts = []
         for (var part of match.participants) {
             if (part.team_id === 100) {
@@ -136,6 +150,7 @@ class MatchCard extends Component {
         return parts
     }
     getTeam200(match) {
+        match = this.props.match
         var parts = []
         for (var part of match.participants) {
             if (part.team_id === 200) {
@@ -473,6 +488,94 @@ class MatchCard extends Component {
         }
         return width
     }
+    toggleExpand() {
+        this.setState({is_expanded: !this.state.is_expanded}, () => {
+            if (!this.state.is_attempt_get_full_match) {
+                // let's get our full match data
+                this.setState({
+                        is_loading_full_match: true,
+                        is_attempt_get_full_match: true
+                    }, () => {
+                        api.match.timeline({match_id: this.props.match._id})
+                            .then(response => {
+                                var timeline = this.addTeamGoldToTimeline(response.data.data)
+                                this.setState({is_loading_full_match: false, timeline: timeline})
+                            })
+                            .catch(error => {
+                                console.error(error)
+
+                                this.setState({is_loading_full_match: false})
+                            })
+                    }
+                )
+            }
+            else {
+
+            }
+        })
+    }
+    isFullMatchLoaded() {
+        var out = true
+        if (this.state.timeline === null) {
+            out = false
+        }
+        return out
+    }
+    addTeamGoldToTimeline(timeline) {
+        
+        var team100 = []
+        var team200 = []
+        for (var part of this.props.match.participants) {
+            if (part.team_id === 100) {
+                team100.push(part._id)
+            }
+            else {
+                team200.push(part._id)
+            }
+        }
+        var team100_total
+        var team200_total
+        for (var frame of timeline) {
+            team100_total = 0
+            team200_total = 0
+            for (var pframe of frame.participantframes) {
+                if (pframe.total_gold !== undefined) {
+                    if (team100.indexOf(pframe.participant_id) >= 0) {
+                        team100_total += pframe.total_gold
+                    }
+                    else {
+                        team200_total += pframe.total_gold
+                    }
+                }
+            }
+            frame.team100_gold = team100_total
+            frame.team200_gold = team200_total
+
+            frame.team100_adv = frame.team100_gold - frame.team200_gold
+            frame.team200_adv = frame.team200_gold - frame.team100_gold
+        }
+        return timeline
+    }
+    getMyTeamDataKey() {
+        var mypart = this.getMyPart()
+        var myteam = mypart.team_id
+
+        return `team${myteam}_adv`
+    }
+    getOffset() {
+        const dataMax = Math.max(...this.state.timeline.map((i) => i[this.getMyTeamDataKey()]));
+        const dataMin = Math.min(...this.state.timeline.map((i) => i[this.getMyTeamDataKey()]));
+
+        if (dataMax <= 0){
+            return 0
+        }
+        else if (dataMin >= 0){
+            return 1
+        }
+        else{
+            return dataMax / (dataMax - dataMin);
+        }
+    }
     render() {
         let mypart = this.getMyPart()
         let match = this.props.match
@@ -488,7 +591,9 @@ class MatchCard extends Component {
                     paddingRight: this.state.card_horizontal_padding,
                     paddingLeft: this.state.card_horizontal_padding,
                     position: 'relative',
-                    verticalAlign: 'bottom'
+                    verticalAlign: 'bottom',
+                    overflow: 'hidden',
+                    transition: 'all .4s ease',
                 }}
                 className={`card-panel ${this.props.store.state.theme}`}>
 
@@ -617,10 +722,23 @@ class MatchCard extends Component {
                         </div>
                     </div>
 
-                    <div>
+                    <div style={{display: 'inline-block'}}>
                         <div>perk_0_var_1 : {mypart.stats.perk_0_var_1}</div>
                         <div>perk_0_var_2 : {mypart.stats.perk_0_var_2}</div>
                         <div>perk_0_var_3 : {mypart.stats.perk_0_var_3}</div>
+                    </div>
+
+                    <div style={{position:'absolute', left:274, top:190, zIndex:10}}>
+                        <button
+                            onClick={this.toggleExpand}
+                            className={`${this.props.store.state.theme} btn-small`} style={{height:209, padding:'0 3px'}}>
+                            {!this.state.is_expanded &&
+                                <i className="material-icons">chevron_right</i>
+                            }
+                            {this.state.is_expanded &&
+                                <i className="material-icons">chevron_left</i>
+                            }
+                        </button>
                     </div>
 
                     {/* match card footer */}
@@ -635,7 +753,7 @@ class MatchCard extends Component {
                             </small>
                         </div>
 
-                        <div style={{position:'absolute', bottom:0, right:0, paddingRight:10}}>
+                        <div style={{position:'absolute', bottom:0, left:115, width:150, textAlign: 'right'}}>
                             <small className={`${this.props.store.state.theme} ${this.matchHighlightColor(match)}`}>
                                 {this.props.pageStore.state.queues[match.queue_id].description}
                             </small>
@@ -643,15 +761,60 @@ class MatchCard extends Component {
                     </div>
                 </div>
 
-                {this.state.is_expanded &&
-                    <div
-                        style={{
-                            display: 'inline-block',
-                            verticalAlign: 'top',
-                        }}>
-                        HELLO NEW DIV
-                    </div>
-                }
+
+                <div
+                    style={{
+                        display: 'inline-block',
+                        verticalAlign: 'top',
+                        paddingLeft: 20,
+                    }}>
+                    {this.state.is_loading_full_match &&
+                        <div>SHOW LOADING ANIMATION</div>
+                    }
+                    {!this.state.is_loading_full_match && this.isFullMatchLoaded() &&
+                        <div>
+                            <AreaChart
+                                    width={390}
+                                    height={150}
+                                    data={this.state.timeline}
+                                    margin={{
+                                      top: 10, right: 30, left: 0, bottom: 0,
+                                    }}
+                                  >
+                                    <CartesianGrid
+                                        strokeDasharray="3 5" />
+                                    <XAxis
+                                        hide={true}
+                                        tickFormatter={(tickItem) => {
+                                            var m = Math.round(tickItem / 1000 / 60)
+                                            return `${m}m`
+                                        }}
+                                        dataKey="timestamp" />
+                                    <YAxis
+                                        tickFormatter={(tick) => {
+                                            return numeral(tick).format('0.0a')
+                                        }} />
+                                    <Tooltip
+                                        formatter={(value, name, props) => {
+                                            value = numeral(value).format('0,0')
+                                            return [`${value}g`, 'Team Adv']
+                                        }}
+                                        labelFormatter={(label) => {
+                                            var m = Math.round(label / 1000 / 60)
+                                            return `${m}m`
+                                        }} />
+                                    <defs>
+                                      <linearGradient id={`${this.props.match._id}-gradient`} x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset={this.getOffset()} stopColor="#3674ad" stopOpacity={1} />
+                                        <stop offset={this.getOffset()} stopColor="#cd565a" stopOpacity={1} />
+                                      </linearGradient>
+                                    </defs>
+                                    <Area type="monotone" dataKey={this.getMyTeamDataKey()} stroke="#000" fill={`url(#${this.props.match._id}-gradient)`} />
+                                  </AreaChart>
+                        </div>
+                    }
+                </div>
+
             </div>
         )
     }

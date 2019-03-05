@@ -5,7 +5,7 @@ from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
 
 from .models import AdvancedTimeline, Frame, ParticipantFrame
-from .models import Position, Event, AssistingParticipants
+from .models import Event, AssistingParticipants
 
 from data.models import Rito
 
@@ -618,21 +618,16 @@ def import_advanced_timeline(match_id=None, overwrite=False):
                     'jungle_minions_killed': p_frame['jungleMinionsKilled'],
                     'level': p_frame['level'],
                     'minions_killed': p_frame['minionsKilled'],
+                    'team_score': p_frame.get('teamScore', 0),
+                    'total_gold': p_frame.get('totalGold', 0),
+                    'xp': p_frame.get('xp', 0),
                 }
-                participant_frame = ParticipantFrame(**p_frame_data)
-                participant_frame.save()
                 pos = p_frame.get('position', None)
                 if pos is not None:
-                    pos_data = {
-                        'participantframe': participant_frame,
-                        'x': pos['x'],
-                        'y': pos['y'],
-                        'team_score': pos.get('teamScore', 0),
-                        'total_gold': pos.get('totalGold', 0),
-                        'xp': pos.get('xp', 0),
-                    }
-                    position = Position(**pos_data)
-                    position.save()
+                    p_frame_data['x'] = pos['x']
+                    p_frame_data['y'] = pos['y']
+                participant_frame = ParticipantFrame(**p_frame_data)
+                participant_frame.save()
 
             for _event in _frame['events']:
                 participant_id = _event.get('participantId', None)

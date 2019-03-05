@@ -2,6 +2,9 @@ from rest_framework import serializers
 from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
 
+from .models import AdvancedTimeline, Frame, ParticipantFrame
+from .models import Event, AssistingParticipants
+
 
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,4 +65,31 @@ class FullMatchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Match
+        fields = '__all__'
+
+
+# ADVANCED TIMELINE
+class AdvancedTimelineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvancedTimeline
+        fields = '__all__'
+
+class FrameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Frame
+        fields = '__all__'
+
+class ParticipantFrameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ParticipantFrame
+        fields = '__all__'
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = '__all__'
+
+class AssistingParticipantsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssistingParticipants
         fields = '__all__'

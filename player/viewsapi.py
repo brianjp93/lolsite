@@ -167,6 +167,7 @@ def serialize_matches(match_query, account_id):
                 spell_2 = spell_cache[participant.spell_2_id]
 
             participant_data = {
+                '_id': participant._id,
                 'summoner_name': participant.summoner_name,
                 'account_id': participant.current_account_id,
                 'lane': participant.lane,

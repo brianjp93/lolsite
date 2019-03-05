@@ -13,6 +13,8 @@
     --highlight4: #27a28e;
     --highlight5: #debe9c;
     --link-color: #88b5d7;
+    --button-color1: gray;
+    --button-color1-hover: lightgray;
 }
 
 a.light {
@@ -88,4 +90,12 @@ ul.sidenav.light {
     border-radius: 4px;
     padding: 0 5px;
     color: white;
+}
+
+.light.btn-small, .light.btn, .light.btn-large {
+    background-color: var(--button-color1);
+}
+
+.light.btn-small:hover, .light.btn:hover, .light.btn-large:hover {
+    background-color: var(--button-color1-hover);
 }

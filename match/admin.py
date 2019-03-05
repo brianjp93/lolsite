@@ -4,7 +4,7 @@ from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
 
 from .models import AdvancedTimeline, Frame, ParticipantFrame
-from .models import Position, Event, AssistingParticipants
+from .models import Event, AssistingParticipants
 
 
 class MatchAdmin(admin.ModelAdmin):
@@ -62,11 +62,6 @@ class ParticipantFrameAdmin(admin.ModelAdmin):
     raw_id_fields = ('frame',)
 
 
-class PositionAdmin(admin.ModelAdmin):
-    list_display = ('x', 'y', 'total_gold', 'xp')
-    raw_id_fields = ('participantframe',)
-
-
 class EventAdmin(admin.ModelAdmin):
     list_display = ('_type', 'participant_id', 'timestamp')
     raw_id_fields = ('frame',)
@@ -87,6 +82,5 @@ admin.site.register(Ban, BanAdmin)
 admin.site.register(AdvancedTimeline, AdvancedTimelineAdmin)
 admin.site.register(Frame, FrameAdmin)
 admin.site.register(ParticipantFrame, ParticipantFrameAdmin)
-admin.site.register(Position, PositionAdmin)
 admin.site.register(Event, EventAdmin)
 admin.site.register(AssistingParticipants, AssistingParticipantsAdmin)
