@@ -411,7 +411,15 @@ def import_champions(version='', language='en_US', overwrite=False):
                 'title': champion_data['title'],
             }
             champion_model = Champion(**champion_model_data)
-            champion_model.save()
+            try:
+                champion_model.save()
+            except IntegrityError as error:
+                if overwrite:
+                    query = Champion.objects.get(_id=champion_data['id'], language=language, version=version)
+                    query.delete()
+                    champion_model.save()
+                else:
+                    raise error
 
             # ChampionInfo
             info_data = champion_data['info']
