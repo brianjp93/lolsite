@@ -18,7 +18,6 @@ class Item extends Component {
                 opacity: .9,
                 maxWidth: 300,
                 borderRadius: 10,
-                zIndex: 11,
             }}>
                 {item === null &&
                     <span>Retrieving item...</span>
