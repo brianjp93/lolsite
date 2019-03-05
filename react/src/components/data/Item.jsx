@@ -18,6 +18,7 @@ class Item extends Component {
                 opacity: .9,
                 maxWidth: 300,
                 borderRadius: 10,
+                zIndex: 11,
             }}>
                 {item === null &&
                     <span>Retrieving item...</span>
@@ -61,6 +62,7 @@ class ItemPopover extends Component {
                 <Popover
                     isOpen={this.state.is_open}
                     position={'top'}
+                    containerStyle={{'z-index': '11'}}
                     content={(
                         <Item item={this.props.item} />
                     )}
