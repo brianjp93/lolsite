@@ -431,17 +431,18 @@ class SummonerCard extends Component {
                     <div>
                         {this.props.positions.map(pos => {
                             if (pos.queueType === 'RANKED_SOLO_5x5') {
+                                var gen_positions = ['NONE', 'APEX']
                                 return (
                                     <div key={`${pos.position}-${this.props.summoner._id}`}>
                                         <div>
                                             <div style={{display: 'inline-block', width:50}}>
-                                                {pos.position !== 'NONE' &&
+                                                {gen_positions.indexOf(pos.position) === -1 &&
                                                     <img
                                                         src={this.positionalRankImage(pos.position, pos.tier)}
                                                         style={{height:40}}
                                                         alt=""/>
                                                 }
-                                                {pos.position === 'NONE' &&
+                                                {gen_positions.indexOf(pos.position) >= 0 &&
                                                     <img
                                                         src={this.generalRankImage(pos.tier)}
                                                         style={{height:40}}

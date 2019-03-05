@@ -314,6 +314,10 @@ def serialize_matches(match_query, account_id):
                         'gold_earned': stats.gold_earned,
                         'champ_level': stats.champ_level,
                         'total_damage_dealt_to_champions': stats.total_damage_dealt_to_champions,
+                        'vision_score': stats.vision_score,
+                        'total_damage_taken': stats.total_damage_taken,
+                        'damage_dealt_to_objectives': stats.damage_dealt_to_objectives,
+                        'damage_dealt_to_turrets': stats.damage_dealt_to_turrets,
                     }
                     participant_data['stats'] = stats_data
             else:
@@ -329,6 +333,11 @@ def serialize_matches(match_query, account_id):
                         'assists': stats.assists,
                         'champ_level': stats.champ_level,
                         'total_damage_dealt_to_champions': stats.total_damage_dealt_to_champions,
+                        'vision_score': stats.vision_score,
+                        'total_damage_taken': stats.total_damage_taken,
+                        'damage_dealt_to_objectives': stats.damage_dealt_to_objectives,
+                        'damage_dealt_to_turrets': stats.damage_dealt_to_turrets,
+                        'gold_earned': stats.gold_earned,
                     }
                     participant_data['stats'] = stats_data
             participants.append(participant_data)

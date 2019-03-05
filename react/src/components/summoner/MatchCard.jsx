@@ -6,7 +6,7 @@ import numeral from 'numeral'
 import moment from 'moment'
 import Item from '../data/Item'
 import {
-    ComposedChart, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+    ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts'
 
 
@@ -599,7 +599,7 @@ class MatchCard extends Component {
                 vals.push(Math.abs(frame.team100_adv))
             }
         }
-        
+
         var bound = Math.max(...vals)
 
         if (style === 'perc') {
@@ -809,8 +809,8 @@ class MatchCard extends Component {
                     {!this.state.is_loading_full_match && this.isFullMatchLoaded() &&
                         <div>
                             <ComposedChart
-                                    width={390}
-                                    height={150}
+                                    width={400}
+                                    height={125}
                                     data={this.state.timeline}
                                     margin={{
                                       top: 10, right: 30, left: 0, bottom: 0,
@@ -829,19 +829,12 @@ class MatchCard extends Component {
                                         dataKey="timestamp" />
                                     
                                     <YAxis
-                                        domain={this.getDomain()}
+                                        // domain={this.getDomain()}
                                         yAxisId='left'
                                         orientation='left'
                                         tickFormatter={(tick) => {
                                             return numeral(tick).format('0.0a')
                                         }} />
-                                    <YAxis
-                                        domain={this.getDomain('perc')}
-                                        tickFormatter={(tick) => {
-                                            var perc = numeral(tick).format('0')
-                                            return `${perc}%`
-                                        }}
-                                        yAxisId="right" orientation='right' tickLine={false} axisLine={false}/>
                                     
                                     <Tooltip
                                         formatter={(value, name, props) => {
@@ -867,12 +860,22 @@ class MatchCard extends Component {
 
                                     <Area yAxisId='left' type="monotone" dataKey={this.getMyTeamDataKey()} stroke="#000" fill={`url(#${this.props.match._id}-gradient)`} />
 
-                                    <Area
-                                        opacity='0.3'
-                                        yAxisId='right'
-                                        type="monotone"
-                                        dataKey={this.getMyTeamDataKey('perc')}
-                                        stroke="#777" fill={`#fff`} />
+                                    {/* secondary chart */}
+                                    {/*
+                                        <YAxis
+                                            domain={this.getDomain('perc')}
+                                            tickFormatter={(tick) => {
+                                                var perc = numeral(tick).format('0')
+                                                return `${perc}%`
+                                            }}
+                                            yAxisId="right" orientation='right' tickLine={false} axisLine={false}/>
+                                        <Area
+                                            opacity='0.3'
+                                            yAxisId='right'
+                                            type="monotone"
+                                            dataKey={this.getMyTeamDataKey('perc')}
+                                            stroke="#777" fill={`#fff`} />
+                                    */}
 
                                   </ComposedChart>
                         </div>
