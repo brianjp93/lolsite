@@ -553,6 +553,15 @@ class MatchCard extends Component {
 
             frame.team100_adv = frame.team100_gold - frame.team200_gold
             frame.team200_adv = frame.team200_gold - frame.team100_gold
+
+            if (frame.team100_adv >= 0) {
+                frame.team100_perc_adv = (frame.team100_adv / team200_total) * 100
+                frame.team200_perc_adv = -frame.team100_perc_adv
+            }
+            else {
+                frame.team200_perc_adv = (frame.team200_adv / team100_total) * 100
+                frame.team100_perc_adv = -frame.team200_perc_adv
+            }
         }
         return timeline
     }

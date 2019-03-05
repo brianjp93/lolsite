@@ -47,7 +47,7 @@ def get_match_timeline(request, format=None):
                 timeline = match.advancedtimeline
 
             timeline_data = []
-            for frame in timeline.frames.all():
+            for frame in timeline.frames.all().order_by('timestamp'):
                 frame_data = {
                     'timestamp': frame.timestamp,
                 }
