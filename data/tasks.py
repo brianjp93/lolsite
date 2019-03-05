@@ -457,7 +457,7 @@ def import_champions(version='', language='en_US', overwrite=False):
                 'attack_damage': stat_data['attackdamage'],
                 'attack_damage_per_level': stat_data['attackdamageperlevel'],
                 'attack_range': stat_data['attackrange'],
-                'attack_speed': stat_data['attackspeed'],
+                'attack_speed': stat_data.get('attackspeed', None),
                 'attack_speed_per_level': stat_data['attackspeedperlevel'],
                 'crit': stat_data['crit'],
                 'crit_per_level': stat_data['critperlevel'],
