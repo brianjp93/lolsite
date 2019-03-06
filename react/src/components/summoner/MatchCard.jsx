@@ -5,6 +5,7 @@ import api from '../../api/api'
 import numeral from 'numeral'
 import moment from 'moment'
 import Item from '../data/Item'
+import StatPie from './StatPie'
 import {
     ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts'
@@ -758,9 +759,13 @@ class MatchCard extends Component {
                     </div>
 
                     <div style={{display: 'inline-block'}}>
-                        <div>perk_0_var_1 : {mypart.stats.perk_0_var_1}</div>
-                        <div>perk_0_var_2 : {mypart.stats.perk_0_var_2}</div>
-                        <div>perk_0_var_3 : {mypart.stats.perk_0_var_3}</div>
+                        <StatPie
+                            width={260}
+                            height={130}
+                            match={match}
+                            store={this.props.store}
+                            mypart={mypart}
+                            pageStore={this.props.pageStore} />
                     </div>
 
                     <div style={{position:'absolute', left:274, top:190, zIndex:10}}>
