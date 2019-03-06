@@ -256,6 +256,7 @@ class StatPie extends Component {
                     fill="#555"/>
 
                 <Tooltip
+                    offset={40}
                     formatter={(value, name, props) => {
                         if (value.toString().indexOf('.') >= 0) {
                             value = numeral(value).format('0.00')

@@ -842,6 +842,7 @@ class MatchCard extends Component {
                                         }} />
                                     
                                     <Tooltip
+                                        offset={70}
                                         formatter={(value, name, props) => {
                                             if (name.indexOf('perc') >= 0) {
                                                 value = numeral(value).format('0')
