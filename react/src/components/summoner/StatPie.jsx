@@ -180,6 +180,8 @@ class StatPie extends Component {
         let cx = 130
         let cy = 100
         let animation = false
+        let stroke = '#999'
+        let avg_color = '#5f5f5f'
         return (
             <PieChart width={this.props.width} height={this.props.height}>
 
@@ -194,6 +196,7 @@ class StatPie extends Component {
                     dataKey='value'
                     outerRadius={90}
                     innerRadius={80}
+                    stroke={stroke}
                     fill="#cec66b"/>
                 <Pie
                     isAnimationActive={animation}
@@ -205,7 +208,8 @@ class StatPie extends Component {
                     dataKey='value'
                     outerRadius={80}
                     innerRadius={75}
-                    fill="#555"/>
+                    stroke={stroke}
+                    fill={avg_color}/>
 
                 {/* VISION SCORE */}
                 <Pie
@@ -218,6 +222,7 @@ class StatPie extends Component {
                     dataKey='value'
                     outerRadius={65}
                     innerRadius={55}
+                    stroke={stroke}
                     fill="#4b9bcd"/>
                 <Pie
                     isAnimationActive={animation}
@@ -229,7 +234,8 @@ class StatPie extends Component {
                     dataKey='value'
                     outerRadius={55}
                     innerRadius={50}
-                    fill="#555"/>
+                    stroke={stroke}
+                    fill={avg_color}/>
 
                 {/* DAMAGE TAKEN */}
                 <Pie
@@ -242,6 +248,7 @@ class StatPie extends Component {
                     dataKey='value'
                     outerRadius={40}
                     innerRadius={30}
+                    stroke={stroke}
                     fill="#a2b6c1"/>
                 <Pie
                     isAnimationActive={animation}
@@ -253,7 +260,8 @@ class StatPie extends Component {
                     dataKey='value'
                     outerRadius={30}
                     innerRadius={25}
-                    fill="#555"/>
+                    stroke={stroke}
+                    fill={avg_color}/>
 
                 <Tooltip
                     offset={40}
