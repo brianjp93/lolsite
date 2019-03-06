@@ -70,18 +70,29 @@ def import_match(match_id, region, refresh=False):
         
 
 def import_summoner_from_participant(part, region):
+    """Import a summoner using participant data.
+
+    Parameters
+    ----------
+    part : dict
+    region : str
+
+    Returns
+    -------
+    None
+
     """
-    """
-    query = Summoner.objects.filter(account_id=part['current_account_id'], _id=part['summoner_id'])
-    if query.exists():
-        # don't need to create it again
-        pass
-    else:
-        account_id = part['current_account_id']
-        name = part['summoner_name']
-        _id = part['summoner_id']
-        summoner = Summoner(_id=_id, name=name, account_id=account_id, region=region.lower())
-        summoner.save()
+    if part['summoner_id']:
+        query = Summoner.objects.filter(account_id=part['current_account_id'], _id=part['summoner_id'])
+        if query.exists():
+            # don't need to create it again
+            pass
+        else:
+            account_id = part['current_account_id']
+            name = part['summoner_name']
+            _id = part['summoner_id']
+            summoner = Summoner(_id=_id, name=name, account_id=account_id, region=region.lower())
+            summoner.save()
 
 
 

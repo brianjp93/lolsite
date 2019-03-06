@@ -219,9 +219,16 @@ class MatchCard extends Component {
                     }
                     {!is_me &&
                         <small>
-                            <Link className={`${this.props.store.state.theme} silent`} to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
-                                {this.formattedName(part.summoner_name)}
-                            </Link>
+                            {part.account_id !== '0' &&
+                                <Link className={`${this.props.store.state.theme} silent`} to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
+                                    {this.formattedName(part.summoner_name)}
+                                </Link>
+                            }
+                            {part.account_id === '0' &&
+                                <span>
+                                    {this.formattedName(part.summoner_name)}
+                                </span>
+                            }
                         </small>
                     }
                 </span>
@@ -280,9 +287,16 @@ class MatchCard extends Component {
                     }
                     {!is_me &&
                         <small>
-                            <Link className={`${this.props.store.state.theme} silent`} to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
-                                {this.formattedName(part.summoner_name)}
-                            </Link>
+                            {part.account_id !== '0' &&
+                                <Link className={`${this.props.store.state.theme} silent`} to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
+                                    {this.formattedName(part.summoner_name)}
+                                </Link>
+                            }
+                            {part.account_id === '0' &&
+                                <span>
+                                    {this.formattedName(part.summoner_name)}
+                                </span>
+                            }
                         </small>
                     }
                 </span>{' '}
