@@ -12,7 +12,7 @@
     * create virtual env
     * `pip install -r requirements`
 5. Install react packages
-    * install nodejs if necessary so that we have access to npm.
+    * install [nodejs](https://nodejs.org/en/) if necessary so that we have access to npm.
     * `cd react`
     * `/react >> npm install`
 6. Run Database Migrations 
@@ -25,8 +25,8 @@
         * this call will automatically run the react server, and tell django to use React's development files instead of the build files.
         * you may have to `control+c` out of the rundev command, and rerun it after the react server is up.
     * if this doesn't work, we can run the two servers manually
-        * `python manage.py runserver`
-        * change to react directory - `cd react`
+        * `python manage.py rundev`
+        * then in a new command prompt, cd into `/react`
         * start react server - `npm start`
 9. Set our API key
     * Set up a developer account at the [riot dev site](https://developer.riotgames.com/)
