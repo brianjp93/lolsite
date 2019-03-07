@@ -69,3 +69,26 @@ class NameChange(models.Model):
 
     def __str__(self):
         return f'NameChange(old_name="{self.old_name}", new_name="{self.summoner.name}")'
+
+
+class RankCheckpoint(models.Model):
+    summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE, related_name='rankcheckpoints')
+
+    created_date = models.DateTimeField(default=timezone.now)
+
+
+class RankPosition(models.Model):
+    checkpoint = models.ForeignKey('RankCheckpoint', on_delete=models.CASCADE, related_name='positions')
+
+    fresh_blood = models.BooleanField(default=False, blank=True)
+    hot_streak = models.BooleanField(default=False, blank=True)
+    inactive = models.BooleanField(default=False, blank=True)
+    veteran = models.BooleanField(default=False, blank=True)
+    league_points = models.IntegerField(default=0, null=True, blank=True)
+    wins = models.IntegerField(default=0, blank=True)
+    losses = models.IntegerField(default=0, blank=True)
+    series_progress = models.CharField(max_length=16, default=None, null=True, blank=True)
+    position = models.CharField(max_length=32, default='NONE', null=True, blank=True)
+    queue_type = models.CharField(max_length=32, default='', blank=True)
+    rank = models.CharField(max_length=32, default='', blank=True)
+    tier = models.CharField(max_length=32, default='', blank=True)
