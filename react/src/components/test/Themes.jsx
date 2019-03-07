@@ -23,7 +23,14 @@ class Themes extends Component {
                                         type="radio"
                                         checked={this.props.store.state.theme === choice}
                                         onChange={(event) => this.props.store.setState({theme: event.target.value})}/>
-                                        <span>{choice}</span>
+                                        <span>
+                                            {choice}
+                                            {choice === 'light' &&
+                                                <span>
+                                                    {' '} - Don't select if you value your eyes
+                                                </span>
+                                            }
+                                        </span>
                                 </label>
                                 <br/>
                             </span>

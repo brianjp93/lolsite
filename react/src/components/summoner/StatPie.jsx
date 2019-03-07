@@ -19,6 +19,10 @@ class StatPie extends Component {
         this.getAVGTotalDamageTaken = this.getAVGTotalDamageTaken.bind(this)
         this.getMaxDamageTaken = this.getMaxDamageTaken.bind(this)
         this.getMaxVisionScore = this.getMaxVisionScore.bind(this)
+
+        this.getDamageTakenPerDeath = this.getDamageTakenPerDeath.bind(this)
+        this.getAVGDamageTakenPerDeath =  this.getAVGDamageTakenPerDeath.bind(this)
+        this.getMaxDamageTakenPerDeath = this.getMaxDamageTakenPerDeath.bind(this)
     }
     
     getMyTeam() {
@@ -62,12 +66,13 @@ class StatPie extends Component {
     getAvgDPG(myteam) {
         // excluding my dpg
         var total = 0
-        for (var part of myteam) {
+        var full_team = [this.props.mypart, ...myteam]
+        for (var part of full_team) {
             total += this.getDPG(part)
         }
         var avg
         try {
-            avg = total / myteam.length
+            avg = total / full_team.length
         }
         catch(error) {
             avg = 0
@@ -87,12 +92,13 @@ class StatPie extends Component {
     }
     getAvgVisionScore(myteam) {
         var total = 0
-        for (var part of myteam) {
+        var full_team = [this.props.mypart, ...myteam]
+        for (var part of full_team) {
             total += part.stats.vision_score
         }
         var avg
         try {
-            avg = total / myteam.length
+            avg = total / full_team.length
         }
         catch(error) {
             avg = 0
@@ -112,12 +118,13 @@ class StatPie extends Component {
     }
     getAVGTotalDamageTaken(myteam) {
         var total = 0
-        for (var part of myteam) {
+        var full_team = [this.props.mypart, ...myteam]
+        for (var part of full_team) {
             total += part.stats.total_damage_taken
         }
         var avg
         try {
-            avg = total / myteam.length
+            avg = total / full_team.length
         }
         catch(error) {
             avg = 0
@@ -129,6 +136,41 @@ class StatPie extends Component {
         var val
         for (var part of [this.props.mypart, ...myteam]) {
             val = part.stats.total_damage_taken
+            if (val > max) {
+                max = val
+            }
+        }
+        return max
+    }
+    getDamageTakenPerDeath(part) {
+        var dmg_taken = part.stats.total_damage_taken
+        var deaths = part.stats.deaths
+        if (deaths < 1) {
+            deaths = 1
+        }
+        var dmg_taken_per_death = dmg_taken / deaths
+        return dmg_taken_per_death
+    }
+    getAVGDamageTakenPerDeath(myteam) {
+        var total = 0
+        var full_team = [this.props.mypart, ...myteam]
+        for (var part of full_team) {
+            total += this.getDamageTakenPerDeath(part)
+        }
+        var avg
+        try {
+            avg = total / full_team.length
+        }
+        catch(error) {
+            avg = 0
+        }
+        return avg
+    }
+    getMaxDamageTakenPerDeath(myteam) {
+        var max = 0
+        var val
+        for (var part of [this.props.mypart, ...myteam]) {
+            val = this.getDamageTakenPerDeath(part)
             if (val > max) {
                 max = val
             }
@@ -151,6 +193,10 @@ class StatPie extends Component {
         var total_damage_taken = this.props.mypart.stats.total_damage_taken
         var avg_total_damage_taken = this.getAVGTotalDamageTaken(myteam)
         var max_total_damage_taken = this.getMaxDamageTaken(myteam)
+    
+        var dtpd = this.getDamageTakenPerDeath(this.props.mypart)
+        var avg_dtpd = this.getAVGDamageTakenPerDeath(myteam)
+        var max_dtpd = this.getMaxDamageTakenPerDeath(myteam)
 
         var data = {
             vision_score: [{name: 'Vision Score', value: vision_score}],
@@ -166,6 +212,10 @@ class StatPie extends Component {
             total_damage_taken: [{name: 'Damage Taken', value: total_damage_taken}],
             avg_total_damage_taken: [{name: 'AVG Damage Taken', value: avg_total_damage_taken}],
             max_total_damage_taken: max_total_damage_taken,
+
+            dtpd: [{name: 'DMG Taken / Death', value: dtpd}],
+            avg_dtpd: [{name: 'AVG DMG Taken / Death', value: avg_dtpd}],
+            max_dtpd: max_dtpd,
         }
         return data
     }
@@ -177,11 +227,16 @@ class StatPie extends Component {
     render() {
         let data = this.getData()
         let start_angle = 180
-        let cx = 130
-        let cy = 100
+        let cx = 120
+        let cy = 90
         let animation = false
         let stroke = '#999'
+
         let avg_color = '#5f5f5f'
+        let dpg_color = '#cec66b'
+        let vision_score_color = '#5091b9'
+        let total_damage_taken_color = '#a2b6c1'
+        let dtpd_color = '#a23f75'
         return (
             <PieChart width={this.props.width} height={this.props.height}>
 
@@ -197,7 +252,7 @@ class StatPie extends Component {
                     outerRadius={90}
                     innerRadius={80}
                     stroke={stroke}
-                    fill="#cec66b"/>
+                    fill={dpg_color}/>
                 <Pie
                     isAnimationActive={animation}
                     cx={cx}
@@ -220,10 +275,10 @@ class StatPie extends Component {
                     endAngle={this.getEndAngle(data.vision_score[0].value, data.max_vision_score)}
                     data={data.vision_score}
                     dataKey='value'
-                    outerRadius={65}
-                    innerRadius={55}
+                    outerRadius={70}
+                    innerRadius={60}
                     stroke={stroke}
-                    fill="#4b9bcd"/>
+                    fill={vision_score_color}/>
                 <Pie
                     isAnimationActive={animation}
                     cx={cx}
@@ -232,8 +287,8 @@ class StatPie extends Component {
                     endAngle={this.getEndAngle(data.avg_vision_score[0].value, data.max_vision_score)}
                     data={data.avg_vision_score}
                     dataKey='value'
-                    outerRadius={55}
-                    innerRadius={50}
+                    outerRadius={60}
+                    innerRadius={55}
                     stroke={stroke}
                     fill={avg_color}/>
 
@@ -246,10 +301,10 @@ class StatPie extends Component {
                     endAngle={this.getEndAngle(data.total_damage_taken[0].value, data.max_total_damage_taken)}
                     data={data.total_damage_taken}
                     dataKey='value'
-                    outerRadius={40}
-                    innerRadius={30}
+                    outerRadius={50}
+                    innerRadius={40}
                     stroke={stroke}
-                    fill="#a2b6c1"/>
+                    fill={total_damage_taken_color}/>
                 <Pie
                     isAnimationActive={animation}
                     cx={cx}
@@ -258,16 +313,45 @@ class StatPie extends Component {
                     endAngle={this.getEndAngle(data.avg_total_damage_taken[0].value, data.max_total_damage_taken)}
                     data={data.avg_total_damage_taken}
                     dataKey='value'
+                    outerRadius={40}
+                    innerRadius={35}
+                    stroke={stroke}
+                    fill={avg_color}/>
+
+                <Pie
+                    isAnimationActive={animation}
+                    cx={cx}
+                    cy={cy}
+                    startAngle={start_angle}
+                    endAngle={this.getEndAngle(data.dtpd[0].value, data.max_dtpd)}
+                    data={data.dtpd}
+                    dataKey='value'
                     outerRadius={30}
-                    innerRadius={25}
+                    innerRadius={20}
+                    stroke={stroke}
+                    fill={dtpd_color}/>
+                <Pie
+                    isAnimationActive={animation}
+                    cx={cx}
+                    cy={cy}
+                    startAngle={start_angle}
+                    endAngle={this.getEndAngle(data.avg_dtpd[0].value, data.max_dtpd)}
+                    data={data.avg_dtpd}
+                    dataKey='value'
+                    outerRadius={20}
+                    innerRadius={15}
                     stroke={stroke}
                     fill={avg_color}/>
 
                 <Tooltip
+                    wrapperStyle={{zIndex: 15}}
                     offset={40}
                     formatter={(value, name, props) => {
                         if (value.toString().indexOf('.') >= 0) {
-                            value = numeral(value).format('0.00')
+                            value = numeral(value).format('0,0.00')
+                        }
+                        else {
+                            value = numeral(value).format('0,0')
                         }
                         return value
                     }} />

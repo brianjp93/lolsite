@@ -65,6 +65,8 @@ def import_match(match_id, region, refresh=False):
 
         if r.status_code == 429:
             return 'throttled'
+        if r.status_code == 404:
+            return 'not found'
         
         import_match_from_data(match, refresh=refresh, region=region)
         
@@ -92,7 +94,11 @@ def import_summoner_from_participant(part, region):
             name = part['summoner_name']
             _id = part['summoner_id']
             summoner = Summoner(_id=_id, name=name, account_id=account_id, region=region.lower())
-            summoner.save()
+            try:
+                summoner.save()
+            except IntegrityError as error:
+                # probably already saved it in a separate thread
+                pass
 
 
 
@@ -196,7 +202,12 @@ def parse_match(data):
         'participants': [],
         'teams': [],
     }
-    version = {i:int(x) for i, x in enumerate(data['gameVersion'].split('.'))}
+    try:
+        version = {i:int(x) for i, x in enumerate(data['gameVersion'].split('.'))}
+    except Exception as error:
+        print('Error on parse.')
+        print(data)
+        raise error
     match = {
         '_id': data['gameId'],
         'game_creation': data['gameCreation'],

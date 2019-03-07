@@ -58,7 +58,9 @@ function Routes(props) {
         <main>
             <Switch>
                 <Route exact path='/' render={() => <Home store={props.store}/>}/>
+
                 <Route path='/na/:summoner_name/' render={(rest) => <Summoner route={rest} region='na' store={props.store} />} />
+
                 <Route exact path='/themes/' render={() => <Themes store={props.store}/>}/>
             </Switch>
         </main>

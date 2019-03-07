@@ -774,8 +774,8 @@ class MatchCard extends Component {
 
                     <div style={{display: 'inline-block'}}>
                         <StatPie
-                            width={260}
-                            height={130}
+                            width={240}
+                            height={95}
                             match={match}
                             store={this.props.store}
                             mypart={mypart}

@@ -373,6 +373,8 @@ def get_summoner_page(request, format=None):
 
     POST Parameters
     ---------------
+    id : int
+        Internal Summoner ID
     summoner_name : str
     account_id : str
     region : str
@@ -399,7 +401,8 @@ def get_summoner_page(request, format=None):
     data = {}
     status_code = 200
 
-    if request.method == 'POST':    
+    if request.method == 'POST':
+        _id = request.data.get('id', None)
         update = request.data.get('update', False)
         region = request.data.get('region', None)
         name = request.data.get('summoner_name', None)
@@ -419,6 +422,8 @@ def get_summoner_page(request, format=None):
             query = Summoner.objects.filter(simple_name=simplified, region=region)
         elif account_id:
             query = Summoner.objects.filter(account_id=account_id, region=region)
+        elif _id:
+            query = Summoner.objects.filter(id=_id, region=region)
 
         if query.exists():
             summoner = query.first()

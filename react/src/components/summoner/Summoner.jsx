@@ -102,8 +102,10 @@ class Summoner extends Component {
     }
     getSummonerPage(callback) {
         this.setState({is_requesting_page: true})
+        var params = this.props.route.match.params
         var data = {
-            summoner_name: this.props.route.match.params.summoner_name,
+            summoner_name: params.summoner_name ? params.summoner_name: null,
+            id: params.id ? params.id: null,
             region: this.props.region,
             update: true,
             count: this.state.count,
@@ -131,8 +133,10 @@ class Summoner extends Component {
     }
     getNextPage() {
         this.setState({is_requesting_next_page: true})
+        var params = this.props.route.match.params
         var data = {
-            summoner_name: this.props.route.match.params.summoner_name,
+            summoner_name: params.summoner_name,
+            id: this.state.summoner.id,
             region: this.props.region,
             update: false,
             count: this.state.count,
