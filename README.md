@@ -12,6 +12,7 @@
     * create virtual env
     * `pip install -r requirements`
 5. Install react packages
+    * install nodejs if necessary so that we have access to npm.
     * `cd react`
     * `/react >> npm install`
 6. Run Database Migrations 
@@ -22,14 +23,37 @@
 8. Run dev server
     * `python manage.py rundev`
         * this call will automatically run the react server, and tell django to use React's development files instead of the build files.
+        * you may have to `control+c` out of the rundev command, and rerun it after the react server is up.
     * if this doesn't work, we can run the two servers manually
         * `python manage.py runserver`
         * change to react directory - `cd react`
         * start react server - `npm start`
+9. Set our API key
+    * Set up a developer account at the [riot dev site](https://developer.riotgames.com/)
+    * generate a development api key
+    * go to [http://localhost:8000/admin][http://localhost:8000/admin]
+        * Find `data > Ritos`
+        * Create new Rito
+        * paste api key into the field and save (You'll have to edit this model every time you generate a new key - don't create new model)
+10. Import patch data
+    * in a new command prompt, in the base directory start a django shell
+        * `python manage.py shell`
+        * in the prompt, we can import all data for patch `9.5` like so...
+
+```python
+>>> from data import tasks as dt
+>>> dt.import_all('9.5.1', language='en_US')
+
+```
+
+11. The site should now be accessible.  -yay
+
 
 ### Run Task Queue
 
 Periodic tasks will be run using SQS on AWS, and redis/celery locally.  To run the local task queue, we need to run a redis-server, and also boot up a worker.
+
+> Running the task queue is unecessary for now.
 
 1. Start redis-server
     * Find redis on your computer (install if necessary), and run the redis-server
