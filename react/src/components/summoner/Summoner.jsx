@@ -50,6 +50,7 @@ class Summoner extends Component {
 
             is_requesting_page: false,
             is_requesting_next_page: false,
+            is_reloading_matches: false,
 
             victory_color: '#68b568',
             loss_color: '#c33c3c',
@@ -64,6 +65,7 @@ class Summoner extends Component {
         this.setQueueDict = this.setQueueDict.bind(this)
         this.getPositions = this.getPositions.bind(this)
         this.setDefaults = this.setDefaults.bind(this)
+        this.reloadMatches = this.reloadMatches.bind(this)
     }
     componentDidMount() {
         this.getSummonerPage(this.getPositions)
@@ -101,7 +103,9 @@ class Summoner extends Component {
         })
     }
     getSummonerPage(callback) {
-        this.setState({is_requesting_page: true})
+        if (!this.state.is_reloading_matches) {
+            this.setState({is_requesting_page: true})
+        }
         var params = this.props.route.match.params
         var data = {
             summoner_name: params.summoner_name ? params.summoner_name: null,
@@ -121,6 +125,7 @@ class Summoner extends Component {
                     match_ids: new Set(response.data.matches.map(x => x.id)),
                     positions: response.data.positions,
                     is_requesting_page: false,
+                    is_reloading_matches: false,
                 }, () => {
                     if (callback !== undefined) {
                         callback()
@@ -129,8 +134,17 @@ class Summoner extends Component {
             })
             .catch((error) => {
                 window.alert('No summoner with that name was found.')
-                this.setState({is_requesting_page: false})
+                this.setState({is_requesting_page: false, is_reloading_matches: false})
             })
+    }
+    reloadMatches() {
+        this.setState({
+            match_ids: new Set(),
+            next_page: 2,
+            is_reloading_matches: true
+        }, () => {
+            this.getSummonerPage()
+        })
     }
     getNextPage() {
         this.setState({is_requesting_next_page: true})
@@ -400,6 +414,9 @@ class SummonerCard extends Component {
         return out
     }
     render() {
+        var reload_attrs = {
+            disabled: this.props.pageStore.state.is_reloading_matches ? true: false,
+        }
         return (
             <span>
                 <div style={{position:'relative', padding:18}} className={`card-panel ${this.props.store.state.theme}`}>
@@ -428,6 +445,14 @@ class SummonerCard extends Component {
                         }}>
                         {this.props.summoner.name}
                     </div>
+
+                    <span style={{position: 'absolute', right:2, top:2}}>
+                        <button {...reload_attrs}
+                            className="dark btn-small"
+                            onClick={this.props.pageStore.reloadMatches} >
+                            <i className="material-icons">autorenew</i>
+                        </button>
+                    </span>
 
                     {this.soloPositions().length > 0 &&
                         <hr/>
