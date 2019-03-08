@@ -119,6 +119,7 @@ class Summoner extends Component {
                     icon: response.data.profile_icon,
                     matches: response.data.matches,
                     match_ids: new Set(response.data.matches.map(x => x.id)),
+                    positions: response.data.positions,
                     is_requesting_page: false,
                 }, () => {
                     if (callback !== undefined) {
@@ -434,7 +435,7 @@ class SummonerCard extends Component {
 
                     <div>
                         {this.props.positions.map(pos => {
-                            if (pos.queueType === 'RANKED_SOLO_5x5') {
+                            if (pos.queue_type === 'RANKED_SOLO_5x5') {
                                 var gen_positions = ['NONE', 'APEX']
                                 return (
                                     <div key={`${pos.position}-${this.props.summoner._id}`}>
@@ -468,14 +469,14 @@ class SummonerCard extends Component {
                                                 right:18,
                                                 }}>
                                                 <small className={`${this.props.store.state.theme} pill`}>
-                                                    {this.queueName(pos.queueType)}
+                                                    {this.queueName(pos.queue_type)}
                                                 </small>{' '}
                                                 <span className={`${this.props.store.state.theme} pill`}>
-                                                    {pos.leaguePoints} LP
+                                                    {pos.league_points} LP
                                                 </span>
-                                                {pos.miniSeries !== undefined &&
+                                                {pos.series_progress &&
                                                     <div style={{textAlign: 'right'}}>
-                                                        {this.miniSeries(pos.miniSeries.progress)}
+                                                        {this.miniSeries(pos.series_progress)}
                                                     </div>
                                                 }
                                             </div>
@@ -486,7 +487,7 @@ class SummonerCard extends Component {
                             return null
                         })}
                         {this.props.positions.map(pos => {
-                            if (pos.queueType !== 'RANKED_SOLO_5x5') {
+                            if (pos.queue_type !== 'RANKED_SOLO_5x5') {
                                 return (
                                     <div key={`${pos.position}-${this.props.summoner._id}`}>
                                         <hr/>
@@ -512,14 +513,14 @@ class SummonerCard extends Component {
                                                 right:18,
                                                 }}>
                                                 <small className={`${this.props.store.state.theme} pill`}>
-                                                    {this.queueName(pos.queueType)}
+                                                    {this.queueName(pos.queue_type)}
                                                 </small>{' '}
                                                 <span className={`${this.props.store.state.theme} pill`}>
-                                                    {pos.leaguePoints} LP
+                                                    {pos.league_points} LP
                                                 </span>
-                                                {pos.miniSeries !== undefined &&
+                                                {pos.series_progress &&
                                                     <div style={{textAlign: 'right'}}>
-                                                        {this.miniSeries(pos.miniSeries.progress)}
+                                                        {this.miniSeries(pos.series_progress)}
                                                     </div>
                                                 }
                                             </div>

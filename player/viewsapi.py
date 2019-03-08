@@ -3,18 +3,21 @@ from rest_framework.decorators import api_view
 
 from django.utils import timezone
 
-from data import constants
 from player import tasks as pt
-from match import tasks as mt
-from match.tasks import get_riot_api
 
 from .models import Summoner
+from .models import RankCheckpoint, RankPosition
+from .serializers import SummonerSerializer
+from .serializers import RankPositionSerializer
+
+from data import constants
 from data.models import ProfileIcon, Champion
+from data.serializers import ProfileIconSerializer
+
+from match import tasks as mt
+from match.tasks import get_riot_api
 from match.models import Match, Participant
 from match.models import Timeline, Team, Ban
-
-from .serializers import SummonerSerializer
-from data.serializers import ProfileIconSerializer
 from match.serializers import MatchSerializer, ParticipantSerializer
 from match.serializers import TimelineSerializer, TeamSerializer, BanSerializer
 from match.serializers import StatsSerializer
@@ -458,6 +461,13 @@ def get_summoner_page(request, format=None):
                 'summoner_level': summoner.summoner_level,
             }
 
+            rankcheckpoint = summoner.get_newest_rank_checkpoint()
+            if rankcheckpoint:
+                rank_positions = RankPositionSerializer(rankcheckpoint.positions.all(), many=True).data
+                rank_positions = sort_positions(rank_positions)
+            else:
+                rank_positions = []
+
             query = ProfileIcon.objects.filter(_id=summoner.profile_icon_id)
             if query.exists():
                 query = query.order_by('-version')
@@ -495,6 +505,7 @@ def get_summoner_page(request, format=None):
             'match_count': match_count,
             'profile_icon': profile_icon_data,
             'summoner': summoner_data,
+            'positions': rank_positions,
         }
 
     return Response(data, status=status_code)
@@ -526,6 +537,8 @@ def get_positions(request, format=None):
     ----------
     summoner_id : str
     region : str
+    update : bool [true by default]
+        Whether or not to try to create a new RankCheckpoint
 
     Returns
     -------
@@ -536,20 +549,34 @@ def get_positions(request, format=None):
     status_code = 200
     summoner_id = request.data['summoner_id']
     region = request.data['region']
-    api = get_riot_api()
-    if api:
-        r = api.league.positions(summoner_id, 'na')
-        if r.status_code >= 200 and r.status_code < 300:
-            positions = r.json()
-            positions.sort(key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
-            data = {'data': positions}
-        else:
-            status_code = r.status_code
-            data = {'message': 'There was an error while communicating with the Riot API.'}
+    summoner = Summoner.objects.get(_id=summoner_id, region=region)
+    if request.data.get('update', True) is True:
+        pt.import_positions(summoner.id)
+
+    summoner.refresh_from_db()
+    rankcheckpoint = summoner.get_newest_rank_checkpoint()
+    if rankcheckpoint:
+        try:
+            positions = rankcheckpoint.positions.all()
+            pos_data = RankPositionSerializer(positions, many=True).data
+            pos_data.sort(key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
+            data = {'data': pos_data}
+            status = 200
+        except Exception as error:
+            print(error)
+            data = {'data': []}
+            status = 200
     else:
-        data = {'message': 'Could not get api object.'}
-        status_code = 500
+        data = {'data': []}
+        status = 200
+
     return Response(data, status=status_code)
+
+
+def sort_positions(positions):
+    """Uses tier_sort, rank_sort and lp_sort to sort positions by descending rank.
+    """
+    return sorted(positions, key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
 
 
 def tier_sort(position):
@@ -583,7 +610,7 @@ def lp_sort(position):
     """
     lp = 100
     try:
-        lp = -position['leaguePoints']
+        lp = -position.get('league_points', position['leaguePoints'])
     except:
         pass
     return lp

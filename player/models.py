@@ -61,6 +61,21 @@ class Summoner(models.Model):
         self.__original_name = self.name
         self.__original_account_id = self.account_id
 
+    def get_newest_rank_checkpoint(self):
+        """Retrieve the most recent checkpoint for the summoner.
+
+        Returns
+        -------
+        RankCheckpoint or None
+
+        """
+        try:
+            checkpoint = self.rankcheckpoints.all().order_by('-created_date')[0]
+        except:
+            checkpoint = None
+        return checkpoint
+
+
 
 class NameChange(models.Model):
     summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE, related_name='namechanges')

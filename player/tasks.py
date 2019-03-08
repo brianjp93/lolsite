@@ -2,6 +2,9 @@ from celery import task
 
 from .models import Summoner, NameChange
 from .models import simplify
+
+from .models import RankCheckpoint, RankPosition
+
 from match.tasks import get_riot_api
 
 
@@ -78,3 +81,78 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         # print(summoner_model.profile_icon_id)
         summoner_model.save()
         return summoner_model.id
+
+
+def import_positions(summoner_id, threshold_days=None):
+    """Get most recent position data for Summoner.
+
+    Parameters
+    ----------
+    summoner_id : ID
+        The internal ID of the Summoner model
+    threshold_days : int
+        Only update if the last update was more than {threshold_days} days ago
+
+    Returns
+    -------
+    None
+
+    """
+    summoner = Summoner.objects.get(id=summoner_id)
+
+    rankcheckpoint = summoner.get_newest_rank_checkpoint()
+    if rankcheckpoint and threshold_days:
+        threshold = timezone.now() - timezone.timedelta(days=threshold_days)
+        if rankcheckpoint.created_data > threshold:
+            # don't run update
+            return
+
+    api = get_riot_api()
+    region = summoner.region
+    r = api.league.positions(summoner._id, region)
+    if r.status_code >= 200 and r.status_code < 300:
+        positions = r.json()
+        create_new = False
+        # need to check if anything has changed
+        if rankcheckpoint:
+            for pos in positions:
+                try:
+                    attrs = {
+                        'league_points': pos['leaguePoints'],
+                        'wins': pos['wins'],
+                        'losses': pos['losses'],
+                        'queue_type': pos['queueType'],
+                        'rank': pos['rank'],
+                        'tier': pos['tier'],
+                        'position': pos['position'],
+                        'series_progress': pos.get('miniSeries', {}).get('progress', None),
+                    }
+                    query = rankcheckpoint.positions.get(**attrs)
+                    print('Nothing has changed, not creating a new checkpoint')
+                except:
+                    print('Change detected.')
+                    create_new = True
+        else:
+            create_new = True
+
+        if create_new:
+            rankcheckpoint = RankCheckpoint(summoner=summoner)
+            rankcheckpoint.save()
+            for pos in positions:
+                attrs = {
+                    'checkpoint': rankcheckpoint,
+                    'league_points': pos['leaguePoints'],
+                    'wins': pos['wins'],
+                    'losses': pos['losses'],
+                    'queue_type': pos['queueType'],
+                    'rank': pos['rank'],
+                    'tier': pos['tier'],
+                    'position': pos['position'],
+                    'hot_streak': pos['hotStreak'],
+                    'fresh_blood': pos['freshBlood'],
+                    'inactive': pos['inactive'],
+                    'veteran': pos['veteran'],
+                    'series_progress': pos.get('miniSeries', {}).get('progress', None),
+                }
+                rankposition = RankPosition(**attrs)
+                rankposition.save()
