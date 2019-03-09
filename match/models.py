@@ -208,7 +208,7 @@ class Stats(models.Model):
         """
         """
         url = ''
-        query = ReforgedTree.objects.filter(_id=self.perk_primary_style)
+        query = ReforgedTree.objects.filter(_id=self.perk_primary_style).order_by('-version')
         if query.exists():
             perk = query.first()
             url = perk.image_url()
@@ -218,7 +218,7 @@ class Stats(models.Model):
         """
         """
         url = ''
-        query = ReforgedTree.objects.filter(_id=self.perk_sub_style)
+        query = ReforgedTree.objects.filter(_id=self.perk_sub_style).order_by('-version')
         if query.exists():
             perk = query.first()
             url = perk.image_url()
@@ -233,7 +233,7 @@ class Stats(models.Model):
         except:
             pass
         else:
-            query = ReforgedRune.objects.filter(_id=value)
+            query = ReforgedRune.objects.filter(_id=value).order_by('-reforgedtree__version')
             if query.exists():
                 perk = query.first()
                 url = perk.image_url()
@@ -257,75 +257,45 @@ class Stats(models.Model):
     def perk_5_image_url(self):
         return self.get_perk_image(5)
 
-    def item_0_image_url(self):
+    def get_item_image_url(self, number, version=None):
         """
         """
         url = ''
-        query = Item.objects.filter(_id=self.item_0)
-        if query.exists():
-            item = query.first()
-            url = item.image_url()
+        try:
+            item_id = getattr(self, f'item_{number}')
+        except:
+            pass
+        else:
+            query = Item.objects.filter(_id=item_id).order_by('-version')
+            version_query = query.filter(version=version)
+            if version and version_query.exists():
+                item = version_query.first()
+                url = item.image_url()
+            elif query.exists():
+                item = query.first()
+                url = item.image_url()
         return url
+
+    def item_0_image_url(self):
+        return self.get_item_image_url(0)
 
     def item_1_image_url(self):
-        """
-        """
-        url = ''
-        query = Item.objects.filter(_id=self.item_1)
-        if query.exists():
-            item = query.first()
-            url = item.image_url()
-        return url
+        return self.get_item_image_url(1)
 
     def item_2_image_url(self):
-        """
-        """
-        url = ''
-        query = Item.objects.filter(_id=self.item_2)
-        if query.exists():
-            item = query.first()
-            url = item.image_url()
-        return url
+        return self.get_item_image_url(2)
 
     def item_3_image_url(self):
-        """
-        """
-        url = ''
-        query = Item.objects.filter(_id=self.item_3)
-        if query.exists():
-            item = query.first()
-            url = item.image_url()
-        return url
+        return self.get_item_image_url(3)
 
     def item_4_image_url(self):
-        """
-        """
-        url = ''
-        query = Item.objects.filter(_id=self.item_4)
-        if query.exists():
-            item = query.first()
-            url = item.image_url()
-        return url
+        return self.get_item_image_url(4)
 
     def item_5_image_url(self):
-        """
-        """
-        url = ''
-        query = Item.objects.filter(_id=self.item_5)
-        if query.exists():
-            item = query.first()
-            url = item.image_url()
-        return url
+        return self.get_item_image_url(5)
 
     def item_6_image_url(self):
-        """
-        """
-        url = ''
-        query = Item.objects.filter(_id=self.item_6)
-        if query.exists():
-            item = query.first()
-            url = item.image_url()
-        return url
+        return self.get_item_image_url(6)
 
 
 class Timeline(models.Model):

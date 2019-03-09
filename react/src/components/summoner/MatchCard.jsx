@@ -1221,6 +1221,9 @@ class MatchCard extends Component {
                                                                                         else if (event.monster_sub_type === 'AIR_DRAGON') {
                                                                                             return <span>cloud</span>
                                                                                         }
+                                                                                        else if (event.monster_sub_type === 'ELDER_DRAGON') {
+                                                                                            return <span>elder</span>
+                                                                                        }
                                                                                         else {
                                                                                             return <span>{event.monster_sub_type}</span>
                                                                                         }
