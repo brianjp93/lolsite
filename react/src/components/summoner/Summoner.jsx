@@ -58,6 +58,8 @@ class Summoner extends Component {
             match_card_height: 400,
 
             positions: [],
+
+            last_scroll_time: (new Date()).getTime(),
         }
 
         this.getSummonerPage = this.getSummonerPage.bind(this)
@@ -237,11 +239,20 @@ class Summoner extends Component {
                         <div>
                             <div
                                 className="horizontal-scroll quiet-scroll"
+                                ref={(elt) => {this.match_list = elt}}
                                 onWheel={(event) => {
                                     if (!this.props.store.state.ignore_horizontal) {
                                         return convertVerticalScroll(event)
                                     }
                                     return null
+                                }}
+                                onScroll={(event) => {
+                                    setTimeout(() => {
+                                        var epoch = (new Date()).getTime()
+                                        if (epoch - this.state.last_scroll_time > 1000) {
+                                            this.setState({last_scroll_time: epoch, scroll_left: this.match_list.scrollLeft})
+                                        }
+                                    }, 1000)
                                 }} >
                                 
                                 {/* MATCH CARD */}

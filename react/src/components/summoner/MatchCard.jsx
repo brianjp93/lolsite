@@ -69,6 +69,7 @@ class MatchCard extends Component {
         this.sortTimelineEvents = this.sortTimelineEvents.bind(this)
         this.getPart = this.getPart.bind(this)
         this.getEventTeam = this.getEventTeam.bind(this)
+        this.isRender = this.isRender.bind(this)
     }
     getMyPart() {
         // get my participant
@@ -89,6 +90,18 @@ class MatchCard extends Component {
                     return true
                 }
             }
+        }
+        return false
+    }
+    isRender() {
+        if (this.elt === undefined) {
+            return true
+        }
+        var card_pos = this.elt.offsetLeft
+        var match_list_pos = this.props.pageStore.match_list.scrollLeft
+
+        if ((card_pos - match_list_pos) < 5000 && (match_list_pos - card_pos) < 4000) {
+            return true
         }
         return false
     }
@@ -745,224 +758,193 @@ class MatchCard extends Component {
                     overflow: 'hidden',
                     transition: 'all .4s ease',
                 }}
+                ref={(elt) => this.elt = elt}
                 className={`card-panel ${this.props.store.state.theme}`}>
 
-                <div style={{display: 'inline-block'}}>
-                    <div
-                        style={{
-                            width: this.paddedSummaryWidth(),
-                            height:4,
-                            background: `${this.topBarColor(match)}`,
-                            borderRadius: 2,
-                        }} >
-                    </div>
-                    <div
-                        style={{
-                            width: this.paddedSummaryWidth(),
-                            background: `${this.topBarColor(match)}1f`,
-                            padding: '0 4px',
-                            display: 'inline-block',
-                        }}
-                        className="row">
-                        <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
-                            {this.getTeam100(match).map((part, key) => <div key={`${key}-${part.account_id}`}>{this.leftTeamChampion(part, team_size, match)}</div>)}
-                            
-                            <div
-                                style={{
-                                    marginRight: 5,
-                                    height:3,
-                                    background: `${this.getTeam100Color(match)}`,
-                                    borderRadius: '2px'
-                                }} >
-                            </div>
-                        </div>
-                        <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
-                            {this.getTeam200(match).map((part, key) =>  <div key={`${key}-${part.account_id}`}>{this.rightTeamChampion(part, team_size, match)}</div>)}
-
-                            <div
-                                style={{
-                                    marginLeft: 5,
-                                    height:3,
-                                    background: `${this.getTeam200Color(match)}`,
-                                    borderRadius: '2px'
-                                }} >
-                            </div>
-                        </div>
-                    </div>
+                {this.isRender() &&
                     <div>
-                        <div style={{display: 'inline-block', paddingRight:5}}>
-                            <div>
-                                <img
-                                    style={{height: 40, display:'inline'}}
-                                    src={mypart.champion.image_url}
-                                    alt=""/>
-                                <div style={{display:'inline-block', paddingLeft:4}}>
-                                    <img
-                                        style={{height:20, display:'block'}}
-                                        src={mypart.spell_1_image_url} alt=""/>
-                                    <img
-                                        style={{height:20, display:'block'}}
-                                        src={mypart.spell_2_image_url} alt=""/>
+                        <div style={{display: 'inline-block'}}>
+                            <div
+                                style={{
+                                    width: this.paddedSummaryWidth(),
+                                    height:4,
+                                    background: `${this.topBarColor(match)}`,
+                                    borderRadius: 2,
+                                }} >
+                            </div>
+                            <div
+                                style={{
+                                    width: this.paddedSummaryWidth(),
+                                    background: `${this.topBarColor(match)}1f`,
+                                    padding: '0 4px',
+                                    display: 'inline-block',
+                                }}
+                                className="row">
+                                <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
+                                    {this.getTeam100(match).map((part, key) => <div key={`${key}-${part.account_id}`}>{this.leftTeamChampion(part, team_size, match)}</div>)}
+                                    
+                                    <div
+                                        style={{
+                                            marginRight: 5,
+                                            height:3,
+                                            background: `${this.getTeam100Color(match)}`,
+                                            borderRadius: '2px'
+                                        }} >
+                                    </div>
+                                </div>
+                                <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
+                                    {this.getTeam200(match).map((part, key) =>  <div key={`${key}-${part.account_id}`}>{this.rightTeamChampion(part, team_size, match)}</div>)}
+
+                                    <div
+                                        style={{
+                                            marginLeft: 5,
+                                            height:3,
+                                            background: `${this.getTeam200Color(match)}`,
+                                            borderRadius: '2px'
+                                        }} >
+                                    </div>
                                 </div>
                             </div>
-                            <img
-                                style={{height: 20, verticalAlign: 'top'}}
-                                src={mypart.stats.perk_0_image_url}
-                                alt=""/>
-                            <img
-                                style={{height: 20, verticalAlign: 'top'}}
-                                src={mypart.stats.perk_sub_style_image_url}
-                                alt=""/>
-                            <img
-                                style={{
-                                    height: 20,
-                                    verticalAlign: 'top',
-                                    marginLeft: 4,
-                                    borderRadius: 5,
-                                }}
-                                src={mypart.stats.item_6_image_url} alt=""/>
+                            <div>
+                                <div style={{display: 'inline-block', paddingRight:5}}>
+                                    <div>
+                                        <img
+                                            style={{height: 40, display:'inline'}}
+                                            src={mypart.champion.image_url}
+                                            alt=""/>
+                                        <div style={{display:'inline-block', paddingLeft:4}}>
+                                            <img
+                                                style={{height:20, display:'block'}}
+                                                src={mypart.spell_1_image_url} alt=""/>
+                                            <img
+                                                style={{height:20, display:'block'}}
+                                                src={mypart.spell_2_image_url} alt=""/>
+                                        </div>
+                                    </div>
+                                    <img
+                                        style={{height: 20, verticalAlign: 'top'}}
+                                        src={mypart.stats.perk_0_image_url}
+                                        alt=""/>
+                                    <img
+                                        style={{height: 20, verticalAlign: 'top'}}
+                                        src={mypart.stats.perk_sub_style_image_url}
+                                        alt=""/>
+                                    <img
+                                        style={{
+                                            height: 20,
+                                            verticalAlign: 'top',
+                                            marginLeft: 4,
+                                            borderRadius: 5,
+                                        }}
+                                        src={mypart.stats.item_6_image_url} alt=""/>
+                                </div>
+
+                                <span style={{display: 'inline-block'}}>
+                                    <div style={{width:100}}>
+                                        <span>
+                                            {this.item(mypart.stats.item_0, mypart.stats.item_0_image_url, match)}
+                                        </span>
+                                        <span>
+                                            {this.item(mypart.stats.item_1, mypart.stats.item_1_image_url, match)}
+                                        </span>
+                                        <span>
+                                            {this.item(mypart.stats.item_2, mypart.stats.item_2_image_url, match)}
+                                        </span>
+                                    </div>
+                                    <div style={{width:100}}>
+                                        <span>
+                                            {this.item(mypart.stats.item_3, mypart.stats.item_3_image_url, match)}
+                                        </span>
+                                        <span>
+                                            {this.item(mypart.stats.item_4, mypart.stats.item_4_image_url, match)}
+                                        </span>
+                                        <span>
+                                            {this.item(mypart.stats.item_5, mypart.stats.item_5_image_url, match)}
+                                        </span>
+                                    </div>
+                                </span>
+
+                                <div
+                                    style={{
+                                        display: 'inline-block',
+                                        verticalAlign:'top',
+                                        width: 90,
+                                        textAlign: 'center',
+                                    }}>
+                                    <span style={{verticalAlign:'top'}}>
+                                        <span>
+                                            {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
+                                        </span>
+                                        <br/>
+                                        <small title={'(Kills + Assists) / Deaths'} className={`${this.props.store.state.theme} pill`}>
+                                            {numeral(this.kda(mypart)).format('0.00')} kda
+                                        </small>
+                                        <br/>
+                                        <small title='% Kill Participation' className={`${this.props.store.state.theme} pill`}>
+                                            {numeral(this.getKp(match, mypart)).format('0')}% kp
+                                        </small>
+                                    </span>
+
+                                </div>
+                            </div>
+
+                            <div style={{display: 'inline-block'}}>
+                                <StatPie
+                                    width={240}
+                                    height={95}
+                                    match={match}
+                                    store={this.props.store}
+                                    mypart={mypart}
+                                    pageStore={this.props.pageStore} />
+                            </div>
+
+                            <div style={{position:'absolute', left:274, top:190, zIndex:10}}>
+                                <button
+                                    onClick={this.toggleExpand}
+                                    className={`${this.props.store.state.theme} btn-small`} style={{height:209, padding:'0 3px'}}>
+                                    {!this.state.is_expanded &&
+                                        <i className="material-icons">chevron_right</i>
+                                    }
+                                    {this.state.is_expanded &&
+                                        <i className="material-icons">chevron_left</i>
+                                    }
+                                </button>
+                            </div>
+
+                            {/* match card footer */}
+                            <div style={{position:'absolute', bottom:5, left:0, right:0}}>
+                                <div style={{float:'left', paddingLeft:10}}>
+                                    <small>
+                                        {`${Math.floor(match.game_duration / 60)}m ${match.game_duration % 60}s`}
+                                    </small>
+                                    <br/>
+                                    <small>
+                                        {formatDatetime(match.game_creation)}
+                                    </small>
+                                </div>
+
+                                <div style={{position:'absolute', bottom:0, left:115, width:150, textAlign: 'right'}}>
+                                    <small className={`${this.props.store.state.theme} ${this.matchHighlightColor(match)}`}>
+                                        {this.props.pageStore.state.queues[match.queue_id].description}
+                                    </small>
+                                </div>
+                            </div>
                         </div>
 
-                        <span style={{display: 'inline-block'}}>
-                            <div style={{width:100}}>
-                                <span>
-                                    {this.item(mypart.stats.item_0, mypart.stats.item_0_image_url, match)}
-                                </span>
-                                <span>
-                                    {this.item(mypart.stats.item_1, mypart.stats.item_1_image_url, match)}
-                                </span>
-                                <span>
-                                    {this.item(mypart.stats.item_2, mypart.stats.item_2_image_url, match)}
-                                </span>
-                            </div>
-                            <div style={{width:100}}>
-                                <span>
-                                    {this.item(mypart.stats.item_3, mypart.stats.item_3_image_url, match)}
-                                </span>
-                                <span>
-                                    {this.item(mypart.stats.item_4, mypart.stats.item_4_image_url, match)}
-                                </span>
-                                <span>
-                                    {this.item(mypart.stats.item_5, mypart.stats.item_5_image_url, match)}
-                                </span>
-                            </div>
-                        </span>
 
                         <div
                             style={{
                                 display: 'inline-block',
-                                verticalAlign:'top',
-                                width: 90,
-                                textAlign: 'center',
+                                verticalAlign: 'top',
+                                paddingLeft: 20,
                             }}>
-                            <span style={{verticalAlign:'top'}}>
-                                <span>
-                                    {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
-                                </span>
-                                <br/>
-                                <small title={'(Kills + Assists) / Deaths'} className={`${this.props.store.state.theme} pill`}>
-                                    {numeral(this.kda(mypart)).format('0.00')} kda
-                                </small>
-                                <br/>
-                                <small title='% Kill Participation' className={`${this.props.store.state.theme} pill`}>
-                                    {numeral(this.getKp(match, mypart)).format('0')}% kp
-                                </small>
-                            </span>
 
-                        </div>
-                    </div>
-
-                    <div style={{display: 'inline-block'}}>
-                        <StatPie
-                            width={240}
-                            height={95}
-                            match={match}
-                            store={this.props.store}
-                            mypart={mypart}
-                            pageStore={this.props.pageStore} />
-                    </div>
-
-                    <div style={{position:'absolute', left:274, top:190, zIndex:10}}>
-                        <button
-                            onClick={this.toggleExpand}
-                            className={`${this.props.store.state.theme} btn-small`} style={{height:209, padding:'0 3px'}}>
-                            {!this.state.is_expanded &&
-                                <i className="material-icons">chevron_right</i>
-                            }
-                            {this.state.is_expanded &&
-                                <i className="material-icons">chevron_left</i>
-                            }
-                        </button>
-                    </div>
-
-                    {/* match card footer */}
-                    <div style={{position:'absolute', bottom:5, left:0, right:0}}>
-                        <div style={{float:'left', paddingLeft:10}}>
-                            <small>
-                                {`${Math.floor(match.game_duration / 60)}m ${match.game_duration % 60}s`}
-                            </small>
-                            <br/>
-                            <small>
-                                {formatDatetime(match.game_creation)}
-                            </small>
-                        </div>
-
-                        <div style={{position:'absolute', bottom:0, left:115, width:150, textAlign: 'right'}}>
-                            <small className={`${this.props.store.state.theme} ${this.matchHighlightColor(match)}`}>
-                                {this.props.pageStore.state.queues[match.queue_id].description}
-                            </small>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div
-                    style={{
-                        display: 'inline-block',
-                        verticalAlign: 'top',
-                        paddingLeft: 20,
-                    }}>
-
-                    {/* MENU BUTTONS */}
-                    <div style={{
-                        position: 'absolute',
-                        top: 10,
-                        width: 25,
-                        height: 180,
-                        left: this.state.summary_width + 2,
-                        textAlign: 'center',
-                        borderColor: 'grey',
-                        borderStyle: 'solid',
-                        borderWidth: 1,
-                        borderRadius: 5,
-                        }}>
-                        <button
-                            title='Overview'
-                            style={menu_button_style}
-                            className={`dark btn-small ${this.state.expanded_view === 'overview' ? 'selected': ''}`}
-                            onClick={() => this.setState({expanded_view: 'overview'})}>
-                            o
-                        </button>
-                        
-                        <button
-                            title='Timeline'
-                            style={menu_button_style}
-                            className={`dark btn-small ${this.state.expanded_view === 'timeline' ? 'selected': ''}`}
-                            onClick={() => this.setState({expanded_view: 'timeline'})} >
-                            t
-                        </button>
-                    </div>
-
-
-                    {this.state.expanded_view === 'timeline' &&
-                        <span>
-
-                            {/* TIMELINE BUTTONS */} 
+                            {/* MENU BUTTONS */}
                             <div style={{
                                 position: 'absolute',
-                                top: 230,
+                                top: 10,
                                 width: 25,
-                                height: 145,
+                                height: 180,
                                 left: this.state.summary_width + 2,
                                 textAlign: 'center',
                                 borderColor: 'grey',
@@ -971,308 +953,346 @@ class MatchCard extends Component {
                                 borderRadius: 5,
                                 }}>
                                 <button
-                                    style={{...menu_button_style, height: 50}}
-                                    className={`dark btn-small ${this.state.timeline_view === 'team' ? 'selected': ''}`}
-                                    onClick={() => this.setState({timeline_view: 'team'})}>
-                                    <div
-                                        style={{
-                                            display: 'inline-block',
-                                            transform: 'rotate(-90deg) translate(0px, 20px)',
-                                            transformOrigin: 'bottom left 0',
-                                            verticalAlign: 'text-top'}} >
-                                        team
-                                    </div>
+                                    title='Overview'
+                                    style={menu_button_style}
+                                    className={`dark btn-small ${this.state.expanded_view === 'overview' ? 'selected': ''}`}
+                                    onClick={() => this.setState({expanded_view: 'overview'})}>
+                                    o
                                 </button>
                                 
                                 <button
-                                    style={{...menu_button_style, height: 65}}
-                                    className={`dark btn-small ${this.state.timeline_view === 'champ' ? 'selected': ''}`}
-                                    onClick={() => this.setState({timeline_view: 'champ'})} >
-                                    <div
-                                        style={{
-                                            display: 'inline-block',
-                                            transform: 'rotate(-90deg) translate(0px, 20px)',
-                                            transformOrigin: 'bottom left 0',
-                                            verticalAlign: 'text-top'}}>
-                                            champ
-                                    </div>
+                                    title='Timeline'
+                                    style={menu_button_style}
+                                    className={`dark btn-small ${this.state.expanded_view === 'timeline' ? 'selected': ''}`}
+                                    onClick={() => this.setState({expanded_view: 'timeline'})} >
+                                    t
                                 </button>
                             </div>
 
-                            {this.state.is_loading_full_match &&
-                                <div style={{marginLeft: 30}}>SHOW LOADING ANIMATION</div>
-                            }
 
-                            {!this.state.is_loading_full_match && this.isFullMatchLoaded() &&
-                                <div>
-                                    {this.state.timeline_view === 'team' &&
+                            {this.state.expanded_view === 'timeline' &&
+                                <span>
 
+                                    {/* TIMELINE BUTTONS */} 
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: 230,
+                                        width: 25,
+                                        height: 145,
+                                        left: this.state.summary_width + 2,
+                                        textAlign: 'center',
+                                        borderColor: 'grey',
+                                        borderStyle: 'solid',
+                                        borderWidth: 1,
+                                        borderRadius: 5,
+                                        }}>
+                                        <button
+                                            style={{...menu_button_style, height: 50}}
+                                            className={`dark btn-small ${this.state.timeline_view === 'team' ? 'selected': ''}`}
+                                            onClick={() => this.setState({timeline_view: 'team'})}>
+                                            <div
+                                                style={{
+                                                    display: 'inline-block',
+                                                    transform: 'rotate(-90deg) translate(0px, 20px)',
+                                                    transformOrigin: 'bottom left 0',
+                                                    verticalAlign: 'text-top'}} >
+                                                team
+                                            </div>
+                                        </button>
+                                        
+                                        <button
+                                            style={{...menu_button_style, height: 65}}
+                                            className={`dark btn-small ${this.state.timeline_view === 'champ' ? 'selected': ''}`}
+                                            onClick={() => this.setState({timeline_view: 'champ'})} >
+                                            <div
+                                                style={{
+                                                    display: 'inline-block',
+                                                    transform: 'rotate(-90deg) translate(0px, 20px)',
+                                                    transformOrigin: 'bottom left 0',
+                                                    verticalAlign: 'text-top'}}>
+                                                    champ
+                                            </div>
+                                        </button>
+                                    </div>
+
+                                    {this.state.is_loading_full_match &&
+                                        <div style={{marginLeft: 30}}>SHOW LOADING ANIMATION</div>
+                                    }
+
+                                    {!this.state.is_loading_full_match && this.isFullMatchLoaded() &&
                                         <div>
-                                            <div style={{marginLeft: 30}}>
-                                                <ComposedChart
-                                                    width={370}
-                                                    height={125}
-                                                    data={this.state.timeline}
-                                                    margin={{
-                                                      top: 10, right: 15, left: -5, bottom: 0,
-                                                    }}
-                                                    onMouseMove={(props) => {
-                                                        if (props.activeTooltipIndex !== undefined) {
-                                                            var timeline_index = props.activeTooltipIndex
-                                                            this.setState({timeline_index: timeline_index})
+                                            {this.state.timeline_view === 'team' &&
+
+                                                <div>
+                                                    <div style={{marginLeft: 30}}>
+                                                        <ComposedChart
+                                                            width={370}
+                                                            height={125}
+                                                            data={this.state.timeline}
+                                                            margin={{
+                                                              top: 10, right: 15, left: -5, bottom: 0,
+                                                            }}
+                                                            onMouseMove={(props) => {
+                                                                if (props.activeTooltipIndex !== undefined) {
+                                                                    var timeline_index = props.activeTooltipIndex
+                                                                    this.setState({timeline_index: timeline_index})
+                                                                }
+                                                            }}
+                                                            onMouseOut={() => this.setState({timeline_index: null})} >
+                                                            <CartesianGrid
+                                                                vertical={false}
+                                                                stroke='#777'
+                                                                strokeDasharray="4 4" />
+                                                            <XAxis
+                                                                hide={true}
+                                                                tickFormatter={(tickItem) => {
+                                                                    var m = Math.round(tickItem / 1000 / 60)
+                                                                    return `${m}m`
+                                                                }}
+                                                                dataKey="timestamp" />
+                                                            
+                                                            <YAxis
+                                                                // domain={this.getDomain()}
+                                                                yAxisId='left'
+                                                                orientation='left'
+                                                                tickFormatter={(tick) => {
+                                                                    return numeral(tick).format('0.0a')
+                                                                }} />
+                                                            
+                                                            <Tooltip
+                                                                offset={70}
+                                                                formatter={(value, name, props) => {
+                                                                    if (name.indexOf('perc') >= 0) {
+                                                                        value = numeral(value).format('0')
+                                                                        return [`${value}%`, '% Gold Adv.']
+                                                                    }
+                                                                    else {
+                                                                        value = numeral(value).format('0,0')
+                                                                        return [`${value}g`, 'Gold Adv.']
+                                                                    }
+                                                                }}
+                                                                labelFormatter={(label) => {
+                                                                    var m = Math.round(label / 1000 / 60)
+                                                                    return `${m}m`
+                                                                }} />
+                                                            <defs>
+                                                                <linearGradient id={`${this.props.match._id}-gradient`} x1="0" y1="0" x2="0" y2="1">
+                                                                    <stop offset={this.getOffset()} stopColor="#3674ad" stopOpacity={1} />
+                                                                    <stop offset={this.getOffset()} stopColor="#cd565a" stopOpacity={1} />
+                                                                </linearGradient>
+                                                            </defs>
+
+                                                            <Area
+                                                                yAxisId='left'
+                                                                type="monotone"
+                                                                dataKey={this.getMyTeamDataKey()}
+                                                                stroke="#000"
+                                                                fill={`url(#${this.props.match._id}-gradient)`} />
+
+                                                            {/* secondary chart */}
+                                                            {/*
+                                                                <YAxis
+                                                                    domain={this.getDomain('perc')}
+                                                                    tickFormatter={(tick) => {
+                                                                        var perc = numeral(tick).format('0')
+                                                                        return `${perc}%`
+                                                                    }}
+                                                                    yAxisId="right" orientation='right' tickLine={false} axisLine={false}/>
+                                                                <Area
+                                                                    opacity='0.3'
+                                                                    yAxisId='right'
+                                                                    type="monotone"
+                                                                    dataKey={this.getMyTeamDataKey('perc')}
+                                                                    stroke="#777" fill={`#fff`} />
+                                                            */}
+
+                                                        </ComposedChart>
+                                                    </div>
+
+                                                    {/* EVENTS */}
+                                                    <div style={{
+                                                        margin: '10px 10px 10px 30px',
+                                                        borderStyle: 'solid',
+                                                        borderWidth: 1,
+                                                        borderRadius: 5,
+                                                        borderColor: 'gray',
+                                                        height: 240,
+                                                        overflowY: 'hidden',
+                                                        }} >
+                                                        {big_events.length === 0 &&
+                                                            <div style={{textAlign: 'center', paddingTop: 20}}>
+                                                                No events
+                                                            </div>
                                                         }
-                                                    }}
-                                                    onMouseOut={() => this.setState({timeline_index: null})} >
-                                                    <CartesianGrid
-                                                        vertical={false}
-                                                        stroke='#777'
-                                                        strokeDasharray="4 4" />
-                                                    <XAxis
-                                                        hide={true}
-                                                        tickFormatter={(tickItem) => {
-                                                            var m = Math.round(tickItem / 1000 / 60)
-                                                            return `${m}m`
-                                                        }}
-                                                        dataKey="timestamp" />
-                                                    
-                                                    <YAxis
-                                                        // domain={this.getDomain()}
-                                                        yAxisId='left'
-                                                        orientation='left'
-                                                        tickFormatter={(tick) => {
-                                                            return numeral(tick).format('0.0a')
-                                                        }} />
-                                                    
-                                                    <Tooltip
-                                                        offset={70}
-                                                        formatter={(value, name, props) => {
-                                                            if (name.indexOf('perc') >= 0) {
-                                                                value = numeral(value).format('0')
-                                                                return [`${value}%`, '% Gold Adv.']
+                                                        {big_events.map((event, key) => {
+                                                            var some_style = {
+                                                                width: '50%'
+                                                            }
+                                                            var is_right = false
+                                                            if (this.getEventTeam(event) === 100) {
+
                                                             }
                                                             else {
-                                                                value = numeral(value).format('0,0')
-                                                                return [`${value}g`, 'Gold Adv.']
+                                                                is_right = true
                                                             }
-                                                        }}
-                                                        labelFormatter={(label) => {
-                                                            var m = Math.round(label / 1000 / 60)
-                                                            return `${m}m`
-                                                        }} />
-                                                    <defs>
-                                                        <linearGradient id={`${this.props.match._id}-gradient`} x1="0" y1="0" x2="0" y2="1">
-                                                            <stop offset={this.getOffset()} stopColor="#3674ad" stopOpacity={1} />
-                                                            <stop offset={this.getOffset()} stopColor="#cd565a" stopOpacity={1} />
-                                                        </linearGradient>
-                                                    </defs>
 
-                                                    <Area
-                                                        yAxisId='left'
-                                                        type="monotone"
-                                                        dataKey={this.getMyTeamDataKey()}
-                                                        stroke="#000"
-                                                        fill={`url(#${this.props.match._id}-gradient)`} />
+                                                            let part1 = this.getPart(event.killer_id)
+                                                            let part2 = this.getPart(event.victim_id)
 
-                                                    {/* secondary chart */}
-                                                    {/*
-                                                        <YAxis
-                                                            domain={this.getDomain('perc')}
-                                                            tickFormatter={(tick) => {
-                                                                var perc = numeral(tick).format('0')
-                                                                return `${perc}%`
-                                                            }}
-                                                            yAxisId="right" orientation='right' tickLine={false} axisLine={false}/>
-                                                        <Area
-                                                            opacity='0.3'
-                                                            yAxisId='right'
-                                                            type="monotone"
-                                                            dataKey={this.getMyTeamDataKey('perc')}
-                                                            stroke="#777" fill={`#fff`} />
-                                                    */}
+                                                            var is_me = false
+                                                            if ((part1 !== null && part1._id === mypart._id) ||
+                                                                (part2 !== null && part2._id === mypart._id)) {
+                                                                is_me = true
+                                                            }
+                                                            var is_me_style = {}
+                                                            if (is_me) {
+                                                                is_me_style = {
+                                                                    background: '#323042',
+                                                                    borderRadius: 5,
+                                                                }
+                                                            }
+                                                            return (
+                                                                <div style={{height:20, ...is_me_style}} key={`${this.props.match._id}-event-${key}`}>
+                                                                    {is_right &&
+                                                                        <div style={{width:'50%', display: 'inline-block'}}></div>
+                                                                    }
+                                                                    <small style={{...some_style, display: 'inline-block', verticalAlign: 'middle'}}>
+                                                                        <div style={{width:35, verticalAlign: 'top', display: 'inline-block', marginLeft: 5}} className={`${this.props.store.state.theme} muted`}>
+                                                                            {Math.round(event.timestamp / 1000 / 60)}:{numeral((event.timestamp / 1000) % 60).format('00')}
+                                                                        </div>{' '}
+                                                                        
+                                                                        <span style={{verticalAlign: 'top'}}>
+                                                                            {event._type === 'CHAMPION_KILL' &&
+                                                                                <span>
+                                                                                    <span>
+                                                                                        {part1 !== null &&
+                                                                                            <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                                                        }
+                                                                                        {part1 === null &&
+                                                                                            <span>minions</span>
+                                                                                        }
+                                                                                    </span>{' '}
+                                                                                    <span>
+                                                                                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
+                                                                                    </span>{' '}
+                                                                                    <span>
+                                                                                        <img style={{height:15}} src={part2.champion.image_url} alt=""/>
+                                                                                    </span>
+                                                                                </span>
+                                                                            }
 
-                                                </ComposedChart>
-                                            </div>
+                                                                            {event._type === 'BUILDING_KILL' &&
+                                                                                <span>
+                                                                                    <span>
+                                                                                        {part1 !== null &&
+                                                                                            <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                                                        }
+                                                                                        {part1 === null &&
+                                                                                            <span>minions</span>
+                                                                                        }
+                                                                                    </span>{' '}
+                                                                                    <span>
+                                                                                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>destroyed</span>
+                                                                                    </span>{' '}
 
-                                            {/* EVENTS */}
-                                            <div style={{
-                                                margin: '10px 10px 10px 30px',
-                                                borderStyle: 'solid',
-                                                borderWidth: 1,
-                                                borderRadius: 5,
-                                                borderColor: 'gray',
-                                                height: 240,
-                                                overflowY: 'hidden',
-                                                }} >
-                                                {big_events.length === 0 &&
-                                                    <div style={{textAlign: 'center', paddingTop: 20}}>
-                                                        No events
+                                                                                    <span style={{verticalAlign: 'text-bottom'}}>
+                                                                                        {event.building_type === 'TOWER_BUILDING' &&
+                                                                                            <span>tower</span>
+                                                                                        }
+                                                                                        {event.building_type === 'INHIBITOR_BUILDING' &&
+                                                                                            <span>inhib</span>
+                                                                                        }
+                                                                                        {['TOWER_BUILDING', 'INHIBITOR_BUILDING'].indexOf(event.building_type) === -1 &&
+                                                                                            <span>structure</span>
+                                                                                        }
+                                                                                    </span>
+                                                                                </span>
+                                                                            }
+
+                                                                            {event._type === 'ELITE_MONSTER_KILL' &&
+                                                                                <span>
+                                                                                    <span>
+                                                                                        {part1 !== null &&
+                                                                                            <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                                                        }
+                                                                                        {part1 === null &&
+                                                                                            <span>minions</span>
+                                                                                        }
+                                                                                    </span>{' '}
+                                                                                    <span>
+                                                                                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
+                                                                                    </span>{' '}
+                                                                                    <span style={{verticalAlign: 'text-bottom'}}>
+                                                                                        {function(event) {
+                                                                                            if (event.monster_type === 'DRAGON') {
+                                                                                                if (event.monster_sub_type === 'EARTH_DRAGON') {
+                                                                                                    return <span>earth</span>
+                                                                                                }
+                                                                                                else if (event.monster_sub_type === 'WATER_DRAGON') {
+                                                                                                    return <span>water</span>
+                                                                                                }
+                                                                                                else if (event.monster_sub_type === 'FIRE_DRAGON') {
+                                                                                                    return <span>fire</span>
+                                                                                                }
+                                                                                                else if (event.monster_sub_type === 'AIR_DRAGON') {
+                                                                                                    return <span>cloud</span>
+                                                                                                }
+                                                                                                else if (event.monster_sub_type === 'ELDER_DRAGON') {
+                                                                                                    return <span>elder</span>
+                                                                                                }
+                                                                                                else {
+                                                                                                    return <span>{event.monster_sub_type}</span>
+                                                                                                }
+                                                                                            }
+                                                                                            else if (event.monster_type === 'BARON_NASHOR') {
+                                                                                                return <span>purple snek</span>
+                                                                                            }
+                                                                                            else if (event.monster_type === 'RIFTHERALD') {
+                                                                                                return <span>big scuttle</span>
+                                                                                            }
+                                                                                            else {
+                                                                                                return <span>{event.monster_type} {event.monster_sub_type}</span>
+                                                                                            }
+                                                                                        }.bind(this, event)()}
+                                                                                    </span>
+                                                                                </span>
+                                                                            }
+                                                                        </span>
+
+                                                                    </small>
+                                                                </div>
+                                                            )
+                                                        })}
                                                     </div>
-                                                }
-                                                {big_events.map((event, key) => {
-                                                    var some_style = {
-                                                        width: '50%'
-                                                    }
-                                                    var is_right = false
-                                                    if (this.getEventTeam(event) === 100) {
+                                                </div>
+                                            }
 
-                                                    }
-                                                    else {
-                                                        is_right = true
-                                                    }
+                                            {this.state.timeline_view === 'champ' &&
+                                                <div style={{marginLeft: 30}}>
+                                                    
+                                                </div>
+                                            }
 
-                                                    let part1 = this.getPart(event.killer_id)
-                                                    let part2 = this.getPart(event.victim_id)
-
-                                                    var is_me = false
-                                                    if ((part1 !== null && part1._id === mypart._id) ||
-                                                        (part2 !== null && part2._id === mypart._id)) {
-                                                        is_me = true
-                                                    }
-                                                    var is_me_style = {}
-                                                    if (is_me) {
-                                                        is_me_style = {
-                                                            background: '#323042',
-                                                            borderRadius: 5,
-                                                        }
-                                                    }
-                                                    return (
-                                                        <div style={{height:20, ...is_me_style}} key={`${this.props.match._id}-event-${key}`}>
-                                                            {is_right &&
-                                                                <div style={{width:'50%', display: 'inline-block'}}></div>
-                                                            }
-                                                            <small style={{...some_style, display: 'inline-block', verticalAlign: 'middle'}}>
-                                                                <div style={{width:35, verticalAlign: 'top', display: 'inline-block', marginLeft: 5}} className={`${this.props.store.state.theme} muted`}>
-                                                                    {Math.round(event.timestamp / 1000 / 60)}:{numeral((event.timestamp / 1000) % 60).format('00')}
-                                                                </div>{' '}
-                                                                
-                                                                <span style={{verticalAlign: 'top'}}>
-                                                                    {event._type === 'CHAMPION_KILL' &&
-                                                                        <span>
-                                                                            <span>
-                                                                                {part1 !== null &&
-                                                                                    <img style={{height:15}} src={part1.champion.image_url} alt=""/>
-                                                                                }
-                                                                                {part1 === null &&
-                                                                                    <span>minions</span>
-                                                                                }
-                                                                            </span>{' '}
-                                                                            <span>
-                                                                                <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
-                                                                            </span>{' '}
-                                                                            <span>
-                                                                                <img style={{height:15}} src={part2.champion.image_url} alt=""/>
-                                                                            </span>
-                                                                        </span>
-                                                                    }
-
-                                                                    {event._type === 'BUILDING_KILL' &&
-                                                                        <span>
-                                                                            <span>
-                                                                                {part1 !== null &&
-                                                                                    <img style={{height:15}} src={part1.champion.image_url} alt=""/>
-                                                                                }
-                                                                                {part1 === null &&
-                                                                                    <span>minions</span>
-                                                                                }
-                                                                            </span>{' '}
-                                                                            <span>
-                                                                                <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>destroyed</span>
-                                                                            </span>{' '}
-
-                                                                            <span style={{verticalAlign: 'text-bottom'}}>
-                                                                                {event.building_type === 'TOWER_BUILDING' &&
-                                                                                    <span>tower</span>
-                                                                                }
-                                                                                {event.building_type === 'INHIBITOR_BUILDING' &&
-                                                                                    <span>inhib</span>
-                                                                                }
-                                                                                {['TOWER_BUILDING', 'INHIBITOR_BUILDING'].indexOf(event.building_type) === -1 &&
-                                                                                    <span>structure</span>
-                                                                                }
-                                                                            </span>
-                                                                        </span>
-                                                                    }
-
-                                                                    {event._type === 'ELITE_MONSTER_KILL' &&
-                                                                        <span>
-                                                                            <span>
-                                                                                {part1 !== null &&
-                                                                                    <img style={{height:15}} src={part1.champion.image_url} alt=""/>
-                                                                                }
-                                                                                {part1 === null &&
-                                                                                    <span>minions</span>
-                                                                                }
-                                                                            </span>{' '}
-                                                                            <span>
-                                                                                <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
-                                                                            </span>{' '}
-                                                                            <span style={{verticalAlign: 'text-bottom'}}>
-                                                                                {function(event) {
-                                                                                    if (event.monster_type === 'DRAGON') {
-                                                                                        if (event.monster_sub_type === 'EARTH_DRAGON') {
-                                                                                            return <span>earth</span>
-                                                                                        }
-                                                                                        else if (event.monster_sub_type === 'WATER_DRAGON') {
-                                                                                            return <span>water</span>
-                                                                                        }
-                                                                                        else if (event.monster_sub_type === 'FIRE_DRAGON') {
-                                                                                            return <span>fire</span>
-                                                                                        }
-                                                                                        else if (event.monster_sub_type === 'AIR_DRAGON') {
-                                                                                            return <span>cloud</span>
-                                                                                        }
-                                                                                        else if (event.monster_sub_type === 'ELDER_DRAGON') {
-                                                                                            return <span>elder</span>
-                                                                                        }
-                                                                                        else {
-                                                                                            return <span>{event.monster_sub_type}</span>
-                                                                                        }
-                                                                                    }
-                                                                                    else if (event.monster_type === 'BARON_NASHOR') {
-                                                                                        return <span>purple snek</span>
-                                                                                    }
-                                                                                    else if (event.monster_type === 'RIFTHERALD') {
-                                                                                        return <span>big scuttle</span>
-                                                                                    }
-                                                                                    else {
-                                                                                        return <span>{event.monster_type} {event.monster_sub_type}</span>
-                                                                                    }
-                                                                                }.bind(this, event)()}
-                                                                            </span>
-                                                                        </span>
-                                                                    }
-                                                                </span>
-
-                                                            </small>
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
                                         </div>
-                                    }
 
-                                    {this.state.timeline_view === 'champ' &&
-                                        <div style={{marginLeft: 30}}>
-                                            
-                                        </div>
+                                        
                                     }
+                                </span>
+                            } {/* END TIMELINE VIEW */}
 
+                            {this.state.expanded_view === 'overview' &&
+                                <div style={{marginLeft: 30}}>
+                                    <div>
+                                        <StatOverview store={this.props.store} pageStore={this.props.pageStore} parent={this} is_expanded={this.state.is_expanded} />
+                                    </div>
                                 </div>
-
-                                
                             }
-                        </span>
-                    } {/* END TIMELINE VIEW */}
 
-                    {this.state.expanded_view === 'overview' &&
-                        <div style={{marginLeft: 30}}>
-                            <div>
-                                <StatOverview store={this.props.store} pageStore={this.props.pageStore} parent={this} is_expanded={this.state.is_expanded} />
-                            </div>
                         </div>
-                    }
-
-                </div>
+                        
+                    </div>
+                }
+                
 
             </div>
         )
