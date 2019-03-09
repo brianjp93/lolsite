@@ -237,7 +237,12 @@ class Summoner extends Component {
                         <div>
                             <div
                                 className="horizontal-scroll quiet-scroll"
-                                onWheel={convertVerticalScroll} >
+                                onWheel={(event) => {
+                                    if (!this.props.store.state.ignore_horizontal) {
+                                        return convertVerticalScroll(event)
+                                    }
+                                    return null
+                                }} >
                                 
                                 {/* MATCH CARD */}
                                 {this.state.matches.map((match, key) => {

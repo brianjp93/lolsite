@@ -6,6 +6,7 @@ import numeral from 'numeral'
 import moment from 'moment'
 import Item from '../data/Item'
 import StatPie from './StatPie'
+import StatOverview from './StatOverview'
 import {
     ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts'
@@ -33,6 +34,10 @@ class MatchCard extends Component {
             timeline: null,
 
             timeline_index: null,
+
+            expanded_view: 'overview',
+
+            timeline_view: 'team',
         }
         
         this.getMyPart = this.getMyPart.bind(this)
@@ -552,7 +557,6 @@ class MatchCard extends Component {
         return out
     }
     addTeamGoldToTimeline(timeline) {
-        
         var team100 = []
         var team200 = []
         for (var part of this.props.match.participants) {
@@ -704,6 +708,13 @@ class MatchCard extends Component {
         let team_size = this.getTeamSize()
         let theme = this.props.store.state.theme
         let big_events = this.getBigEvents(this.state.timeline_index)
+        let menu_button_style = {
+            display: 'block',
+            padding: '0 5px',
+            width: '85%',
+            marginLeft: '7.5%',
+            marginTop: 8,
+        }
         return (
             <div
                 style={{
@@ -896,228 +907,353 @@ class MatchCard extends Component {
                         verticalAlign: 'top',
                         paddingLeft: 20,
                     }}>
-                    {this.state.is_loading_full_match &&
-                        <div>SHOW LOADING ANIMATION</div>
-                    }
-                    {!this.state.is_loading_full_match && this.isFullMatchLoaded() &&
-                        <div>
-                            <ComposedChart
-                                width={400}
-                                height={125}
-                                data={this.state.timeline}
-                                margin={{
-                                  top: 10, right: 30, left: 0, bottom: 0,
-                                }}
-                                onMouseMove={(props) => {
-                                    if (props.activeTooltipIndex !== undefined) {
-                                        var timeline_index = props.activeTooltipIndex
-                                        this.setState({timeline_index: timeline_index})
-                                    }
-                                }}
-                                onMouseOut={() => this.setState({timeline_index: null})} >
-                                <CartesianGrid
-                                    vertical={false}
-                                    stroke='#777'
-                                    strokeDasharray="4 4" />
-                                <XAxis
-                                    hide={true}
-                                    tickFormatter={(tickItem) => {
-                                        var m = Math.round(tickItem / 1000 / 60)
-                                        return `${m}m`
-                                    }}
-                                    dataKey="timestamp" />
-                                
-                                <YAxis
-                                    // domain={this.getDomain()}
-                                    yAxisId='left'
-                                    orientation='left'
-                                    tickFormatter={(tick) => {
-                                        return numeral(tick).format('0.0a')
-                                    }} />
-                                
-                                <Tooltip
-                                    offset={70}
-                                    formatter={(value, name, props) => {
-                                        if (name.indexOf('perc') >= 0) {
-                                            value = numeral(value).format('0')
-                                            return [`${value}%`, '% Gold Adv.']
-                                        }
-                                        else {
-                                            value = numeral(value).format('0,0')
-                                            return [`${value}g`, 'Gold Adv.']
-                                        }
-                                    }}
-                                    labelFormatter={(label) => {
-                                        var m = Math.round(label / 1000 / 60)
-                                        return `${m}m`
-                                    }} />
-                                <defs>
-                                  <linearGradient id={`${this.props.match._id}-gradient`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset={this.getOffset()} stopColor="#3674ad" stopOpacity={1} />
-                                    <stop offset={this.getOffset()} stopColor="#cd565a" stopOpacity={1} />
-                                  </linearGradient>
-                                </defs>
 
-                                <Area
-                                    yAxisId='left'
-                                    type="monotone"
-                                    dataKey={this.getMyTeamDataKey()}
-                                    stroke="#000"
-                                    fill={`url(#${this.props.match._id}-gradient)`} />
-
-                                {/* secondary chart */}
-                                {/*
-                                    <YAxis
-                                        domain={this.getDomain('perc')}
-                                        tickFormatter={(tick) => {
-                                            var perc = numeral(tick).format('0')
-                                            return `${perc}%`
-                                        }}
-                                        yAxisId="right" orientation='right' tickLine={false} axisLine={false}/>
-                                    <Area
-                                        opacity='0.3'
-                                        yAxisId='right'
-                                        type="monotone"
-                                        dataKey={this.getMyTeamDataKey('perc')}
-                                        stroke="#777" fill={`#fff`} />
-                                */}
-
-                            </ComposedChart>
-                        </div>
-                    }
-
-                    {/* EVENTS */}
+                    {/* MENU BUTTONS */}
                     <div style={{
-                        margin: '10px 10px 10px 10px',
+                        position: 'absolute',
+                        top: 10,
+                        width: 25,
+                        height: 180,
+                        left: this.state.summary_width + 2,
+                        textAlign: 'center',
+                        borderColor: 'grey',
                         borderStyle: 'solid',
                         borderWidth: 1,
                         borderRadius: 5,
-                        borderColor: 'gray',
-                        height: 240,
-                        overflowY: 'hidden',
-                        }} >
-                        {big_events.length === 0 &&
-                            <div style={{textAlign: 'center', paddingTop: 20}}>
-                                No events
-                            </div>
-                        }
-                        {big_events.map((event, key) => {
-                            var some_style = {
-                                width: '50%'
-                            }
-                            var is_right = false
-                            if (this.getEventTeam(event) === 100) {
-
-                            }
-                            else {
-                                is_right = true
-                            }
-
-                            let part1 = this.getPart(event.killer_id)
-                            let part2 = this.getPart(event.victim_id)
-
-                            var is_me = false
-                            if ((part1 !== null && part1._id === mypart._id) ||
-                                (part2 !== null && part2._id === mypart._id)) {
-                                is_me = true
-                            }
-                            var is_me_style = {}
-                            if (is_me) {
-                                is_me_style = {
-                                    background: '#323042',
-                                    borderRadius: 5,
-                                }
-                            }
-                            return (
-                                <div style={{height:20, ...is_me_style}} key={`${this.props.match._id}-event-${key}`}>
-                                    {is_right &&
-                                        <div style={{width:'50%', display: 'inline-block'}}></div>
-                                    }
-                                    <small style={{...some_style, display: 'inline-block', verticalAlign: 'middle'}}>
-                                        <div style={{width:35, verticalAlign: 'top', display: 'inline-block', marginLeft: 5}} className={`${this.props.store.state.theme} muted`}>
-                                            {Math.round(event.timestamp / 1000 / 60)}:{numeral((event.timestamp / 1000) % 60).format('00')}
-                                        </div>{' '}
-                                        
-                                        <span style={{verticalAlign: 'top'}}>
-                                            {event._type === 'CHAMPION_KILL' &&
-                                                <span>
-                                                    <span>
-                                                        {part1 !== null &&
-                                                            <img style={{height:15}} src={part1.champion.image_url} alt=""/>
-                                                        }
-                                                        {part1 === null &&
-                                                            <span>minions</span>
-                                                        }
-                                                    </span>{' '}
-                                                    <span>
-                                                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
-                                                    </span>{' '}
-                                                    <span>
-                                                        <img style={{height:15}} src={part2.champion.image_url} alt=""/>
-                                                    </span>
-                                                </span>
-                                            }
-
-                                            {event._type === 'BUILDING_KILL' &&
-                                                <span>
-                                                    <span>
-                                                        {part1 !== null &&
-                                                            <img style={{height:15}} src={part1.champion.image_url} alt=""/>
-                                                        }
-                                                        {part1 === null &&
-                                                            <span>minions</span>
-                                                        }
-                                                    </span>{' '}
-                                                    <span>
-                                                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>destroyed</span>
-                                                    </span>{' '}
-
-                                                    <span style={{verticalAlign: 'text-bottom'}}>
-                                                        {event.building_type === 'TOWER_BUILDING' &&
-                                                            <span>tower</span>
-                                                        }
-                                                        {event.building_type === 'INHIBITOR_BUILDING' &&
-                                                            <span>inhib</span>
-                                                        }
-                                                        {['TOWER_BUILDING', 'INHIBITOR_BUILDING'].indexOf(event.building_type) === -1 &&
-                                                            <span>structure</span>
-                                                        }
-                                                    </span>
-                                                </span>
-                                            }
-
-                                            {event._type === 'ELITE_MONSTER_KILL' &&
-                                                <span>
-                                                    <span>
-                                                        {part1 !== null &&
-                                                            <img style={{height:15}} src={part1.champion.image_url} alt=""/>
-                                                        }
-                                                        {part1 === null &&
-                                                            <span>minions</span>
-                                                        }
-                                                    </span>{' '}
-                                                    <span>
-                                                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
-                                                    </span>{' '}
-                                                    <span style={{verticalAlign: 'text-bottom'}}>
-                                                        {event.monster_type === 'DRAGON' &&
-                                                            <span>{event.monster_sub_type}</span>
-                                                        }
-                                                        {event.monster_type !== 'DRAGON' &&
-                                                            <span>
-                                                                {event.monster_type} {event.monster_sub_type}
-                                                            </span>
-                                                        }
-                                                    </span>
-                                                </span>
-                                            }
-                                        </span>
-
-                                    </small>
-                                </div>
-                            )
-                        })}
+                        }}>
+                        <button
+                            title='Overview'
+                            style={menu_button_style}
+                            className={`dark btn-small ${this.state.expanded_view === 'overview' ? 'selected': ''}`}
+                            onClick={() => this.setState({expanded_view: 'overview'})}>
+                            o
+                        </button>
+                        
+                        <button
+                            title='Timeline'
+                            style={menu_button_style}
+                            className={`dark btn-small ${this.state.expanded_view === 'timeline' ? 'selected': ''}`}
+                            onClick={() => this.setState({expanded_view: 'timeline'})} >
+                            t
+                        </button>
                     </div>
+
+
+                    {this.state.expanded_view === 'timeline' &&
+                        <span>
+
+                            {/* TIMELINE BUTTONS */} 
+                            <div style={{
+                                position: 'absolute',
+                                top: 230,
+                                width: 25,
+                                height: 145,
+                                left: this.state.summary_width + 2,
+                                textAlign: 'center',
+                                borderColor: 'grey',
+                                borderStyle: 'solid',
+                                borderWidth: 1,
+                                borderRadius: 5,
+                                }}>
+                                <button
+                                    style={{...menu_button_style, height: 50}}
+                                    className={`dark btn-small ${this.state.timeline_view === 'team' ? 'selected': ''}`}
+                                    onClick={() => this.setState({timeline_view: 'team'})}>
+                                    <div
+                                        style={{
+                                            display: 'inline-block',
+                                            transform: 'rotate(-90deg) translate(0px, 20px)',
+                                            transformOrigin: 'bottom left 0',
+                                            verticalAlign: 'text-top'}} >
+                                        team
+                                    </div>
+                                </button>
+                                
+                                <button
+                                    style={{...menu_button_style, height: 65}}
+                                    className={`dark btn-small ${this.state.timeline_view === 'champ' ? 'selected': ''}`}
+                                    onClick={() => this.setState({timeline_view: 'champ'})} >
+                                    <div
+                                        style={{
+                                            display: 'inline-block',
+                                            transform: 'rotate(-90deg) translate(0px, 20px)',
+                                            transformOrigin: 'bottom left 0',
+                                            verticalAlign: 'text-top'}}>
+                                            champ
+                                    </div>
+                                </button>
+                            </div>
+
+                            {this.state.is_loading_full_match &&
+                                <div style={{marginLeft: 30}}>SHOW LOADING ANIMATION</div>
+                            }
+
+                            {!this.state.is_loading_full_match && this.isFullMatchLoaded() &&
+                                <div>
+                                    {this.state.timeline_view === 'team' &&
+
+                                        <div>
+                                            <div style={{marginLeft: 30}}>
+                                                <ComposedChart
+                                                    width={370}
+                                                    height={125}
+                                                    data={this.state.timeline}
+                                                    margin={{
+                                                      top: 10, right: 15, left: -5, bottom: 0,
+                                                    }}
+                                                    onMouseMove={(props) => {
+                                                        if (props.activeTooltipIndex !== undefined) {
+                                                            var timeline_index = props.activeTooltipIndex
+                                                            this.setState({timeline_index: timeline_index})
+                                                        }
+                                                    }}
+                                                    onMouseOut={() => this.setState({timeline_index: null})} >
+                                                    <CartesianGrid
+                                                        vertical={false}
+                                                        stroke='#777'
+                                                        strokeDasharray="4 4" />
+                                                    <XAxis
+                                                        hide={true}
+                                                        tickFormatter={(tickItem) => {
+                                                            var m = Math.round(tickItem / 1000 / 60)
+                                                            return `${m}m`
+                                                        }}
+                                                        dataKey="timestamp" />
+                                                    
+                                                    <YAxis
+                                                        // domain={this.getDomain()}
+                                                        yAxisId='left'
+                                                        orientation='left'
+                                                        tickFormatter={(tick) => {
+                                                            return numeral(tick).format('0.0a')
+                                                        }} />
+                                                    
+                                                    <Tooltip
+                                                        offset={70}
+                                                        formatter={(value, name, props) => {
+                                                            if (name.indexOf('perc') >= 0) {
+                                                                value = numeral(value).format('0')
+                                                                return [`${value}%`, '% Gold Adv.']
+                                                            }
+                                                            else {
+                                                                value = numeral(value).format('0,0')
+                                                                return [`${value}g`, 'Gold Adv.']
+                                                            }
+                                                        }}
+                                                        labelFormatter={(label) => {
+                                                            var m = Math.round(label / 1000 / 60)
+                                                            return `${m}m`
+                                                        }} />
+                                                    <defs>
+                                                        <linearGradient id={`${this.props.match._id}-gradient`} x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset={this.getOffset()} stopColor="#3674ad" stopOpacity={1} />
+                                                            <stop offset={this.getOffset()} stopColor="#cd565a" stopOpacity={1} />
+                                                        </linearGradient>
+                                                    </defs>
+
+                                                    <Area
+                                                        yAxisId='left'
+                                                        type="monotone"
+                                                        dataKey={this.getMyTeamDataKey()}
+                                                        stroke="#000"
+                                                        fill={`url(#${this.props.match._id}-gradient)`} />
+
+                                                    {/* secondary chart */}
+                                                    {/*
+                                                        <YAxis
+                                                            domain={this.getDomain('perc')}
+                                                            tickFormatter={(tick) => {
+                                                                var perc = numeral(tick).format('0')
+                                                                return `${perc}%`
+                                                            }}
+                                                            yAxisId="right" orientation='right' tickLine={false} axisLine={false}/>
+                                                        <Area
+                                                            opacity='0.3'
+                                                            yAxisId='right'
+                                                            type="monotone"
+                                                            dataKey={this.getMyTeamDataKey('perc')}
+                                                            stroke="#777" fill={`#fff`} />
+                                                    */}
+
+                                                </ComposedChart>
+                                            </div>
+
+                                            {/* EVENTS */}
+                                            <div style={{
+                                                margin: '10px 10px 10px 30px',
+                                                borderStyle: 'solid',
+                                                borderWidth: 1,
+                                                borderRadius: 5,
+                                                borderColor: 'gray',
+                                                height: 240,
+                                                overflowY: 'hidden',
+                                                }} >
+                                                {big_events.length === 0 &&
+                                                    <div style={{textAlign: 'center', paddingTop: 20}}>
+                                                        No events
+                                                    </div>
+                                                }
+                                                {big_events.map((event, key) => {
+                                                    var some_style = {
+                                                        width: '50%'
+                                                    }
+                                                    var is_right = false
+                                                    if (this.getEventTeam(event) === 100) {
+
+                                                    }
+                                                    else {
+                                                        is_right = true
+                                                    }
+
+                                                    let part1 = this.getPart(event.killer_id)
+                                                    let part2 = this.getPart(event.victim_id)
+
+                                                    var is_me = false
+                                                    if ((part1 !== null && part1._id === mypart._id) ||
+                                                        (part2 !== null && part2._id === mypart._id)) {
+                                                        is_me = true
+                                                    }
+                                                    var is_me_style = {}
+                                                    if (is_me) {
+                                                        is_me_style = {
+                                                            background: '#323042',
+                                                            borderRadius: 5,
+                                                        }
+                                                    }
+                                                    return (
+                                                        <div style={{height:20, ...is_me_style}} key={`${this.props.match._id}-event-${key}`}>
+                                                            {is_right &&
+                                                                <div style={{width:'50%', display: 'inline-block'}}></div>
+                                                            }
+                                                            <small style={{...some_style, display: 'inline-block', verticalAlign: 'middle'}}>
+                                                                <div style={{width:35, verticalAlign: 'top', display: 'inline-block', marginLeft: 5}} className={`${this.props.store.state.theme} muted`}>
+                                                                    {Math.round(event.timestamp / 1000 / 60)}:{numeral((event.timestamp / 1000) % 60).format('00')}
+                                                                </div>{' '}
+                                                                
+                                                                <span style={{verticalAlign: 'top'}}>
+                                                                    {event._type === 'CHAMPION_KILL' &&
+                                                                        <span>
+                                                                            <span>
+                                                                                {part1 !== null &&
+                                                                                    <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                                                }
+                                                                                {part1 === null &&
+                                                                                    <span>minions</span>
+                                                                                }
+                                                                            </span>{' '}
+                                                                            <span>
+                                                                                <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
+                                                                            </span>{' '}
+                                                                            <span>
+                                                                                <img style={{height:15}} src={part2.champion.image_url} alt=""/>
+                                                                            </span>
+                                                                        </span>
+                                                                    }
+
+                                                                    {event._type === 'BUILDING_KILL' &&
+                                                                        <span>
+                                                                            <span>
+                                                                                {part1 !== null &&
+                                                                                    <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                                                }
+                                                                                {part1 === null &&
+                                                                                    <span>minions</span>
+                                                                                }
+                                                                            </span>{' '}
+                                                                            <span>
+                                                                                <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>destroyed</span>
+                                                                            </span>{' '}
+
+                                                                            <span style={{verticalAlign: 'text-bottom'}}>
+                                                                                {event.building_type === 'TOWER_BUILDING' &&
+                                                                                    <span>tower</span>
+                                                                                }
+                                                                                {event.building_type === 'INHIBITOR_BUILDING' &&
+                                                                                    <span>inhib</span>
+                                                                                }
+                                                                                {['TOWER_BUILDING', 'INHIBITOR_BUILDING'].indexOf(event.building_type) === -1 &&
+                                                                                    <span>structure</span>
+                                                                                }
+                                                                            </span>
+                                                                        </span>
+                                                                    }
+
+                                                                    {event._type === 'ELITE_MONSTER_KILL' &&
+                                                                        <span>
+                                                                            <span>
+                                                                                {part1 !== null &&
+                                                                                    <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                                                }
+                                                                                {part1 === null &&
+                                                                                    <span>minions</span>
+                                                                                }
+                                                                            </span>{' '}
+                                                                            <span>
+                                                                                <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
+                                                                            </span>{' '}
+                                                                            <span style={{verticalAlign: 'text-bottom'}}>
+                                                                                {function(event) {
+                                                                                    if (event.monster_type === 'DRAGON') {
+                                                                                        if (event.monster_sub_type === 'EARTH_DRAGON') {
+                                                                                            return <span>earth</span>
+                                                                                        }
+                                                                                        else if (event.monster_sub_type === 'WATER_DRAGON') {
+                                                                                            return <span>water</span>
+                                                                                        }
+                                                                                        else if (event.monster_sub_type === 'FIRE_DRAGON') {
+                                                                                            return <span>fire</span>
+                                                                                        }
+                                                                                        else if (event.monster_sub_type === 'AIR_DRAGON') {
+                                                                                            return <span>cloud</span>
+                                                                                        }
+                                                                                        else {
+                                                                                            return <span>{event.monster_sub_type}</span>
+                                                                                        }
+                                                                                    }
+                                                                                    else if (event.monster_type === 'BARON_NASHOR') {
+                                                                                        return <span>purple snek</span>
+                                                                                    }
+                                                                                    else if (event.monster_type === 'RIFTHERALD') {
+                                                                                        return <span>big scuttle</span>
+                                                                                    }
+                                                                                    else {
+                                                                                        return <span>{event.monster_type} {event.monster_sub_type}</span>
+                                                                                    }
+                                                                                }.bind(this, event)()}
+                                                                            </span>
+                                                                        </span>
+                                                                    }
+                                                                </span>
+
+                                                            </small>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    }
+
+                                    {this.state.timeline_view === 'champ' &&
+                                        <div style={{marginLeft: 30}}>
+                                            
+                                        </div>
+                                    }
+
+                                </div>
+
+                                
+                            }
+                        </span>
+                    } {/* END TIMELINE VIEW */}
+
+                    {this.state.expanded_view === 'overview' &&
+                        <div style={{marginLeft: 30}}>
+                            <div>
+                                <StatOverview store={this.props.store} pageStore={this.props.pageStore} parent={this} />
+                            </div>
+                        </div>
+                    }
+
                 </div>
 
             </div>
