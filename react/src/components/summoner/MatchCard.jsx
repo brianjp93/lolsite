@@ -31,6 +31,8 @@ class MatchCard extends Component {
             is_loading_full_match: false,
             full_match: null,
             timeline: null,
+
+            timeline_index: null,
         }
         
         this.getMyPart = this.getMyPart.bind(this)
@@ -56,6 +58,11 @@ class MatchCard extends Component {
         this.getMyTeamDataKey = this.getMyTeamDataKey.bind(this)
         this.getOffset = this.getOffset.bind(this)
         this.getDomain = this.getDomain.bind(this)
+        this.getEvents = this.getEvents.bind(this)
+        this.getBigEvents = this.getBigEvents.bind(this)
+        this.sortTimelineEvents = this.sortTimelineEvents.bind(this)
+        this.getPart = this.getPart.bind(this)
+        this.getEventTeam = this.getEventTeam.bind(this)
     }
     getMyPart() {
         // get my participant
@@ -515,6 +522,7 @@ class MatchCard extends Component {
                         api.match.timeline({match_id: this.props.match._id})
                             .then(response => {
                                 var timeline = this.addTeamGoldToTimeline(response.data.data)
+                                timeline = this.sortTimelineEvents(timeline)
                                 this.setState({is_loading_full_match: false, timeline: timeline})
                             })
                             .catch(error => {
@@ -529,6 +537,12 @@ class MatchCard extends Component {
 
             }
         })
+    }
+    sortTimelineEvents(timeline) {
+        for (var i=0; i<timeline.length; i++) {
+            timeline[i].events = timeline[i].events.sort((a, b) => {return a.timestamp - b.timestamp})
+        }
+        return timeline
     }
     isFullMatchLoaded() {
         var out = true
@@ -626,10 +640,70 @@ class MatchCard extends Component {
 
         return [-bound, bound]
     }
+    getEvents(index) {
+        var events = []
+        if (index !== null) {
+            events = this.state.timeline[index].events
+        }
+        return events
+    }
+    getBigEvents(index) {
+        var events = this.getEvents(index)
+        var include_events = new Set([
+            'CHAMPION_KILL',
+            'BUILDING_KILL',
+            'ELITE_MONSTER_KILL',
+        ])
+        var big_events = []
+        for (var event of events) {
+            if (include_events.has(event._type)) {
+                if (event.killer_id !== 0) {
+                    big_events.push(event)
+                }
+            }
+        }
+        return big_events
+    }
+    getEventTeam(event) {
+        var team_id = null
+        var part
+        if (event._type === 'CHAMPION_KILL') {
+            part = this.getPart(event.victim_id)
+            if (part !== null && part.team_id === 100) {
+                team_id = 200
+            }
+            else {
+                team_id = 100
+            }
+        }
+        else if (event._type === 'BUILDING_KILL') {
+            if (event.team_id === 100) {
+                team_id = 200
+            }
+            else {
+                team_id = 100
+            }
+        }
+        else if (event._type === 'ELITE_MONSTER_KILL') {
+            part = this.getPart(event.killer_id)
+            team_id = part.team_id
+        }
+        return team_id
+    }
+    getPart(participant_id) {
+        for (var part of this.props.match.participants) {
+            if (part._id === participant_id) {
+                return part
+            }
+        }
+        return null
+    }
     render() {
         let mypart = this.getMyPart()
         let match = this.props.match
         let team_size = this.getTeamSize()
+        let theme = this.props.store.state.theme
+        let big_events = this.getBigEvents(this.state.timeline_index)
         return (
             <div
                 style={{
@@ -828,78 +902,222 @@ class MatchCard extends Component {
                     {!this.state.is_loading_full_match && this.isFullMatchLoaded() &&
                         <div>
                             <ComposedChart
-                                    width={400}
-                                    height={125}
-                                    data={this.state.timeline}
-                                    margin={{
-                                      top: 10, right: 30, left: 0, bottom: 0,
+                                width={400}
+                                height={125}
+                                data={this.state.timeline}
+                                margin={{
+                                  top: 10, right: 30, left: 0, bottom: 0,
+                                }}
+                                onMouseMove={(props) => {
+                                    if (props.activeTooltipIndex !== undefined) {
+                                        var timeline_index = props.activeTooltipIndex
+                                        this.setState({timeline_index: timeline_index})
+                                    }
+                                }}
+                                onMouseOut={() => this.setState({timeline_index: null})} >
+                                <CartesianGrid
+                                    vertical={false}
+                                    stroke='#777'
+                                    strokeDasharray="4 4" />
+                                <XAxis
+                                    hide={true}
+                                    tickFormatter={(tickItem) => {
+                                        var m = Math.round(tickItem / 1000 / 60)
+                                        return `${m}m`
                                     }}
-                                  >
-                                    <CartesianGrid
-                                        vertical={false}
-                                        stroke='#777'
-                                        strokeDasharray="4 4" />
-                                    <XAxis
-                                        hide={true}
-                                        tickFormatter={(tickItem) => {
-                                            var m = Math.round(tickItem / 1000 / 60)
-                                            return `${m}m`
-                                        }}
-                                        dataKey="timestamp" />
-                                    
+                                    dataKey="timestamp" />
+                                
+                                <YAxis
+                                    // domain={this.getDomain()}
+                                    yAxisId='left'
+                                    orientation='left'
+                                    tickFormatter={(tick) => {
+                                        return numeral(tick).format('0.0a')
+                                    }} />
+                                
+                                <Tooltip
+                                    offset={70}
+                                    formatter={(value, name, props) => {
+                                        if (name.indexOf('perc') >= 0) {
+                                            value = numeral(value).format('0')
+                                            return [`${value}%`, '% Gold Adv.']
+                                        }
+                                        else {
+                                            value = numeral(value).format('0,0')
+                                            return [`${value}g`, 'Gold Adv.']
+                                        }
+                                    }}
+                                    labelFormatter={(label) => {
+                                        var m = Math.round(label / 1000 / 60)
+                                        return `${m}m`
+                                    }} />
+                                <defs>
+                                  <linearGradient id={`${this.props.match._id}-gradient`} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset={this.getOffset()} stopColor="#3674ad" stopOpacity={1} />
+                                    <stop offset={this.getOffset()} stopColor="#cd565a" stopOpacity={1} />
+                                  </linearGradient>
+                                </defs>
+
+                                <Area
+                                    yAxisId='left'
+                                    type="monotone"
+                                    dataKey={this.getMyTeamDataKey()}
+                                    stroke="#000"
+                                    fill={`url(#${this.props.match._id}-gradient)`} />
+
+                                {/* secondary chart */}
+                                {/*
                                     <YAxis
-                                        // domain={this.getDomain()}
-                                        yAxisId='left'
-                                        orientation='left'
+                                        domain={this.getDomain('perc')}
                                         tickFormatter={(tick) => {
-                                            return numeral(tick).format('0.0a')
-                                        }} />
-                                    
-                                    <Tooltip
-                                        offset={70}
-                                        formatter={(value, name, props) => {
-                                            if (name.indexOf('perc') >= 0) {
-                                                value = numeral(value).format('0')
-                                                return [`${value}%`, '% Gold Adv.']
-                                            }
-                                            else {
-                                                value = numeral(value).format('0,0')
-                                                return [`${value}g`, 'Gold Adv.']
-                                            }
+                                            var perc = numeral(tick).format('0')
+                                            return `${perc}%`
                                         }}
-                                        labelFormatter={(label) => {
-                                            var m = Math.round(label / 1000 / 60)
-                                            return `${m}m`
-                                        }} />
-                                    <defs>
-                                      <linearGradient id={`${this.props.match._id}-gradient`} x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset={this.getOffset()} stopColor="#3674ad" stopOpacity={1} />
-                                        <stop offset={this.getOffset()} stopColor="#cd565a" stopOpacity={1} />
-                                      </linearGradient>
-                                    </defs>
+                                        yAxisId="right" orientation='right' tickLine={false} axisLine={false}/>
+                                    <Area
+                                        opacity='0.3'
+                                        yAxisId='right'
+                                        type="monotone"
+                                        dataKey={this.getMyTeamDataKey('perc')}
+                                        stroke="#777" fill={`#fff`} />
+                                */}
 
-                                    <Area yAxisId='left' type="monotone" dataKey={this.getMyTeamDataKey()} stroke="#000" fill={`url(#${this.props.match._id}-gradient)`} />
-
-                                    {/* secondary chart */}
-                                    {/*
-                                        <YAxis
-                                            domain={this.getDomain('perc')}
-                                            tickFormatter={(tick) => {
-                                                var perc = numeral(tick).format('0')
-                                                return `${perc}%`
-                                            }}
-                                            yAxisId="right" orientation='right' tickLine={false} axisLine={false}/>
-                                        <Area
-                                            opacity='0.3'
-                                            yAxisId='right'
-                                            type="monotone"
-                                            dataKey={this.getMyTeamDataKey('perc')}
-                                            stroke="#777" fill={`#fff`} />
-                                    */}
-
-                                  </ComposedChart>
+                            </ComposedChart>
                         </div>
                     }
+
+                    {/* EVENTS */}
+                    <div style={{
+                        margin: '10px 10px 10px 10px',
+                        borderStyle: 'solid',
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        borderColor: 'gray',
+                        height: 240,
+                        overflowY: 'hidden',
+                        }} >
+                        {big_events.length === 0 &&
+                            <div style={{textAlign: 'center', paddingTop: 20}}>
+                                No events
+                            </div>
+                        }
+                        {big_events.map((event, key) => {
+                            var some_style = {
+                                width: '50%'
+                            }
+                            var is_right = false
+                            if (this.getEventTeam(event) === 100) {
+
+                            }
+                            else {
+                                is_right = true
+                            }
+
+                            let part1 = this.getPart(event.killer_id)
+                            let part2 = this.getPart(event.victim_id)
+
+                            var is_me = false
+                            if ((part1 !== null && part1._id === mypart._id) ||
+                                (part2 !== null && part2._id === mypart._id)) {
+                                is_me = true
+                            }
+                            var is_me_style = {}
+                            if (is_me) {
+                                is_me_style = {
+                                    background: '#323042',
+                                    borderRadius: 5,
+                                }
+                            }
+                            return (
+                                <div style={{height:20, ...is_me_style}} key={`${this.props.match._id}-event-${key}`}>
+                                    {is_right &&
+                                        <div style={{width:'50%', display: 'inline-block'}}></div>
+                                    }
+                                    <small style={{...some_style, display: 'inline-block', verticalAlign: 'middle'}}>
+                                        <div style={{width:35, verticalAlign: 'top', display: 'inline-block', marginLeft: 5}} className={`${this.props.store.state.theme} muted`}>
+                                            {Math.round(event.timestamp / 1000 / 60)}:{numeral((event.timestamp / 1000) % 60).format('00')}
+                                        </div>{' '}
+                                        
+                                        <span style={{verticalAlign: 'top'}}>
+                                            {event._type === 'CHAMPION_KILL' &&
+                                                <span>
+                                                    <span>
+                                                        {part1 !== null &&
+                                                            <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                        }
+                                                        {part1 === null &&
+                                                            <span>minions</span>
+                                                        }
+                                                    </span>{' '}
+                                                    <span>
+                                                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
+                                                    </span>{' '}
+                                                    <span>
+                                                        <img style={{height:15}} src={part2.champion.image_url} alt=""/>
+                                                    </span>
+                                                </span>
+                                            }
+
+                                            {event._type === 'BUILDING_KILL' &&
+                                                <span>
+                                                    <span>
+                                                        {part1 !== null &&
+                                                            <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                        }
+                                                        {part1 === null &&
+                                                            <span>minions</span>
+                                                        }
+                                                    </span>{' '}
+                                                    <span>
+                                                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>destroyed</span>
+                                                    </span>{' '}
+
+                                                    <span style={{verticalAlign: 'text-bottom'}}>
+                                                        {event.building_type === 'TOWER_BUILDING' &&
+                                                            <span>tower</span>
+                                                        }
+                                                        {event.building_type === 'INHIBITOR_BUILDING' &&
+                                                            <span>inhib</span>
+                                                        }
+                                                        {['TOWER_BUILDING', 'INHIBITOR_BUILDING'].indexOf(event.building_type) === -1 &&
+                                                            <span>structure</span>
+                                                        }
+                                                    </span>
+                                                </span>
+                                            }
+
+                                            {event._type === 'ELITE_MONSTER_KILL' &&
+                                                <span>
+                                                    <span>
+                                                        {part1 !== null &&
+                                                            <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                        }
+                                                        {part1 === null &&
+                                                            <span>minions</span>
+                                                        }
+                                                    </span>{' '}
+                                                    <span>
+                                                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
+                                                    </span>{' '}
+                                                    <span style={{verticalAlign: 'text-bottom'}}>
+                                                        {event.monster_type === 'DRAGON' &&
+                                                            <span>{event.monster_sub_type}</span>
+                                                        }
+                                                        {event.monster_type !== 'DRAGON' &&
+                                                            <span>
+                                                                {event.monster_type} {event.monster_sub_type}
+                                                            </span>
+                                                        }
+                                                    </span>
+                                                </span>
+                                            }
+                                        </span>
+
+                                    </small>
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
 
             </div>

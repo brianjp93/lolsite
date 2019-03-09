@@ -85,7 +85,7 @@ def import_summoner_from_participant(part, region):
 
     """
     if part['summoner_id']:
-        query = Summoner.objects.filter(account_id=part['current_account_id'], _id=part['summoner_id'])
+        query = Summoner.objects.filter(region=region, _id=part['summoner_id'])
         if query.exists():
             # don't need to create it again
             pass

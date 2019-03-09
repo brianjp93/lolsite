@@ -91,7 +91,7 @@ def get_match_timeline(request, format=None):
                         'monster_type': event.monster_type,
                         'monster_sub_type': event.monster_sub_type,
                         'building_type': event.building_type,
-                        'lane_type': event.building_type,
+                        'lane_type': event.lane_type,
                         'team_id': event.team_id,
                         'tower_type': event.tower_type,
                         'assistingparticipants': [x.participant_id for x in event.assistingparticipants.all()]
@@ -104,3 +104,10 @@ def get_match_timeline(request, format=None):
             data = {'data': timeline_data}
 
     return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_spectate(request, format=None):
+    """Get spectate data, augmented with internal data
+    """
+    pass

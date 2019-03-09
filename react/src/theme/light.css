@@ -15,6 +15,7 @@
     --link-color: #88b5d7;
     --button-color1: gray;
     --button-color1-hover: lightgray;
+    --muted: #7d6a6a;
 }
 
 a.light {
@@ -43,6 +44,10 @@ body.light {
 .light.background {
     background: var(--gradient-main);
     color: var(--c1);
+}
+
+.light.muted {
+    color: var(--muted);
 }
 
 input.light {
