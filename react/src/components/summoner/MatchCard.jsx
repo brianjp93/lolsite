@@ -31,6 +31,7 @@ class MatchCard extends Component {
             is_attempt_get_full_match: false,
             is_loading_full_match: false,
             full_match: null,
+            participants: null,
             timeline: null,
 
             timeline_index: null,
@@ -154,9 +155,16 @@ class MatchCard extends Component {
         return this.props.pageStore.state.neutral_color
     }
     getTeam100(match) {
-        match = this.props.match
+        var participants
+        if (this.state.participants !== null) {
+            participants = this.state.participants
+        }
+        else {
+            match = this.props.match
+            participants = this.props.match.participants
+        }
         var parts = []
-        for (var part of match.participants) {
+        for (var part of participants) {
             if (part.team_id === 100) {
                 parts.push(part)
             }
@@ -164,9 +172,16 @@ class MatchCard extends Component {
         return parts
     }
     getTeam200(match) {
-        match = this.props.match
+        var participants
+        if (this.state.participants !== null) {
+            participants = this.state.participants
+        }
+        else {
+            match = this.props.match
+            participants = this.props.match.participants
+        }
         var parts = []
-        for (var part of match.participants) {
+        for (var part of participants) {
             if (part.team_id === 200) {
                 parts.push(part)
             }
@@ -1249,7 +1264,7 @@ class MatchCard extends Component {
                     {this.state.expanded_view === 'overview' &&
                         <div style={{marginLeft: 30}}>
                             <div>
-                                <StatOverview store={this.props.store} pageStore={this.props.pageStore} parent={this} />
+                                <StatOverview store={this.props.store} pageStore={this.props.pageStore} parent={this} is_expanded={this.state.is_expanded} />
                             </div>
                         </div>
                     }

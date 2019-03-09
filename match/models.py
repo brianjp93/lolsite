@@ -224,15 +224,38 @@ class Stats(models.Model):
             url = perk.image_url()
         return url
 
-    def perk_0_image_url(self):
+    def get_perk_image(self, number):
         """
         """
         url = ''
-        query = ReforgedRune.objects.filter(_id=self.perk_0)
-        if query.exists():
-            perk = query.first()
-            url = perk.image_url()
+        try:
+            value = getattr(self, f'perk_{number}')
+        except:
+            pass
+        else:
+            query = ReforgedRune.objects.filter(_id=value)
+            if query.exists():
+                perk = query.first()
+                url = perk.image_url()
         return url
+
+    def perk_0_image_url(self):
+        return self.get_perk_image(0)
+
+    def perk_1_image_url(self):
+        return self.get_perk_image(1)
+
+    def perk_2_image_url(self):
+        return self.get_perk_image(2)
+
+    def perk_3_image_url(self):
+        return self.get_perk_image(3)
+
+    def perk_4_image_url(self):
+        return self.get_perk_image(4)
+
+    def perk_5_image_url(self):
+        return self.get_perk_image(5)
 
     def item_0_image_url(self):
         """

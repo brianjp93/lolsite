@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
-import {BarChart, Bar, XAxis, YAxis} from 'recharts'
+import {BarChart, Bar, XAxis, YAxis, Tooltip} from 'recharts'
+import api from '../../api/api'
+import numeral from 'numeral'
 
 
 class StatOverview extends Component {
@@ -8,6 +10,22 @@ class StatOverview extends Component {
 
         this.state = {
             selected: new Set(['total_damage_dealt_to_champions']),
+            convert: {
+                'total_damage_dealt_to_champions': 'total',
+                'damage_self_mitigated': 'self mitigated',
+                'physical_damage_dealt_to_champions': 'physical dealt',
+                'magic_damage_dealt_to_champions': 'magic dealt',
+                'true_damage_dealt_to_champions': 'true dealt',
+                'damage_dealt_to_turrets': 'turret damage',
+                'damage_dealt_to_objectives': 'objective damage',
+                'total_heal': 'healing',
+                'total_damage_taken': 'damage taken',
+                'vision_score': 'vision score',
+                'wards_placed': 'wards placed',
+                'wards_killed': 'wards killed',
+                'vision_wards_bought_in_game': 'control wards',
+                'dpd': 'dmg / death',
+            },
         }
 
         this.toggle = this.toggle.bind(this)
@@ -15,12 +33,32 @@ class StatOverview extends Component {
         this.getPart = this.getPart.bind(this)
         this.getDPM = this.getDPM.bind(this)
         this.getDPG = this.getDPG.bind(this)
+        this.getParticipants = this.getParticipants.bind(this)
+        this.getKP = this.getKP.bind(this)
+        this.getDPD = this.getDPD.bind(this)
+    }
+    componentDidUpdate(prevProps) {
+        if (prevProps.is_expanded === false && this.props.is_expanded === true) {
+            if (this.props.parent.state.participants === null) {
+                this.getParticipants()
+            }
+        }
     }
     toggle(event) {
         var select_value = event.target.value
         var select = this.state.selected
         this.state.selected.has(select_value) ? select.delete(select_value): select.add(select_value)
         this.setState({selected: select})
+    }
+    getParticipants() {
+        var data = {'match_id': this.props.parent.props.match.id}
+        api.match.participants(data)
+            .then(response => {
+                this.props.parent.setState({participants: response.data.data})
+            })
+            .catch(error => {
+
+            })
     }
     getData() {
         var team100 = this.props.parent.getTeam100()
@@ -31,6 +69,8 @@ class StatOverview extends Component {
 
             parts[i].dpm = this.getDPM(parts[i])
             parts[i].dpg = this.getDPG(parts[i])
+            parts[i].kp = this.getKP(parts[i])
+            parts[i].dpd = this.getDPD(parts[i])
         }
         return parts
     }
@@ -41,8 +81,33 @@ class StatOverview extends Component {
     getDPG(part) {
         return part.total_damage_dealt_to_champions / part.gold_earned
     }
+    getDPD(part) {
+        return part.total_damage_dealt_to_champions / part.deaths
+    }
+    getKP(part) {
+        var team_id = part.team_id
+        var total = 0
+        var parts
+        if (team_id === 100) {
+            parts = this.props.parent.getTeam100()
+        }
+        else (
+            parts = this.props.parent.getTeam200()
+        )
+        for (var _part of parts) {
+            total += _part.stats.kills
+        }
+        return ((part.stats.kills + part.stats.assists) / total) * 100
+    }
     getPart(name) {
-        for (var part of this.props.parent.props.match.participants) {
+        var parts
+        if (this.props.parent.state.participants !== null) {
+            parts = this.props.parent.state.participants
+        }
+        else {
+            parts = this.props.parent.props.match.participants
+        }
+        for (var part of parts) {
             if (part.summoner_name === name) {
                 return part
             }
@@ -102,6 +167,26 @@ class StatOverview extends Component {
                                 id={`${match._id}-dpg`}
                                 type="checkbox"/>
                             <span title='Damage Per Gold' style={label_style}>Dmg / Gold</span>
+                        </label>
+
+                        <label style={outer_label_style} htmlFor={`${match._id}-dpd`}>
+                            <input
+                                value='dpd'
+                                checked={this.state.selected.has('dpd')}
+                                onChange={this.toggle}
+                                id={`${match._id}-dpd`}
+                                type="checkbox"/>
+                            <span title='Damage Per Death' style={label_style}>Dmg / Death</span>
+                        </label>
+
+                        <label style={outer_label_style} htmlFor={`${match._id}-kp`}>
+                            <input
+                                value='kp'
+                                checked={this.state.selected.has('kp')}
+                                onChange={this.toggle}
+                                id={`${match._id}-kp`}
+                                type="checkbox"/>
+                            <span title='Kill Participation %' style={label_style}>KP</span>
                         </label>
 
                         <label style={outer_label_style} htmlFor={`${match._id}-physical`}>
@@ -201,17 +286,63 @@ class StatOverview extends Component {
                         </label>
                     </div>
 
+                    <span style={{fontSize:'small'}}>
+                        Vision
+                        <hr />
+
+                        <label style={outer_label_style} htmlFor={`${match._id}-vision_score`}>
+                            <input
+                                value='vision_score'
+                                checked={this.state.selected.has('vision_score')}
+                                onChange={this.toggle}
+                                id={`${match._id}-vision_score`}
+                                type="checkbox"/>
+                            <span style={label_style}>Vision Score</span>
+                        </label>
+
+                        <label style={outer_label_style} htmlFor={`${match._id}-wards_placed`}>
+                            <input
+                                value='wards_placed'
+                                checked={this.state.selected.has('wards_placed')}
+                                onChange={this.toggle}
+                                id={`${match._id}-wards_placed`}
+                                type="checkbox"/>
+                            <span style={label_style}>Wards Placed</span>
+                        </label>
+
+                        <label style={outer_label_style} htmlFor={`${match._id}-wards_killed`}>
+                            <input
+                                value='wards_killed'
+                                checked={this.state.selected.has('wards_killed')}
+                                onChange={this.toggle}
+                                id={`${match._id}-wards_killed`}
+                                type="checkbox"/>
+                            <span style={label_style}>Wards Killed</span>
+                        </label>
+
+                        <label style={outer_label_style} htmlFor={`${match._id}-vision_wards_bought_in_game`}>
+                            <input
+                                value='vision_wards_bought_in_game'
+                                checked={this.state.selected.has('vision_wards_bought_in_game')}
+                                onChange={this.toggle}
+                                id={`${match._id}-vision_wards_bought_in_game`}
+                                type="checkbox"/>
+                            <span style={label_style}>Control Wards</span>
+                        </label>
+
+                    </span>
+
                     <div style={{marginBottom: 80}}></div>
 
                 </div>
 
 
-                <div style={{position: 'absolute', top: 25, bottom: 0, left: 455, width: 50}}>
+                <div style={{position: 'absolute', top: 25, bottom: 0, left: 455, width: 50, zIndex:5}}>
                     
                     {parts.map(part => {
                         return (
                             <div key={`${match._id}-${part._id}`} style={{height:30, width:30, paddingBottom: 33}}>
-                                <img style={{height:20}} src={part.champion.image_url} alt=""/>
+                                <img title={part.summoner_name} style={{height:20}} src={part.champion.image_url} alt={part.champion.name}/>
                             </div>
                         )
                     })}
@@ -228,6 +359,20 @@ class StatOverview extends Component {
                                 tickFormatter={() => ''}
                                 />
                             <XAxis type='number'/>
+                            <Tooltip formatter={(value, name, props) => {
+                                var convert = this.state.convert
+                                if (convert[name] !== undefined) {
+                                    name = convert[name]
+                                }
+
+                                if (value.toString().indexOf('.') >= 0) {
+                                    value = numeral(value).format('0,0.00')
+                                }
+                                else {
+                                    value = numeral(value).format('0,0')
+                                }
+                                return [value, name]
+                            }} />
                             {[...this.state.selected].map((key) => {
                                 return (
                                     <Bar key={`${key}-bar`} dataKey={key} fill="#8884d8" />

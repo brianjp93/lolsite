@@ -10,6 +10,12 @@ function timeline(data) {
     return axios.post(url, data)
 }
 
+function participants(data) {
+    var url = `/api/${version}/match/participants/`
+    return axios.post(url, data)
+}
+
 export default {
     timeline,
+    participants,
 }
