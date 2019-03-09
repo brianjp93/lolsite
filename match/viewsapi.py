@@ -106,6 +106,12 @@ def get_match_timeline(request, format=None):
     return Response(data, status=status_code)
 
 
+def get_participants(request, format=None):
+    """
+    """
+    pass
+
+
 @api_view(['POST'])
 def get_spectate(request, format=None):
     """Get spectate data, augmented with internal data

@@ -7,12 +7,14 @@ class StatOverview extends Component {
         super(props)
 
         this.state = {
-            selected: new Set(),
+            selected: new Set(['total_damage_dealt_to_champions']),
         }
 
         this.toggle = this.toggle.bind(this)
         this.getData = this.getData.bind(this)
         this.getPart = this.getPart.bind(this)
+        this.getDPM = this.getDPM.bind(this)
+        this.getDPG = this.getDPG.bind(this)
     }
     toggle(event) {
         var select_value = event.target.value
@@ -26,8 +28,18 @@ class StatOverview extends Component {
         var parts = [...team100, ...team200]
         for (var i=0; i<parts.length; i++) {
             parts[i] = {...parts[i], ...parts[i].stats}
+
+            parts[i].dpm = this.getDPM(parts[i])
+            parts[i].dpg = this.getDPG(parts[i])
         }
         return parts
+    }
+    getDPM(part) {
+        var minutes = this.props.parent.props.match.game_duration / 60
+        return part.total_damage_dealt_to_champions / minutes
+    }
+    getDPG(part) {
+        return part.total_damage_dealt_to_champions / part.gold_earned
     }
     getPart(name) {
         for (var part of this.props.parent.props.match.participants) {
@@ -206,23 +218,24 @@ class StatOverview extends Component {
 
                 </div>
 
-
-                <div style={{display: 'inline-block', marginLeft: -25}}>
-                    <BarChart layout='vertical' width={260} height={370} data={this.getData()}>
-                        <YAxis
-                            type='category'
-                            dataKey="summoner_name"
-                            interval={0}
-                            tickFormatter={() => ''}
-                            />
-                        <XAxis type='number'/>
-                        {[...this.state.selected].map((key) => {
-                            return (
-                                <Bar key={`${key}-bar`} dataKey={key} fill="#8884d8" />
-                            )
-                        })}
-                    </BarChart>
-                </div>
+                {this.props.parent.state.is_expanded &&
+                    <div style={{display: 'inline-block', marginLeft: -25}}>
+                        <BarChart layout='vertical' width={260} height={370} data={this.getData()}>
+                            <YAxis
+                                type='category'
+                                dataKey="summoner_name"
+                                interval={0}
+                                tickFormatter={() => ''}
+                                />
+                            <XAxis type='number'/>
+                            {[...this.state.selected].map((key) => {
+                                return (
+                                    <Bar key={`${key}-bar`} dataKey={key} fill="#8884d8" />
+                                )
+                            })}
+                        </BarChart>
+                    </div>
+                }
             </div>
         )
     }

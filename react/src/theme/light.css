@@ -16,6 +16,7 @@
     --button-color1: gray;
     --button-color1-hover: lightgray;
     --muted: #7d6a6a;
+    --selected: #4074a8;
 }
 
 a.light {
@@ -103,4 +104,8 @@ ul.sidenav.light {
 
 .light.btn-small:hover, .light.btn:hover, .light.btn-large:hover {
     background-color: var(--button-color1-hover);
+}
+
+.light.btn-small.selected, .light.btn.selected, .light.btn-large.selected {
+    background-color: var(--selected);
 }

@@ -16,6 +16,7 @@
     --button-color1: #515967;
     --button-color1-hover: #636d7f;
     --muted: #7d6a6a;
+    --selected: #4074a8;
 }
 
 a.dark {
@@ -103,4 +104,8 @@ ul.sidenav.dark {
 
 .dark.btn-small:hover, .dark.btn:hover, .dark.btn-large:hover {
     background-color: var(--button-color1-hover);
+}
+
+.dark.btn-small.selected, .dark.btn.selected, .dark.btn-large.selected {
+    background-color: var(--selected);
 }

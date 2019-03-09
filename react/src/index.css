@@ -51,3 +51,11 @@ hr {
     border-radius: 10px;
     background-color: #F5F5F500;
 }
+
+[type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+    position: relative;
+}
+
+[type="checkbox"]+span:not(.lever) {
+    padding-left: 25px;
+}

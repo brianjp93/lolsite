@@ -15,6 +15,9 @@ class App extends Component {
             language: 'en_US',
 
             items: {},
+
+            // whether or not to ignore vertical scroll conversion to horizontal
+            ignore_horizontal: false,
         }
     }
     componentDidUpdate(prevProps, prevState) {
