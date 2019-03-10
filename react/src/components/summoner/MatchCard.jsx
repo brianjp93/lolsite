@@ -5,7 +5,7 @@ import api from '../../api/api'
 import numeral from 'numeral'
 import moment from 'moment'
 import Item from '../data/Item'
-import StatPie from './StatPie'
+// import StatPie from './StatPie'
 import StatOverview from './StatOverview'
 import {
     ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -743,6 +743,18 @@ class MatchCard extends Component {
             marginLeft: '7.5%',
             marginTop: 8,
         }
+        let statbox_style = {
+            display: 'inline-block',
+            padding: '2px 0px',
+            width: 100,
+            borderRadius: 10,
+            marginBottom: 3,
+        }
+        let game_time = this.props.match.game_duration / 60
+        let dpm = mypart.stats.total_damage_dealt_to_champions / (this.props.match.game_duration / 60)
+        let vision_score_per_minute = mypart.stats.vision_score / game_time
+        let damage_taken_per_minute = mypart.stats.total_damage_taken / game_time
+        let csm = mypart.stats.total_minions_killed / game_time
         return (
             <div
                 style={{
@@ -888,7 +900,7 @@ class MatchCard extends Component {
                                 </div>
                             </div>
 
-                            <div style={{display: 'inline-block'}}>
+                            {/*<div style={{display: 'inline-block'}}>
                                 <StatPie
                                     width={240}
                                     height={95}
@@ -896,6 +908,42 @@ class MatchCard extends Component {
                                     store={this.props.store}
                                     mypart={mypart}
                                     pageStore={this.props.pageStore} />
+                            </div>*/}
+
+                            <div style={{width: '95%'}}>
+                                <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
+                                    <div title='Damage Per Minute' style={{...statbox_style, backgroundColor: '#56262a'}}>
+                                        <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>DPM</div>
+                                        <div>
+                                            {numeral(dpm).format('0,0')}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
+                                    <div title='Vision Score Per Minute' style={{...statbox_style, backgroundColor: '#276159'}}>
+                                        <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>VS/Min</div>
+                                        <div>
+                                            {numeral(vision_score_per_minute).format('0.00')}
+                                        </div>
+                                    </div>
+                                </div>
+                                <br/>
+                                <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
+                                    <div title='Damage Taken Per Minute' style={{...statbox_style, backgroundColor: '#1f1f1f'}}>
+                                        <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>DT/Min</div>
+                                        <div>
+                                            {numeral(damage_taken_per_minute).format('0,0')}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
+                                    <div title='CS Per Minute' style={{...statbox_style, backgroundColor: '#65543a'}}>
+                                        <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>CS/Min</div>
+                                        <div>
+                                            {numeral(csm).format('0.0')}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div style={{position:'absolute', left:274, top:190, zIndex:10}}>
@@ -914,11 +962,10 @@ class MatchCard extends Component {
                             {/* match card footer */}
                             <div style={{position:'absolute', bottom:5, left:0, right:0}}>
                                 <div style={{float:'left', paddingLeft:10}}>
-                                    <small>
+                                    <small style={{lineHeight:1, display:'block'}}>
                                         {`${Math.floor(match.game_duration / 60)}m ${match.game_duration % 60}s`}
                                     </small>
-                                    <br/>
-                                    <small>
+                                    <small style={{lineHeight:1}}>
                                         {formatDatetime(match.game_creation)}
                                     </small>
                                 </div>
