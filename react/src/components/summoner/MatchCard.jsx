@@ -754,7 +754,7 @@ class MatchCard extends Component {
         let dpm = mypart.stats.total_damage_dealt_to_champions / (this.props.match.game_duration / 60)
         let vision_score_per_minute = mypart.stats.vision_score / game_time
         let damage_taken_per_minute = mypart.stats.total_damage_taken / game_time
-        let csm = mypart.stats.total_minions_killed / game_time
+        let csm = (mypart.stats.total_minions_killed + mypart.stats.neutral_minions_killed) / game_time
         return (
             <div
                 style={{

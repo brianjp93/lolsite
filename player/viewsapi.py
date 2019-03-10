@@ -322,6 +322,7 @@ def serialize_matches(match_query, account_id):
                         'damage_dealt_to_objectives': stats.damage_dealt_to_objectives,
                         'damage_dealt_to_turrets': stats.damage_dealt_to_turrets,
                         'total_minions_killed': stats.total_minions_killed,
+                        'neutral_minions_killed': stats.neutral_minions_killed,
                     }
                     participant_data['stats'] = stats_data
             else:

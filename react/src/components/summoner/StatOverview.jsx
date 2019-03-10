@@ -361,7 +361,7 @@ class StatOverview extends Component {
                 </div>
 
 
-                <div style={{position: 'absolute', top: 25, bottom: 0, left: 455, width: 50, zIndex:5}}>
+                <div style={{position: 'absolute', top: 25, bottom: 0, left: 455, zIndex:5}}>
                     
                     {parts.map(part => {
                         return (
@@ -382,7 +382,16 @@ class StatOverview extends Component {
                                 interval={0}
                                 tickFormatter={() => ''}
                                 />
-                            <XAxis type='number'/>
+                            <XAxis
+                                tickFormatter={(value) => {
+                                    if (value.toString().indexOf('.') >= 0) {
+                                        return numeral(value).format('0,0.00')
+                                    }
+                                    else {
+                                        return numeral(value).format('0,0')
+                                    }
+                                }}
+                                domain={[0, 'dataMax']} type='number'/>
                             <Tooltip formatter={(value, name, props) => {
                                 var convert = this.state.convert
                                 if (convert[name] !== undefined) {
