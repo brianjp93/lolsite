@@ -25,6 +25,7 @@ class StatOverview extends Component {
                 'wards_killed': 'wards killed',
                 'vision_wards_bought_in_game': 'control wards',
                 'dpd': 'dmg / death',
+                'dtpd': 'dmg taken / death',
             },
         }
 
@@ -36,6 +37,7 @@ class StatOverview extends Component {
         this.getParticipants = this.getParticipants.bind(this)
         this.getKP = this.getKP.bind(this)
         this.getDPD = this.getDPD.bind(this)
+        this.getDTPD = this.getDTPD.bind(this)
     }
     componentDidUpdate(prevProps) {
         if (prevProps.is_expanded === false && this.props.is_expanded === true) {
@@ -71,6 +73,7 @@ class StatOverview extends Component {
             parts[i].dpg = this.getDPG(parts[i])
             parts[i].kp = this.getKP(parts[i])
             parts[i].dpd = this.getDPD(parts[i])
+            parts[i].dtpd = this.getDTPD(parts[i])
         }
         return parts
     }
@@ -82,7 +85,18 @@ class StatOverview extends Component {
         return part.total_damage_dealt_to_champions / part.gold_earned
     }
     getDPD(part) {
-        return part.total_damage_dealt_to_champions / part.deaths
+        var deaths = part.deaths
+        if (deaths < 1) {
+            deaths = 1
+        }
+        return part.total_damage_dealt_to_champions / deaths
+    }
+    getDTPD(part) {
+        var deaths = part.deaths
+        if (deaths < 1) {
+            deaths = 1
+        }
+        return part.total_damage_taken / deaths
     }
     getKP(part) {
         var team_id = part.team_id
@@ -273,6 +287,16 @@ class StatOverview extends Component {
                                 id={`${match._id}-damage_taken`}
                                 type="checkbox"/>
                             <span style={label_style}>Damage Taken</span>
+                        </label>
+
+                        <label style={outer_label_style} htmlFor={`${match._id}-dtpd`}>
+                            <input
+                                value='dtpd'
+                                checked={this.state.selected.has('dtpd')}
+                                onChange={this.toggle}
+                                id={`${match._id}-dtpd`}
+                                type="checkbox"/>
+                            <span title='Damage Taken Per Death' style={label_style}>Dmg / Death</span>
                         </label>
 
                         <label style={outer_label_style} htmlFor={`${match._id}-self_mitigated_damage`}>
