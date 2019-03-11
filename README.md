@@ -31,7 +31,7 @@
 9. Set our API key
     * Set up a developer account at the [riot dev site](https://developer.riotgames.com/)
     * generate a development api key
-    * go to [http://localhost:8000/admin][http://localhost:8000/admin]
+    * go to [http://localhost:8000/admin](http://localhost:8000/admin)
         * Find `data > Ritos`
         * Create new Rito
         * paste api key into the field and save (You'll have to edit this model every time you generate a new key - don't create new model)
