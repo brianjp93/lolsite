@@ -68,18 +68,63 @@ class Summoner extends Component {
         this.getPositions = this.getPositions.bind(this)
         this.setDefaults = this.setDefaults.bind(this)
         this.reloadMatches = this.reloadMatches.bind(this)
+        this.saveStateToStore = this.saveStateToStore.bind(this)
+        this.loadStateFromStore = this.loadStateFromStore.bind(this)
     }
     componentDidMount() {
-        this.getSummonerPage(this.getPositions)
-        this.setQueueDict()
+        var first_load = this.loadStateFromStore()
+        if (first_load) {
+            this.getSummonerPage(this.getPositions)
+            this.setQueueDict()
+        }
     }
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
         // new summoner
         if (this.props.route.match.params.summoner_name !== prevProps.route.match.params.summoner_name) {
+            this.saveStateToStore(prevState)
             this.setDefaults(() => {
-                this.getSummonerPage(this.getPositions)
+                var first_load = this.loadStateFromStore()
+                if (first_load) {
+                    this.getSummonerPage(this.getPositions)
+                }
             })
         }
+    }
+    componentWillUnmount() {
+        // save the current state into our store
+        this.saveStateToStore(this.state)
+    }
+    saveStateToStore(state) {
+        var new_summoners = this.props.store.state.summoners
+        if (new_summoners[this.props.region] === undefined) {
+            new_summoners[this.props.region] = {}
+        }
+        if (state.summoner !== undefined) {
+            if (state.summoner.name !== undefined) {
+                var name = state.summoner.name
+                var simple = name.split(' ').join('').toLowerCase()
+                new_summoners[this.props.region][simple] = state
+                this.props.store.setState({summoners: new_summoners})
+            }
+        }
+    }
+    loadStateFromStore() {
+        var name = this.props.route.match.params.summoner_name
+        var simple = name.split(' ').join('').toLowerCase()
+
+        var first_load = false
+        if (this.props.store.state.summoners[this.props.region] !== undefined) {
+            if (this.props.store.state.summoners[this.props.region][simple] !== undefined) {
+                this.setState(this.props.store.state.summoners[this.props.region][simple])
+            }
+            else {
+                first_load = true
+            }
+        }
+        else {
+            first_load = true
+        }
+        return first_load
     }
     setDefaults(callback) {
         var defaults = {
@@ -145,7 +190,7 @@ class Summoner extends Component {
             next_page: 2,
             is_reloading_matches: true
         }, () => {
-            this.getSummonerPage()
+            this.getSummonerPage(this.getPositions)
         })
     }
     getNextPage() {

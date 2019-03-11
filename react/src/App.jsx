@@ -14,6 +14,7 @@ class App extends Component {
             theme: 'dark',
             language: 'en_US',
 
+            summoners: {},
             items: {},
 
             // whether or not to ignore vertical scroll conversion to horizontal
