@@ -7,6 +7,8 @@ from .models import Timeline, Team, Ban
 from .models import AdvancedTimeline, Frame, ParticipantFrame
 from .models import Event, AssistingParticipants
 
+from .models import Spectate
+
 from data.models import Rito
 
 from player.models import Summoner
@@ -680,3 +682,62 @@ def import_advanced_timeline(match_id=None, overwrite=False):
                 }
                 event = Event(**event_data)
                 event.save()
+
+
+def import_spectate_from_data(data, region):
+    """Import Spectate model from JSON data.
+
+    Parameters
+    ----------
+    data : dict
+    region : str
+
+    Returns
+    -------
+    None
+
+    """
+    spectate_data = {
+        'game_id': data['gameId'],
+        'region': region,
+        'platform_id': data['platformId'],
+        'encryption_key': data['observers']['encryptionKey'],
+    }
+    spectate = Spectate(**spectate_data)
+    try:
+        spectate.save()
+    except IntegrityError:
+        # already saved
+        pass
+
+
+def import_summoners_from_spectate(data, region):
+    """
+
+    Returns
+    -------
+    dict
+        A mapping from the encrypted summoner ID to the internal ID
+        {summoner._id: summoner.id}
+    """
+    summoners = {}
+    for part in data['participants']:
+        summoner_id = part['summonerId']
+        if summoner_id:
+            sum_data = {
+                'name': part['summonerName'],
+                'region': region,
+                'profile_icon_id': part['profileIconId'],
+                '_id': part['summonerId'],
+            }
+            summoner = Summoner(**sum_data)
+            try:
+                summoner.save()
+                summoners[summoner._id] = summoner.id
+            except IntegrityError:
+                query = Summoner.objects.filter(region=region, _id=summoner_id)
+                if query.exists():
+                    summoner = query.first()
+                    summoners[summoner._id] = summoner.id
+
+    return summoners

@@ -15,7 +15,13 @@ function participants(data) {
     return axios.post(url, data)
 }
 
+function getSpectate(data) {
+    var url = `/api/${version}/match/get-spectate/`
+    return axios.post(url, data)
+}
+
 export default {
     timeline,
     participants,
+    getSpectate,
 }

@@ -426,3 +426,12 @@ class AssistingParticipants(models.Model):
         return f'AssistingParticipants(participant_id={self.participant_id})'
 
 # END ADVANCED TIMELINE MODELS
+
+class Spectate(models.Model):
+    game_id = models.CharField(max_length=128, default='', blank=True)
+    encryption_key = models.CharField(max_length=256, default='', blank=True)
+    platform_id = models.CharField(max_length=32, default='', blank=True)
+    region = models.CharField(max_length=32, default='', blank=True)
+
+    class Meta:
+        unique_together = ('game_id', 'region')

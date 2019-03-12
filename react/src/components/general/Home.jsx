@@ -85,7 +85,7 @@ class Home extends Component {
                 <NavBar store={this.props.store} />
                 <div style={{height:100}}></div>
                 <div className="row">
-                    <div style={{height:150}} className="col m2 offset-m4">
+                    <div style={{height:150}} className="col m3 offset-m4">
                         <span>
                             <blockquote
                                 title={this.state.message.hidden_message ? this.state.message.hidden_message : ''}

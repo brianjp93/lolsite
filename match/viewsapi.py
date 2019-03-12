@@ -3,10 +3,13 @@ from rest_framework.decorators import api_view
 
 from match.tasks import get_riot_api
 from match import tasks as mt
+from player import tasks as pt
 
 from .models import Match
 from .models import AdvancedTimeline, Frame, ParticipantFrame
 from .models import Event, AssistingParticipants
+
+from player.models import Summoner
 
 from data.models import Champion
 
@@ -14,7 +17,11 @@ from .serializers import FullMatchSerializer
 from .serializers import AdvancedTimelineSerializer, FrameSerializer, ParticipantFrameSerializer
 from .serializers import EventSerializer, AssistingParticipantsSerializer
 
+from player.serializers import RankPositionSerializer
+
 from player.viewsapi import participant_sort
+
+from multiprocessing.dummy import Pool as ThreadPool
 
 
 @api_view(['POST'])
@@ -246,5 +253,81 @@ def get_participants(request, format=None):
 @api_view(['POST'])
 def get_spectate(request, format=None):
     """Get spectate data, augmented with internal data
+
+    Returns
+    -------
+    JSON - augmented spectate data
+
     """
-    pass
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        summoner_id = request.data['summoner_id']
+        region = request.data['region']
+        api = get_riot_api()
+        r = api.spectator.get(summoner_id, region)
+        spectate_data = r.json()
+        if r.status_code == 404:
+            data = {'message': 'No live game found.'}
+            status_code = 404
+        else:
+            mt.import_spectate_from_data(spectate_data, region)
+            summoners = mt.import_summoners_from_spectate(spectate_data, region)
+            pool = ThreadPool(5)
+            vals = pool.map(lambda x: pt.import_positions(x, threshold_days=3), summoners.values())
+            for part in spectate_data['participants']:
+                positions = None
+                query = Summoner.objects.filter(region=region, _id=summoner_id)
+                if query.exists():
+                    summoner = query.first()
+                    checkpoint = summoner.get_newest_rank_checkpoint()
+                    positions = RankPositionSerializer(checkpoint.positions.all(), many=True).data
+                    positions = sort_positions(positions)
+                part['positions'] = positions
+            data = {'data': spectate_data}
+
+    return Response(data, status=status_code)
+
+
+def sort_positions(positions):
+    """Uses tier_sort, rank_sort and lp_sort to sort positions by descending rank.
+    """
+    return sorted(positions, key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
+
+
+def tier_sort(position):
+    """
+    """
+    tier_order = [
+        'challenger', 'grandmaster', 'master',
+        'diamond', 'platinum', 'gold', 'silver',
+        'bronze', 'iron',
+        ]
+    try:
+        index = tier_order.index(position['tier'].lower())
+    except:
+        index = 100
+    return index
+
+
+def rank_sort(position):
+    """
+    """
+    division_order = ['i', 'ii', 'iii', 'iv', 'v']
+    try:
+        index = division_order.index(position['rank'].lower())
+    except:
+        index = 100
+    return index
+
+
+def lp_sort(position):
+    """
+    """
+    lp = 100
+    try:
+        lp = -position.get('league_points', position['leaguePoints'])
+    except:
+        pass
+    return lp

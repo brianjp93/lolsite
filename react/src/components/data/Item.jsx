@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import Popover from 'react-tiny-popover'
+// import Popover from 'react-popover'
 
 
 class Item extends Component {
@@ -59,14 +60,17 @@ class ItemPopover extends Component {
         if (this.props.item_id) {
             return (
                 <Popover
+                    transitionDuration={0.01}
                     isOpen={this.state.is_open}
+                    //preferPlace='above'
+                    //target={this.target_elt}
                     position={'top'}
                     containerStyle={{'z-index': '11'}}
                     content={(
                         <Item item={this.props.item} />
-                    )}
-                >
+                    )} >
                     <div
+                        ref={(elt) => {this.target_elt = elt}}
                         style={this.props.style}
                         onMouseOver={() => {
                             this.setState({is_open: true})

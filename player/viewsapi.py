@@ -561,7 +561,8 @@ def get_positions(request, format=None):
         try:
             positions = rankcheckpoint.positions.all()
             pos_data = RankPositionSerializer(positions, many=True).data
-            pos_data.sort(key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
+            # pos_data.sort(key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
+            pos_data = sort_positions(pos_data)
             data = {'data': pos_data}
             status = 200
         except Exception as error:

@@ -1,5 +1,7 @@
 from celery import task
 
+from django.utils import timezone
+
 from .models import Summoner, NameChange
 from .models import simplify
 
@@ -103,7 +105,7 @@ def import_positions(summoner_id, threshold_days=None):
     rankcheckpoint = summoner.get_newest_rank_checkpoint()
     if rankcheckpoint and threshold_days:
         threshold = timezone.now() - timezone.timedelta(days=threshold_days)
-        if rankcheckpoint.created_data > threshold:
+        if rankcheckpoint.created_date > threshold:
             # don't run update
             return
 

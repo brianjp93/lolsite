@@ -70,6 +70,7 @@ class Summoner extends Component {
         this.reloadMatches = this.reloadMatches.bind(this)
         this.saveStateToStore = this.saveStateToStore.bind(this)
         this.loadStateFromStore = this.loadStateFromStore.bind(this)
+        this.getSpectate = this.getSpectate.bind(this)
     }
     componentDidMount() {
         var first_load = this.loadStateFromStore()
@@ -227,6 +228,19 @@ class Summoner extends Component {
                     next_page: this.state.next_page + 1,
                     is_requesting_next_page: false,
                 })
+            })
+    }
+    getSpectate() {
+        var data = {
+            region: this.props.region,
+            summoner_id: this.state.summoner._id,
+        }
+        api.match.getSpectate(data)
+            .then(response => {
+                this.setState({spectate: response.data.data})
+            })
+            .catch(error => {
+                console.log(error)
             })
     }
     getPositions() {
