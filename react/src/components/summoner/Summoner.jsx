@@ -91,7 +91,7 @@ class Summoner extends Component {
             setTimeout(this.checkForLiveGame, 100)
         }
 
-        this.live_game_check_interval = window.setInterval(this.checkForLiveGame, 120 * 1000)
+        // this.live_game_check_interval = window.setInterval(this.checkForLiveGame, 120 * 1000)
     }
     componentDidUpdate(prevProps, prevState) {
         // new summoner
@@ -115,7 +115,7 @@ class Summoner extends Component {
         // save the current state into our store
         this.saveStateToStore(this.state)
 
-        window.clearInterval(this.live_game_check_interval)
+        // window.clearInterval(this.live_game_check_interval)
     }
     saveStateToStore(state) {
         var new_summoners = this.props.store.state.summoners
@@ -275,8 +275,10 @@ class Summoner extends Component {
                 this.setState({is_live_game: true})
             })
             .catch(error => {
-                if (error.response === 404) {
-                    this.setState({is_live_game: false})
+                if (error.response !== undefined) {
+                    if (error.response.status === 404) {
+                        this.setState({is_live_game: false})
+                    }
                 }
             })
     }
