@@ -444,7 +444,7 @@ class SummonerCard extends Component {
             'bronze': 'Bronze',
             'silver': 'Silver',
             'gold': 'Gold',
-            'platinum': 'Plat',
+            'platinum': 'Platinum',
             'diamond': 'Diamond',
             'master': 'Master',
             'grandmaster': 'Grandmaster',

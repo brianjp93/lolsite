@@ -1,7 +1,13 @@
 import React, { Component } from 'react'
 import Modal from 'react-responsive-modal'
+import moment from 'moment'
 
 import api from '../../api/api'
+
+
+function formatDatetime(epoch) {
+    return moment(epoch).format('h:mm a')
+}
 
 
 class Spectate extends Component {
@@ -59,13 +65,13 @@ class Spectate extends Component {
                     <img style={{height:50, borderRadius:4}} src={part.champion.image_url} alt=""/>
                     <small style={{paddingLeft:10, verticalAlign:'top'}}>{part.summonerName}</small>{' '}
                         {pos !== null &&
-                            <span style={{float: 'right'}}>
+                            <div style={{float: 'right', display: 'inline-block', textAlign:'right'}}>
                                 <small className={`${this.props.theme} pill`}>
                                     {pos.tier} {pos.rank}
                                 </small>
                                 <br/>
                                 <small>{pos.wins} wins / {pos.losses} losses</small>
-                            </span>
+                            </div>
                         }
                 </div>
             </div>
@@ -73,10 +79,11 @@ class Spectate extends Component {
     }
     getTopSoloPosition(positions) {
         var top = null
-        for (var pos of positions) {
-            if (pos.queue_type === 'RANKED_SOLO_5x5') {
-                top = pos
-                break
+        if (positions !== null) {
+            for (var pos of positions) {
+                if (pos.queue_type === 'RANKED_SOLO_5x5') {
+                    return pos
+                }
             }
         }
         return top
@@ -94,7 +101,11 @@ class Spectate extends Component {
             if (this.state.spectate_data !== null) {
                 return (
                     <div style={{width: width}}>
-                        <h5 style={{margin:0}}>Live Match</h5>
+                        <h5 style={{margin:0, display: 'inline-block'}}>Live Match</h5>{' '}
+
+                        <span style={{float: 'right', paddingRight:40}}>Match started at {formatDatetime(this.state.spectate_data.gameStartTime)}</span>
+
+                        <div style={{height:10}}></div>
 
                         <div>
                             <div style={{width:320, display:'inline-block'}}>

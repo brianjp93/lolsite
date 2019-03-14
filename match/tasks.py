@@ -734,7 +734,7 @@ def import_summoners_from_spectate(data, region):
             try:
                 summoner.save()
                 summoners[summoner._id] = summoner.id
-            except IntegrityError:
+            except IntegrityError as error:
                 query = Summoner.objects.filter(region=region, _id=summoner_id)
                 if query.exists():
                     summoner = query.first()

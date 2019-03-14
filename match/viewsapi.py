@@ -280,7 +280,7 @@ def get_spectate(request, format=None):
             vals = pool.map(lambda x: pt.import_positions(x, threshold_days=3), summoners.values())
             for part in spectate_data['participants']:
                 positions = None
-                query = Summoner.objects.filter(region=region, _id=summoner_id)
+                query = Summoner.objects.filter(region=region, _id=part['summonerId'])
                 if query.exists():
                     summoner = query.first()
                     checkpoint = summoner.get_newest_rank_checkpoint()
