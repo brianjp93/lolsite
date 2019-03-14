@@ -27,8 +27,8 @@ change to your **React** files.
 
 Here's how I have **Django** "intelligently" serving the build files.
 
-### Custom Django Command - `python manage.py rundev`
-**path** : `lolsite/management/commands/rundev.py`
+### 1. Custom Django Command
+path : `lolsite/management/commands/rundev.py`
 
 Allows us to run `python manage.py rundev` in our project folder
 
@@ -41,11 +41,11 @@ Allows us to run `python manage.py rundev` in our project folder
 Sets `REACT_DEV = TRUE` in our **Django** settings.  This is how **Django** knows
 whether or not to serve our **React** Build or Development files.
 
-### Custom Context Processor
+### 2. Custom Context Processor
 
-**path** : `lolsite/context_processors.py`
+path : `lolsite/context_processors.py`
 
-**function** : `react_data_processor(request)`
+function : `react_data_processor(request)`
 
 > What does it do?
 
@@ -56,3 +56,26 @@ if REACT_DEV == True:
 else:
     # serve react BUILD files
 ```
+
+# Summoner Page
+
+> When searching for a summoner, several things happen very quickly.
+
+Different things will happen based on some conditions.
+
+> if, in this browser tab session, **this is the first time the summoner was looked up**.
+
+* send request to django
+* django makes an API call to Riot for data on the summoner
+* Summoner model is updated or created
+* A multithreaded pool requests the most recent 10 games
+* Every participant is imported as a Summoner if their summoner_id is not already
+in one of the Summoner models
+* All match data is imported into their respective models.
+* The searched summoner's rank positions are queried and saved to a RankCheckpoint model
+    * These are saved **every time** django notices that their rank position changes so we can keep track of
+    the summoner's progress.
+
+> else - **the summoner was already searched for in this session**
+
+* Load summoner data from the react data store
