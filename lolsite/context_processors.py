@@ -1,3 +1,6 @@
+"""lolsite/context_processors.py
+"""
+
 import os
 from django.conf import settings
 import socket

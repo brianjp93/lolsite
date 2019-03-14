@@ -425,13 +425,9 @@ def get_summoner_page(request, format=None):
         if count > 100:
             count = 100
 
-        print(name)
-        print(account_id)
-        print(_id)
         if name:
             simplified = pt.simplify(name)
             query = Summoner.objects.filter(simple_name=simplified, region=region)
-            print(query)
         elif account_id:
             query = Summoner.objects.filter(account_id=account_id, region=region)
         elif _id:
