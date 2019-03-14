@@ -20,8 +20,14 @@ function getSpectate(data) {
     return axios.post(url, data)
 }
 
+function checkForLiveGame(data) {
+    var url = `/api/${version}/match/check-for-live-game/`
+    return axios.post(url, data)
+}
+
 export default {
     timeline,
     participants,
     getSpectate,
+    checkForLiveGame,
 }

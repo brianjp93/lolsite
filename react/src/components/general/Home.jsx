@@ -3,6 +3,7 @@ import { Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import NavBar from './NavBar'
 import api from '../../api/api'
+import Footer from './Footer'
 
 
 class Home extends Component {
@@ -139,6 +140,10 @@ class Home extends Component {
                             <label htmlFor="summoner-search">Summoner</label>
                         </div>
                     </div>
+                </div>
+
+                <div>
+                    <Footer store={this.props.store} />
                 </div>
             </div>
         )

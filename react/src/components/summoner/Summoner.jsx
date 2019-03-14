@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import NavBar from '../general/NavBar'
 import MatchCard from './MatchCard'
+import Spectate from './Spectate'
 
 import api from '../../api/api'
+import Footer from '../general/Footer'
 
 
 function convertVerticalScroll(event)  {
@@ -60,6 +62,9 @@ class Summoner extends Component {
             positions: [],
 
             last_scroll_time: (new Date()).getTime(),
+
+            is_spectate_modal_open: false,
+            is_live_game: false,
         }
 
         this.getSummonerPage = this.getSummonerPage.bind(this)
@@ -71,13 +76,22 @@ class Summoner extends Component {
         this.saveStateToStore = this.saveStateToStore.bind(this)
         this.loadStateFromStore = this.loadStateFromStore.bind(this)
         this.getSpectate = this.getSpectate.bind(this)
+        this.checkForLiveGame = this.checkForLiveGame.bind(this)
     }
     componentDidMount() {
         var first_load = this.loadStateFromStore()
         if (first_load) {
-            this.getSummonerPage(this.getPositions)
+            this.getSummonerPage(() => {
+                this.getPositions()
+                this.checkForLiveGame()
+            })
             this.setQueueDict()
         }
+        else {
+            setTimeout(this.checkForLiveGame, 100)
+        }
+
+        this.live_game_check_interval = window.setInterval(this.checkForLiveGame, 120 * 1000)
     }
     componentDidUpdate(prevProps, prevState) {
         // new summoner
@@ -86,7 +100,13 @@ class Summoner extends Component {
             this.setDefaults(() => {
                 var first_load = this.loadStateFromStore()
                 if (first_load) {
-                    this.getSummonerPage(this.getPositions)
+                    this.getSummonerPage(() => {
+                        this.getPositions()
+                        this.checkForLiveGame()
+                    })
+                }
+                else {
+                    setTimeout(this.checkForLiveGame, 100)
                 }
             })
         }
@@ -94,6 +114,8 @@ class Summoner extends Component {
     componentWillUnmount() {
         // save the current state into our store
         this.saveStateToStore(this.state)
+
+        window.clearInterval(this.live_game_check_interval)
     }
     saveStateToStore(state) {
         var new_summoners = this.props.store.state.summoners
@@ -243,6 +265,21 @@ class Summoner extends Component {
                 console.log(error)
             })
     }
+    checkForLiveGame() {
+        var data = {
+            region: this.props.region,
+            summoner_id: this.state.summoner._id,
+        }
+        api.match.checkForLiveGame(data)
+            .then(response => {
+                this.setState({is_live_game: true})
+            })
+            .catch(error => {
+                if (error.response === 404) {
+                    this.setState({is_live_game: false})
+                }
+            })
+    }
     getPositions() {
         var data = {
             summoner_id: this.state.summoner._id,
@@ -352,6 +389,8 @@ class Summoner extends Component {
                         </div>
                     </div>
                 }
+
+                <Footer store={this.props.store} />
             </div>
         )
     }
@@ -515,10 +554,14 @@ class SummonerCard extends Component {
                             textAlign: 'center',
                             verticalAlign: 'middle',
                             height:25,
-                            textDecoration: 'underline',
-                            fontWeight: 'bold',
                         }}>
-                        {this.props.summoner.name}
+                        <span style={{textDecoration: 'underline', fontWeight: 'bold',}}>{this.props.summoner.name}</span>
+                        <br/>
+                        <Spectate.SpectateModal theme={this.props.store.state.theme} summoner_id={this.props.summoner._id} pageStore={this.props.pageStore}>
+                            <small>
+                                {this.props.pageStore.state.is_live_game ? 'Live Game!': 'Check For Game'}
+                            </small>
+                        </Spectate.SpectateModal>
                     </div>
 
                     <span style={{position: 'absolute', right:2, top:2}}>
@@ -533,7 +576,7 @@ class SummonerCard extends Component {
                         <hr/>
                     }
 
-                    <div>
+                    <div style={{paddingTop:10}}>
                         {this.props.positions.map(pos => {
                             if (pos.queue_type === 'RANKED_SOLO_5x5') {
                                 var gen_positions = ['NONE', 'APEX']

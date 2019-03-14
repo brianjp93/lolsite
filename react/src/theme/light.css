@@ -17,6 +17,7 @@
     --button-color1-hover: lightgray;
     --muted: #7d6a6a;
     --selected: #4074a8;
+    --plain: #9aa4b5;
 }
 
 a.light {
@@ -42,13 +43,25 @@ body.light {
     color: var(--card-color1);
 }
 
+.light.custom-modal {
+    background: var(--card-background1);
+    color: var(--card-color1);
+    border-radius: 5px;
+}
+
 .light.background {
     background: var(--gradient-main);
     color: var(--c1);
 }
 
+/* use on card */
 .light.muted {
     color: var(--muted);
+}
+
+/* use on plain backround */
+.light.plain {
+    color: var(--plain);
 }
 
 input.light {

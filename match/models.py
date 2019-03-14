@@ -8,6 +8,49 @@ from data.models import SummonerSpell
 import pytz
 
 
+def sort_positions(positions):
+    """Uses tier_sort, rank_sort and lp_sort to sort positions by descending rank.
+    """
+    return sorted(positions, key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
+
+
+def tier_sort(position):
+    """
+    """
+    tier_order = [
+        'challenger', 'grandmaster', 'master',
+        'diamond', 'platinum', 'gold', 'silver',
+        'bronze', 'iron',
+        ]
+    try:
+        index = tier_order.index(position['tier'].lower())
+    except:
+        index = 100
+    return index
+
+
+def rank_sort(position):
+    """
+    """
+    division_order = ['i', 'ii', 'iii', 'iv', 'v']
+    try:
+        index = division_order.index(position['rank'].lower())
+    except:
+        index = 100
+    return index
+
+
+def lp_sort(position):
+    """
+    """
+    lp = 100
+    try:
+        lp = -position.get('league_points', position['leaguePoints'])
+    except:
+        pass
+    return lp
+
+
 class Match(models.Model):
     _id = models.BigIntegerField(unique=True)
     game_creation = models.BigIntegerField()

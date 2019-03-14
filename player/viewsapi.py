@@ -18,6 +18,9 @@ from match import tasks as mt
 from match.tasks import get_riot_api
 from match.models import Match, Participant
 from match.models import Timeline, Team, Ban
+
+from match.models import sort_positions
+
 from match.serializers import MatchSerializer, ParticipantSerializer
 from match.serializers import TimelineSerializer, TeamSerializer, BanSerializer
 from match.serializers import StatsSerializer
@@ -574,46 +577,3 @@ def get_positions(request, format=None):
         status = 200
 
     return Response(data, status=status_code)
-
-
-def sort_positions(positions):
-    """Uses tier_sort, rank_sort and lp_sort to sort positions by descending rank.
-    """
-    return sorted(positions, key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
-
-
-def tier_sort(position):
-    """
-    """
-    tier_order = [
-        'challenger', 'grandmaster', 'master',
-        'diamond', 'platinum', 'gold', 'silver',
-        'bronze', 'iron',
-        ]
-    try:
-        index = tier_order.index(position['tier'].lower())
-    except:
-        index = 100
-    return index
-
-
-def rank_sort(position):
-    """
-    """
-    division_order = ['i', 'ii', 'iii', 'iv', 'v']
-    try:
-        index = division_order.index(position['rank'].lower())
-    except:
-        index = 100
-    return index
-
-
-def lp_sort(position):
-    """
-    """
-    lp = 100
-    try:
-        lp = -position.get('league_points', position['leaguePoints'])
-    except:
-        pass
-    return lp

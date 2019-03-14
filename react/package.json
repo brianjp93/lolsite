@@ -10,6 +10,7 @@
     "react-cookie": "^3.0.8",
     "react-dom": "^16.7.0",
     "react-redux": "^6.0.0",
+    "react-responsive-modal": "^3.6.0",
     "react-router-dom": "^4.3.1",
     "react-scripts": "^2.1.8",
     "react-tiny-popover": "^3.4.2",

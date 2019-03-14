@@ -17,6 +17,7 @@
     --button-color1-hover: #636d7f;
     --muted: #7d6a6a;
     --selected: #4074a8;
+    --plain: #9aa4b5;
 }
 
 a.dark {
@@ -42,13 +43,25 @@ body.dark {
     color: var(--card-color1);
 }
 
+.dark.custom-modal {
+    background: var(--card-background1);
+    color: var(--card-color1);
+    border-radius: 5px;
+}
+
 .dark.background {
     background: var(--gradient-main);
     color: var(--c1);
 }
 
+/* use on card */
 .dark.muted {
     color: var(--muted);
+}
+
+/* use on plain backround */
+.dark.plain {
+    color: var(--plain);
 }
 
 input.dark {

@@ -9,6 +9,8 @@ from .models import Match
 from .models import AdvancedTimeline, Frame, ParticipantFrame
 from .models import Event, AssistingParticipants
 
+from .models import sort_positions
+
 from player.models import Summoner
 
 from data.models import Champion
@@ -285,49 +287,38 @@ def get_spectate(request, format=None):
                     positions = RankPositionSerializer(checkpoint.positions.all(), many=True).data
                     positions = sort_positions(positions)
                 part['positions'] = positions
+
+                query = Champion.objects.filter(key=part['championId']).order_by('-version')
+                if query.exists():
+                    champion = query.first()
+                    part['champion'] = {
+                        'name': champion.name,
+                        'image_url': champion.image_url(),
+                    }
+
             data = {'data': spectate_data}
 
     return Response(data, status=status_code)
 
 
-def sort_positions(positions):
-    """Uses tier_sort, rank_sort and lp_sort to sort positions by descending rank.
-    """
-    return sorted(positions, key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
+@api_view(['POST'])
+def check_for_live_game(request, format=None):
+    """Quickly check if a summoner is in a game.
 
+    Returns
+    -------
+    Riot Spectate JSON Response
 
-def tier_sort(position):
     """
-    """
-    tier_order = [
-        'challenger', 'grandmaster', 'master',
-        'diamond', 'platinum', 'gold', 'silver',
-        'bronze', 'iron',
-        ]
-    try:
-        index = tier_order.index(position['tier'].lower())
-    except:
-        index = 100
-    return index
+    data = {}
+    status_code = 200
 
+    if request.method == 'POST':
+        summoner_id = request.data['summoner_id']
+        region = request.data['region']
+        api = get_riot_api()
+        r = api.spectator.get(summoner_id, region)
+        data = {'data': r.json()}
+        status_code = r.status_code
 
-def rank_sort(position):
-    """
-    """
-    division_order = ['i', 'ii', 'iii', 'iv', 'v']
-    try:
-        index = division_order.index(position['rank'].lower())
-    except:
-        index = 100
-    return index
-
-
-def lp_sort(position):
-    """
-    """
-    lp = 100
-    try:
-        lp = -position.get('league_points', position['leaguePoints'])
-    except:
-        pass
-    return lp
+    return Response(data, status=status_code)

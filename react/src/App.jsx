@@ -14,6 +14,8 @@ class App extends Component {
             theme: 'dark',
             language: 'en_US',
 
+            project_title: 'Press R',
+
             summoners: {},
             items: {},
 
