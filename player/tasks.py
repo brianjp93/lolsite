@@ -71,7 +71,7 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
             'revision_date': data['revisionDate'],
             'summoner_level': data['summonerLevel'],
         }
-        query = Summoner.objects.filter(region=region.lower(), account_id=data['accountId'])
+        query = Summoner.objects.filter(region=region.lower(), _id=data['id'])
         if query.exists():
             summoner_model = query.first()
             # print(summoner_model)
