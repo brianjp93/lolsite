@@ -163,6 +163,7 @@ class Summoner extends Component {
             victory_color: '#68b568',
             loss_color: '#c33c3c',
             neutral_color: 'lightblue',
+            is_spectate_modal_open: false,
 
             positions: [],
         }

@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 import Modal from 'react-responsive-modal'
 import moment from 'moment'
+import numeral from 'numeral'
 
 import api from '../../api/api'
 
@@ -21,12 +23,20 @@ class Spectate extends Component {
         this.getSpectate = this.getSpectate.bind(this)
         this.getTeam = this.getTeam.bind(this)
         this.getTopSoloPosition = this.getTopSoloPosition.bind(this)
+        this.getGameTime = this.getGameTime.bind(this)
     }
     componentDidMount() {
         this.setState({is_retrieving: true})
         this.getSpectate(() => {
             this.setState({is_retrieving: false})
         })
+
+        this.gametime_interval = window.setInterval(() => {
+            this.matchtime.innerHTML = this.getGameTime()
+        }, 1000)
+    }
+    componentWillUnmount() {
+        window.clearInterval(this.gametime_interval)
     }
     getSpectate(callback) {
         var data = {
@@ -63,7 +73,21 @@ class Spectate extends Component {
 
                 <div>
                     <img style={{height:50, borderRadius:4}} src={part.champion.image_url} alt=""/>
-                    <small style={{paddingLeft:10, verticalAlign:'top'}}>{part.summonerName}</small>{' '}
+                    <small style={{paddingLeft:10}}>
+                        {this.props.summoner_id === part.summonerId &&
+                            <span style={{verticalAlign: 'top'}}>
+                                {part.summonerName}
+                            </span>
+                        }
+                        {this.props.summoner_id !== part.summonerId &&
+                            <Link
+                                style={{verticalAlign: 'top'}}
+                                className={`${this.props.theme}`}
+                                to={`/${this.props.region}/${part.summonerName}/`}>
+                                {part.summonerName}
+                            </Link>
+                        }
+                    </small>{' '}
                         {pos !== null &&
                             <div style={{float: 'right', display: 'inline-block', textAlign:'right'}}>
                                 <small className={`${this.props.theme} pill`}>
@@ -88,6 +112,14 @@ class Spectate extends Component {
         }
         return top
     }
+    getGameTime() {
+        var now = new Date().getTime()
+        var ms = now - this.state.spectate_data.gameStartTime
+        var total_seconds = Math.round(ms / 1000)
+        var minutes = Math.floor(total_seconds / 60)
+        var seconds = total_seconds % 60
+        return `${numeral(minutes).format('0')}:${numeral(seconds).format('00')}`
+    }
     render() {
         let width = 700
         if (this.state.is_retrieving) {
@@ -103,7 +135,10 @@ class Spectate extends Component {
                     <div style={{width: width}}>
                         <h5 style={{margin:0, display: 'inline-block'}}>Live Match</h5>{' '}
 
-                        <span style={{float: 'right', paddingRight:40}}>Match started at {formatDatetime(this.state.spectate_data.gameStartTime)}</span>
+                        <span style={{float: 'right', paddingRight:40}}>
+                            Match started at {formatDatetime(this.state.spectate_data.gameStartTime)}{' '}
+                            | <span style={{width: 50, display: 'inline-block'}} ref={(elt) => {this.matchtime = elt}}></span>
+                        </span>
 
                         <div style={{height:10}}></div>
 
