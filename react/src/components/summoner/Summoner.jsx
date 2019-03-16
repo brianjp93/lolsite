@@ -341,7 +341,7 @@ class Summoner extends Component {
 
                         <div className='row' >
                             <div
-                                style={{paddingTop:15, background: '#80808050'}}
+                                style={{paddingTop:15, background: '#ffffff14', borderRadius: 5}}
                                 className="horizontal-scroll quiet-scroll col l10 offset-l1 m12 s12"
                                 ref={(elt) => {this.match_list = elt}}
                                 onWheel={(event) => {
@@ -391,8 +391,6 @@ class Summoner extends Component {
                                         }
                                     </div>
                                 </div>
-
-                                <div style={{display: 'inline-block', width: 200}}></div>
                             </div>
                         </div>
                     </div>
