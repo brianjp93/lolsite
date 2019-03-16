@@ -224,54 +224,63 @@ class MatchCard extends Component {
         }
         return (
             <div style={{height: partial, position: 'relative'}}>
-                {/* KP PERCENTAGE WIDTH */}
-                <div
-                    title={`${numeral(kp).format('0')}% kp`}
-                    style={{
-                        position: 'absolute',
-                        left: 8,
-                        top: 4,
-                        height: 3,
-                        borderRadius: 10,
-                        width: `${kp_wid}%`,
-                        background: is_me ? '#4b9bcd': '#4b9bcd40'}}>
+                <div style={{display: 'inline-block'}}>
+                    {/* KP PERCENTAGE WIDTH */}
+                    <div
+                        title={`${numeral(kp).format('0')}% kp`}
+                        style={{
+                            position: 'absolute',
+                            left: 8,
+                            top: 4,
+                            height: 3,
+                            borderRadius: 10,
+                            width: `${kp_wid}%`,
+                            background: is_me ? '#4b9bcd': '#4b9bcd40'}}>
+                    </div>
+                    {/* DAMAGE PERCENTAGE */}
+                    <div
+                        title={`${numeral(part.stats.total_damage_dealt_to_champions).format('0,0')} damage to champions`}
+                        style={{
+                            position: 'absolute',
+                            left:8,
+                            top: 18,
+                            height: 3,
+                            borderRadius: 10,
+                            width: `${wid}%`,
+                            background: is_me ? '#dc5f5f': '#dc5f5f40'}}>
+                    </div>
+                    <img
+                        style={{height:20, verticalAlign:'bottom', borderRadius:10, position: 'relative'}}
+                        src={part.champion.image_url}
+                        alt={part.champion.name}
+                        title={part.champion.name} />{' '}
+                    <span>
+                        {is_me &&
+                            <small style={{fontWeight:'bold'}}>
+                                {this.formattedName(part.summoner_name)}
+                            </small>
+                        }
+                        {!is_me &&
+                            <small>
+                                {part.account_id !== '0' &&
+                                    <Link title={part.summoner_name} className={`${this.props.store.state.theme} silent`} to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
+                                        {this.formattedName(part.summoner_name)}
+                                    </Link>
+                                }
+                                {part.account_id === '0' &&
+                                    <span title={part.summoner_name}>
+                                        {this.formattedName(part.summoner_name)}
+                                    </span>
+                                }
+                            </small>
+                        }
+                    </span>
                 </div>
-                {/* DAMAGE PERCENTAGE */}
-                <div style={{
-                    position: 'absolute',
-                    left:8,
-                    top: 19,
-                    height: 3,
-                    borderRadius: 10,
-                    width: `${wid}%`,
-                    background: is_me ? '#dc5f5f': '#dc5f5f40'}}>
+                <div style={{float: 'right'}}>
+                    <small title={this.kda(part)} style={{display: 'inline-block', paddingRight:5}}>
+                        {part.stats.kills}/{part.stats.deaths}/{part.stats.assists}
+                    </small>
                 </div>
-                <img
-                    style={{height:20, verticalAlign:'bottom', borderRadius:10, position: 'relative'}}
-                    src={part.champion.image_url}
-                    alt={part.champion.name}
-                    title={part.champion.name} />{' '}
-                <span>
-                    {is_me &&
-                        <small style={{fontWeight:'bold'}}>
-                            {this.formattedName(part.summoner_name)}
-                        </small>
-                    }
-                    {!is_me &&
-                        <small>
-                            {part.account_id !== '0' &&
-                                <Link className={`${this.props.store.state.theme} silent`} to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
-                                    {this.formattedName(part.summoner_name)}
-                                </Link>
-                            }
-                            {part.account_id === '0' &&
-                                <span>
-                                    {this.formattedName(part.summoner_name)}
-                                </span>
-                            }
-                        </small>
-                    }
-                </span>
             </div>
         )
     }
@@ -297,54 +306,62 @@ class MatchCard extends Component {
             is_me = true
         }
         return (
-            <div style={{textAlign: 'right', height: partial, position: 'relative'}}>
-                <div
-                    title={`${numeral(kp).format('0')}% kp`}
-                    style={{
-                        title: `${kp}% kp`,
-                        position: 'absolute',
-                        right: 8,
-                        top: 4,
-                        height: 3,
-                        borderRadius: 10,
-                        width: `${kp_wid}%`,
-                        background: is_me ? '#4b9bcd': '#4b9bcd40'}}>
-                </div>
-                <div style={{
-                    position: 'absolute',
-                    right:8,
-                    top: 19,
-                    height: 3,
-                    borderRadius: 10,
-                    width: `${wid}%`,
-                    background: is_me ? '#dc5f5f': '#dc5f5f40'}}>
-                </div>
-                <span>
-                    {is_me &&
-                        <small style={{fontWeight:'bold'}}>
-                            {this.formattedName(part.summoner_name)}
-                        </small>
-                    }
-                    {!is_me &&
-                        <small>
-                            {part.account_id !== '0' &&
-                                <Link className={`${this.props.store.state.theme} silent`} to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
-                                    {this.formattedName(part.summoner_name)}
-                                </Link>
-                            }
-                            {part.account_id === '0' &&
-                                <span>
-                                    {this.formattedName(part.summoner_name)}
-                                </span>
-                            }
-                        </small>
-                    }
-                </span>{' '}
-                <img
-                    style={{height:20, verticalAlign:'bottom', borderRadius:10, position: 'relative'}}
-                    src={part.champion.image_url}
-                    alt={part.champion.name}
-                    title={part.champion.name} />
+            <div style={{height: partial, position: 'relative'}}>
+
+                <small title={this.kda(part)} style={{display: 'inline-block', paddingLeft:5}}>
+                    {part.stats.kills}/{part.stats.deaths}/{part.stats.assists}
+                </small>
+                <div style={{float: 'right', display: 'inline-block'}}>
+                    <div
+                        title={`${numeral(kp).format('0')}% kp`}
+                        style={{
+                            title: `${kp}% kp`,
+                            position: 'absolute',
+                            right: 8,
+                            top: 4,
+                            height: 3,
+                            borderRadius: 10,
+                            width: `${kp_wid}%`,
+                            background: is_me ? '#4b9bcd': '#4b9bcd40'}}>
+                    </div>
+                    <div
+                        title={`${numeral(part.stats.total_damage_dealt_to_champions).format('0,0')} damage to champions`}
+                        style={{
+                            position: 'absolute',
+                            right:8,
+                            top: 18,
+                            height: 3,
+                            borderRadius: 10,
+                            width: `${wid}%`,
+                            background: is_me ? '#dc5f5f': '#dc5f5f40'}}>
+                    </div>
+                    <span>
+                        {is_me &&
+                            <small style={{fontWeight:'bold'}}>
+                                {this.formattedName(part.summoner_name)}
+                            </small>
+                        }
+                        {!is_me &&
+                            <small>
+                                {part.account_id !== '0' &&
+                                    <Link title={part.summoner_name} className={`${this.props.store.state.theme} silent`} to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
+                                        {this.formattedName(part.summoner_name)}
+                                    </Link>
+                                }
+                                {part.account_id === '0' &&
+                                    <span title={part.summoner_name}>
+                                        {this.formattedName(part.summoner_name)}
+                                    </span>
+                                }
+                            </small>
+                        }
+                    </span>{' '}
+                    <img
+                        style={{height:20, verticalAlign:'bottom', borderRadius:10, position: 'relative'}}
+                        src={part.champion.image_url}
+                        alt={part.champion.name}
+                        title={part.champion.name} />
+                </div>        
             </div>
         )
     }
@@ -383,8 +400,9 @@ class MatchCard extends Component {
     }
     formattedName(name) {
         name = name.trim()
-        if (name.length >= 14) {
-            return `${name.slice(0, 11)}...`
+        var length = 6
+        if (name.length >= length + 3) {
+            return `${name.slice(0, length)}...`
         }
         return name
     }
