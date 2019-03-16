@@ -26,6 +26,9 @@ class StatOverview extends Component {
                 'vision_wards_bought_in_game': 'control wards',
                 'dpd': 'dmg / death',
                 'dtpd': 'dmg taken / death',
+
+                'cs': 'total cs',
+                'cspm': 'cs / min'
             },
         }
 
@@ -38,6 +41,8 @@ class StatOverview extends Component {
         this.getKP = this.getKP.bind(this)
         this.getDPD = this.getDPD.bind(this)
         this.getDTPD = this.getDTPD.bind(this)
+        this.getCS = this.getCS.bind(this)
+        this.getCSPM = this.getCSPM.bind(this)
     }
     componentDidUpdate(prevProps) {
         if (prevProps.is_expanded === false && this.props.is_expanded === true) {
@@ -74,6 +79,8 @@ class StatOverview extends Component {
             parts[i].kp = this.getKP(parts[i])
             parts[i].dpd = this.getDPD(parts[i])
             parts[i].dtpd = this.getDTPD(parts[i])
+            parts[i].cs = this.getCS(parts[i])
+            parts[i].cspm = this.getCSPM(parts[i])
         }
         return parts
     }
@@ -97,6 +104,14 @@ class StatOverview extends Component {
             deaths = 1
         }
         return part.total_damage_taken / deaths
+    }
+    getCS(part) {
+        return part.stats.total_minions_killed + part.stats.neutral_minions_killed
+    }
+    getCSPM(part) {
+        var minutes = this.props.parent.props.match.game_duration / 60
+        var cs = this.getCS(part)
+        return cs / minutes
     }
     getKP(part) {
         var team_id = part.team_id
@@ -310,10 +325,11 @@ class StatOverview extends Component {
                         </label>
                     </div>
 
-                    <span style={{fontSize:'small'}}>
-                        Vision
-                        <hr />
-
+                    <div>
+                        <span style={{fontSize:'small'}}>
+                            Vision
+                            <hr />
+                        </span>
                         <label style={outer_label_style} htmlFor={`${match._id}-vision_score`}>
                             <input
                                 value='vision_score'
@@ -353,8 +369,36 @@ class StatOverview extends Component {
                                 type="checkbox"/>
                             <span style={label_style}>Control Wards</span>
                         </label>
+                    </div>
 
-                    </span>
+                    <div>
+                        <span style={{fontSize:'small'}}>
+                            Minions and <br/>
+                            Monsters
+                            <hr />
+                        </span>
+
+                        <label style={outer_label_style} htmlFor={`${match._id}-cs`}>
+                            <input
+                                value='cs'
+                                checked={this.state.selected.has('cs')}
+                                onChange={this.toggle}
+                                id={`${match._id}-cs`}
+                                type="checkbox"/>
+                            <span style={label_style}>Total CS</span>
+                        </label>
+
+                        <label style={outer_label_style} htmlFor={`${match._id}-cspm`}>
+                            <input
+                                value='cspm'
+                                checked={this.state.selected.has('cspm')}
+                                onChange={this.toggle}
+                                id={`${match._id}-cspm`}
+                                type="checkbox"/>
+                            <span style={label_style}>CS / Min</span>
+                        </label>
+                    </div>
+
 
                     <div style={{marginBottom: 80}}></div>
 
