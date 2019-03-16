@@ -153,8 +153,43 @@ class StatOverview extends Component {
         var team100 = this.props.parent.getTeam100()
         var team200 = this.props.parent.getTeam200()
         var parts = [...team100, ...team200]
+        let menu_button_style = {
+            display: 'block',
+            padding: '0 5px',
+            width: '85%',
+            marginLeft: '7.5%',
+            marginTop: 8,
+        }
         return (
             <div>
+                
+                <div style={{
+                    position: 'absolute',
+                    top: 230,
+                    width: 25,
+                    height: 145,
+                    left: this.props.parent.state.summary_width + 2,
+                    textAlign: 'center',
+                    borderColor: 'grey',
+                    borderStyle: 'solid',
+                    borderWidth: 1,
+                    borderRadius: 5,
+                    }}>
+                    <button
+                        style={{...menu_button_style, height: '88%'}}
+                        className={`dark btn-small`}
+                        onClick={() => this.setState({selected: new Set()})}>
+                        <div
+                            style={{
+                                display: 'inline-block',
+                                transform: 'rotate(-90deg) translate(0px, 20px)',
+                                transformOrigin: 'bottom left 0',
+                                verticalAlign: 'text-top'}} >
+                            clear
+                        </div>
+                    </button>
+                </div>
+
                 <div
                     className='quiet-scroll'
                     onMouseEnter={() => this.props.store.setState({ignore_horizontal: true})}
