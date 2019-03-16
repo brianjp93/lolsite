@@ -401,7 +401,7 @@ class MatchCard extends Component {
     formattedName(name) {
         name = name.trim()
         var length = 6
-        if (name.length >= length + 3) {
+        if (name.length >= length + 2) {
             return `${name.slice(0, length)}...`
         }
         return name
