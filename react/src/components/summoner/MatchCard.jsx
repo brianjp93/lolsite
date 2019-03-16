@@ -1223,7 +1223,7 @@ class MatchCard extends Component {
                                                                     }
                                                                     <small style={{...some_style, display: 'inline-block', verticalAlign: 'middle'}}>
                                                                         <div style={{width:35, verticalAlign: 'top', display: 'inline-block', marginLeft: 5}} className={`${this.props.store.state.theme} muted`}>
-                                                                            {Math.round(event.timestamp / 1000 / 60)}:{numeral((event.timestamp / 1000) % 60).format('00')}
+                                                                            {Math.floor(event.timestamp / 1000 / 60)}:{numeral((event.timestamp / 1000) % 60).format('00')}
                                                                         </div>{' '}
                                                                         
                                                                         <span style={{verticalAlign: 'top'}}>
