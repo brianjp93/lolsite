@@ -321,23 +321,28 @@ class Summoner extends Component {
                 }
                 {!this.state.is_requesting_page &&
                     <div>
-                        <div style={{width:400, marginLeft:10, display:'inline-block'}}>
-                            {this.state.summoner.name !== undefined &&
-                                <SummonerCard positions={this.state.positions} icon={this.state.icon} summoner={this.state.summoner} store={this.props.store} pageStore={this} />
-                            }
-                        </div>
-                        
-                        <div style={{display:'inline-block', verticalAlign:'top'}}>
-                            <RecentlyPlayedWith
-                                matches={this.state.matches}
-                                store={this.props.store}
-                                pageStore={this}
-                                summoner={this.state.summoner} />
+                        <div className="row" style={{marginBottom: 0}}>
+                            <div className="col l10 offset-l1">
+                                <div style={{width:400, display:'inline-block'}}>
+                                    {this.state.summoner.name !== undefined &&
+                                        <SummonerCard positions={this.state.positions} icon={this.state.icon} summoner={this.state.summoner} store={this.props.store} pageStore={this} />
+                                    }
+                                </div>
+                                
+                                <div style={{display:'inline-block', verticalAlign:'top'}}>
+                                    <RecentlyPlayedWith
+                                        matches={this.state.matches}
+                                        store={this.props.store}
+                                        pageStore={this}
+                                        summoner={this.state.summoner} />
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
+                        <div className='row' >
                             <div
-                                className="horizontal-scroll quiet-scroll"
+                                style={{paddingTop:15, background: '#80808050'}}
+                                className="horizontal-scroll quiet-scroll col l10 offset-l1 m12 s12"
                                 ref={(elt) => {this.match_list = elt}}
                                 onWheel={(event) => {
                                     if (!this.props.store.state.ignore_horizontal) {
@@ -353,7 +358,7 @@ class Summoner extends Component {
                                         }
                                     }, 1000)
                                 }} >
-                                
+                                    
                                 {/* MATCH CARD */}
                                 {this.state.matches.map((match, key) => {
                                     return (

@@ -808,6 +808,7 @@ class MatchCard extends Component {
                                     background: `${this.topBarColor(match)}1f`,
                                     padding: '0 4px',
                                     display: 'inline-block',
+                                    marginLeft: 0,
                                 }}
                                 className="row">
                                 <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
