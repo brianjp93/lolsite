@@ -26,7 +26,10 @@ class NavBar extends Component {
     }
     render() {
         let theme = this.props.store.state.theme
-        let region = 'na'
+        var region = 'na'
+        if (this.props.region !== undefined) {
+            region = this.props.region
+        }
         if (this.state.redirect) {
             this.setState({redirect: false})
             return <Redirect push to={`/${region}/${this.state.summoner_name}/`} />
@@ -51,11 +54,13 @@ class NavBar extends Component {
                                 className="sidenav-trigger" >
                                 <i className="material-icons">menu</i>
                             </a>
-                            <ul className="left hide-on-med-and-down">
-                                <li>
-                                    <Link to='/themes/'>Themes</Link>
-                                </li>
-                            </ul>
+                            {/*
+                                <ul className="left hide-on-med-and-down">
+                                    <li>
+                                        <Link to='/themes/'>Themes</Link>
+                                    </li>
+                                </ul>
+                            */}
 
                             <form
                                 onSubmit={(event) => {

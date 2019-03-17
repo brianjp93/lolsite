@@ -10,7 +10,11 @@ class Home extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            regions: ['na'],
+            regions: [
+                'na', 'euw', 'eune', 'kr',
+                'jp', 'lan', 'las', 'br',
+                'oce', 'tr', 'ru',
+            ],
             region_selected: 'na',
 
             summoner_name: '',

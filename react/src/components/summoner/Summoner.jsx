@@ -305,7 +305,7 @@ class Summoner extends Component {
     render() {
         return (
             <div>
-                <NavBar store={this.props.store} />
+                <NavBar store={this.props.store} region={this.props.region} />
                 {this.state.is_requesting_page &&
                     <div>
                         <div className="row">

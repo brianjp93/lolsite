@@ -16,6 +16,10 @@ function formatDatetime(epoch) {
     return moment(epoch).format('MMM DD h:mm a')
 }
 
+function formatDatetimeFull(epoch) {
+    return moment(epoch).format('MMM DD, YYYY h:mm a')
+}
+
 
 class MatchCard extends Component {
     constructor(props) {
@@ -254,7 +258,7 @@ class MatchCard extends Component {
                         src={part.champion.image_url}
                         alt={part.champion.name}
                         title={part.champion.name} />{' '}
-                    <span>
+                    <span style={{maxWidth: 40, display: 'inline-block'}}>
                         {is_me &&
                             <small style={{fontWeight:'bold'}}>
                                 {this.formattedName(part.summoner_name)}
@@ -335,7 +339,7 @@ class MatchCard extends Component {
                             width: `${wid}%`,
                             background: is_me ? '#dc5f5f': '#dc5f5f40'}}>
                     </div>
-                    <span>
+                    <span style={{maxWidth: 40, display: 'inline-block'}}>
                         {is_me &&
                             <small style={{fontWeight:'bold'}}>
                                 {this.formattedName(part.summoner_name)}
@@ -402,7 +406,7 @@ class MatchCard extends Component {
         name = name.trim()
         var length = 5
         if (name.length >= length + 2) {
-            return `${name.slice(0, length)}...`
+            return `${name.slice(0, length)}..`
         }
         return name
     }
@@ -994,9 +998,9 @@ class MatchCard extends Component {
                             <div style={{position:'absolute', bottom:5, left:0, right:0}}>
                                 <div style={{float:'left', paddingLeft:10}}>
                                     <small style={{lineHeight:1, display:'block'}}>
-                                        {`${Math.floor(match.game_duration / 60)}m ${match.game_duration % 60}s`}
+                                        {`${Math.floor(match.game_duration / 60)}:${match.game_duration % 60}`}
                                     </small>
-                                    <small style={{lineHeight:1}}>
+                                    <small title={formatDatetimeFull(match.game_creation)} style={{lineHeight:1}}>
                                         {formatDatetime(match.game_creation)}
                                     </small>
                                 </div>

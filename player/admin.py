@@ -4,8 +4,9 @@ from .models import RankCheckpoint, RankPosition
 
 
 class SummonerAdmin(admin.ModelAdmin):
-    list_display = ('name', '_id', 'account_id')
+    list_display = ('name', '_id', 'account_id', 'region')
     search_fields = ('name', 'simple_name', 'account_id', '_id', 'puuid')
+    list_filter = ('region',)
 
 
 class NameChangeAdmin(admin.ModelAdmin):
