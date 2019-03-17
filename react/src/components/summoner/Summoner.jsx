@@ -706,6 +706,9 @@ class RecentlyPlayedWith extends Component {
                 if (p.account_id === this.props.summoner.account_id) {
                     // ignore self
                 }
+                else if ([0, '0'].indexOf(p.account_id) >= 0) {
+                    // ignore bots
+                }
                 else {
                     if (count[p.summoner_name] === undefined) {
                         count[p.summoner_name] = 1
