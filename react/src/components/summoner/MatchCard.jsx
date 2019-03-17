@@ -400,7 +400,7 @@ class MatchCard extends Component {
     }
     formattedName(name) {
         name = name.trim()
-        var length = 6
+        var length = 5
         if (name.length >= length + 2) {
             return `${name.slice(0, length)}...`
         }
@@ -515,6 +515,9 @@ class MatchCard extends Component {
         // 3v3 ranked
         else if ([470].indexOf(match.queue_id) >= 0) {
             out = 'highlight5'
+        }
+        else if ([850].indexOf(match.queue_id) >= 0) {
+            out = 'highlight6'
         }
         return out
     }
@@ -748,6 +751,15 @@ class MatchCard extends Component {
         }
         return null
     }
+    convertQueue(queue) {
+        var convert = {
+            'Co-op vs. AI Intermediate Bot':  'Co-op vs Bots Int'
+        }
+        if (convert[queue] !== undefined) {
+            return convert[queue]
+        }
+        return queue
+    }
     render() {
         let mypart = this.getMyPart()
         let match = this.props.match
@@ -899,7 +911,7 @@ class MatchCard extends Component {
                                     style={{
                                         display: 'inline-block',
                                         verticalAlign:'top',
-                                        width: 90,
+                                        width: 76,
                                         textAlign: 'center',
                                     }}>
                                     <span style={{verticalAlign:'top'}}>
@@ -991,7 +1003,7 @@ class MatchCard extends Component {
 
                                 <div style={{position:'absolute', bottom:0, left: this.state.summary_width - 180, width:150, textAlign: 'right'}}>
                                     <small className={`${this.props.store.state.theme} ${this.matchHighlightColor(match)}`}>
-                                        {this.props.pageStore.state.queues[match.queue_id].description}
+                                        {this.convertQueue(this.props.pageStore.state.queues[match.queue_id].description)}
                                     </small>
                                 </div>
                             </div>

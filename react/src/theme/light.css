@@ -12,6 +12,7 @@
     --highlight3: #ff7474;
     --highlight4: #27a28e;
     --highlight5: #debe9c;
+    --highlight6: #f7b287;
     --link-color: #88b5d7;
     --button-color1: gray;
     --button-color1-hover: lightgray;
@@ -102,6 +103,10 @@ ul.sidenav.light {
 
 .light.highlight5 {
     color: var(--highlight5);
+}
+
+.light.highlight6 {
+    color: var(--highlight6);
 }
 
 .light.pill {
