@@ -21,7 +21,7 @@ class MatchCard extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            summary_width: 300,
+            summary_width: 280,
             expanded_width: 700,
 
             is_expanded: false,
@@ -836,7 +836,7 @@ class MatchCard extends Component {
                                     </div>
                                 </div>
                             </div>
-                            <div>
+                            <div style={{width: this.state.summary_width - 50, marginLeft: -10}}>
                                 <div style={{display: 'inline-block', paddingRight:5}}>
                                     <div>
                                         <img
@@ -929,7 +929,7 @@ class MatchCard extends Component {
                                     pageStore={this.props.pageStore} />
                             </div>*/}
 
-                            <div style={{width: '95%'}}>
+                            <div style={{width: '90%'}}>
                                 <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
                                     <div title='Damage Per Minute' style={{...statbox_style, backgroundColor: '#56262a'}}>
                                         <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>DPM</div>
@@ -965,7 +965,7 @@ class MatchCard extends Component {
                                 </div>
                             </div>
 
-                            <div style={{position:'absolute', left:274, top:190, zIndex:10}}>
+                            <div style={{position:'absolute', left: this.state.summary_width - 26, top:190, zIndex:10}}>
                                 <button
                                     onClick={this.toggleExpand}
                                     className={`${this.props.store.state.theme} btn-small`} style={{height:209, padding:'0 3px'}}>
@@ -989,7 +989,7 @@ class MatchCard extends Component {
                                     </small>
                                 </div>
 
-                                <div style={{position:'absolute', bottom:0, left:115, width:150, textAlign: 'right'}}>
+                                <div style={{position:'absolute', bottom:0, left: this.state.summary_width - 180, width:150, textAlign: 'right'}}>
                                     <small className={`${this.props.store.state.theme} ${this.matchHighlightColor(match)}`}>
                                         {this.props.pageStore.state.queues[match.queue_id].description}
                                     </small>

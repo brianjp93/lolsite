@@ -149,6 +149,7 @@ class StatOverview extends Component {
         var label_style = {
             fontSize: 'smaller'
         }
+        var summary_width = this.props.parent.state.summary_width
         var match = this.props.parent.props.match
         var team100 = this.props.parent.getTeam100()
         var team200 = this.props.parent.getTeam200()
@@ -168,7 +169,7 @@ class StatOverview extends Component {
                     top: 230,
                     width: 25,
                     height: 145,
-                    left: this.props.parent.state.summary_width + 2,
+                    left: summary_width + 2,
                     textAlign: 'center',
                     borderColor: 'grey',
                     borderStyle: 'solid',
@@ -440,7 +441,7 @@ class StatOverview extends Component {
                 </div>
 
 
-                <div style={{position: 'absolute', top: 25, bottom: 0, left: 455, zIndex:5}}>
+                <div style={{position: 'absolute', top: 26, bottom: 0, left: summary_width + 155, zIndex:5}}>
                     
                     {parts.map(part => {
                         return (
@@ -453,9 +454,10 @@ class StatOverview extends Component {
                 </div>
 
                 {this.props.parent.state.is_expanded &&
-                    <div style={{display: 'inline-block', marginLeft: -25}}>
-                        <BarChart layout='vertical' width={260} height={370} data={this.getData()}>
+                    <div style={{display: 'inline-block', marginLeft: summary_width - 254}}>
+                        <BarChart layout='vertical' width={235} height={370} data={this.getData()}>
                             <YAxis
+                                width={0}
                                 type='category'
                                 dataKey="summoner_name"
                                 interval={0}
@@ -487,7 +489,7 @@ class StatOverview extends Component {
                             }} />
                             {[...this.state.selected].map((key) => {
                                 return (
-                                    <Bar key={`${key}-bar`} dataKey={key} fill="#8884d8" />
+                                    <Bar key={`${key}-bar`} dataKey={key} fill="#5e7ca7" />
                                 )
                             })}
                         </BarChart>
