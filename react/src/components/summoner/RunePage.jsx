@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import Popover from 'react-tiny-popover'
 
 import RUNES from '../../constants/runes'
 
@@ -15,12 +16,23 @@ class RunePage extends Component {
         this.getRune = this.getRune.bind(this)
         this.participants = this.participants.bind(this)
         this.getPerks = this.getPerks.bind(this)
+        this.setDefaultParticipant = this.setDefaultParticipant.bind(this)
     }
     componentDidMount() {
         var version = this.getVersion()
         if (this.props.store.state.runes[version] === undefined) {
             this.props.store.getRunes(version)
         }
+        this.setDefaultParticipant()
+    }
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.selected_part === null) {
+            if (this.participants() !== null) {
+                this.setDefaultParticipant()
+            }
+        }
+    }
+    setDefaultParticipant() {
         var mypart = this.props.parent.getMyPart()
         var my_id = mypart._id
         var participants = this.participants()
@@ -68,7 +80,8 @@ class RunePage extends Component {
     }
     render() {
         let match = this.props.parent.props.match
-        let mypart = this.props.parent.getMyPart()
+        // let mypart = this.props.parent.getMyPart()
+        var rune_stat_height = (this.props.pageStore.state.match_card_height - 20) / 6
         return (
             <div>
                 <div style={{marginLeft: 30}}>
@@ -77,18 +90,28 @@ class RunePage extends Component {
                         var rune_etc = RUNES.data[perk.id]
                         if (rune && rune_etc && rune_etc.perkFormat) {
                             return (
-                                <div key={`${match.id}-${perk.id}`}>
-                                    <img
-                                        style={{height: 40}}
-                                        src={rune.image_url}
-                                        alt=""/>
+                                <div key={`${match.id}-${perk.id}`} style={{height: rune_stat_height}} >
+                                    <div style={{display: 'inline-block', width: 30}}>
+                                    </div>
+
+                                    <RuneTooltip rune={rune} style={{display: 'inline-block'}} tooltip_style={this.props.store.state.tooltip_style}>
+                                        <img
+                                            style={{height: 40, paddingRight: 10}}
+                                            src={rune.image_url}
+                                            alt=""/>
+                                    </RuneTooltip>
 
                                     <div style={{display: 'inline-block', verticalAlign: 'top'}}>
                                         {rune_etc.perkFormat.map((perk_format, j) => {
                                             var desc = rune_etc.perkDesc[j]
                                             return (
-                                                <div key={`${match._id}-${j}`}>
-                                                    {desc} : {perk_format.replace('{0}', perk[`var${j+1}`]).replace('{1}', perk[`var${j+2}`]).replace('{2}', perk[`var${j+2}`])}
+                                                <div style={{lineHeight: 1}} key={`${match._id}-${j}`}>
+                                                    <div style={{display: 'inline-block', width: 200}}>
+                                                        {desc}
+                                                    </div>
+                                                    <div style={{display: 'inline-block', fontWeight: 'bold'}}>
+                                                        {perk_format.replace('{0}', perk[`var${j+1}`]).replace('{1}', perk[`var${j+2}`]).replace('{2}', perk[`var${j+2}`])}
+                                                    </div>
                                                 </div>
                                             )
                                         })}
@@ -125,6 +148,52 @@ RunePage.propTypes = {
     store: PropTypes.object,
     pageStore: PropTypes.object,
     parent: PropTypes.object,
+}
+
+
+class RuneTooltip extends Component {
+    constructor(props)  {
+        super(props)
+        this.state = {
+            is_open: false,
+        }
+
+        this.toggle = this.toggle.bind(this)
+    }
+    toggle() {
+        this.setState({is_open: !this.state.is_open})
+    }
+    render() {
+        let rune = this.props.rune
+        return (
+            <Popover
+                transitionDuration={0.01}
+                isOpen={this.state.is_open}
+                position={'top'}
+                containerStyle={{'z-index': '11'}}
+                content={(
+                    <div style={{...this.props.tooltip_style}}>
+                        <h5 style={{textDecoration: 'underline', marginTop: -5}}>{rune.name}</h5>
+
+                        <div dangerouslySetInnerHTML={{__html: rune.long_description}}></div>
+                    </div>
+                )} >
+                <div
+                    ref={(elt) => {this.target_elt = elt}}
+                    style={this.props.style}
+                    onClick={this.toggle}
+                    onMouseOver={() => {
+                        this.setState({is_open: true})
+                    }}
+                    onMouseOut={() => this.setState({is_open: false})}>
+                    {this.props.children}
+                </div>
+            </Popover>
+        )
+    }
+}
+RuneTooltip.propTypes = {
+    rune: PropTypes.object,
 }
 
 export default RunePage

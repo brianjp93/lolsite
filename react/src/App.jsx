@@ -24,6 +24,14 @@ class App extends Component {
 
             // whether or not to ignore vertical scroll conversion to horizontal
             ignore_horizontal: false,
+
+            tooltip_style: {
+                background: 'black',
+                padding: 15,
+                opacity: .9,
+                maxWidth: 300,
+                borderRadius: 10,
+            },
         }
 
         this.getRunes = this.getRunes.bind(this)
