@@ -549,3 +549,5 @@ RUNEDATA = {
     }
   }
 }
+
+export default RUNEDATA

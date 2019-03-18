@@ -8,7 +8,7 @@ import Item from '../data/Item'
 // import StatPie from './StatPie'
 import StatOverview from './StatOverview'
 import {
-    ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+    ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from 'recharts'
 
 
@@ -74,6 +74,7 @@ class MatchCard extends Component {
         this.getPart = this.getPart.bind(this)
         this.getEventTeam = this.getEventTeam.bind(this)
         this.isRender = this.isRender.bind(this)
+        this.getReferenceEvents = this.getReferenceEvents.bind(this)
     }
     getMyPart() {
         // get my participant
@@ -721,6 +722,23 @@ class MatchCard extends Component {
         }
         return big_events
     }
+    getReferenceEvents() {
+        var reference_lines = []
+        var events
+        var frame
+        for (var i=0; i<this.state.timeline.length; i++) {
+            frame = this.state.timeline[i]
+            events = this.getBigEvents(i)
+            for (var event of events) {
+                if (event._type === 'ELITE_MONSTER_KILL') {
+                    event.y_val = frame[this.getMyTeamDataKey()]
+                    event.frame_timestamp = frame.timestamp
+                    reference_lines.push(event)
+                }
+            }
+        }
+        return reference_lines
+    }
     getEventTeam(event) {
         var team_id = null
         var part
@@ -1170,6 +1188,28 @@ class MatchCard extends Component {
                                                                 dataKey={this.getMyTeamDataKey()}
                                                                 stroke="#000"
                                                                 fill={`url(#${this.props.match._id}-gradient)`} />
+
+                                                            {this.getReferenceEvents().map(event => {
+                                                                var color = '#3674ad'
+                                                                if (this.getEventTeam(event) !== mypart.team_id) {
+                                                                    color = '#cd565a'
+                                                                }
+                                                                var stroke_width = 1
+                                                                if (event.monster_type === 'BARON_NASHOR') {
+                                                                    stroke_width = 3
+                                                                }
+                                                                else if (event.monster_sub_type === 'ELDER_DRAGON') {
+                                                                    stroke_width = 3
+                                                                }
+                                                                return (
+                                                                    <ReferenceLine
+                                                                        yAxisId='left'
+                                                                        key={`${this.props.match._id}-${event.timestamp}`}
+                                                                        x={event.frame_timestamp}
+                                                                        stroke={color}
+                                                                        strokeWidth={stroke_width} />
+                                                                )
+                                                            })}
 
                                                             {/* secondary chart */}
                                                             {/*
