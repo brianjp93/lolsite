@@ -293,6 +293,15 @@ var RUNEDATA = {
       ],
       "perkFormat": ["{0}"]
     },
+    "8275": {
+      "id": 8275,
+      "name": "Nimbus Cloak",
+      "perkVars": 1,
+      "perkDesc": [
+        "TBD?"
+      ],
+      "perkFormat": ["{0}"]
+    },
     "8299": {
       "id": 8299,
       "name": "Last Stand",
@@ -520,6 +529,15 @@ var RUNEDATA = {
       "perkVars": 1,
       "perkDesc": [
         "Total Shield Strength"
+      ],
+      "perkFormat": ["{0}"]
+    },
+    "8473": {
+      "id": 8473,
+      "name": "Bone Plating",
+      "perkVars": 1,
+      "perkDesc": [
+        "Damage Mitigated"
       ],
       "perkFormat": ["{0}"]
     },

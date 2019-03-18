@@ -422,6 +422,7 @@ class MatchCard extends Component {
                     margin:'0px 2px',
                 }}
                 item={item}
+                tooltip_style={this.props.store.state.tooltip_style}
                 pageStore={this}
                 item_id={id}
                 major={match.major}
@@ -1014,7 +1015,7 @@ class MatchCard extends Component {
                             </div>
 
                             {/* match card footer */}
-                            <div style={{position:'absolute', bottom:5, left:0, right:0}}>
+                            <div style={{position:'absolute', bottom:5, left:0}}>
                                 <div style={{float:'left', paddingLeft:10}}>
                                     <small style={{lineHeight:1, display:'block'}}>
                                         {`${Math.floor(match.game_duration / 60)}:${match.game_duration % 60}`}

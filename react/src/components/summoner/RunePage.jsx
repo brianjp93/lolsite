@@ -82,17 +82,40 @@ class RunePage extends Component {
         let match = this.props.parent.props.match
         // let mypart = this.props.parent.getMyPart()
         var rune_stat_height = (this.props.pageStore.state.match_card_height - 20) / 6
+        let parts = [...this.props.parent.getTeam100(), ...this.props.parent.getTeam200()]
         return (
             <div>
-                <div style={{marginLeft: 30}}>
+                <div style={{marginRight: 20, display: 'inline-block', marginLeft: 35}}>
+                    {parts.map(part => {
+                        var is_selected = false
+                        var select_style = {}
+                        if (this.state.selected_part !== null && part._id === this.state.selected_part._id) {
+                            is_selected = true
+                        }
+                        if (is_selected) {
+                            select_style = {
+                                borderStyle: 'solid',
+                                borderWidth: 2,
+                                borderColor: 'white',
+                            }
+                        }
+                        return (
+                            <div key={`${match.id}-${part.id}-rune-champ-image`}>
+                                <img
+                                    onClick={() => this.setState({selected_part: part})}
+                                    style={{height: 30, ...select_style}}
+                                    src={part.champion.image_url} alt=""/>
+                            </div>
+                        )
+                    })}
+                </div>
+                <div style={{display: 'inline-block'}}>
                     {this.getPerks().map(perk => {
                         var rune = this.getRune(perk.id)
                         var rune_etc = RUNES.data[perk.id]
                         if (rune && rune_etc && rune_etc.perkFormat) {
                             return (
                                 <div key={`${match.id}-${perk.id}`} style={{height: rune_stat_height}} >
-                                    <div style={{display: 'inline-block', width: 30}}>
-                                    </div>
 
                                     <RuneTooltip rune={rune} style={{display: 'inline-block'}} tooltip_style={this.props.store.state.tooltip_style}>
                                         <img

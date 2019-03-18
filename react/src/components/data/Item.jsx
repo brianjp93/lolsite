@@ -13,13 +13,7 @@ class Item extends Component {
     render() {
         var item = this.props.item
         return (
-            <div style={{
-                background: 'black',
-                padding: 15,
-                opacity: .9,
-                maxWidth: 300,
-                borderRadius: 10,
-            }}>
+            <div style={{...this.props.tooltip_style}}>
                 {item === null &&
                     <span>Retrieving item...</span>
                 }
@@ -67,7 +61,7 @@ class ItemPopover extends Component {
                     position={'top'}
                     containerStyle={{'z-index': '11'}}
                     content={(
-                        <Item item={this.props.item} />
+                        <Item item={this.props.item} tooltip_style={this.props.tooltip_style} />
                     )} >
                     <div
                         ref={(elt) => {this.target_elt = elt}}
