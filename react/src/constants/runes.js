@@ -401,6 +401,17 @@ var RUNEDATA = {
       ],
       "perkFormat": ["{0}"]
     },
+    "8352": {
+      "id": 8352,
+      "name": "Timewarp Tonic",
+      "perkVars": 3,
+      "perkDesc": [
+        "TBD?",
+        "TBD?",
+        'TBD?',
+      ],
+      "perkFormat": ["{0}", "{0}", "{0}"]
+    },
     "8359": {
       "id": 8359,
       "name": "Kleptomancy",
@@ -583,6 +594,15 @@ var RUNEDATA = {
       "perkVars": 1,
       "perkDesc": [
         "Total Health Restored"
+      ],
+      "perkFormat": ["{0}"]
+    },
+    "9923": {
+      "id": 9923,
+      "name": "Hail of Blades",
+      "perkVars": 1,
+      "perkDesc": [
+        "Times Activated"
       ],
       "perkFormat": ["{0}"]
     }
