@@ -1,12 +1,13 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from .models import ProfileIcon
+from .models import ProfileIcon, ReforgedRune, ReforgedTree
 from match.models import Match, Participant, Stats
 from match.models import Timeline, Team, Ban, Item
 
 from .serializers import ProfileIconSerializer, ItemSerializer
 from .serializers import ItemGoldSerializer, ItemStatSerializer
+from .serializers import ReforgedRuneSerializer
 
 
 def get_summoner_page(request, format=None):
@@ -101,5 +102,36 @@ def get_item(request, format=None):
     else:
         status_code = 404
         data = {'message': 'Item not found.'}
+
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_reforged_runes(request, format=None):
+    """Get Reforged Rune data.
+
+    POST Parameters
+    ---------------
+    version : str
+        eg: 9.5.1
+
+    Returns
+    -------
+    Runes Data JSON
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        version = request.data.get('version', None)
+        if version is None:
+            pass
+            # get newest version of runes
+            tree = ReforgedTree.objects.all().order_by('-version').first()
+            version = tree.version
+        runes = ReforgedRune.objects.filter(reforgedtree__version=version)
+        runes_data = ReforgedRuneSerializer(runes, many=True).data
+        data = {'data': runes_data}
 
     return Response(data, status=status_code)

@@ -1,4 +1,4 @@
-RUNEDATA = {
+var RUNEDATA = {
   "data": {
     "8005": {
       "id": 8005,
@@ -28,6 +28,17 @@ RUNEDATA = {
         "Total Mana Restored"
       ],
       "perkFormat": ["{0}"]
+    },
+    "8010": {
+      "id": 8010,
+      "name": "Conqueror",
+      "perkVars": 3,
+      "perkDesc": [
+        "True Damage Dealt",
+        "Otherwise Mitigated",
+        "Healed"
+      ],
+      "perkFormat": ["{0}", "{0}", "{0}"]
     },
     "8014": {
       "id": 8014,
@@ -116,7 +127,8 @@ RUNEDATA = {
       "perkVars": 1,
       "perkDesc": [
         "Total Stacks"
-      ]
+      ],
+      "perkFormat": ["{0}"],
     },
     "8135": {
       "id": 8135,
@@ -241,7 +253,7 @@ RUNEDATA = {
       "name": "Celerity",
       "perkVars": 1,
       "perkDesc": [
-        "Total Bonus AD/AP"
+        "TBD"
       ],
       "perkFormat": ["{0}"]
     },
@@ -389,6 +401,15 @@ RUNEDATA = {
         "Items Looted"
       ],
       "perkFormat": ["{0}","{0}"]
+    },
+    "8401": {
+      "id": 8410,
+      "name": "Shield Bash",
+      "perkVars": 1,
+      "perkDesc": [
+        "Damage Dealt"
+      ],
+      "perkFormat": ["{0}"]
     },
     "8410": {
       "id": 8410,

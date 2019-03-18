@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import ProfileIcon, Item, ItemGold, ItemStat
+from .models import ReforgedRune
 
 class ProfileIconSerializer(serializers.ModelSerializer):
     image_url = serializers.CharField()
@@ -27,4 +28,12 @@ class ItemStatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ItemStat
+        fields = '__all__'
+
+
+class ReforgedRuneSerializer(serializers.ModelSerializer):
+    image_url = serializers.CharField()
+
+    class Meta:
+        model = ReforgedRune
         fields = '__all__'

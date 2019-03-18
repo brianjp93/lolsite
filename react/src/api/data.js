@@ -16,7 +16,13 @@ function getItem(data) {
     return axios.post(url, data)
 }
 
+function getRunes(data) {
+    var url = `/api/${version}/data/reforged-runes/`
+    return axios.post(url, data)
+}
+
 export default {
     getProfileIcon,
     getItem,
+    getRunes,
 }

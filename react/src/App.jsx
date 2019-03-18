@@ -4,6 +4,8 @@ import Themes from './components/test/Themes'
 import Home from './components/general/Home'
 import Summoner from './components/summoner/Summoner'
 
+import api from './api/api'
+
 // import { Cookies } from 'react-cookie';
 
 class App extends Component {
@@ -18,10 +20,14 @@ class App extends Component {
 
             summoners: {},
             items: {},
+            runes: {},
 
             // whether or not to ignore vertical scroll conversion to horizontal
             ignore_horizontal: false,
         }
+
+        this.getRunes = this.getRunes.bind(this)
+        this.getRune = this.getRune.bind(this)
     }
     componentDidUpdate(prevProps, prevState) {
         if (prevState.theme !== this.state.theme) {
@@ -49,6 +55,30 @@ class App extends Component {
         var elt = document.getElementsByTagName('html')[0]
         elt.classList.remove(theme)
         elt.classList.remove('background')
+    }
+    getRunes(version) {
+        var data = {version: version}
+        api.data.getRunes(data)
+            .then(response => {
+                var data = response.data.data
+                var rune
+                var output = {}
+                var new_runes = this.state.runes
+                for (var i=0; i<data.length; i++) {
+                    rune = data[i]
+                    output[rune._id] = rune
+                }
+                new_runes[version] = output
+                this.setState({runes: new_runes})
+            })
+    }
+    getRune(rune_id, version) {
+        if (this.state.runes[version] === undefined) {
+            return null
+        }
+        else {
+            return this.state.runes[version][rune_id]
+        }
     }
     render() {
         return (
