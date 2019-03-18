@@ -54,7 +54,9 @@ class StatOverview extends Component {
     toggle(event) {
         var select_value = event.target.value
         var select = this.state.selected
-        this.state.selected.has(select_value) ? select.delete(select_value): select.add(select_value)
+        // this.state.selected.has(select_value) ? select.delete(select_value): select.add(select_value)
+        select.clear()
+        select.add(select_value)
         this.setState({selected: select})
     }
     getParticipants() {
@@ -154,16 +156,18 @@ class StatOverview extends Component {
         var team100 = this.props.parent.getTeam100()
         var team200 = this.props.parent.getTeam200()
         var parts = [...team100, ...team200]
-        let menu_button_style = {
-            display: 'block',
-            padding: '0 5px',
-            width: '85%',
-            marginLeft: '7.5%',
-            marginTop: 8,
-        }
+
+        // let menu_button_style = {
+        //     display: 'block',
+        //     padding: '0 5px',
+        //     width: '85%',
+        //     marginLeft: '7.5%',
+        //     marginTop: 8,
+        // }
         return (
             <div>
                 
+                {/*
                 <div style={{
                     position: 'absolute',
                     top: 230,
@@ -190,6 +194,7 @@ class StatOverview extends Component {
                         </div>
                     </button>
                 </div>
+                */}
 
                 <div
                     className='quiet-scroll'
