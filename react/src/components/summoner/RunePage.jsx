@@ -56,8 +56,28 @@ class RunePage extends Component {
         return version
     }
     getRune(rune_id) {
+        // get the latest available rune if the queried one doesn't exist
         var version = this.getVersion()
-        return this.props.store.getRune(rune_id, version)
+        var rune = this.props.store.getRune(rune_id, version)
+        console.log(version)
+        console.log(rune)
+        if ([null, undefined].indexOf(rune) >= 0) {
+            var max = 0.0
+            var max_ver = null
+            for (var _version in this.props.store.state.runes) {
+                console.log(_version)
+                var version_split = _version.split('.')
+                var version_num = parseFloat(`${version_split[0]}.${version_split[1]}`)
+                if (version_num > max) {
+                    max = version_num
+                    max_ver = _version
+                }
+            }
+            if (max_ver !== null) {
+                rune = this.props.store.getRune(rune_id, max_ver)
+            }
+        }
+        return rune
     }
     getPerks(part) {
         var perks = []
@@ -75,7 +95,9 @@ class RunePage extends Component {
                 var2: part.stats[`perk_${i}_var_2`],
                 var3: part.stats[`perk_${i}_var_3`],
             }
-            perks.push(perk)
+            if (perk.id !== 0) {
+                perks.push(perk)
+            }
         }
         return perks
     }
@@ -171,6 +193,11 @@ class RunePage extends Component {
                             }
                         }
                     })}
+                    {this.getPerks().length === 0 &&
+                        <div style={{textAlign: 'center', textDecoration: 'underline'}}>
+                            No runes set
+                        </div>
+                    }
                 </div>
             </div>
         )

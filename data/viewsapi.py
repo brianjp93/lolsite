@@ -132,6 +132,6 @@ def get_reforged_runes(request, format=None):
             version = tree.version
         runes = ReforgedRune.objects.filter(reforgedtree__version=version)
         runes_data = ReforgedRuneSerializer(runes, many=True).data
-        data = {'data': runes_data}
+        data = {'data': runes_data, 'version': version}
 
     return Response(data, status=status_code)

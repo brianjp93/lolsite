@@ -69,16 +69,31 @@ class App extends Component {
         api.data.getRunes(data)
             .then(response => {
                 var data = response.data.data
-                var rune
-                var output = {}
-                var new_runes = this.state.runes
-                for (var i=0; i<data.length; i++) {
-                    rune = data[i]
-                    output[rune._id] = rune
-                }
-                new_runes[version] = output
+                var version = response.data.version
+                var new_runes = this.formatRunes(data, version)
                 this.setState({runes: new_runes})
+                if (Object.keys(data).length === 0) {
+                    api.data.getRunes()
+                        .then(response => {
+                            data = response.data.data
+                            version = response.data.version
+                            new_runes = this.formatRunes(data, version)
+                            this.setState({runes: new_runes})
+                        })
+
+                }
             })
+    }
+    formatRunes(data, version) {
+        var rune
+        var output = {}
+        var new_runes = this.state.runes
+        for (var i=0; i<data.length; i++) {
+            rune = data[i]
+            output[rune._id] = rune
+        }
+        new_runes[version] = output
+        return new_runes
     }
     getRune(rune_id, version) {
         if (this.state.runes[version] === undefined) {
