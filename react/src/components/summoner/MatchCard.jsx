@@ -7,6 +7,7 @@ import moment from 'moment'
 import Item from '../data/Item'
 // import StatPie from './StatPie'
 import StatOverview from './StatOverview'
+import RunePage from './RunePage'
 import {
     ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from 'recharts'
@@ -1076,6 +1077,13 @@ class MatchCard extends Component {
                                     onClick={() => this.setState({expanded_view: 'timeline'})} >
                                     t
                                 </button>
+                                <button
+                                    title='Runes'
+                                    style={menu_button_style}
+                                    className={`dark btn-small ${this.state.expanded_view === 'runes' ? 'selected': ''}`}
+                                    onClick={() => this.setState({expanded_view: 'runes'})} >
+                                    r
+                                </button>
                             </div>
 
 
@@ -1415,6 +1423,14 @@ class MatchCard extends Component {
                                 <div style={{marginLeft: 30}}>
                                     <div>
                                         <StatOverview store={this.props.store} pageStore={this.props.pageStore} parent={this} is_expanded={this.state.is_expanded} />
+                                    </div>
+                                </div>
+                            }
+
+                            {this.state.expanded_view === 'runes' &&
+                                <div>
+                                    <div>
+                                        <RunePage store={this.props.store} pageStore={this.props.pageStore} parent={this} />
                                     </div>
                                 </div>
                             }
