@@ -59,13 +59,10 @@ class RunePage extends Component {
         // get the latest available rune if the queried one doesn't exist
         var version = this.getVersion()
         var rune = this.props.store.getRune(rune_id, version)
-        console.log(version)
-        console.log(rune)
         if ([null, undefined].indexOf(rune) >= 0) {
             var max = 0.0
             var max_ver = null
             for (var _version in this.props.store.state.runes) {
-                console.log(_version)
                 var version_split = _version.split('.')
                 var version_num = parseFloat(`${version_split[0]}.${version_split[1]}`)
                 if (version_num > max) {

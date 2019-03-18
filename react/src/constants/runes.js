@@ -76,6 +76,15 @@ var RUNEDATA = {
       ],
       "perkFormat": ["{0}"]
     },
+    "8106": {
+      "id": 8106,
+      "name": "Ultimate Hunter",
+      "perkVars": 1,
+      "perkDesc": [
+        "Total Stacks"
+      ],
+      "perkFormat": ["{0}"]
+    },
     "8112": {
       "id": 8112,
       "name": "Electrocute",
