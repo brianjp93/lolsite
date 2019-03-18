@@ -1025,7 +1025,16 @@ class MatchCard extends Component {
 
                                 <div style={{position:'absolute', bottom:0, left: this.state.summary_width - 180, width:150, textAlign: 'right'}}>
                                     <small className={`${this.props.store.state.theme} ${this.matchHighlightColor(match)}`}>
-                                        {this.convertQueue(this.props.pageStore.state.queues[match.queue_id].description)}
+                                        {this.props.pageStore.state.queues[match.queue_id] &&
+                                            <>
+                                            {this.convertQueue(this.props.pageStore.state.queues[match.queue_id].description)}
+                                            </>
+                                        }
+                                        {this.props.pageStore.state.queues[match.queue_id] === undefined &&
+                                            <>
+                                            {match.queue_id}
+                                            </>
+                                        }
                                     </small>
                                 </div>
                             </div>
