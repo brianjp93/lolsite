@@ -17,6 +17,7 @@ class RunePage extends Component {
         this.participants = this.participants.bind(this)
         this.getPerks = this.getPerks.bind(this)
         this.setDefaultParticipant = this.setDefaultParticipant.bind(this)
+        this.partSelection = this.partSelection.bind(this)
     }
     componentDidMount() {
         var version = this.getVersion()
@@ -78,36 +79,44 @@ class RunePage extends Component {
         }
         return perks
     }
+    partSelection() {
+        var match = this.props.parent.props.match
+        let parts = [...this.props.parent.getTeam100(), ...this.props.parent.getTeam200()]
+        return (
+            parts.map(part => {
+                var is_selected = false
+                var select_style = {}
+                if (this.state.selected_part !== null && part._id === this.state.selected_part._id) {
+                    is_selected = true
+                }
+                if (is_selected) {
+                    select_style = {
+                        borderStyle: 'solid',
+                        borderWidth: 2,
+                        borderColor: 'white',
+                    }
+                }
+                return (
+                    <div key={`${match.id}-${part.id}-rune-champ-image`}>
+                        <img
+                            title={part.summoner_name}
+                            onClick={() => this.setState({selected_part: part})}
+                            style={{height: 30, ...select_style, cursor: 'pointer'}}
+                            src={part.champion.image_url} alt=""/>
+                    </div>
+                )
+            })
+        )
+    }
     render() {
         let match = this.props.parent.props.match
         // let mypart = this.props.parent.getMyPart()
         var rune_stat_height = (this.props.pageStore.state.match_card_height - 20) / 6
-        let parts = [...this.props.parent.getTeam100(), ...this.props.parent.getTeam200()]
+        // let parts = [...this.props.parent.getTeam100(), ...this.props.parent.getTeam200()]
         return (
             <div>
                 <div style={{marginRight: 20, display: 'inline-block', marginLeft: 35}}>
-                    {parts.map(part => {
-                        var is_selected = false
-                        var select_style = {}
-                        if (this.state.selected_part !== null && part._id === this.state.selected_part._id) {
-                            is_selected = true
-                        }
-                        if (is_selected) {
-                            select_style = {
-                                borderStyle: 'solid',
-                                borderWidth: 2,
-                                borderColor: 'white',
-                            }
-                        }
-                        return (
-                            <div key={`${match.id}-${part.id}-rune-champ-image`}>
-                                <img
-                                    onClick={() => this.setState({selected_part: part})}
-                                    style={{height: 30, ...select_style}}
-                                    src={part.champion.image_url} alt=""/>
-                            </div>
-                        )
-                    })}
+                    {this.partSelection()}
                 </div>
                 <div style={{display: 'inline-block'}}>
                     {this.getPerks().map(perk => {
