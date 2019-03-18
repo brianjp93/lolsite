@@ -115,7 +115,7 @@ class RunePage extends Component {
         // let parts = [...this.props.parent.getTeam100(), ...this.props.parent.getTeam200()]
         return (
             <div>
-                <div style={{marginRight: 20, display: 'inline-block', marginLeft: 35}}>
+                <div style={{marginRight: 20, display: 'inline-block', marginLeft: 35, verticalAlign: 'top'}}>
                     {this.partSelection()}
                 </div>
                 <div style={{display: 'inline-block'}}>

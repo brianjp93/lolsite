@@ -156,6 +156,7 @@ class StatOverview extends Component {
         var team100 = this.props.parent.getTeam100()
         var team200 = this.props.parent.getTeam200()
         var parts = [...team100, ...team200]
+        var bargraph_height = 370
 
         // let menu_button_style = {
         //     display: 'block',
@@ -446,11 +447,11 @@ class StatOverview extends Component {
                 </div>
 
 
-                <div style={{position: 'absolute', top: 26, bottom: 0, left: summary_width + 155, zIndex:5}}>
-                    
+                <div style={{position: 'absolute', top: 26, bottom: 0, left: summary_width + 155, zIndex:5, marginTop: (10 - parts.length) * 2.6}}>
                     {parts.map(part => {
+                        var heights = (bargraph_height - 40) / parts.length
                         return (
-                            <div key={`${match._id}-${part._id}`} style={{height:30, width:30, paddingBottom: 33}}>
+                            <div key={`${match._id}-${part._id}`} style={{height:heights, width:30}}>
                                 <img title={part.summoner_name} style={{height:20}} src={part.champion.image_url} alt={part.champion.name}/>
                             </div>
                         )
@@ -460,7 +461,7 @@ class StatOverview extends Component {
 
                 {this.props.parent.state.is_expanded &&
                     <div style={{display: 'inline-block', marginLeft: summary_width - 254}}>
-                        <BarChart layout='vertical' width={235} height={370} data={this.getData()}>
+                        <BarChart layout='vertical' width={235} height={bargraph_height} data={this.getData()}>
                             <YAxis
                                 width={0}
                                 type='category'
