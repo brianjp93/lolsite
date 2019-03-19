@@ -872,7 +872,7 @@ class MatchCard extends Component {
             display: 'block',
             padding: '0 5px',
             width: '85%',
-            marginLeft: '9%',
+            marginLeft: '7.5%',
             marginTop: 8,
         }
         let statbox_style = {
