@@ -102,8 +102,13 @@ class MatchCard extends Component {
                     if (this.state.is_expanded === false) {
                         this.toggleExpand()
                     }
-                    this.setState({is_selected: true})
-                    this.elt.scrollIntoView({behavior: 'smooth', inline: 'start'})
+                    if (this.state.is_selected) {
+                        // don't scroll again
+                    }
+                    else {
+                        this.setState({is_selected: true})
+                        this.elt.scrollIntoView({behavior: 'smooth', inline: 'start'})
+                    }
                 }
                 else {
                     if (this.state.is_selected) {
