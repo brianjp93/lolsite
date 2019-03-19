@@ -148,6 +148,10 @@ class MatchCard extends Component {
     isVictory(match) {
         var part = this.getMyPart(match)
         var team_id = part.team_id
+        var seconds = match.game_duration
+        if (seconds / 60 < 5) {
+            return false
+        }
         for (var team of match.teams) {
             if (team._id === team_id) {
                 if (team.win_str === 'Win') {
@@ -172,6 +176,10 @@ class MatchCard extends Component {
     isLoss(match) {
         var part = this.getMyPart()
         var team_id = part.team_id
+        var seconds = match.game_duration
+        if (seconds / 60 < 5) {
+            return false
+        }
         for (var team of match.teams) {
             if (team._id === team_id) {
                 if (team.win_str === 'Fail') {
@@ -200,32 +208,44 @@ class MatchCard extends Component {
         }
     }
     getTeam100Color(match) {
-        for (var team of match.teams) {
-            if (team._id === 100) {
-                if (team.win_str === 'Win') {
-                    return this.props.pageStore.state.victory_color
-                }
-                else if (team.win_str === 'Fail') {
-                    return this.props.pageStore.state.loss_color
-                }
-                else {
-                    return this.props.pageStore.state.neutral_color
+        var seconds = match.game_duration
+        if (seconds / 60 < 5) {
+            // remake
+        }
+        else {
+            for (var team of match.teams) {
+                if (team._id === 100) {
+                    if (team.win_str === 'Win') {
+                        return this.props.pageStore.state.victory_color
+                    }
+                    else if (team.win_str === 'Fail') {
+                        return this.props.pageStore.state.loss_color
+                    }
+                    else {
+                        return this.props.pageStore.state.neutral_color
+                    }
                 }
             }
         }
         return this.props.pageStore.state.neutral_color
     }
     getTeam200Color(match) {
-        for (var team of match.teams) {
-            if (team._id === 200) {
-                if (team.win_str === 'Win') {
-                    return this.props.pageStore.state.victory_color
-                }
-                else if (team.win_str === 'Fail') {
-                    return this.props.pageStore.state.loss_color
-                }
-                else {
-                    return this.props.pageStore.state.neutral_color
+        var seconds = match.game_duration
+        if (seconds / 60 < 5) {
+            // remake
+        }
+        else{
+            for (var team of match.teams) {
+                if (team._id === 200) {
+                    if (team.win_str === 'Win') {
+                        return this.props.pageStore.state.victory_color
+                    }
+                    else if (team.win_str === 'Fail') {
+                        return this.props.pageStore.state.loss_color
+                    }
+                    else {
+                        return this.props.pageStore.state.neutral_color
+                    }
                 }
             }
         }
@@ -852,7 +872,7 @@ class MatchCard extends Component {
             display: 'block',
             padding: '0 5px',
             width: '85%',
-            marginLeft: '7.5%',
+            marginLeft: '9%',
             marginTop: 8,
         }
         let statbox_style = {
