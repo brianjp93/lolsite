@@ -14,11 +14,11 @@ var RUNEDATA = {
     "8008": {
       "id": 8008,
       "name": "Lethal Tempo",
-      "perkVars": 1,
+      "perkVars": 2,
       "perkDesc": [
         "Total Active Time"
       ],
-      "perkFormat": ["{0}"]
+      "perkFormat": ["{0}:{1}"]
     },
     "8009": {
       "id": 8009,
@@ -70,11 +70,12 @@ var RUNEDATA = {
     "8105": {
       "id": 8105,
       "name": "Relentless Hunter",
-      "perkVars": 1,
+      "perkVars": 2,
       "perkDesc": [
-        "Total Stacks"
+        "Movement Speed Increase",
+        "Total Stacks",
       ],
-      "perkFormat": ["{0}"]
+      "perkFormat": ["{0}%", "{0}"]
     },
     "8106": {
       "id": 8106,
@@ -124,11 +125,12 @@ var RUNEDATA = {
     "8128": {
       "id": 8128,
       "name": "Dark Harvest",
-      "perkVars": 1,
+      "perkVars": 2,
       "perkDesc": [
-        "Total Damage Dealt"
+        "Total Damage Dealt",
+        "Total Souls Harvested",
       ],
-      "perkFormat": ["{0}"]
+      "perkFormat": ["{0}", "{0}"]
     },
     "8134": {
       "id": 8134,
@@ -142,11 +144,12 @@ var RUNEDATA = {
     "8135": {
       "id": 8135,
       "name": "Ravenous Hunter",
-      "perkVars": 1,
+      "perkVars": 2,
       "perkDesc": [
-        "Total Stacks"
+        "Total Bonus Healing",
+        "Total Stacks",
       ],
-      "perkFormat": ["{0}"]
+      "perkFormat": ["{0}", "{0}"]
     },
     "8136": {
       "id": 8136,
@@ -215,11 +218,12 @@ var RUNEDATA = {
     "8226": {
       "id": 8226,
       "name": "Manaflow Band",
-      "perkVars": 1,
+      "perkVars": 2,
       "perkDesc": [
-        "Total resource refunded"
+        "Total resource refunded",
+        "Total Mana Restored",
       ],
-      "perkFormat": ["{0}"]
+      "perkFormat": ["{0}", "{0}"]
     },
     "8229": {
       "id": 8229,
@@ -244,18 +248,18 @@ var RUNEDATA = {
       "name": "Waterwalking",
       "perkVars": 1,
       "perkDesc": [
-        "Total BOnus AD/AP"
+        "Total Bonus AD/AP"
       ],
       "perkFormat": ["{0}"]
     },
     "8233": {
       "id": 8233,
       "name": "Absolute Focus",
-      "perkVars": 1,
+      "perkVars": 2,
       "perkDesc": [
         "Total time active"
       ],
-      "perkFormat": ["{0}"]
+      "perkFormat": ["{0}:{1}"]
     },
     "8234": {
       "id": 8234,
@@ -600,11 +604,12 @@ var RUNEDATA = {
     "9111": {
       "id": 9111,
       "name": "Triumph",
-      "perkVars": 1,
+      "perkVars": 2,
       "perkDesc": [
-        "Total Health Restored"
+        "Total Health Restored",
+        "Total Bonus Gold",
       ],
-      "perkFormat": ["{0}"]
+      "perkFormat": ["{0}", "{0}"]
     },
     "9923": {
       "id": 9923,

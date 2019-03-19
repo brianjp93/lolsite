@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import Popover from 'react-tiny-popover'
+import numeral from 'numeral'
 
 import RUNES from '../../constants/runes'
 
@@ -161,7 +162,7 @@ class RunePage extends Component {
                                                         {desc}
                                                     </div>
                                                     <div style={{display: 'inline-block', fontWeight: 'bold'}}>
-                                                        {perk_format.replace('{0}', perk[`var${j+1}`]).replace('{1}', perk[`var${j+2}`]).replace('{2}', perk[`var${j+2}`])}
+                                                        {perk_format.replace('{0}', perk[`var${j+1}`]).replace('{1}', numeral(perk[`var${j+2}`]).format('00')).replace('{2}', perk[`var${j+2}`])}
                                                     </div>
                                                 </div>
                                             )
