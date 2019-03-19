@@ -364,6 +364,7 @@ class Summoner extends Component {
                                     return (
                                         <MatchCard
                                             key={`${key}-${match._id}`}
+                                            index={key}
                                             store={this.props.store}
                                             pageStore={this}
                                             match={match} />

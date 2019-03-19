@@ -12,15 +12,38 @@ class NavBar extends Component {
             redirect: false,
         }
         this.handleKeyDown = this.handleKeyDown.bind(this)
+        this.handleSKey = this.handleSKey.bind(this)
     }
     componentDidMount() {
         window.$('.sidenav').sidenav()
+
+        window.addEventListener('keydown', this.handleSKey)
+    }
+    componentWillUnmount() {
+        window.removeEventListener('keydown', this.handleSKey)
+    }
+    handleSKey(event) {
+        if (this.props.store.state.ignore_tags.has(event.target.tagName.toLowerCase())) {
+            return
+        }
+        else {
+            if (event.key.toLowerCase() === 's') {
+                event.preventDefault()
+                event.stopPropagation()
+                this.input.focus()
+            }
+        }
     }
     handleKeyDown(event) {
         if (event.key === 'Enter') {
-            event.preventDefault()
-            event.stopPropagation()
-            this.setState({redirect: true})
+            if (this.state.summoner_name.length === 0) {
+                // don't search
+            }
+            else {
+                event.preventDefault()
+                event.stopPropagation()
+                this.setState({redirect: true})
+            }
         }
         return event
     }
@@ -69,6 +92,7 @@ class NavBar extends Component {
                                 style={{display: 'inline-block', float: 'right', width: 300, marginRight: '10%'}}>
                                 <div className="input-field">
                                     <input
+                                        ref={(elt) => this.input = elt}
                                         style={{color: '#929292'}}
                                         value={this.state.summoner_name}
                                         onChange={(event) => this.setState({summoner_name: event.target.value})}

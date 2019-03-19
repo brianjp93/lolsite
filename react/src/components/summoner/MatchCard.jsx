@@ -44,6 +44,8 @@ class MatchCard extends Component {
             expanded_view: 'overview',
 
             timeline_view: 'team',
+
+            is_selected: false,
         }
         
         this.getMyPart = this.getMyPart.bind(this)
@@ -76,6 +78,53 @@ class MatchCard extends Component {
         this.getEventTeam = this.getEventTeam.bind(this)
         this.isRender = this.isRender.bind(this)
         this.getReferenceEvents = this.getReferenceEvents.bind(this)
+        this.handleKeyDown = this.handleKeyDown.bind(this)
+    }
+    componentDidMount() {
+        window.addEventListener('keydown', this.handleKeyDown)
+    }
+    componentWillUnmount() {
+        window.removeEventListener('keydown', this.handleKeyDown)
+    }
+    handleKeyDown(event) {
+        if (this.props.store.state.ignore_tags.has(event.target.tagName.toLowerCase())) {
+            return
+        }
+        else {
+            var val = parseInt(event.key)
+            if (!isNaN(val)) {
+                val -= 1
+                if (val < 0) {
+                    val = 9
+                }
+                if (val === this.props.index) {
+                    if (this.state.is_expanded === false) {
+                        this.toggleExpand()
+                    }
+                    this.setState({is_selected: true})
+                    this.elt.scrollIntoView({behavior: 'smooth', inline: 'start'})
+                }
+                else {
+                    if (this.state.is_selected) {
+                        this.setState({is_selected: false})
+                    }
+                }
+            }
+            else {
+                if (this.state.is_selected) {
+                    var letter = event.key.toLowerCase()
+                    if (letter === 'o') {
+                        this.setState({expanded_view: 'overview'})
+                    }
+                    else if (letter === 't') {
+                        this.setState({expanded_view: 'timeline'})
+                    }
+                    else if (letter === 'r') {
+                        this.setState({expanded_view: 'runes'})
+                    }
+                }
+            }
+        }
     }
     getMyPart() {
         // get my participant

@@ -32,6 +32,9 @@ class App extends Component {
                 maxWidth: 300,
                 borderRadius: 10,
             },
+
+            // hotkey - ignore if target is one of the following tags
+            ignore_tags: new Set(['input', 'textarea']),
         }
 
         this.getRunes = this.getRunes.bind(this)

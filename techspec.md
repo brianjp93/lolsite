@@ -79,3 +79,22 @@ in one of the Summoner models
 > else - **the summoner was already searched for in this session**
 
 * Load summoner data from the react data store
+
+### Items
+
+Item data is stored in **App.jsx** (store).  It is accessible from most components as
+```javascript
+this.props.store.state.items[version][item_id]
+```
+
+Hovering over an item triggers a request for the item data, if it is not already available in the store.
+
+### Runes
+
+Similarly, Rune data is stored in **App.jsx** (store).  They are accessible from most components as
+```javascript
+this.props.store.state.runes[version][rune_id]
+```
+
+Opening a Rune submenu in any of the match cards will trigger a request for all runes with the same version as the match being looked at.
+Again, if the Runes already exist, the request will not be sent.
