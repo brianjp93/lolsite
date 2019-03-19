@@ -9,6 +9,8 @@ from .serializers import ProfileIconSerializer, ItemSerializer
 from .serializers import ItemGoldSerializer, ItemStatSerializer
 from .serializers import ReforgedRuneSerializer
 
+from django.core.cache import cache
+
 
 def get_summoner_page(request, format=None):
     """Get all data needed to render the basic summoner page.
@@ -78,30 +80,41 @@ def get_item(request, format=None):
     """
     data = {}
     status_code = 200
+    # 120 minute cache
+    cache_seconds = 60 * 120
 
     item_id = request.data['item_id']
     major = request.data['major']
     minor = request.data['minor']
 
     version = f'{major}.{minor}.1'
-    query = Item.objects.filter(_id=item_id, version=version)
-    if query.exists():
-        item = query.first()
-        item_data = ItemSerializer(item).data
-        item_data['stats'] = []
-        for stat in item.stats.all():
-            stat_data = ItemStatSerializer(stat).data
-            item_data['stats'].append(stat_data)
-        item_data['gold'] = {}
-        try:
-            item_gold_data = ItemGoldSerializer(item.gold).data
-            item_data['gold'] = item_gold_data
-        except:
-            pass
-        data['data'] = item_data
+
+    cache_key = f'items/{version}/{item_id}'
+    cache_data = cache.get(cache_key)
+    if cache_data:
+        data = cache_data['data']
+        status_code = cache_data['status']
     else:
-        status_code = 404
-        data = {'message': 'Item not found.'}
+        query = Item.objects.filter(_id=item_id, version=version)
+        if query.exists():
+            item = query.first()
+            item_data = ItemSerializer(item).data
+            item_data['stats'] = []
+            for stat in item.stats.all():
+                stat_data = ItemStatSerializer(stat).data
+                item_data['stats'].append(stat_data)
+            item_data['gold'] = {}
+            try:
+                item_gold_data = ItemGoldSerializer(item.gold).data
+                item_data['gold'] = item_gold_data
+            except:
+                pass
+            data['data'] = item_data
+        else:
+            status_code = 404
+            data = {'message': 'Item not found.'}
+
+        cache.set(cache_key, {'data': data, 'status': status_code}, cache_seconds)
 
     return Response(data, status=status_code)
 
@@ -122,16 +135,26 @@ def get_reforged_runes(request, format=None):
     """
     data = {}
     status_code = 200
+    cache_seconds = 60 * 120
 
     if request.method == 'POST':
         version = request.data.get('version', None)
-        if version is None:
-            pass
-            # get newest version of runes
-            tree = ReforgedTree.objects.all().order_by('-version').first()
-            version = tree.version
-        runes = ReforgedRune.objects.filter(reforgedtree__version=version)
-        runes_data = ReforgedRuneSerializer(runes, many=True).data
-        data = {'data': runes_data, 'version': version}
+        cache_key = f'reforgedrunes/{version}'
+        cache_data = cache.get(cache_key)
+        if cache_data:
+            data = cache_data['data']
+            status_code = cache_data['status']
+        else:
+            if version is None:
+                pass
+                # get newest version of runes
+                tree = ReforgedTree.objects.all().order_by('-version').first()
+                version = tree.version
+            runes = ReforgedRune.objects.filter(reforgedtree__version=version)
+            runes_data = ReforgedRuneSerializer(runes, many=True).data
+            data = {'data': runes_data, 'version': version}
+
+            new_cache = {'data': data, 'status': status_code}
+            cache.set(cache_key, new_cache, cache_seconds)
 
     return Response(data, status=status_code)

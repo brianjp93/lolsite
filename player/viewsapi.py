@@ -25,6 +25,8 @@ from match.serializers import MatchSerializer, ParticipantSerializer
 from match.serializers import TimelineSerializer, TeamSerializer, BanSerializer
 from match.serializers import StatsSerializer
 
+from django.core.cache import cache
+
 
 @api_view(['POST'])
 def get_summoner(request, format=None):
@@ -145,233 +147,240 @@ def serialize_matches(match_query, account_id):
     match_query = match_query.prefetch_related('participants', 'teams', 'participants__stats')
     for match in match_query:
         # match_serializer = MatchSerializer(match)
-        match_data = {
-            'id': match.id,
-            '_id': match._id,
-            'game_duration': match.game_duration,
-            'game_creation': match.game_creation,
-            'queue_id': match.queue_id,
-            'major': match.major,
-            'minor': match.minor,
-        }
 
-        participants = []
-        for participant in match.participants.all():
-            # participant_ser = ParticipantSerializer(participant)
-
-            # SPELLS
-            if participant.spell_1_id in spell_cache:
-                spell_1 = spell_cache[participant.spell_1_id]
-            else:
-                spell_cache[participant.spell_1_id] = {'_id': participant.spell_1_id, 'image_url': participant.spell_1_image_url()}
-                spell_1 = spell_cache[participant.spell_1_id]
-
-            if participant.spell_2_id in spell_cache:
-                spell_2 = spell_cache[participant.spell_2_id]
-            else:
-                spell_cache[participant.spell_2_id] = {'_id': participant.spell_2_id, 'image_url': participant.spell_2_image_url()}
-                spell_2 = spell_cache[participant.spell_2_id]
-
-            participant_data = {
-                '_id': participant._id,
-                'summoner_name': participant.summoner_name,
-                'account_id': participant.current_account_id,
-                'lane': participant.lane,
-                'role': participant.role,
-                'team_id': participant.team_id,
-
-                'spell_1_id': participant.spell_1_id,
-                'spell_1_image_url': spell_1['image_url'],
-                'spell_2_id': participant.spell_2_id,
-                'spell_2_image_url': spell_2['image_url'],
+        cache_key = f'account/{account_id}/match/{match._id}'
+        cache_data = cache.get(cache_key)
+        if cache_data:
+            matches.append(cache_data)
+        else:
+            match_data = {
+                'id': match.id,
+                '_id': match._id,
+                'game_duration': match.game_duration,
+                'game_creation': match.game_creation,
+                'queue_id': match.queue_id,
+                'major': match.major,
+                'minor': match.minor,
             }
 
-            champ_query = Champion.objects.filter(key=participant.champion_id, language='en_US').order_by('-version')
-            if champ_query.exists():
-                champ = champ_query.first()
-                participant_data['champion'] = {
-                    '_id': champ._id,
-                    'image_url': champ.image_url(),
-                    'name': champ.name,
+            participants = []
+            for participant in match.participants.all():
+                # participant_ser = ParticipantSerializer(participant)
+
+                # SPELLS
+                if participant.spell_1_id in spell_cache:
+                    spell_1 = spell_cache[participant.spell_1_id]
+                else:
+                    spell_cache[participant.spell_1_id] = {'_id': participant.spell_1_id, 'image_url': participant.spell_1_image_url()}
+                    spell_1 = spell_cache[participant.spell_1_id]
+
+                if participant.spell_2_id in spell_cache:
+                    spell_2 = spell_cache[participant.spell_2_id]
+                else:
+                    spell_cache[participant.spell_2_id] = {'_id': participant.spell_2_id, 'image_url': participant.spell_2_image_url()}
+                    spell_2 = spell_cache[participant.spell_2_id]
+
+                participant_data = {
+                    '_id': participant._id,
+                    'summoner_name': participant.summoner_name,
+                    'account_id': participant.current_account_id,
+                    'lane': participant.lane,
+                    'role': participant.role,
+                    'team_id': participant.team_id,
+
+                    'spell_1_id': participant.spell_1_id,
+                    'spell_1_image_url': spell_1['image_url'],
+                    'spell_2_id': participant.spell_2_id,
+                    'spell_2_image_url': spell_2['image_url'],
                 }
-            else:
-                participant_data['champion'] = {}
 
-            participant_data['stats'] = {}
-            # only add stats if it's for the current summoner
-            if participant.current_account_id == account_id:
-                try:
-                    stats = participant.stats
-                except:
-                    pass
-                else:
-                    # ITEM 0
-                    if stats.item_0 in item_cache:
-                        item_0 = item_cache[stats.item_0]
-                    else:
-                        item_cache[stats.item_0] = {
-                            '_id': stats.item_0,
-                            'image_url': stats.item_0_image_url()
-                        }
-                        item_0 = item_cache[stats.item_0]
-
-                    # ITEM 1
-                    if stats.item_1 in item_cache:
-                        item_1 = item_cache[stats.item_1]
-                    else:
-                        item_cache[stats.item_1] = {
-                            '_id': stats.item_1,
-                            'image_url': stats.item_1_image_url()
-                        }
-                        item_1 = item_cache[stats.item_1]
-
-                    if stats.item_2 in item_cache:
-                        item_2 = item_cache[stats.item_2]
-                    else:
-                        item_cache[stats.item_2] = {
-                            '_id': stats.item_2,
-                            'image_url': stats.item_2_image_url()
-                        }
-                        item_2 = item_cache[stats.item_2]
-
-                    if stats.item_3 in item_cache:
-                        item_3 = item_cache[stats.item_3]
-                    else:
-                        item_cache[stats.item_3] = {
-                            '_id': stats.item_3,
-                            'image_url': stats.item_3_image_url()
-                        }
-                        item_3 = item_cache[stats.item_3]
-
-                    if stats.item_4 in item_cache:
-                        item_4 = item_cache[stats.item_4]
-                    else:
-                        item_cache[stats.item_4] = {
-                            '_id': stats.item_4,
-                            'image_url': stats.item_4_image_url()
-                        }
-                        item_4 = item_cache[stats.item_4]
-
-                    if stats.item_5 in item_cache:
-                        item_5 = item_cache[stats.item_5]
-                    else:
-                        item_cache[stats.item_5] = {
-                            '_id': stats.item_5,
-                            'image_url': stats.item_5_image_url()
-                        }
-                        item_5 = item_cache[stats.item_5]
-
-                    if stats.item_6 in item_cache:
-                        item_6 = item_cache[stats.item_6]
-                    else:
-                        item_cache[stats.item_6] = {
-                            '_id': stats.item_6,
-                            'image_url': stats.item_6_image_url()
-                        }
-                        item_6 = item_cache[stats.item_6]
-
-                    if stats.perk_primary_style in perk_tree_cache:
-                        perk_primary_style = perk_tree_cache[stats.perk_primary_style]
-                    else:
-                        perk_tree_cache[stats.perk_primary_style] = {'_id': stats.perk_primary_style, 'image_url': stats.perk_primary_style_image_url()}
-                        perk_primary_style = perk_tree_cache[stats.perk_primary_style]
-
-                    if stats.perk_sub_style in perk_tree_cache:
-                        perk_sub_style = perk_tree_cache[stats.perk_sub_style]
-                    else:
-                        perk_tree_cache[stats.perk_sub_style] = {'_id': stats.perk_sub_style, 'image_url': stats.perk_sub_style_image_url()}
-                        perk_sub_style = perk_tree_cache[stats.perk_sub_style]
-
-                    if stats.perk_0 in perk_cache:
-                        perk_0 = perk_cache[stats.perk_0]
-                    else:
-                        perk_cache[stats.perk_0] = {'_id': stats.perk_0, 'image_url': stats.perk_0_image_url()}
-                        perk_0 = perk_cache[stats.perk_0]
-
-                    stats_data = {
-                        'item_0': stats.item_0,
-                        'item_0_image_url': item_0['image_url'],
-                        'item_1': stats.item_1,
-                        'item_1_image_url': item_1['image_url'],
-                        'item_2': stats.item_2,
-                        'item_2_image_url': item_2['image_url'],
-                        'item_3': stats.item_3,
-                        'item_3_image_url': item_3['image_url'],
-                        'item_4': stats.item_4,
-                        'item_4_image_url': item_4['image_url'],
-                        'item_5': stats.item_5,
-                        'item_5_image_url': item_5['image_url'],
-                        'item_6': stats.item_6,
-                        'item_6_image_url': item_6['image_url'],
-                        'perk_primary_style': stats.perk_primary_style,
-                        'perk_primary_style_image_url': perk_primary_style['image_url'],
-                        'perk_sub_style': stats.perk_sub_style,
-                        'perk_sub_style_image_url': perk_sub_style['image_url'],
-                        'perk_0': stats.perk_0,
-                        'perk_0_image_url': perk_0['image_url'],
-                        'perk_0_var_1': stats.perk_0_var_1,
-                        'perk_0_var_2': stats.perk_0_var_2,
-                        'perk_0_var_3': stats.perk_0_var_3,
-
-                        'kills': stats.kills,
-                        'deaths': stats.deaths,
-                        'assists': stats.assists,
-
-                        'gold_earned': stats.gold_earned,
-                        'champ_level': stats.champ_level,
-                        'total_damage_dealt_to_champions': stats.total_damage_dealt_to_champions,
-                        'vision_score': stats.vision_score,
-                        'total_damage_taken': stats.total_damage_taken,
-                        'damage_dealt_to_objectives': stats.damage_dealt_to_objectives,
-                        'damage_dealt_to_turrets': stats.damage_dealt_to_turrets,
-                        'total_minions_killed': stats.total_minions_killed,
-                        'neutral_minions_killed': stats.neutral_minions_killed,
+                champ_query = Champion.objects.filter(key=participant.champion_id, language='en_US').order_by('-version')
+                if champ_query.exists():
+                    champ = champ_query.first()
+                    participant_data['champion'] = {
+                        '_id': champ._id,
+                        'image_url': champ.image_url(),
+                        'name': champ.name,
                     }
-                    participant_data['stats'] = stats_data
-            else:
-                # general data for all participants
-                try:
-                    stats = participant.stats
-                except:
-                    pass
                 else:
-                    stats_data = {
-                        'kills': stats.kills,
-                        'deaths': stats.deaths,
-                        'assists': stats.assists,
-                        'champ_level': stats.champ_level,
-                        'total_damage_dealt_to_champions': stats.total_damage_dealt_to_champions,
-                        'vision_score': stats.vision_score,
-                        'total_damage_taken': stats.total_damage_taken,
-                        'damage_dealt_to_objectives': stats.damage_dealt_to_objectives,
-                        'damage_dealt_to_turrets': stats.damage_dealt_to_turrets,
-                        'gold_earned': stats.gold_earned,
-                    }
-                    participant_data['stats'] = stats_data
-            participants.append(participant_data)
+                    participant_data['champion'] = {}
 
-        # SORT PARTICIPANTS SO THAT LANES MATCH UP (imperfect)
-        participants.sort(key=participant_sort)
+                participant_data['stats'] = {}
+                # only add stats if it's for the current summoner
+                if participant.current_account_id == account_id:
+                    try:
+                        stats = participant.stats
+                    except:
+                        pass
+                    else:
+                        # ITEM 0
+                        if stats.item_0 in item_cache:
+                            item_0 = item_cache[stats.item_0]
+                        else:
+                            item_cache[stats.item_0] = {
+                                '_id': stats.item_0,
+                                'image_url': stats.item_0_image_url()
+                            }
+                            item_0 = item_cache[stats.item_0]
 
-        match_data['participants'] = participants
+                        # ITEM 1
+                        if stats.item_1 in item_cache:
+                            item_1 = item_cache[stats.item_1]
+                        else:
+                            item_cache[stats.item_1] = {
+                                '_id': stats.item_1,
+                                'image_url': stats.item_1_image_url()
+                            }
+                            item_1 = item_cache[stats.item_1]
 
-        teams = []
-        for team in match.teams.all():
-            # team_ser = TeamSerializer(team)
-            team_data = {
-                'win_str': team.win_str,
-                '_id': team._id,
-            }
-            # team_data['bans'] = []
-            # for ban in team.bans.all():
-            #     ban_ser = BanSerializer(ban)
-            #     ban_data = ban_ser.data
-            #     team_data['bans'].append(ban_data)
+                        if stats.item_2 in item_cache:
+                            item_2 = item_cache[stats.item_2]
+                        else:
+                            item_cache[stats.item_2] = {
+                                '_id': stats.item_2,
+                                'image_url': stats.item_2_image_url()
+                            }
+                            item_2 = item_cache[stats.item_2]
 
-            teams.append(team_data)
-        match_data['teams'] = teams
+                        if stats.item_3 in item_cache:
+                            item_3 = item_cache[stats.item_3]
+                        else:
+                            item_cache[stats.item_3] = {
+                                '_id': stats.item_3,
+                                'image_url': stats.item_3_image_url()
+                            }
+                            item_3 = item_cache[stats.item_3]
 
-        matches.append(match_data)
+                        if stats.item_4 in item_cache:
+                            item_4 = item_cache[stats.item_4]
+                        else:
+                            item_cache[stats.item_4] = {
+                                '_id': stats.item_4,
+                                'image_url': stats.item_4_image_url()
+                            }
+                            item_4 = item_cache[stats.item_4]
+
+                        if stats.item_5 in item_cache:
+                            item_5 = item_cache[stats.item_5]
+                        else:
+                            item_cache[stats.item_5] = {
+                                '_id': stats.item_5,
+                                'image_url': stats.item_5_image_url()
+                            }
+                            item_5 = item_cache[stats.item_5]
+
+                        if stats.item_6 in item_cache:
+                            item_6 = item_cache[stats.item_6]
+                        else:
+                            item_cache[stats.item_6] = {
+                                '_id': stats.item_6,
+                                'image_url': stats.item_6_image_url()
+                            }
+                            item_6 = item_cache[stats.item_6]
+
+                        if stats.perk_primary_style in perk_tree_cache:
+                            perk_primary_style = perk_tree_cache[stats.perk_primary_style]
+                        else:
+                            perk_tree_cache[stats.perk_primary_style] = {'_id': stats.perk_primary_style, 'image_url': stats.perk_primary_style_image_url()}
+                            perk_primary_style = perk_tree_cache[stats.perk_primary_style]
+
+                        if stats.perk_sub_style in perk_tree_cache:
+                            perk_sub_style = perk_tree_cache[stats.perk_sub_style]
+                        else:
+                            perk_tree_cache[stats.perk_sub_style] = {'_id': stats.perk_sub_style, 'image_url': stats.perk_sub_style_image_url()}
+                            perk_sub_style = perk_tree_cache[stats.perk_sub_style]
+
+                        if stats.perk_0 in perk_cache:
+                            perk_0 = perk_cache[stats.perk_0]
+                        else:
+                            perk_cache[stats.perk_0] = {'_id': stats.perk_0, 'image_url': stats.perk_0_image_url()}
+                            perk_0 = perk_cache[stats.perk_0]
+
+                        stats_data = {
+                            'item_0': stats.item_0,
+                            'item_0_image_url': item_0['image_url'],
+                            'item_1': stats.item_1,
+                            'item_1_image_url': item_1['image_url'],
+                            'item_2': stats.item_2,
+                            'item_2_image_url': item_2['image_url'],
+                            'item_3': stats.item_3,
+                            'item_3_image_url': item_3['image_url'],
+                            'item_4': stats.item_4,
+                            'item_4_image_url': item_4['image_url'],
+                            'item_5': stats.item_5,
+                            'item_5_image_url': item_5['image_url'],
+                            'item_6': stats.item_6,
+                            'item_6_image_url': item_6['image_url'],
+                            'perk_primary_style': stats.perk_primary_style,
+                            'perk_primary_style_image_url': perk_primary_style['image_url'],
+                            'perk_sub_style': stats.perk_sub_style,
+                            'perk_sub_style_image_url': perk_sub_style['image_url'],
+                            'perk_0': stats.perk_0,
+                            'perk_0_image_url': perk_0['image_url'],
+                            'perk_0_var_1': stats.perk_0_var_1,
+                            'perk_0_var_2': stats.perk_0_var_2,
+                            'perk_0_var_3': stats.perk_0_var_3,
+
+                            'kills': stats.kills,
+                            'deaths': stats.deaths,
+                            'assists': stats.assists,
+
+                            'gold_earned': stats.gold_earned,
+                            'champ_level': stats.champ_level,
+                            'total_damage_dealt_to_champions': stats.total_damage_dealt_to_champions,
+                            'vision_score': stats.vision_score,
+                            'total_damage_taken': stats.total_damage_taken,
+                            'damage_dealt_to_objectives': stats.damage_dealt_to_objectives,
+                            'damage_dealt_to_turrets': stats.damage_dealt_to_turrets,
+                            'total_minions_killed': stats.total_minions_killed,
+                            'neutral_minions_killed': stats.neutral_minions_killed,
+                        }
+                        participant_data['stats'] = stats_data
+                else:
+                    # general data for all participants
+                    try:
+                        stats = participant.stats
+                    except:
+                        pass
+                    else:
+                        stats_data = {
+                            'kills': stats.kills,
+                            'deaths': stats.deaths,
+                            'assists': stats.assists,
+                            'champ_level': stats.champ_level,
+                            'total_damage_dealt_to_champions': stats.total_damage_dealt_to_champions,
+                            'vision_score': stats.vision_score,
+                            'total_damage_taken': stats.total_damage_taken,
+                            'damage_dealt_to_objectives': stats.damage_dealt_to_objectives,
+                            'damage_dealt_to_turrets': stats.damage_dealt_to_turrets,
+                            'gold_earned': stats.gold_earned,
+                        }
+                        participant_data['stats'] = stats_data
+                participants.append(participant_data)
+
+            # SORT PARTICIPANTS SO THAT LANES MATCH UP (imperfect)
+            participants.sort(key=participant_sort)
+
+            match_data['participants'] = participants
+
+            teams = []
+            for team in match.teams.all():
+                # team_ser = TeamSerializer(team)
+                team_data = {
+                    'win_str': team.win_str,
+                    '_id': team._id,
+                }
+                # team_data['bans'] = []
+                # for ban in team.bans.all():
+                #     ban_ser = BanSerializer(ban)
+                #     ban_data = ban_ser.data
+                #     team_data['bans'].append(ban_data)
+
+                teams.append(team_data)
+            match_data['teams'] = teams
+
+            matches.append(match_data)
+            cache.set(cache_key, match_data, None)
     return matches
 
 

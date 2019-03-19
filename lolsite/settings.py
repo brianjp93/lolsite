@@ -207,3 +207,24 @@ else:
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+
+# SET UP CACHE
+if DEV:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': '127.0.0.1:11211',
+        }
+    }
+else:
+    # aws cache?
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_elasticache.memcached.ElastiCache',
+            'LOCATION': 'clusterlolsite.zcb1mj.cfg.usw2.cache.amazonaws.com:11211',
+            'OPTIONS': {
+                'IGNORE_CLUSTER_ERRORS': [True,False],
+            },
+        }
+    }
