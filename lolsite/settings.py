@@ -221,12 +221,14 @@ else:
     # aws cache?
     CACHES = {
         'default': {
-            'BACKEND': 'django_elastipymemcache.memcached.ElastiPyMemCache',
+            # 'BACKEND': 'django_elastipymemcache.memcached.ElastiPyMemCache',
+            # 'LOCATION': 'lolsite.zcb1mj.cfg.usw2.cache.amazonaws.com:11211',
+            # 'OPTIONS': {
+            #     'cluster_timeout': 1, # its used when get cluster info
+            #     'ignore_exc': True, # pymemcache Client params
+            #     'ignore_cluster_errors': True, # ignore get cluster info error
+            # }
+            'BACKEND': 'django_elasticache.memcached.ElastiCache',
             'LOCATION': 'lolsite.zcb1mj.cfg.usw2.cache.amazonaws.com:11211',
-            'OPTIONS': {
-                'cluster_timeout': 1, # its used when get cluster info
-                'ignore_exc': True, # pymemcache Client params
-                'ignore_cluster_errors': True, # ignore get cluster info error
-            }
         }
     }
