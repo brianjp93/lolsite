@@ -222,7 +222,7 @@ else:
     CACHES = {
         'default': {
             'BACKEND': 'django_elasticache.memcached.ElastiCache',
-            'LOCATION': 'clusterlolsite.zcb1mj.cfg.usw2.cache.amazonaws.com:11211',
+            'LOCATION': 'lolsite.zcb1mj.0001.usw2.cache.amazonaws.com:11211',
             'OPTIONS': {
                 'IGNORE_CLUSTER_ERRORS': [True,False],
             },
