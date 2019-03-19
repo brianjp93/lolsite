@@ -79,6 +79,7 @@ class MatchCard extends Component {
         this.isRender = this.isRender.bind(this)
         this.getReferenceEvents = this.getReferenceEvents.bind(this)
         this.handleKeyDown = this.handleKeyDown.bind(this)
+        this.getNumFromIndex = this.getNumFromIndex.bind(this)
     }
     componentDidMount() {
         window.addEventListener('keydown', this.handleKeyDown)
@@ -125,6 +126,14 @@ class MatchCard extends Component {
                 }
             }
         }
+    }
+    getNumFromIndex() {
+        var num = this.props.index
+        num += 1
+        if (num === 10) {
+            num = 0
+        }
+        return num
     }
     getMyPart() {
         // get my participant
@@ -858,6 +867,10 @@ class MatchCard extends Component {
         let vision_score_per_minute = mypart.stats.vision_score / game_time
         let damage_taken_per_minute = mypart.stats.total_damage_taken / game_time
         let csm = (mypart.stats.total_minions_killed + mypart.stats.neutral_minions_killed) / game_time
+        var expand_title = ''
+        if (this.getNumFromIndex() < 10) {
+            expand_title = `Press "${this.getNumFromIndex()}" to quickly navigate to and expand this match card.`
+        }
         return (
             <div
                 style={{
@@ -1052,6 +1065,7 @@ class MatchCard extends Component {
 
                             <div style={{position:'absolute', left: this.state.summary_width - 26, top:190, zIndex:10}}>
                                 <button
+                                    title={expand_title}
                                     onClick={this.toggleExpand}
                                     className={`${this.props.store.state.theme} btn-small`} style={{height:209, padding:'0 3px'}}>
                                     {!this.state.is_expanded &&
