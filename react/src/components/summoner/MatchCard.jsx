@@ -908,7 +908,7 @@ class MatchCard extends Component {
                     paddingLeft: this.state.card_horizontal_padding,
                     position: 'relative',
                     verticalAlign: 'bottom',
-                    overflow: 'hidden',
+                    // overflow: 'hidden',
                     transition: 'all .4s ease',
                 }}
                 ref={(elt) => this.elt = elt}
@@ -1139,44 +1139,46 @@ class MatchCard extends Component {
                             }}>
 
                             {/* MENU BUTTONS */}
-                            <div style={{
-                                position: 'absolute',
-                                top: 10,
-                                width: 25,
-                                height: 180,
-                                left: this.state.summary_width + 2,
-                                textAlign: 'center',
-                                borderColor: 'grey',
-                                borderStyle: 'solid',
-                                borderWidth: 1,
-                                borderRadius: 5,
-                                }}>
-                                <button
-                                    title='Overview'
-                                    style={menu_button_style}
-                                    className={`dark btn-small ${this.state.expanded_view === 'overview' ? 'selected': ''}`}
-                                    onClick={() => this.setState({expanded_view: 'overview'})}>
-                                    o
-                                </button>
-                                
-                                <button
-                                    title='Timeline'
-                                    style={menu_button_style}
-                                    className={`dark btn-small ${this.state.expanded_view === 'timeline' ? 'selected': ''}`}
-                                    onClick={() => this.setState({expanded_view: 'timeline'})} >
-                                    t
-                                </button>
-                                <button
-                                    title='Runes'
-                                    style={menu_button_style}
-                                    className={`dark btn-small ${this.state.expanded_view === 'runes' ? 'selected': ''}`}
-                                    onClick={() => this.setState({expanded_view: 'runes'})} >
-                                    r
-                                </button>
-                            </div>
+                            {this.state.is_expanded &&
+                                <div style={{
+                                    position: 'absolute',
+                                    top: 10,
+                                    width: 25,
+                                    height: 180,
+                                    left: this.state.summary_width + 2,
+                                    textAlign: 'center',
+                                    borderColor: 'grey',
+                                    borderStyle: 'solid',
+                                    borderWidth: 1,
+                                    borderRadius: 5,
+                                    }}>
+                                    <button
+                                        title='Overview'
+                                        style={menu_button_style}
+                                        className={`dark btn-small ${this.state.expanded_view === 'overview' ? 'selected': ''}`}
+                                        onClick={() => this.setState({expanded_view: 'overview'})}>
+                                        o
+                                    </button>
+                                    
+                                    <button
+                                        title='Timeline'
+                                        style={menu_button_style}
+                                        className={`dark btn-small ${this.state.expanded_view === 'timeline' ? 'selected': ''}`}
+                                        onClick={() => this.setState({expanded_view: 'timeline'})} >
+                                        t
+                                    </button>
+                                    <button
+                                        title='Runes'
+                                        style={menu_button_style}
+                                        className={`dark btn-small ${this.state.expanded_view === 'runes' ? 'selected': ''}`}
+                                        onClick={() => this.setState({expanded_view: 'runes'})} >
+                                        r
+                                    </button>
+                                </div>
+                            }
 
-
-                            {this.state.expanded_view === 'timeline' &&
+                            
+                            {this.state.is_expanded && this.state.expanded_view === 'timeline' &&
                                 <span>
 
                                     {/* TIMELINE BUTTONS */} 
@@ -1508,7 +1510,7 @@ class MatchCard extends Component {
                                 </span>
                             } {/* END TIMELINE VIEW */}
 
-                            {this.state.expanded_view === 'overview' &&
+                            {this.state.is_expanded && this.state.expanded_view === 'overview' &&
                                 <div style={{marginLeft: 30}}>
                                     <div>
                                         <StatOverview store={this.props.store} pageStore={this.props.pageStore} parent={this} is_expanded={this.state.is_expanded} />
@@ -1516,7 +1518,7 @@ class MatchCard extends Component {
                                 </div>
                             }
 
-                            {this.state.expanded_view === 'runes' &&
+                            {this.state.is_expanded && this.state.expanded_view === 'runes' &&
                                 <div>
                                     <div>
                                         <RunePage store={this.props.store} pageStore={this.props.pageStore} parent={this} />

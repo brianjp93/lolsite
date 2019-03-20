@@ -45,7 +45,7 @@ class StatOverview extends Component {
         this.getCSPM = this.getCSPM.bind(this)
     }
     componentDidUpdate(prevProps) {
-        if (prevProps.is_expanded === false && this.props.is_expanded === true) {
+        if (this.props.is_expanded === true) {
             if (this.props.parent.state.participants === null) {
                 this.getParticipants()
             }

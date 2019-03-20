@@ -21,8 +21,9 @@ body {
 }
 
 .horizontal-scroll {
-    overflow-x: auto;
+    overflow-x: scroll;
     white-space: nowrap;
+    overflow-scrolling: touch;
     -webkit-overflow-scrolling: touch;
 }
 

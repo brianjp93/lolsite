@@ -228,7 +228,5 @@ else:
             #     'ignore_exc': True, # pymemcache Client params
             #     'ignore_cluster_errors': True, # ignore get cluster info error
             # }
-            # 'BACKEND': 'django_elasticache.memcached.ElastiCache',
-            # 'LOCATION': 'lolsite.zcb1mj.cfg.usw2.cache.amazonaws.com:11211',
         }
     }
