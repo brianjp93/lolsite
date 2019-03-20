@@ -435,6 +435,15 @@ var RUNEDATA = {
       ],
       "perkFormat": ["{0}","{0}"]
     },
+    "8360": {
+      "id": 8360,
+      "name": "Unsealed Spellbook",
+      "perkVars": 1,
+      "perkDesc": [
+        "Summoners Swapped"
+      ],
+      "perkFormat": ["{0}"]
+    },
     "8401": {
       "id": 8410,
       "name": "Shield Bash",
