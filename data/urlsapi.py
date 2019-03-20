@@ -5,6 +5,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 urlpatterns = [
     path('profile-icon/', data_views.get_profile_icon),
     path('item/', data_views.get_item),
+    path('items/', data_views.all_items),
     path('reforged-runes/', data_views.get_reforged_runes),
 ]
 

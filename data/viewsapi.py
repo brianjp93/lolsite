@@ -61,6 +61,31 @@ def get_profile_icon(request, format=None):
     return Response(data, status=status_code)
 
 
+def serialize_item(item):
+    """Serialize and Item model
+
+    Parameters
+    ----------
+    Item
+
+    Returns
+    -------
+    dict
+
+    """
+    item_data = ItemSerializer(item).data
+    item_data['stats'] = []
+    for stat in item.stats.all():
+        stat_data = ItemStatSerializer(stat).data
+        item_data['stats'].append(stat_data)
+    item_data['gold'] = {}
+    try:
+        item_gold_data = ItemGoldSerializer(item.gold).data
+        item_data['gold'] = item_gold_data
+    except:
+        pass
+    return item_data
+
 @api_view(['POST'])
 def get_item(request, format=None):
     """
@@ -88,35 +113,65 @@ def get_item(request, format=None):
     minor = request.data['minor']
 
     version = f'{major}.{minor}.1'
-
-    cache_key = f'items/{version}/{item_id}'
-    cache_data = cache.get(cache_key)
-    if cache_data:
-        data = cache_data['data']
-        status_code = cache_data['status']
+    query = Item.objects.filter(_id=item_id, version=version)
+    if query.exists():
+        item = query.first()
+        item_data = serialize_item(item)
+        data['data'] = item_data
     else:
-        query = Item.objects.filter(_id=item_id, version=version)
-        if query.exists():
-            item = query.first()
-            item_data = ItemSerializer(item).data
-            item_data['stats'] = []
-            for stat in item.stats.all():
-                stat_data = ItemStatSerializer(stat).data
-                item_data['stats'].append(stat_data)
-            item_data['gold'] = {}
-            try:
-                item_gold_data = ItemGoldSerializer(item.gold).data
-                item_data['gold'] = item_gold_data
-            except:
-                pass
-            data['data'] = item_data
-        else:
-            status_code = 404
-            data = {'message': 'Item not found.'}
-
-        cache.set(cache_key, {'data': data, 'status': status_code}, cache_seconds)
+        status_code = 404
+        data = {'message': 'Item not found.'}
 
     return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def all_items(request, format=None):
+    """Get all items for a version.
+
+    USING CACHE
+
+    POST Parameters
+    ---------------
+    major : int
+        Version - major
+    minor : int
+        Version - minor
+
+    Returns
+    -------
+    JSON String
+
+    """
+    data = {}
+    status_code = 200
+    # 120 minute cache
+    cache_seconds = 60 * 120
+
+    major = request.data['major']
+    minor = request.data['minor']
+
+    version = f'{major}.{minor}.1'
+
+    cache_key = f'items/{version}'
+    cache_data = cache.get(cache_key)
+    if cache_data:
+        data = cache_data
+    else:
+        query = Item.objects.filter(version=version)
+        if query.exists():
+            items = []
+            for item in query:
+                item_data = serialize_item(item)
+                items.append(item_data)
+            cache.set(cache_key, items, cache_seconds)
+            data = {'data': items, 'version': version}
+        else:
+            status_code = 404
+            data = {'message': 'No items found for the version given.'}
+
+    return Response(data, status=status_code)
+
 
 
 @api_view(['POST'])
