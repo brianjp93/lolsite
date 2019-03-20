@@ -32,7 +32,7 @@ class Command(BaseRunserverCommand):
                 with open(command_file, 'w') as command_f:
                     command_f.write(f'cd {react_dir}\nnpm run start')
                 start_command = ['open', '-W', command_file]
-                subprocess.call(start_command)
+                subprocess.Popen(start_command)
             else:
                 print('sys.platform did not return "win32".  You may have to run `npm run start` in the react directory manually.')
 
