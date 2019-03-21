@@ -564,7 +564,7 @@ class SummonerCard extends Component {
                         }}>
                         <span style={{textDecoration: 'underline', fontWeight: 'bold',}}>{this.props.summoner.name}</span>
                         <br/>
-                        <Spectate.SpectateModal theme={this.props.store.state.theme} summoner_id={this.props.summoner._id} pageStore={this.props.pageStore}>
+                        <Spectate.SpectateModal queue_convert={this.props.store.state.queue_convert} theme={this.props.store.state.theme} summoner_id={this.props.summoner._id} pageStore={this.props.pageStore}>
                             <small>
                                 {this.props.pageStore.state.is_live_game ? 'Live Game!': 'Check For Game'}
                             </small>

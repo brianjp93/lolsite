@@ -22,6 +22,9 @@ class App extends Component {
             items: {},
             runes: {},
 
+            queues: [],
+            queue_convert: {},
+
             // whether or not to ignore vertical scroll conversion to horizontal
             ignore_horizontal: false,
 
@@ -39,6 +42,7 @@ class App extends Component {
 
         this.getRunes = this.getRunes.bind(this)
         this.getRune = this.getRune.bind(this)
+        this.setQueueDict = this.setQueueDict.bind(this)
     }
     componentDidUpdate(prevProps, prevState) {
         if (prevState.theme !== this.state.theme) {
@@ -50,12 +54,21 @@ class App extends Component {
         this.setTheme(this.state.theme)
 
         var queue_elt = document.getElementById('queues')
-        this.setState({queues: JSON.parse(queue_elt.innerHTML)})
+        this.setState({queues: JSON.parse(queue_elt.innerHTML)}, this.setQueueDict)
 
         var static_base = document.getElementById('static-base')
         this.setState({static: static_base.innerHTML.trim()})
     }
     componentWillUnmount() {
+    }
+    setQueueDict() {
+        var queues = this.state.queues
+        var qdict = {}
+        for (var q of queues) {
+            q.description = q.description.replace('games', '').trim()
+            qdict[q._id] = q
+        }
+        this.setState({queue_convert: qdict})
     }
     setTheme(theme) {
         var elt = document.getElementsByTagName('html')[0]

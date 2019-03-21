@@ -24,6 +24,7 @@ class Spectate extends Component {
         this.getTeam = this.getTeam.bind(this)
         this.getTopSoloPosition = this.getTopSoloPosition.bind(this)
         this.getGameTime = this.getGameTime.bind(this)
+        this.getQueue = this.getQueue.bind(this)
     }
     componentDidMount() {
         this.setState({is_retrieving: true})
@@ -66,35 +67,49 @@ class Spectate extends Component {
         }
         return team
     }
+    getQueue() {
+        try {
+            return this.props.queue_convert[this.state.spectate_data.gameQueueConfigId].description
+        }
+        catch(error) {
+            return `Queue ${this.state.spectate_data.gameQueueConfigId}`
+        }
+    }
     participantLine(part) {
         var pos = this.getTopSoloPosition(part.positions)
         return (
             <div key={part.summonerId}>
-
+                <hr/>
                 <div>
-                    <img style={{height:50, borderRadius:4}} src={part.champion.image_url} alt=""/>
-                    <small style={{paddingLeft:10}}>
-                        {this.props.summoner_id === part.summonerId &&
-                            <span style={{verticalAlign: 'top'}}>
-                                {part.summonerName}
-                            </span>
-                        }
-                        {this.props.summoner_id !== part.summonerId &&
-                            <Link
-                                style={{verticalAlign: 'top'}}
-                                className={`${this.props.theme}`}
-                                to={`/${this.props.region}/${part.summonerName}/`}>
-                                {part.summonerName}
-                            </Link>
-                        }
-                    </small>{' '}
+                    <div style={{display: 'inline-block'}}>
+                        <img style={{height:50, borderRadius:4}} src={part.champion.image_url} alt=""/>
+                        <div>
+                            <small style={{}}>
+                                {this.props.summoner_id === part.summonerId &&
+                                    <span style={{verticalAlign: 'top'}}>
+                                        {part.summonerName}
+                                    </span>
+                                }
+                                {this.props.summoner_id !== part.summonerId &&
+                                    <Link
+                                        style={{verticalAlign: 'top'}}
+                                        className={`${this.props.theme}`}
+                                        to={`/${this.props.region}/${part.summonerName}/`}>
+                                        {part.summonerName}
+                                    </Link>
+                                }
+                            </small>{' '}
+                        </div>
+                    </div>
                         {pos !== null &&
                             <div style={{float: 'right', display: 'inline-block', textAlign:'right'}}>
                                 <small className={`${this.props.theme} pill`}>
                                     {pos.tier} {pos.rank}
                                 </small>
                                 <br/>
-                                <small>{pos.wins} wins / {pos.losses} losses</small>
+                                <small>{pos.wins}W / {pos.losses}L</small>
+                                <br/>
+                                <small>{`${numeral((pos.wins / (pos.wins + pos.losses) * 100)).format('0.0')}%`}</small>
                             </div>
                         }
                 </div>
@@ -133,7 +148,7 @@ class Spectate extends Component {
             if (this.state.spectate_data !== null) {
                 return (
                     <div style={{width: width}}>
-                        <h5 style={{margin:0, display: 'inline-block'}}>Live Match</h5>{' '}
+                        <h5 style={{margin:0, display: 'inline-block'}}>{this.getQueue()}</h5>{' '}
 
                         <span style={{float: 'right', paddingRight:40}}>
                             Match started at {formatDatetime(this.state.spectate_data.gameStartTime)}{' '}
@@ -143,12 +158,12 @@ class Spectate extends Component {
                         <div style={{height:10}}></div>
 
                         <div>
-                            <div style={{width:320, display:'inline-block'}}>
+                            <div style={{width:350, display:'inline-block'}}>
                                 {this.getTeam(100).map(part =>  {
                                     return this.participantLine(part)
                                 })}
                             </div>
-                            <div style={{width:320, display:'inline-block', paddingLeft:15}}>
+                            <div style={{width:350, display:'inline-block', paddingLeft:15}}>
                                 {this.getTeam(200).map(part =>  {
                                     return this.participantLine(part)
                                 })}
@@ -182,10 +197,11 @@ class SpectateModal extends Component {
             <div>
                 <Modal
                     classNames={{modal: `${theme} custom-modal`}}
+                    styles={{overlay: {overflowX: 'scroll'}}}
                     open={this.props.pageStore.state.is_spectate_modal_open}
                     onClose={() => this.props.pageStore.setState({is_spectate_modal_open: false})}
                     center>
-                    <Spectate theme={theme} region={this.props.pageStore.props.region} summoner_id={this.props.summoner_id} />
+                    <Spectate queue_convert={this.props.queue_convert} theme={theme} region={this.props.pageStore.props.region} summoner_id={this.props.summoner_id} />
                 </Modal>
                 <span
                     style={{cursor:'pointer'}}
