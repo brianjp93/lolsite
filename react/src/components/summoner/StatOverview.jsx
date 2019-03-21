@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {BarChart, Bar, XAxis, YAxis, Tooltip} from 'recharts'
+import {BarChart, Bar, XAxis, YAxis, Tooltip, Cell} from 'recharts'
 import api from '../../api/api'
 import numeral from 'numeral'
 
@@ -495,7 +495,23 @@ class StatOverview extends Component {
                             }} />
                             {[...this.state.selected].map((key) => {
                                 return (
-                                    <Bar key={`${key}-bar`} dataKey={key} fill="#5e7ca7" />
+                                    <Bar key={`${key}-bar`} dataKey={key} >
+                                        {this.getData().map(part => {
+                                            var mypart = this.props.parent.getMyPart()
+                                            if (part.account_id === mypart.account_id) {
+                                                return <Cell key={`${match.id}-${part._id}-cell`} fill='#a7bed0' />
+                                            }
+                                            else if (part.team_id === mypart.team_id) {
+                                                return <Cell key={`${match.id}-${part._id}-cell`} fill="#437296" />
+                                            }
+                                            else if (part.team_id !== mypart.team_id) {
+                                                return <Cell key={`${match.id}-${part._id}-cell`} fill="#954e4e" />
+                                            }
+                                            else {
+                                                return <Cell key={`${match.id}-${part._id}-cell`} fill="#5e7ca7" />
+                                            }
+                                        })}
+                                    </Bar>
                                 )
                             })}
                         </BarChart>
