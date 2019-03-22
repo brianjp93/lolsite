@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import NavBar from '../general/NavBar'
 import MatchCard from './MatchCard'
 import Spectate from './Spectate'
+import numeral from 'numeral'
 
 import api from '../../api/api'
 import Footer from '../general/Footer'
@@ -49,6 +50,7 @@ class Summoner extends Component {
             match_ids: new Set(),
             count: 10,
             next_page: 2,
+            last_refresh: null,
 
             is_requesting_page: false,
             is_requesting_next_page: false,
@@ -84,6 +86,8 @@ class Summoner extends Component {
             this.getSummonerPage(() => {
                 this.getPositions()
                 this.checkForLiveGame()
+                var now = new Date().getTime()
+                this.setState({last_refresh: now})
             })
             this.setQueueDict()
         }
@@ -103,6 +107,8 @@ class Summoner extends Component {
                     this.getSummonerPage(() => {
                         this.getPositions()
                         this.checkForLiveGame()
+                        var now = new Date().getTime()
+                        this.setState({last_refresh: now})
                     })
                 }
                 else {
@@ -212,9 +218,12 @@ class Summoner extends Component {
         this.setState({
             match_ids: new Set(),
             next_page: 2,
-            is_reloading_matches: true
+            is_reloading_matches: true,
         }, () => {
-            this.getSummonerPage(this.getPositions)
+            this.getSummonerPage(() => {
+                this.getPositions()
+                this.setState({last_refresh: new Date().getTime()})
+            })
         })
     }
     getNextPage() {
@@ -325,7 +334,13 @@ class Summoner extends Component {
                             <div className="col l10 offset-l1">
                                 <div style={{width:400, display:'inline-block'}}>
                                     {this.state.summoner.name !== undefined &&
-                                        <SummonerCard positions={this.state.positions} icon={this.state.icon} summoner={this.state.summoner} store={this.props.store} pageStore={this} />
+                                        <SummonerCard
+                                            last_refresh={this.state.last_refresh}
+                                            positions={this.state.positions}
+                                            icon={this.state.icon}
+                                            summoner={this.state.summoner}
+                                            store={this.props.store}
+                                            pageStore={this} />
                                     }
                                 </div>
                                 
@@ -408,12 +423,30 @@ class SummonerCard extends Component {
     constructor(props) {
         super(props)
 
-        this.state = {}
+        this.state = {
+            has_been_set: false,
+        }
 
         this.positionalRankImage = this.positionalRankImage.bind(this)
         this.generalRankImage = this.generalRankImage.bind(this)
         this.soloPositions = this.soloPositions.bind(this)
         this.miniSeries = this.miniSeries.bind(this)
+        this.setRefreshTime = this.setRefreshTime.bind(this)
+    }
+    componentDidMount() {
+        this.setRefreshTime()
+        this.refresh_timer = setInterval(this.setRefreshTime, 60000)
+    }
+    componentWillUnmount() {
+        clearInterval(this.refresh_timer)
+    }
+    componentDidUpdate(prevProps) {
+        if (!this.state.has_been_set) {
+            this.setRefreshTime()
+        }
+        else if (this.props.last_refresh !== prevProps.last_refresh) {
+            this.setRefreshTime()
+        }
     }
     positionalRankImage(position, tier) {
         position = position.toLowerCase()
@@ -469,6 +502,31 @@ class SummonerCard extends Component {
             }
         }
         return pos
+    }
+    setRefreshTime() {
+        var now = new Date().getTime()
+        var last_refresh = this.props.pageStore.state.last_refresh
+        if (last_refresh !== null) {
+            var diff = Math.round((now - last_refresh) / 1000)
+            var minutes = Math.floor(diff / 60)
+            if (minutes > 0) {
+                if (minutes === 1) {
+                    this.refresh_time.innerHTML = `a minute ago`
+                }
+                else if (minutes > 99) {
+                    this.refresh_time.innerHTML = 'a long time ago'
+                }
+                else {
+                    this.refresh_time.innerHTML = `${minutes} minutes ago`
+                }
+            }
+            else {
+                this.refresh_time.innerHTML = 'a moment ago'
+            }
+            if (!this.state.has_been_set) {
+                this.setState({has_been_set: true})
+            }
+        }
     }
     miniSeries(progress) {
         var letters = []
@@ -534,10 +592,15 @@ class SummonerCard extends Component {
         }
         return out
     }
+    getWinRate(wins, losses) {
+        var rate = wins / (wins + losses)
+        return rate * 100
+    }
     render() {
         var reload_attrs = {
             disabled: this.props.pageStore.state.is_reloading_matches ? true: false,
         }
+        let pageStore = this.props.pageStore
         return (
             <span>
                 <div style={{position:'relative', padding:18}} className={`card-panel ${this.props.store.state.theme}`}>
@@ -571,7 +634,27 @@ class SummonerCard extends Component {
                         </Spectate.SpectateModal>
                     </div>
 
-                    <span style={{position: 'absolute', right:2, top:2}}>
+                    <span style={{position: 'absolute', right: 2, top: 2}}>
+                        <small
+                            className='unselectable'
+                            style={{
+                                display: 'inline-block',
+                                verticalAlign: 'top',
+                                marginRight: 3,
+                                borderStyle: 'solid',
+                                borderWidth: 1,
+                                padding: 2,
+                                borderRadius: 3,
+                                borderColor: '#ffffff40',
+                                color: '#ffffff70',
+                                marginTop: 3,
+                            }}>
+                            {pageStore.last_refresh !== null &&
+                                <span>Last Refresh:{' '}</span>
+                            }
+                            <span ref={(elt) => {this.refresh_time = elt}} style={{fontWeight:'bold'}} >
+                            </span>
+                        </small>
                         <button {...reload_attrs}
                             className="dark btn-small"
                             onClick={this.props.pageStore.reloadMatches} >
@@ -610,7 +693,8 @@ class SummonerCard extends Component {
                                                 </span>
                                                 <br/>
                                                 <small>
-                                                    {pos.wins} wins / {pos.losses} losses
+                                                    <span style={{fontWeight: 'bold'}}>{`${numeral(this.getWinRate(pos.wins, pos.losses)).format('0.0')}%`}</span>{' '}-{' '}
+                                                    {pos.wins}W / {pos.losses}L
                                                 </small>
                                             </div>
                                             <div style={{
@@ -654,7 +738,8 @@ class SummonerCard extends Component {
                                                 </span>
                                                 <br/>
                                                 <small>
-                                                    {pos.wins} wins / {pos.losses} losses
+                                                    <span style={{fontWeight: 'bold'}}>{`${numeral(this.getWinRate(pos.wins, pos.losses)).format('0.0')}%`}</span>{' '}-{' '}
+                                                    {pos.wins}W / {pos.losses}L
                                                 </small>
                                             </div>
                                             <div style={{
@@ -689,6 +774,7 @@ class SummonerCard extends Component {
 SummonerCard.propTypes = {
     store: PropTypes.any,
     pageStore: PropTypes.any,
+    last_refresh: PropTypes.any,
 }
 
 
