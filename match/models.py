@@ -5,6 +5,8 @@ from data.models import ReforgedTree, ReforgedRune
 from data.models import Item
 from data.models import SummonerSpell
 
+from data import constants as dc
+
 import pytz
 
 
@@ -76,6 +78,27 @@ class Match(models.Model):
         """
         dt = timezone.datetime.fromtimestamp(self.game_creation // 1000, tz=pytz.utc)
         return dt
+
+    def tier_average(self):
+        """Compute tier average.
+        """
+        major = self.major
+        try:
+            tiers = getattr(dc, f'TIERS_{major}')
+        except:
+            output = ''
+        else:
+            all_tiers = []
+            for part in self.participants.all():
+                if part.highest_achieved_season_tier:
+                    index = tiers.index(part.highest_achieved_season_tier.lower())
+                    all_tiers.append(index)
+            if len(all_tiers) > 0:
+                output_index = int(sum(all_tiers) / len(all_tiers))
+                output = tiers[output_index]
+            else:
+                output = ''
+        return output.title()
 
 class Participant(models.Model):
     match = models.ForeignKey('Match', on_delete=models.CASCADE, related_name='participants')

@@ -932,6 +932,7 @@ class MatchCard extends Component {
                                     padding: '0 4px',
                                     display: 'inline-block',
                                     marginLeft: 0,
+                                    marginBottom: 0,
                                 }}
                                 className="row">
                                 <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
@@ -959,6 +960,13 @@ class MatchCard extends Component {
                                     </div>
                                 </div>
                             </div>
+                            <div style={{height: 20, textAlign: 'right'}}>
+                                {match.tier_average &&
+                                    <small style={{verticalAlign: 'top'}}>Rank Average:{' '}
+                                        <div style={{fontWeight: 'bold', display: 'inline-block', verticalAlign: 'inherit'}}>{match.tier_average}</div>
+                                    </small>
+                                }
+                            </div>
                             <div style={{width: this.state.summary_width - 50, marginLeft: -10}}>
                                 <div style={{display: 'inline-block', paddingRight:5}}>
                                     <div>
@@ -969,10 +977,10 @@ class MatchCard extends Component {
                                         <div style={{display:'inline-block', paddingLeft:4}}>
                                             <img
                                                 style={{height:20, display:'block'}}
-                                                src={mypart.spell_1_image_url} alt=""/>
+                                                src={mypart.spell_1_image_url} alt="" />
                                             <img
                                                 style={{height:20, display:'block'}}
-                                                src={mypart.spell_2_image_url} alt=""/>
+                                                src={mypart.spell_2_image_url} alt="" />
                                         </div>
                                     </div>
                                     <img
@@ -1106,7 +1114,7 @@ class MatchCard extends Component {
                             <div style={{position:'absolute', bottom:5, left:0}}>
                                 <div style={{float:'left', paddingLeft:10}}>
                                     <small style={{lineHeight:1, display:'block'}}>
-                                        {`${Math.floor(match.game_duration / 60)}:${match.game_duration % 60}`}
+                                        {`${Math.floor(match.game_duration / 60)}:${numeral(match.game_duration % 60).format('00')}`}
                                     </small>
                                     <small title={formatDatetimeFull(match.game_creation)} style={{lineHeight:1}}>
                                         {formatDatetime(match.game_creation)}

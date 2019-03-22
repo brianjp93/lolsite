@@ -161,6 +161,7 @@ def serialize_matches(match_query, account_id):
                 'queue_id': match.queue_id,
                 'major': match.major,
                 'minor': match.minor,
+                'tier_average': match.tier_average(),
             }
 
             participants = []
