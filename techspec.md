@@ -57,6 +57,32 @@ else:
     # serve react BUILD files
 ```
 
+# Memcached & Elasticache(AWS)
+
+> Some models are expensive to serialize.  Matches and Timelines have thousands of models associated with them
+> and so fully serializing them can take a noticeable length of time.  In order to combat this, I've introduced caching
+> to some functions.
+
+Here's an example of what caching looks like in one of the django views.
+
+```python
+# player/viewsapi.serialize_matches()
+
+from django.core.cache import cache
+
+for match in match_query:
+    cache_key = f'account/{account_id}/match/{match._id}'
+    cache_data = cache.get(cache_key)
+    if cache_data:
+        matches.append(cache_data)
+    else:
+        # serialize match and then cache it
+        cache.set(cache_key, match_data, None)
+```
+
+The `None` indicates that we want this cache to last indefinitely.  We can also provide an integer number of seconds that
+we would like something to be cached.
+
 # Summoner Page
 
 > When searching for a summoner, several things happen very quickly.

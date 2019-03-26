@@ -60,3 +60,8 @@ Periodic tasks will be run using SQS on AWS, and redis/celery locally.  To run t
 2. Boot up a worker node
     * In the `lolsite` project directory, run `celery worker -A lolsite -l info`
     * note that this will have to be manually restarted if changes are made to the project.
+
+
+# Other Technical Information
+
+Take a look at [techspec.md](techspec.md) for more information on how the site is ticking.
