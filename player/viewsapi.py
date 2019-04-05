@@ -27,6 +27,8 @@ from match.serializers import StatsSerializer
 
 from django.core.cache import cache
 
+from multiprocessing.dummy import Pool as ThreadPool
+
 
 @api_view(['POST'])
 def get_summoner(request, format=None):
@@ -145,13 +147,14 @@ def serialize_matches(match_query, account_id):
 
     matches = []
     match_query = match_query.prefetch_related('participants', 'teams', 'participants__stats')
-    for match in match_query:
+    cache_keys = [f'account/{account_id}/match/{match._id}' for match in match_query]
+    pool = ThreadPool(10)
+    cached = pool.map(lambda key: cache.get(key), cache_keys)
+    for i, match in enumerate(match_query):
         # match_serializer = MatchSerializer(match)
-
-        cache_key = f'account/{account_id}/match/{match._id}'
-        cache_data = cache.get(cache_key)
-        if cache_data:
-            matches.append(cache_data)
+        cache_key = cache_keys[i]
+        if cached[i]:
+            matches.append(cached[i])
         else:
             match_data = {
                 'id': match.id,

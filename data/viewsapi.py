@@ -200,8 +200,9 @@ def get_reforged_runes(request, format=None):
             data = cache_data['data']
             status_code = cache_data['status']
         else:
+            SET_CACHE = True
             if version is None:
-                pass
+                SET_CACHE = False
                 # get newest version of runes
                 tree = ReforgedTree.objects.all().order_by('-version').first()
                 version = tree.version
@@ -209,7 +210,9 @@ def get_reforged_runes(request, format=None):
             runes_data = ReforgedRuneSerializer(runes, many=True).data
             data = {'data': runes_data, 'version': version}
 
-            new_cache = {'data': data, 'status': status_code}
-            cache.set(cache_key, new_cache, cache_seconds)
+            # only cache if we actually have data
+            if data and SET_CACHE:
+                new_cache = {'data': data, 'status': status_code}
+                cache.set(cache_key, new_cache, cache_seconds)
 
     return Response(data, status=status_code)
