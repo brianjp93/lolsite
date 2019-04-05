@@ -147,14 +147,12 @@ def serialize_matches(match_query, account_id):
 
     matches = []
     match_query = match_query.prefetch_related('participants', 'teams', 'participants__stats')
-    cache_keys = [f'account/{account_id}/match/{match._id}' for match in match_query]
-    pool = ThreadPool(10)
-    cached = pool.map(lambda key: cache.get(key), cache_keys)
-    for i, match in enumerate(match_query):
+    for match in match_query:
         # match_serializer = MatchSerializer(match)
-        cache_key = cache_keys[i]
-        if cached[i]:
-            matches.append(cached[i])
+        cache_key = f'account/{account_id}/match/{match._id}'
+        cached = cache.get(cache_key)
+        if cached:
+            matches.append(cached)
         else:
             match_data = {
                 'id': match.id,
