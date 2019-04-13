@@ -1,3 +1,10 @@
+"""match.models
+"""
+# pylint: disable=C0111, bare-except, invalid-name, W0212
+# pylint: disable=R0903
+
+import pytz
+
 from django.db import models
 from django.utils import timezone
 
@@ -7,8 +14,6 @@ from data.models import SummonerSpell
 
 from data import constants as dc
 
-import pytz
-
 
 def sort_positions(positions):
     """Uses tier_sort, rank_sort and lp_sort to sort positions by descending rank.
@@ -17,7 +22,16 @@ def sort_positions(positions):
 
 
 def tier_sort(position):
-    """
+    """Returns index of a position's tier.
+
+    Parameters
+    ----------
+    position : dict
+
+    Returns
+    -------
+    int
+
     """
     tier_order = [
         'challenger', 'grandmaster', 'master',
@@ -32,7 +46,16 @@ def tier_sort(position):
 
 
 def rank_sort(position):
-    """
+    """Returns index of position's rank.
+
+    Parameters
+    ----------
+    position : dict
+
+    Returns
+    -------
+    int
+
     """
     division_order = ['i', 'ii', 'iii', 'iv', 'v']
     try:
@@ -43,9 +66,18 @@ def rank_sort(position):
 
 
 def lp_sort(position):
+    """Returns negative LP.
+
+    Parameters
+    ----------
+    position : dict
+
+    Returns
+    -------
+    int
+
     """
-    """
-    lp = 100
+    lp = 0
     try:
         lp = -position.get('league_points', position['leaguePoints'])
     except:
@@ -93,7 +125,7 @@ class Match(models.Model):
                 if part.highest_achieved_season_tier:
                     index = tiers.index(part.highest_achieved_season_tier.lower())
                     all_tiers.append(index)
-            if len(all_tiers) > 0:
+            if all_tiers:
                 output_index = int(sum(all_tiers) / len(all_tiers))
                 output = tiers[output_index]
             else:
@@ -129,7 +161,7 @@ class Participant(models.Model):
         return f'Participant(summoner_name={self.summoner_name}, match={self.match._id})'
 
     def spell_1_image_url(self):
-        """
+        """Get spell 1 image URL.
         """
         url = ''
         query = SummonerSpell.objects.filter(key=self.spell_1_id)
@@ -139,7 +171,7 @@ class Participant(models.Model):
         return url
 
     def spell_2_image_url(self):
-        """
+        """Get spell 2 image URL.
         """
         url = ''
         query = SummonerSpell.objects.filter(key=self.spell_2_id)
@@ -271,7 +303,7 @@ class Stats(models.Model):
         return f'Stats(participant={self.participant.summoner_name})'
 
     def perk_primary_style_image_url(self):
-        """
+        """Get primary perk style image URL.
         """
         url = ''
         query = ReforgedTree.objects.filter(_id=self.perk_primary_style).order_by('-version')
@@ -281,7 +313,7 @@ class Stats(models.Model):
         return url
 
     def perk_sub_style_image_url(self):
-        """
+        """Get perk sub style image URL.
         """
         url = ''
         query = ReforgedTree.objects.filter(_id=self.perk_sub_style).order_by('-version')
@@ -291,7 +323,7 @@ class Stats(models.Model):
         return url
 
     def get_perk_image(self, number):
-        """
+        """Get perk image URL.
         """
         url = ''
         try:
@@ -324,7 +356,7 @@ class Stats(models.Model):
         return self.get_perk_image(5)
 
     def get_item_image_url(self, number, version=None):
-        """
+        """Get item image URL.
         """
         url = ''
         try:
@@ -365,7 +397,9 @@ class Stats(models.Model):
 
 
 class Timeline(models.Model):
-    participant = models.ForeignKey('Participant', on_delete=models.CASCADE, related_name='timelines')
+    participant = models.ForeignKey(
+        'Participant', on_delete=models.CASCADE, related_name='timelines'
+    )
     key = models.CharField(max_length=256, default='', blank=True)
     value = models.FloatField(default=0, blank=True)
     start = models.IntegerField()
@@ -392,7 +426,8 @@ class Team(models.Model):
     rift_herald_kills = models.IntegerField(default=0, blank=True)
     tower_kills = models.IntegerField(default=0, blank=True)
     vilemaw_kills = models.IntegerField(default=0, blank=True)
-    win = models.BooleanField(default=False, blank=True) # this is a string field in the api but it should be a boolean
+    # this is a string field in the api but it should be a boolean?
+    win = models.BooleanField(default=False, blank=True)
     win_str = models.CharField(default='', blank=True, db_index=True, max_length=128)
 
 
@@ -419,7 +454,9 @@ class AdvancedTimeline(models.Model):
         return f'AdvancedTimeline(match={self.match._id})'
 
 class Frame(models.Model):
-    timeline = models.ForeignKey('AdvancedTimeline', on_delete=models.CASCADE, related_name='frames')
+    timeline = models.ForeignKey(
+        'AdvancedTimeline', on_delete=models.CASCADE, related_name='frames'
+    )
     timestamp = models.IntegerField(null=True, blank=True, db_index=True)
 
     def __str__(self):
@@ -441,7 +478,10 @@ class ParticipantFrame(models.Model):
     y = models.IntegerField(default=0, blank=True)
 
     def __str__(self):
-        return f'ParticipantFrame(match={self.frame.timeline.match._id}, frame={self.frame.id}, participant_id={self.participant_id})'
+        return (
+            f'ParticipantFrame(match={self.frame.timeline.match._id},' +
+            ' frame={self.frame.id}, participant_id={self.participant_id})'
+        )
 
 
 class Event(models.Model):
@@ -481,11 +521,17 @@ class Event(models.Model):
     tower_type = models.CharField(max_length=128, null=True, blank=True)
 
     def __str__(self):
-        return f'Event(_type={self._type}, participant_id={self.participant_id}, timestamp={self.timestamp})'
+        return (
+            f'Event(_type={self._type}, ' +
+            'participant_id={self.participant_id},' +
+            ' timestamp={self.timestamp})'
+        )
 
 
 class AssistingParticipants(models.Model):
-    event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='assistingparticipants')
+    event = models.ForeignKey(
+        'Event', on_delete=models.CASCADE, related_name='assistingparticipants'
+    )
     participant_id = models.IntegerField(default=0, blank=True)
 
     def __str__(self):
