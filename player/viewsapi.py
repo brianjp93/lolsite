@@ -1,33 +1,27 @@
+"""player.viewsapi
+"""
+# pylint: disable=W0613, W0622, W0212, bare-except, broad-except
+
+
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from django.utils import timezone
+from django.core.cache import cache
 
 from player import tasks as pt
 
-from .models import Summoner
-from .models import RankCheckpoint, RankPosition
-from .serializers import SummonerSerializer
-from .serializers import RankPositionSerializer
-
-from data import constants
 from data.models import ProfileIcon, Champion
 from data.serializers import ProfileIconSerializer
 
 from match import tasks as mt
-from match.tasks import get_riot_api
-from match.models import Match, Participant
-from match.models import Timeline, Team, Ban
+from match.models import Match
 
 from match.models import sort_positions
 
-from match.serializers import MatchSerializer, ParticipantSerializer
-from match.serializers import TimelineSerializer, TeamSerializer, BanSerializer
-from match.serializers import StatsSerializer
-
-from django.core.cache import cache
-
-from multiprocessing.dummy import Pool as ThreadPool
+from .models import Summoner
+from .serializers import SummonerSerializer
+from .serializers import RankPositionSerializer
 
 
 @api_view(['POST'])
@@ -127,7 +121,7 @@ def match_filter(request, account_id=None):
     return matches
 
 
-def serialize_matches(match_query, account_id):
+def serialize_matches(match_query, account_id): # pylint: disable=too-many-statements, too-many-branches
     """Precise serializer for a match_query.
 
     Parameters
@@ -173,13 +167,19 @@ def serialize_matches(match_query, account_id):
                 if participant.spell_1_id in spell_cache:
                     spell_1 = spell_cache[participant.spell_1_id]
                 else:
-                    spell_cache[participant.spell_1_id] = {'_id': participant.spell_1_id, 'image_url': participant.spell_1_image_url()}
+                    spell_cache[participant.spell_1_id] = {
+                        '_id': participant.spell_1_id,
+                        'image_url': participant.spell_1_image_url()
+                    }
                     spell_1 = spell_cache[participant.spell_1_id]
 
                 if participant.spell_2_id in spell_cache:
                     spell_2 = spell_cache[participant.spell_2_id]
                 else:
-                    spell_cache[participant.spell_2_id] = {'_id': participant.spell_2_id, 'image_url': participant.spell_2_image_url()}
+                    spell_cache[participant.spell_2_id] = {
+                        '_id': participant.spell_2_id,
+                        'image_url': participant.spell_2_image_url()
+                    }
                     spell_2 = spell_cache[participant.spell_2_id]
 
                 participant_data = {
@@ -196,7 +196,9 @@ def serialize_matches(match_query, account_id):
                     'spell_2_image_url': spell_2['image_url'],
                 }
 
-                champ_query = Champion.objects.filter(key=participant.champion_id, language='en_US').order_by('-version')
+                champ_query = Champion.objects.filter(
+                    key=participant.champion_id, language='en_US'
+                ).order_by('-version')
                 if champ_query.exists():
                     champ = champ_query.first()
                     participant_data['champion'] = {
@@ -283,19 +285,28 @@ def serialize_matches(match_query, account_id):
                         if stats.perk_primary_style in perk_tree_cache:
                             perk_primary_style = perk_tree_cache[stats.perk_primary_style]
                         else:
-                            perk_tree_cache[stats.perk_primary_style] = {'_id': stats.perk_primary_style, 'image_url': stats.perk_primary_style_image_url()}
+                            perk_tree_cache[stats.perk_primary_style] = {
+                                '_id': stats.perk_primary_style,
+                                'image_url': stats.perk_primary_style_image_url()
+                            }
                             perk_primary_style = perk_tree_cache[stats.perk_primary_style]
 
                         if stats.perk_sub_style in perk_tree_cache:
                             perk_sub_style = perk_tree_cache[stats.perk_sub_style]
                         else:
-                            perk_tree_cache[stats.perk_sub_style] = {'_id': stats.perk_sub_style, 'image_url': stats.perk_sub_style_image_url()}
+                            perk_tree_cache[stats.perk_sub_style] = {
+                                '_id': stats.perk_sub_style,
+                                'image_url': stats.perk_sub_style_image_url()
+                            }
                             perk_sub_style = perk_tree_cache[stats.perk_sub_style]
 
                         if stats.perk_0 in perk_cache:
                             perk_0 = perk_cache[stats.perk_0]
                         else:
-                            perk_cache[stats.perk_0] = {'_id': stats.perk_0, 'image_url': stats.perk_0_image_url()}
+                            perk_cache[stats.perk_0] = {
+                                '_id': stats.perk_0,
+                                'image_url': stats.perk_0_image_url()
+                            }
                             perk_0 = perk_cache[stats.perk_0]
 
                         stats_data = {
@@ -479,7 +490,9 @@ def get_summoner_page(request, format=None):
 
             rankcheckpoint = summoner.get_newest_rank_checkpoint()
             if rankcheckpoint:
-                rank_positions = RankPositionSerializer(rankcheckpoint.positions.all(), many=True).data
+                rank_positions = RankPositionSerializer(
+                    rankcheckpoint.positions.all(), many=True
+                ).data
                 rank_positions = sort_positions(rank_positions)
             else:
                 rank_positions = []
@@ -502,7 +515,11 @@ def get_summoner_page(request, format=None):
                 if after_index is not None:
                     start_index = after_index
                 end_index = start_index + count
-                mt.import_recent_matches(start_index, end_index, summoner.account_id, region, **kwargs)
+                mt.import_recent_matches(
+                    start_index, end_index,
+                    summoner.account_id, region,
+                    **kwargs
+                )
                 if queue is None and after_index in [None, 0]:
                     summoner.last_summoner_page_import = timezone.now()
                     summoner.save()
@@ -528,21 +545,31 @@ def get_summoner_page(request, format=None):
 
 def participant_sort(part):
     """assign values to roles to help sorting
+
+    Parameters
+    ----------
+    part : dict
+
+    Returns
+    -------
+    int
+
     """
+    out = 0
     if part['lane'] == 'TOP':
-        return 0
+        out = 0
     elif part['lane'] == 'JUNGLE':
-        return 5
+        out = 5
     elif part['lane'] == 'MIDDLE':
-        return 10
+        out = 10
     elif part['lane'] == 'BOTTOM':
         if part['role'] == 'DUO_CARRY':
-            return 15
+            out = 15
         elif part['role'] == 'DUO_SUPPORT':
-            return 16
+            out = 16
         else:
-            return 15
-    return 0
+            out = 15
+    return out
 
 
 @api_view(['POST'])
@@ -578,13 +605,13 @@ def get_positions(request, format=None):
             # pos_data.sort(key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
             pos_data = sort_positions(pos_data)
             data = {'data': pos_data}
-            status = 200
+            status_code = 200
         except Exception as error:
             print(error)
             data = {'data': []}
-            status = 200
+            status_code = 200
     else:
         data = {'data': []}
-        status = 200
+        status_code = 200
 
     return Response(data, status=status_code)
