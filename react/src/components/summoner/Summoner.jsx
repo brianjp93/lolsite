@@ -314,103 +314,105 @@ class Summoner extends Component {
     render() {
         return (
             <div>
-                <NavBar store={this.props.store} region={this.props.region} />
-                {this.state.is_requesting_page &&
-                    <div>
-                        <div className="row">
-                            <div className="col m3">
-                                <div className={`card-panel ${this.props.store.state.theme}`}>
-                                    <div style={{textAlign:'center'}}>
-                                        LOADING DATA...
+                <div style={{minHeight: 1200}}>
+                    <NavBar store={this.props.store} region={this.props.region} />
+                    {this.state.is_requesting_page &&
+                        <div>
+                            <div className="row">
+                                <div className="col m3">
+                                    <div className={`card-panel ${this.props.store.state.theme}`}>
+                                        <div style={{textAlign:'center'}}>
+                                            LOADING DATA...
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                }
-                {!this.state.is_requesting_page &&
-                    <div>
-                        <div className="row" style={{marginBottom: 0}}>
-                            <div className="col l10 offset-l1">
-                                <div style={{width:400, display:'inline-block'}}>
-                                    {this.state.summoner.name !== undefined &&
-                                        <SummonerCard
-                                            last_refresh={this.state.last_refresh}
-                                            positions={this.state.positions}
-                                            icon={this.state.icon}
-                                            summoner={this.state.summoner}
-                                            store={this.props.store}
-                                            pageStore={this} />
-                                    }
-                                </div>
-                                
-                                <div style={{display:'inline-block', verticalAlign:'top'}}>
-                                    <RecentlyPlayedWith
-                                        matches={this.state.matches}
-                                        store={this.props.store}
-                                        pageStore={this}
-                                        summoner={this.state.summoner} />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className='row' >
-                            <div
-                                style={{paddingTop:15, background: '#ffffff14', borderRadius: 5}}
-                                className="horizontal-scroll quiet-scroll col l10 offset-l1 m12 s12"
-                                ref={(elt) => {this.match_list = elt}}
-                                onWheel={(event) => {
-                                    if (!this.props.store.state.ignore_horizontal) {
-                                        return convertVerticalScroll(event)
-                                    }
-                                    return null
-                                }}
-                                onScroll={(event) => {
-                                    setTimeout(() => {
-                                        var epoch = (new Date()).getTime()
-                                        if (epoch - this.state.last_scroll_time > 1000) {
-                                            this.setState({last_scroll_time: epoch, scroll_left: this.match_list.scrollLeft})
+                    }
+                    {!this.state.is_requesting_page &&
+                        <div>
+                            <div className="row" style={{marginBottom: 0}}>
+                                <div className="col l10 offset-l1">
+                                    <div style={{width:400, display:'inline-block'}}>
+                                        {this.state.summoner.name !== undefined &&
+                                            <SummonerCard
+                                                last_refresh={this.state.last_refresh}
+                                                positions={this.state.positions}
+                                                icon={this.state.icon}
+                                                summoner={this.state.summoner}
+                                                store={this.props.store}
+                                                pageStore={this} />
                                         }
-                                    }, 1000)
-                                }} >
+                                    </div>
                                     
-                                {/* MATCH CARD */}
-                                {this.state.matches.map((match, key) => {
-                                    return (
-                                        <MatchCard
-                                            key={`${key}-${match._id}`}
-                                            index={key}
+                                    <div style={{display:'inline-block', verticalAlign:'top'}}>
+                                        <RecentlyPlayedWith
+                                            matches={this.state.matches}
                                             store={this.props.store}
                                             pageStore={this}
-                                            match={match} />
-                                    )
-                                })}
+                                            summoner={this.state.summoner} />
+                                    </div>
+                                </div>
+                            </div>
 
+                            <div className='row' >
                                 <div
-                                    style={{
-                                        width:100, height: this.state.match_card_height,
-                                        display: 'inline-block',
-                                        margin: '0px 10px 10px 10px',
-                                        paddingTop:15,
-                                        verticalAlign: 'top',
-                                        cursor: 'pointer',
-                                        position: 'relative',
+                                    style={{paddingTop:15, background: '#ffffff14', borderRadius: 5}}
+                                    className="horizontal-scroll quiet-scroll col l10 offset-l1 m12 s12"
+                                    ref={(elt) => {this.match_list = elt}}
+                                    onWheel={(event) => {
+                                        if (!this.props.store.state.ignore_horizontal) {
+                                            return convertVerticalScroll(event)
+                                        }
+                                        return null
                                     }}
-                                    onClick={this.getNextPage}
-                                    className={`card-panel ${this.props.store.state.theme}`}>
-                                    <div style={{height: '100%', paddingTop: 100, textAlign: 'center'}}>
-                                        {this.state.is_requesting_next_page &&
-                                            <span>Loading...</span>
-                                        }
-                                        {!this.state.is_requesting_next_page &&
-                                            <span style={{fontWeight:'bold', textDecoration:'underline'}}>More</span>
-                                        }
+                                    onScroll={(event) => {
+                                        setTimeout(() => {
+                                            var epoch = (new Date()).getTime()
+                                            if (epoch - this.state.last_scroll_time > 1000) {
+                                                this.setState({last_scroll_time: epoch, scroll_left: this.match_list.scrollLeft})
+                                            }
+                                        }, 1000)
+                                    }} >
+                                        
+                                    {/* MATCH CARD */}
+                                    {this.state.matches.map((match, key) => {
+                                        return (
+                                            <MatchCard
+                                                key={`${key}-${match._id}`}
+                                                index={key}
+                                                store={this.props.store}
+                                                pageStore={this}
+                                                match={match} />
+                                        )
+                                    })}
+
+                                    <div
+                                        style={{
+                                            width:100, height: this.state.match_card_height,
+                                            display: 'inline-block',
+                                            margin: '0px 10px 10px 10px',
+                                            paddingTop:15,
+                                            verticalAlign: 'top',
+                                            cursor: 'pointer',
+                                            position: 'relative',
+                                        }}
+                                        onClick={this.getNextPage}
+                                        className={`card-panel ${this.props.store.state.theme}`}>
+                                        <div style={{height: '100%', paddingTop: 100, textAlign: 'center'}}>
+                                            {this.state.is_requesting_next_page &&
+                                                <span>Loading...</span>
+                                            }
+                                            {!this.state.is_requesting_next_page &&
+                                                <span style={{fontWeight:'bold', textDecoration:'underline'}}>More</span>
+                                            }
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
 
                 <Footer store={this.props.store} />
             </div>

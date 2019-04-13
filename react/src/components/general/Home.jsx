@@ -87,61 +87,63 @@ class Home extends Component {
         }
         return (
             <div>
-                <NavBar store={this.props.store} />
-                <div style={{height:100}}></div>
-                <div className="row">
-                    <div style={{height:150}} className="col m3 offset-m4">
-                        <span>
-                            <blockquote
-                                title={this.state.message.hidden_message ? this.state.message.hidden_message : ''}
-                                style={{display:'none'}}
-                                ref={(elt) => {this.quote = elt}}
-                                className={`${this.props.store.state.theme}`}>
-                                <span>
-                                    {this.state.message.message ? this.state.message.message : ''}
-                                </span>
-                                {['', undefined].indexOf(this.state.message.author) === -1 &&
+                <div style={{minHeight: 1200}}>
+                    <NavBar store={this.props.store} />
+                    <div style={{height:100}}></div>
+                    <div className="row">
+                        <div style={{height:150}} className="col m3 offset-m4">
+                            <span>
+                                <blockquote
+                                    title={this.state.message.hidden_message ? this.state.message.hidden_message : ''}
+                                    style={{display:'none'}}
+                                    ref={(elt) => {this.quote = elt}}
+                                    className={`${this.props.store.state.theme}`}>
                                     <span>
-                                        <br/>
-                                        <small>- {this.state.message.author}</small>
+                                        {this.state.message.message ? this.state.message.message : ''}
                                     </span>
-                                }
-                            </blockquote>
-                        </span>
-                    </div>
-                </div>
-                <div style={{padding: '0px 10px'}} className="row">
-                    <div className="col m1 s2 offset-m3">
-                        <div className={`input-field ${this.props.store.state.theme}`}>
-                            <select
-                                onChange={(event) => this.setState({region_selected: event.target.value})}
-                                value={this.state.region_selected}
-                            >
-                                {this.state.regions.map((region, key) => {
-                                    return (
-                                        <option
-                                            key={key}
-                                            value={region}
-                                        >
-                                            {region}
-                                        </option>
-                                    )
-                                })}
-                            </select>
-                            <label>Region</label>
+                                    {['', undefined].indexOf(this.state.message.author) === -1 &&
+                                        <span>
+                                            <br/>
+                                            <small>- {this.state.message.author}</small>
+                                        </span>
+                                    }
+                                </blockquote>
+                            </span>
                         </div>
                     </div>
-                    <div className="col m5 s10">
-                        <div className="input-field">
-                            <input
-                                className={this.props.store.state.theme}
-                                id='summoner-search'
-                                type="text"
-                                value={this.state.summoner_name}
-                                onChange={(event) => this.setState({summoner_name: event.target.value})}
-                                onKeyDown={this.handleKeyDown}
-                            />
-                            <label htmlFor="summoner-search">Summoner</label>
+                    <div style={{padding: '0px 10px'}} className="row">
+                        <div className="col m1 s2 offset-m3">
+                            <div className={`input-field ${this.props.store.state.theme}`}>
+                                <select
+                                    onChange={(event) => this.setState({region_selected: event.target.value})}
+                                    value={this.state.region_selected}
+                                >
+                                    {this.state.regions.map((region, key) => {
+                                        return (
+                                            <option
+                                                key={key}
+                                                value={region}
+                                            >
+                                                {region}
+                                            </option>
+                                        )
+                                    })}
+                                </select>
+                                <label>Region</label>
+                            </div>
+                        </div>
+                        <div className="col m5 s10">
+                            <div className="input-field">
+                                <input
+                                    className={this.props.store.state.theme}
+                                    id='summoner-search'
+                                    type="text"
+                                    value={this.state.summoner_name}
+                                    onChange={(event) => this.setState({summoner_name: event.target.value})}
+                                    onKeyDown={this.handleKeyDown}
+                                />
+                                <label htmlFor="summoner-search">Summoner</label>
+                            </div>
                         </div>
                     </div>
                 </div>

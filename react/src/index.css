@@ -67,3 +67,10 @@ hr {
     -ms-user-select: none; /* IE10+/Edge */
     user-select: none; /* Standard */
 }
+
+::selection {
+  background: #ffb7b7; /* WebKit/Blink Browsers */
+}
+::-moz-selection {
+  background: #ffb7b7; /* Gecko Browsers */
+}
