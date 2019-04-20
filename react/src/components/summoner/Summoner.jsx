@@ -18,24 +18,21 @@ function convertVerticalScroll(event)  {
         if (elt.scrollLeft === 0) {
             // comment out to revert to vertical scroll when we hit the left edge
             elt.scrollLeft += delta
-            event.preventDefault()
         }
         else {
             elt.scrollLeft += delta
-            event.preventDefault()
         }
     }
     else {
         if ((elt.scrollLeft + elt.clientWidth) === elt.scrollWidth) {
             // comment out to revert to vertical scroll when we hit the right edge
             elt.scrollLeft += delta
-            event.preventDefault()
         }
         else {
             elt.scrollLeft += delta
-            event.preventDefault()
         }
     }
+    event.preventDefault()
 }
 
 
@@ -94,7 +91,6 @@ class Summoner extends Component {
         else {
             setTimeout(this.checkForLiveGame, 100)
         }
-
         // this.live_game_check_interval = window.setInterval(this.checkForLiveGame, 120 * 1000)
     }
     componentDidUpdate(prevProps, prevState) {
@@ -120,6 +116,8 @@ class Summoner extends Component {
     componentWillUnmount() {
         // save the current state into our store
         this.saveStateToStore(this.state)
+
+        this.match_list.removeEventListener('wheel', convertVerticalScroll)
 
         // window.clearInterval(this.live_game_check_interval)
     }
@@ -359,13 +357,18 @@ class Summoner extends Component {
                                 <div
                                     style={{paddingTop:15, background: '#ffffff14', borderRadius: 5}}
                                     className="horizontal-scroll quiet-scroll col l10 offset-l1 m12 s12"
-                                    ref={(elt) => {this.match_list = elt}}
-                                    onWheel={(event) => {
-                                        if (!this.props.store.state.ignore_horizontal) {
-                                            return convertVerticalScroll(event)
-                                        }
-                                        return null
+                                    ref={(elt) => {
+                                        this.match_list = elt
+                                        try {
+                                            elt.addEventListener('wheel', convertVerticalScroll, {passive: false})
+                                        } catch (error) {}
                                     }}
+                                    // onWheel={(event) => {
+                                    //     if (!this.props.store.state.ignore_horizontal) {
+                                    //         return convertVerticalScroll(event)
+                                    //     }
+                                    //     return false
+                                    // }}
                                     onScroll={(event) => {
                                         setTimeout(() => {
                                             var epoch = (new Date()).getTime()
@@ -404,7 +407,7 @@ class Summoner extends Component {
                                                 <span>Loading...</span>
                                             }
                                             {!this.state.is_requesting_next_page &&
-                                                <span style={{fontWeight:'bold', textDecoration:'underline'}}>More</span>
+                                                <span style={{fontWeight: 'bold', textDecoration: 'underline'}}>More</span>
                                             }
                                         </div>
                                     </div>
