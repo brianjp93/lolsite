@@ -76,6 +76,7 @@ class Summoner extends Component {
         this.loadStateFromStore = this.loadStateFromStore.bind(this)
         this.getSpectate = this.getSpectate.bind(this)
         this.checkForLiveGame = this.checkForLiveGame.bind(this)
+        this.handleWheel = this.handleWheel.bind(this)
     }
     componentDidMount() {
         var first_load = this.loadStateFromStore()
@@ -117,9 +118,15 @@ class Summoner extends Component {
         // save the current state into our store
         this.saveStateToStore(this.state)
 
-        this.match_list.removeEventListener('wheel', convertVerticalScroll)
+        this.match_list.removeEventListener('wheel', this.handleWheel)
 
         // window.clearInterval(this.live_game_check_interval)
+    }
+    handleWheel(event) {
+        if (!this.props.store.state.ignore_horizontal) {
+            return convertVerticalScroll(event)
+        }
+        return null
     }
     saveStateToStore(state) {
         var new_summoners = this.props.store.state.summoners
@@ -360,15 +367,9 @@ class Summoner extends Component {
                                     ref={(elt) => {
                                         this.match_list = elt
                                         try {
-                                            elt.addEventListener('wheel', convertVerticalScroll, {passive: false})
+                                            elt.addEventListener('wheel', this.handleWheel, {passive: false})
                                         } catch (error) {}
                                     }}
-                                    // onWheel={(event) => {
-                                    //     if (!this.props.store.state.ignore_horizontal) {
-                                    //         return convertVerticalScroll(event)
-                                    //     }
-                                    //     return false
-                                    // }}
                                     onScroll={(event) => {
                                         setTimeout(() => {
                                             var epoch = (new Date()).getTime()
