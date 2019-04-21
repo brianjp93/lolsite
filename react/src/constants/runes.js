@@ -192,7 +192,7 @@ var RUNEDATA = {
       "name": "Transcendence",
       "perkVars": 1,
       "perkDesc": [
-        "Total adaptive stat gained"
+        "Total Adaptive Stat Gained"
       ],
       "perkFormat": ["{0}"]
     },
@@ -211,7 +211,7 @@ var RUNEDATA = {
       "name": "Nullifying Orb",
       "perkVars": 1,
       "perkDesc": [
-        "Total shield granted"
+        "Total Shield Granted"
       ],
       "perkFormat": ["{0}"]
     },
@@ -220,7 +220,7 @@ var RUNEDATA = {
       "name": "Manaflow Band",
       "perkVars": 2,
       "perkDesc": [
-        "Total resource refunded",
+        "Total Resource Refunded",
         "Total Mana Restored",
       ],
       "perkFormat": ["{0}", "{0}"]
@@ -239,7 +239,7 @@ var RUNEDATA = {
       "name": "Phase Rush",
       "perkVars": 1,
       "perkDesc": [
-        "Total activations"
+        "Total Activations"
       ],
       "perkFormat": ["{0}"]
     },
@@ -257,7 +257,7 @@ var RUNEDATA = {
       "name": "Absolute Focus",
       "perkVars": 2,
       "perkDesc": [
-        "Total time active"
+        "Total Time Active"
       ],
       "perkFormat": ["{0}:{1}"]
     },
@@ -329,7 +329,7 @@ var RUNEDATA = {
       "name": "Magical Footwear",
       "perkVars": 2,
       "perkDesc": [
-        "Boots Arival Time"
+        "Boots Arrival Time"
       ],
       "perkFormat": ["{0}:{1}"]
     },
@@ -478,7 +478,7 @@ var RUNEDATA = {
       "name": "Iron Skin",
       "perkVars": 1,
       "perkDesc": [
-        "Percent of game active"
+        "Percent of Game Active"
       ],
       "perkFormat": ["{0}"]
     },
