@@ -126,7 +126,9 @@ class Summoner extends Component {
         if (!this.props.store.state.ignore_horizontal) {
             return convertVerticalScroll(event)
         }
-        return null
+        else {
+            return event
+        }
     }
     saveStateToStore(state) {
         var new_summoners = this.props.store.state.summoners
