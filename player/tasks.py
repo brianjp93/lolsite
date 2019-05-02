@@ -111,7 +111,7 @@ def import_positions(summoner_id, threshold_days=None):
 
     api = get_riot_api()
     region = summoner.region
-    r = api.league.positions(summoner._id, region)
+    r = api.league.entries(summoner._id, region)
     if r.status_code >= 200 and r.status_code < 300:
         positions = r.json()
         create_new = False
@@ -126,7 +126,6 @@ def import_positions(summoner_id, threshold_days=None):
                         'queue_type': pos['queueType'],
                         'rank': pos['rank'],
                         'tier': pos['tier'],
-                        'position': pos['position'],
                         'series_progress': pos.get('miniSeries', {}).get('progress', None),
                     }
                     query = rankcheckpoint.positions.get(**attrs)
@@ -149,7 +148,6 @@ def import_positions(summoner_id, threshold_days=None):
                     'queue_type': pos['queueType'],
                     'rank': pos['rank'],
                     'tier': pos['tier'],
-                    'position': pos['position'],
                     'hot_streak': pos['hotStreak'],
                     'fresh_blood': pos['freshBlood'],
                     'inactive': pos['inactive'],
