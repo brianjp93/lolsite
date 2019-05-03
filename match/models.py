@@ -12,7 +12,7 @@ from data.models import ReforgedTree, ReforgedRune
 from data.models import Item
 from data.models import SummonerSpell
 
-from data import constants as dc
+from data import constants as DATA_CONSTANTS
 
 
 def sort_positions(positions):
@@ -116,7 +116,7 @@ class Match(models.Model):
         """
         major = self.major
         try:
-            tiers = getattr(dc, f'TIERS_{major}')
+            tiers = getattr(DATA_CONSTANTS, f'TIERS_{major}')
         except:
             output = ''
         else:
