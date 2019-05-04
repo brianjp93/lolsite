@@ -1,4 +1,4 @@
-"""
+"""data/tasks.py
 """
 from .models import Season, Map, Queue
 from .models import GameMode, GameType
