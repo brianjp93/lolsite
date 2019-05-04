@@ -143,6 +143,18 @@ else:
                 'PORT': os.environ['RDS_PORT'],
             }
         }
+    else:
+        # circle ci
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': 'cirecle_test',
+                'USER': 'postgres',
+                'PASSWORD': '',
+                'HOST': '127.0.0.1',
+                'PORT': '5432',
+            }
+        }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
