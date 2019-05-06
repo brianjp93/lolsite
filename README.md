@@ -1,5 +1,5 @@
 
-[![CircleCI](https://circleci.com/gh/brianjp93/lolsite.svg?style=svg)](https://circleci.com/gh/brianjp93/lolsite)
+[![CircleCI](https://circleci.com/gh/brianjp93/lolsite.svg?style=svg&circle-token=3e958dc79cdd1106457fbc9f5f4015662c447e95)](https://circleci.com/gh/brianjp93/lolsite)
 
 # Local Setup
 
