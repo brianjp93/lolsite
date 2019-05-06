@@ -1,3 +1,6 @@
+
+[![CircleCI](https://circleci.com/gh/brianjp93/lolsite.svg?style=svg)](https://circleci.com/gh/brianjp93/lolsite)
+
 # Local Setup
 
 1. Download [Postgres](https://www.postgresql.org/).
