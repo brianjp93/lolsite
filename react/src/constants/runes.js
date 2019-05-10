@@ -266,7 +266,7 @@ var RUNEDATA = {
       "name": "Celerity",
       "perkVars": 1,
       "perkDesc": [
-        "TBD"
+        "Extra Distance Traveled"
       ],
       "perkFormat": ["{0}"]
     },
