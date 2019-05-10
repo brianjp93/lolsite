@@ -10,6 +10,13 @@
 
 Another league of legends match history and stats site.
 
+# Ideas
+
+* Add user comments to matches.
+    * Allow any user to comment, but highlight comments from
+    users that actually played in the game.
+    * This will most likely welcome post game toxicity, but I think it will be fun, too.
+    * Need to add verified user accounts to allow this to become a reality.
 
 
 # Other Technical Information

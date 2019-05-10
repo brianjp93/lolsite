@@ -1,3 +1,8 @@
+"""data/tests/test_tasks.py
+
+Tests for the tasks.py file.
+
+"""
 from django.test import TestCase
 from unittest import mock
 
@@ -8,11 +13,9 @@ from data import tasks
 from data import constants as DATA_CONSTANTS
 
 
-
 class TestImportSeasons(TestCase):
     def setUp(self):
         tasks.import_seasons()
-
 
     def testImported(self):
         count = Season.objects.all().count()

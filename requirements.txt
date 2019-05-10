@@ -11,6 +11,7 @@ cement==2.8.2
 certifi==2019.3.9
 chardet==3.0.4
 colorama==0.3.9
+coverage==4.5.3
 Django==2.1.5
 django-elasticache==1.0.3
 django-elastipymemcache==1.2.1
@@ -30,6 +31,7 @@ idna==2.7
 jmespath==0.9.4
 jsonschema==2.6.0
 kombu==4.3.0
+model-mommy==1.6.0
 pathspec==0.5.9
 promise==2.2.1
 psycopg2-binary==2.7.7

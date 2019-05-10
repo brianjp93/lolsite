@@ -9,7 +9,7 @@ import json
 def home(request, path=''):
     """Return basic home address and let react render the rest.
     """
-    restrict_access = True
+    restrict_access = False
 
     data = {
         'queues': json.dumps(constants.QUEUES),

@@ -1,5 +1,11 @@
+"""player/models.py
+
+Model definitions for the player app.
+
+"""
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 from match.models import Participant
 
@@ -20,6 +26,14 @@ def simplify(name):
 
 
 class Summoner(models.Model):
+    user = models.ForeignKey(
+        User,
+        default=None,
+        null=True,
+        on_delete=models.SET_NULL,
+        blank=True,
+        related_name='summoners',
+    )
     _id = models.CharField(max_length=128, default='', blank=True, unique=True, db_index=True)
     region = models.CharField(max_length=8, default='', blank=True, db_index=True)
     account_id = models.CharField(max_length=128, default='', blank=True, null=True, db_index=True)
@@ -31,7 +45,7 @@ class Summoner(models.Model):
     summoner_level = models.IntegerField(default=0, db_index=True)
 
     last_summoner_page_import = models.DateTimeField(null=True)
-    created_date = models.DateTimeField(default=timezone.now)
+    created_date = models.DateTimeField(default=timezone.now, db_index=True)
 
     __original_account_id = None
     __original_name = None
@@ -80,7 +94,7 @@ class Summoner(models.Model):
 class NameChange(models.Model):
     summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE, related_name='namechanges')
     old_name = models.CharField(max_length=128, default='')
-    created_date = models.DateTimeField(default=timezone.now)
+    created_date = models.DateTimeField(default=timezone.now, db_index=True)
 
     def __str__(self):
         return f'NameChange(old_name="{self.old_name}", new_name="{self.summoner.name}")'
@@ -88,8 +102,7 @@ class NameChange(models.Model):
 
 class RankCheckpoint(models.Model):
     summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE, related_name='rankcheckpoints')
-
-    created_date = models.DateTimeField(default=timezone.now)
+    created_date = models.DateTimeField(default=timezone.now, db_index=True)
 
 
 class RankPosition(models.Model):
@@ -107,3 +120,17 @@ class RankPosition(models.Model):
     queue_type = models.CharField(max_length=32, default='', blank=True)
     rank = models.CharField(max_length=32, default='', blank=True)
     tier = models.CharField(max_length=32, default='', blank=True)
+
+
+class Custom(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=20, default=None, null=True, blank=True)
+    is_email_verified = models.BooleanField(default=False, db_index=True, blank=True)
+
+    created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
+    modified_date = models.DateTimeField(default=timezone.now, blank=True)
+
+    def save(self, *args, **kwargs):
+        # Always set modified_date on save().
+        self.modified_date = timezone.now()
+        super(Custom, self).save(*args, **kwargs)
