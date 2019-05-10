@@ -9,6 +9,9 @@ react/node_modules
 .ipynb_checkpoints/*
 *.ipynb
 
+.coverage
+htmlcov/
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
