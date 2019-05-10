@@ -68,8 +68,8 @@ class Summoner(models.Model):
         if self.name != self.__original_name and self.__original_name is not None:
             namechange = NameChange(summoner=self, old_name=self.__original_name)
             namechange.save()
-            query = Participant.objects.filter(current_account_id=self.account_id)
-            query.update(summoner_name=self.name)
+            # query = Participant.objects.filter(current_account_id=self.account_id)
+            # query.update(summoner_name=self.name)
 
         super(Summoner, self).save(*args, **kwargs)
         self.__original_name = self.name
