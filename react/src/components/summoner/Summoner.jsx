@@ -96,8 +96,11 @@ class Summoner extends Component {
     }
     componentDidUpdate(prevProps, prevState) {
         // new summoner
-        if (this.props.route.match.params.summoner_name !== prevProps.route.match.params.summoner_name) {
-            this.saveStateToStore(prevState)
+        if (
+            this.props.route.match.params.summoner_name !== prevProps.route.match.params.summoner_name ||
+            this.props.region !== prevProps.region
+        ) {
+            this.saveStateToStore(prevState, prevProps)
             this.setDefaults(() => {
                 var first_load = this.loadStateFromStore()
                 if (first_load) {
@@ -116,7 +119,7 @@ class Summoner extends Component {
     }
     componentWillUnmount() {
         // save the current state into our store
-        this.saveStateToStore(this.state)
+        this.saveStateToStore(this.state, this.props)
 
         this.match_list.removeEventListener('wheel', this.handleWheel)
 
@@ -130,16 +133,19 @@ class Summoner extends Component {
             return event
         }
     }
-    saveStateToStore(state) {
+    saveStateToStore(state, props) {
         var new_summoners = this.props.store.state.summoners
-        if (new_summoners[this.props.region] === undefined) {
-            new_summoners[this.props.region] = {}
+
+        var region = props.region
+
+        if (new_summoners[region] === undefined) {
+            new_summoners[region] = {}
         }
         if (state.summoner !== undefined) {
             if (state.summoner.name !== undefined) {
                 var name = state.summoner.name
                 var simple = name.split(' ').join('').toLowerCase()
-                new_summoners[this.props.region][simple] = state
+                new_summoners[region][simple] = state
                 this.props.store.setState({summoners: new_summoners})
             }
         }
@@ -148,10 +154,12 @@ class Summoner extends Component {
         var name = this.props.route.match.params.summoner_name
         var simple = name.split(' ').join('').toLowerCase()
 
+        var region = this.props.store.state.region_selected
+
         var first_load = false
-        if (this.props.store.state.summoners[this.props.region] !== undefined) {
-            if (this.props.store.state.summoners[this.props.region][simple] !== undefined) {
-                this.setState(this.props.store.state.summoners[this.props.region][simple])
+        if (this.props.store.state.summoners[region] !== undefined) {
+            if (this.props.store.state.summoners[region][simple] !== undefined) {
+                this.setState(this.props.store.state.summoners[region][simple])
             }
             else {
                 first_load = true
