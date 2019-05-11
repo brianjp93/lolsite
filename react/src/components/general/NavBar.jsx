@@ -34,9 +34,10 @@ class NavBar extends Component {
         }
         else {
             if (event.key.toLowerCase() === 's') {
+                this.input.focus()
+                this.input.select()
                 event.preventDefault()
                 event.stopPropagation()
-                this.input.focus()
             }
         }
     }
