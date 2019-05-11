@@ -52,3 +52,28 @@ class SeasonTest(TestCase):
             season.__str__(),
             'Season(_id=10, name="test season")'
         )
+
+
+class MapTest(TestCase):
+
+    def test_str(self):
+        map_model = mommy.make('data.Map', name='test map')
+        self.assertEqual(map_model.__str__(), 'Map(name="test map")')
+
+    def test_minimap_url(self):
+        map_model = mommy.make('data.Map', _id=10)
+        self.assertEqual(
+            map_model.minimap_url(),
+            'http://ddragon.leagueoflegends.com/cdn/9.5.1/img/map/map10.png'
+        )
+
+        item = mommy.make('data.Item', version='9.6.1')
+        item_old = mommy.make('data.Item', version='9.3.1')
+        self.assertEqual(
+            map_model.minimap_url(),
+            'http://ddragon.leagueoflegends.com/cdn/9.6.1/img/map/map10.png'
+        )
+        self.assertEqual(
+            map_model.minimap_url(version='9.7.1'),
+            'http://ddragon.leagueoflegends.com/cdn/9.7.1/img/map/map10.png'
+        )

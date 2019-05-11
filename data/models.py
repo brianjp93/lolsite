@@ -60,9 +60,11 @@ class Map(models.Model):
         if version:
             pass
         else:
-            query = Item.objects.all().order_by('version')
+            query = Item.objects.all().order_by('-version')
             if query.exists():
                 version = query.first().version
+            else:
+                version = '9.5.1'
         return f'http://ddragon.leagueoflegends.com/cdn/{version}/img/map/map{self._id}.png'
 
 
