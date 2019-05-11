@@ -37,6 +37,13 @@ class App extends Component {
                 borderRadius: 10,
             },
 
+            regions: [
+                'na', 'euw', 'eune', 'kr',
+                'jp', 'lan', 'las', 'br',
+                'oce', 'tr', 'ru',
+            ],
+            region_selected: 'na',
+
             // hotkey - ignore if target is one of the following tags
             ignore_tags: new Set(['input', 'textarea']),
         }

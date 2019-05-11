@@ -10,13 +10,6 @@ class Home extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            regions: [
-                'na', 'euw', 'eune', 'kr',
-                'jp', 'lan', 'las', 'br',
-                'oce', 'tr', 'ru',
-            ],
-            region_selected: 'na',
-
             summoner_name: '',
             to_summoner_page: false,
 
@@ -80,15 +73,16 @@ class Home extends Component {
         }
     }
     render() {
+        var store = this.props.store
         if (this.state.to_summoner_page) {
             return (
-                <Redirect push to={`/${this.state.region_selected}/${this.state.summoner_name}/`} />
+                <Redirect push to={`/${store.state.region_selected}/${this.state.summoner_name}/`} />
             )
         }
         return (
             <div>
                 <div style={{minHeight: 1200}}>
-                    <NavBar store={this.props.store} />
+                    <NavBar store={store} />
                     <div style={{height:100}}></div>
                     <div className="row">
                         <div style={{height:150}} className="col m3 offset-m4">
@@ -97,7 +91,7 @@ class Home extends Component {
                                     title={this.state.message.hidden_message ? this.state.message.hidden_message : ''}
                                     style={{display:'none'}}
                                     ref={(elt) => {this.quote = elt}}
-                                    className={`${this.props.store.state.theme}`}>
+                                    className={`${store.state.theme}`}>
                                     <span>
                                         {this.state.message.message ? this.state.message.message : ''}
                                     </span>
@@ -113,12 +107,12 @@ class Home extends Component {
                     </div>
                     <div style={{padding: '0px 10px'}} className="row">
                         <div className="col m1 s2 offset-m3">
-                            <div className={`input-field ${this.props.store.state.theme}`}>
+                            <div className={`input-field ${store.state.theme}`}>
                                 <select
-                                    onChange={(event) => this.setState({region_selected: event.target.value})}
-                                    value={this.state.region_selected}
+                                    onChange={(event) => store.setState({region_selected: event.target.value})}
+                                    value={store.state.region_selected}
                                 >
-                                    {this.state.regions.map((region, key) => {
+                                    {store.state.regions.map((region, key) => {
                                         return (
                                             <option
                                                 key={key}
@@ -135,7 +129,7 @@ class Home extends Component {
                         <div className="col m5 s10">
                             <div className="input-field">
                                 <input
-                                    className={this.props.store.state.theme}
+                                    className={store.state.theme}
                                     id='summoner-search'
                                     type="text"
                                     value={this.state.summoner_name}
@@ -149,7 +143,7 @@ class Home extends Component {
                 </div>
 
                 <div>
-                    <Footer store={this.props.store} />
+                    <Footer store={store} />
                 </div>
             </div>
         )

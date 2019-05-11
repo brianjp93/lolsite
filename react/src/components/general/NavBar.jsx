@@ -18,6 +18,12 @@ class NavBar extends Component {
         window.$('.sidenav').sidenav()
 
         window.addEventListener('keydown', this.handleSKey)
+
+        if (this.props.region !== undefined) {
+            this.props.store.setState({
+                region_selected: this.props.region,
+            })
+        }
     }
     componentWillUnmount() {
         window.removeEventListener('keydown', this.handleSKey)
@@ -48,14 +54,12 @@ class NavBar extends Component {
         return event
     }
     render() {
-        let theme = this.props.store.state.theme
-        var region = 'na'
-        if (this.props.region !== undefined) {
-            region = this.props.region
-        }
+        var store = this.props.store
+        let theme = store.state.theme
+        // var region = store.state.region_selected
         if (this.state.redirect) {
             this.setState({redirect: false})
-            return <Redirect push to={`/${region}/${this.state.summoner_name}/`} />
+            return <Redirect push to={`/${store.state.region_selected}/${this.state.summoner_name}/`} />
         }
         else {
             return (
@@ -89,8 +93,32 @@ class NavBar extends Component {
                                 onSubmit={(event) => {
                                     event.preventDefault()
                                 }}
-                                style={{display: 'inline-block', float: 'right', width: 300, marginRight: '10%'}}>
-                                <div className="input-field">
+                                style={{display: 'inline-block', float: 'right', width: 350, marginRight: '10%'}}>
+
+                                <div
+                                    style={{width: 60, display: 'inline-block'}}
+                                    className={`input-field ${store.state.theme}`}>
+                                    <select
+                                        ref={(elt) => {
+                                            window.$(elt).formSelect()
+                                        }}
+                                        onChange={(event) => store.setState({region_selected: event.target.value})}
+                                        value={store.state.region_selected} >
+                                        {store.state.regions.map((_region, key) => {
+                                            return (
+                                                <option
+                                                    key={key}
+                                                    value={_region} >
+                                                    {_region}
+                                                </option>
+                                            )
+                                        })}
+                                    </select>
+                                </div>
+
+                                <div
+                                    style={{display: 'inline-block', width: 280}}
+                                    className="input-field">
                                     <input
                                         ref={(elt) => this.input = elt}
                                         style={{color: '#929292'}}
@@ -110,11 +138,13 @@ class NavBar extends Component {
                     </nav>
 
                     {/* MOBILE BAR */}
-                    <ul className={`sidenav ${theme}`} id="mobile-navbar">
-                        <li>
-                            <Link to='/themes/'>Themes</Link>
-                        </li>
-                    </ul>
+                    {/*
+                        <ul className={`sidenav ${theme}`} id="mobile-navbar">
+                            <li>
+                                <Link to='/themes/'>Themes</Link>
+                            </li>
+                        </ul>
+                    */}
                 </span>
             )
         }
