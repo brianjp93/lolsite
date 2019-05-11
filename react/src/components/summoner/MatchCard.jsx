@@ -1062,10 +1062,10 @@ class MatchCard extends Component {
 
                             <div style={{width: '90%'}}>
                                 <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
-                                    <div title='Damage Per Minute' style={{...statbox_style, backgroundColor: '#56262a'}}>
-                                        <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>DPM</div>
+                                    <div title='CS Per Minute' style={{...statbox_style, backgroundColor: '#65543a'}}>
+                                        <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>CS/Min</div>
                                         <div>
-                                            {numeral(dpm).format('0,0')}
+                                            {numeral(csm).format('0.0')}
                                         </div>
                                     </div>
                                 </div>
@@ -1079,18 +1079,18 @@ class MatchCard extends Component {
                                 </div>
                                 <br/>
                                 <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
-                                    <div title='Damage Taken Per Minute' style={{...statbox_style, backgroundColor: '#1f1f1f'}}>
-                                        <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>DT/Min</div>
+                                    <div title='Damage Per Minute' style={{...statbox_style, backgroundColor: '#56262a'}}>
+                                        <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>DPM</div>
                                         <div>
-                                            {numeral(damage_taken_per_minute).format('0,0')}
+                                            {numeral(dpm).format('0,0')}
                                         </div>
                                     </div>
                                 </div>
                                 <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
-                                    <div title='CS Per Minute' style={{...statbox_style, backgroundColor: '#65543a'}}>
-                                        <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>CS/Min</div>
+                                    <div title='Damage Taken Per Minute' style={{...statbox_style, backgroundColor: '#1f1f1f'}}>
+                                        <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>DT/Min</div>
                                         <div>
-                                            {numeral(csm).format('0.0')}
+                                            {numeral(damage_taken_per_minute).format('0,0')}
                                         </div>
                                     </div>
                                 </div>
