@@ -38,6 +38,7 @@ psycopg2-binary==2.7.7
 pylibmc==1.6.0
 pymemcache==2.1.1
 python-dateutil==2.8.0
+python-http-client==3.1.0
 python-memcached==1.59
 pytz==2018.9
 PyYAML==3.13

@@ -6,11 +6,12 @@
 1. Download [Postgres](https://www.postgresql.org/).
 2. Create a Database in PGAdmin4
 3. Add credentials to your environment variables
-    * LOLSITE-NAME
-    * LOLSITE-USER
-    * LOLSITE-PASS
-    * LOLSITE-HOST
-    * LOLSITE-PORT
+    * LOLSITE_NAME
+    * LOLSITE_USER
+    * LOLSITE_PASS
+    * LOLSITE_HOST
+    * LOLSITE_PORT
+    * LOLSITE_EMAIL_HOST_PASSWORD (this is your sendgrip api key)
 4. Create a virtual env and install python packages via requirements.txt
     * create virtual env
     * `pip install -r requirements`

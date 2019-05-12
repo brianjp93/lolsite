@@ -242,3 +242,11 @@ else:
             # }
         }
     }
+
+
+# SENDGRID CONNECTION
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = os.environ.get('LOLSITE_EMAIL_HOST_PASSWORD', '')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
