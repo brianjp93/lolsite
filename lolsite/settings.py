@@ -34,7 +34,10 @@ except:
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '6cs%&oj!lvxpvj44r63-#ie=-%er1hs@%sbt1k9=lf7-b_mlxv'
+SECRET_KEY = os.environ.get(
+    'LOLSITE_SECRET_KEY',
+    '6cs%&oj!lvxpvj44r63-#ie=-%er1hs@%sbt1k9=lf7-b_mlxv'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 env = os.environ
