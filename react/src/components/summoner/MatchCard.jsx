@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
 import PropTypes from 'prop-types'
 import api from '../../api/api'
 import numeral from 'numeral'
@@ -667,11 +668,12 @@ class MatchCard extends Component {
                             .then(response => {
                                 var timeline = this.addTeamGoldToTimeline(response.data.data)
                                 timeline = this.sortTimelineEvents(timeline)
-                                this.setState({is_loading_full_match: false, timeline: timeline})
+                                this.setState({timeline: timeline})
                             })
                             .catch(error => {
                                 console.error(error)
-
+                            })
+                            .then(() => {
                                 this.setState({is_loading_full_match: false})
                             })
                     }
@@ -1232,7 +1234,11 @@ class MatchCard extends Component {
                                     </div>
 
                                     {this.state.is_loading_full_match &&
-                                        <div style={{marginLeft: 30}}>SHOW LOADING ANIMATION</div>
+                                        <div style={{marginLeft: 110, marginTop: 80}}>
+                                            <AtomSpinner
+                                                color='#1f1f1f'
+                                                size={200} />
+                                        </div>
                                     }
 
                                     {!this.state.is_loading_full_match && this.isFullMatchLoaded() &&

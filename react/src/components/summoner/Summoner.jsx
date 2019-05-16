@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
 import PropTypes from 'prop-types'
 import NavBar from '../general/NavBar'
 import MatchCard from './MatchCard'
@@ -333,14 +334,15 @@ class Summoner extends Component {
                     <NavBar store={this.props.store} region={this.props.region} />
                     {this.state.is_requesting_page &&
                         <div>
-                            <div className="row">
-                                <div className="col m3">
-                                    <div className={`card-panel ${this.props.store.state.theme}`}>
-                                        <div style={{textAlign:'center'}}>
-                                            LOADING DATA...
-                                        </div>
-                                    </div>
-                                </div>
+                            <div 
+                                style={{
+                                    textAlign: 'center',
+                                    marginTop: 100,
+                                }} >
+                                <AtomSpinner
+                                    color='#ffffff'
+                                    size={200}
+                                    style={{margin: 'auto'}} />
                             </div>
                         </div>
                     }
