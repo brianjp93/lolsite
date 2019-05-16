@@ -4,6 +4,7 @@ import Themes from './components/test/Themes'
 import Home from './components/general/Home'
 import Summoner from './components/summoner/Summoner'
 import DemoLogin from './components/general/DemoLogin'
+import SignUp from './components/account/SignUp'
 
 import api from './api/api'
 
@@ -143,17 +144,17 @@ function Routes(props) {
                 <Switch>
                     <Route exact path='/' render={() => <Home store={props.store}/>}/>
 
-                    <Route path='/na/:summoner_name/' render={(rest) => <Summoner route={rest} region='na' store={props.store} />} />
-                    <Route path='/kr/:summoner_name/' render={(rest) => <Summoner route={rest} region='kr' store={props.store} />} />
-                    <Route path='/euw/:summoner_name/' render={(rest) => <Summoner route={rest} region='euw' store={props.store} />} />
-                    <Route path='/eune/:summoner_name/' render={(rest) => <Summoner route={rest} region='eune' store={props.store} />} />
-                    <Route path='/jp/:summoner_name/' render={(rest) => <Summoner route={rest} region='jp' store={props.store} />} />
-                    <Route path='/br/:summoner_name/' render={(rest) => <Summoner route={rest} region='br' store={props.store} />} />
-                    <Route path='/lan/:summoner_name/' render={(rest) => <Summoner route={rest} region='lan' store={props.store} />} />
-                    <Route path='/las/:summoner_name/' render={(rest) => <Summoner route={rest} region='las' store={props.store} />} />
-                    <Route path='/oce/:summoner_name/' render={(rest) => <Summoner route={rest} region='oce' store={props.store} />} />
-                    <Route path='/tr/:summoner_name/' render={(rest) => <Summoner route={rest} region='tr' store={props.store} />} />
-                    <Route path='/ru/:summoner_name/' render={(rest) => <Summoner route={rest} region='ru' store={props.store} />} />
+                    {props.store.state.regions.map((region, key) => {
+                        return (
+                            <Route
+                                key={key}
+                                path={`/${region}/:summoner_name/`}
+                                render={(rest) => <Summoner route={rest} region={region} store={props.store} />}
+                            />
+                        )
+                    })}
+
+                    <Route path='/sign-up/' render={(rest) => <SignUp route={rest} store={props.store} />} />
                     
                     <Route exact path='/themes/' render={() => <Themes store={props.store}/>}/>
                 </Switch>
