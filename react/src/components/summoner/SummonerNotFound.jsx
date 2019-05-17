@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+import SummonerSearchField from './SummonerSearchField'
 
 
 class SummonerNotFound extends Component {
@@ -20,11 +22,18 @@ class SummonerNotFound extends Component {
                             <em>* spam pings ? *</em>
                         </h3>
                         <div>That summoner couldn't be found for this region.</div>
+
+                        <div style={{marginTop: 50}}>
+                            <SummonerSearchField store={this.props.store} />
+                        </div>
                     </div>
                 </div>
             </div>
         )
     }
+}
+SummonerNotFound.propTypes = {
+    store: PropTypes.object.isRequired,
 }
 
 export default SummonerNotFound

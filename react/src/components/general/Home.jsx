@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import { Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import NavBar from './NavBar'
 import api from '../../api/api'
 import Footer from './Footer'
+import SummonerSearchField from '../summoner/SummonerSearchField'
 
 
 class Home extends Component {
@@ -19,7 +19,6 @@ class Home extends Component {
             messages_shown: 0,
         }
 
-        this.handleKeyDown = this.handleKeyDown.bind(this)
         this.quoteFadeIn = this.quoteFadeIn.bind(this)
         this.quoteFadeOut = this.quoteFadeOut.bind(this)
         this.getInspirationalMessage = this.getInspirationalMessage.bind(this)
@@ -55,11 +54,6 @@ class Home extends Component {
                 }
             })
     }
-    handleKeyDown(event) {
-        if (event.key === 'Enter') {
-            this.setState({to_summoner_page: true});
-        }
-    }
     quoteFadeIn(callback) {
         window.$(this.quote).fadeIn(this.state.fade_time)
         if (callback !== undefined) {
@@ -74,11 +68,6 @@ class Home extends Component {
     }
     render() {
         var store = this.props.store
-        if (this.state.to_summoner_page) {
-            return (
-                <Redirect push to={`/${store.state.region_selected}/${this.state.summoner_name}/`} />
-            )
-        }
         return (
             <div>
                 <div style={{minHeight: 1200}}>
@@ -106,40 +95,8 @@ class Home extends Component {
                         </div>
                     </div>
                     <div style={{padding: '0px 10px'}} className="row">
-                        <div className="col m1 s2 offset-m3">
-                            <div className={`input-field ${store.state.theme}`}>
-                                <select
-                                    onChange={(event) => store.setState({region_selected: event.target.value})}
-                                    value={store.state.region_selected}
-                                    ref={(elt) => {
-                                        window.$(elt).formSelect()
-                                    }} >
-                                    {store.state.regions.map((region, key) => {
-                                        return (
-                                            <option
-                                                key={key}
-                                                value={region}
-                                            >
-                                                {region}
-                                            </option>
-                                        )
-                                    })}
-                                </select>
-                                <label>Region</label>
-                            </div>
-                        </div>
-                        <div className="col m5 s10">
-                            <div className="input-field">
-                                <input
-                                    className={store.state.theme}
-                                    id='summoner-search'
-                                    type="text"
-                                    value={this.state.summoner_name}
-                                    onChange={(event) => this.setState({summoner_name: event.target.value})}
-                                    onKeyDown={this.handleKeyDown}
-                                />
-                                <label htmlFor="summoner-search">Summoner</label>
-                            </div>
+                        <div className="col l6 offset-l3 m8 offset-m2">
+                            <SummonerSearchField store={store} />
                         </div>
                     </div>
                 </div>

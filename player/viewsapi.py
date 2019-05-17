@@ -460,15 +460,22 @@ def get_summoner_page(request, format=None):
         else:
             # only update if we're not importing for the first time
             update = False
-            pt.import_summoner(region, name=name)
-            simplified = pt.simplify(name)
-            query = Summoner.objects.filter(simple_name=simplified, region=region)
-            if query.exists():
-                summoner = query.first()
-            else:
-                summoner = None
-                data = {'error': 'Could not find a summoner in this region with that name.'}
+            try:
+                r = pt.import_summoner(region, name=name)
+            except Exception as error:
+                print(error)
+                data = {'message': 'The summoner could not be found.'}
                 status_code = 404
+                summoner = None
+            else:
+                simplified = pt.simplify(name)
+                query = Summoner.objects.filter(simple_name=simplified, region=region)
+                if query.exists():
+                    summoner = query.first()
+                else:
+                    summoner = None
+                    data = {'error': 'Could not find a summoner in this region with that name.'}
+                    status_code = 404
 
         if update:
             # enable delay when celery is working
@@ -533,13 +540,13 @@ def get_summoner_page(request, format=None):
             match_query = match_query[start: end]
             matches = serialize_matches(match_query, summoner.account_id)
 
-        data = {
-            'matches': matches,
-            'match_count': match_count,
-            'profile_icon': profile_icon_data,
-            'summoner': summoner_data,
-            'positions': rank_positions,
-        }
+            data = {
+                'matches': matches,
+                'match_count': match_count,
+                'profile_icon': profile_icon_data,
+                'summoner': summoner_data,
+                'positions': rank_positions,
+            }
 
     return Response(data, status=status_code)
 

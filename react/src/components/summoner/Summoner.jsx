@@ -233,6 +233,7 @@ class Summoner extends Component {
                 })
             })
             .catch((error) => {
+                console.log(error)
                 // window.alert('No summoner with that name was found.')
                 this.setState({summoner: false})
             })
