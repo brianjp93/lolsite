@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 import NavBar from '../general/NavBar'
 import MatchCard from './MatchCard'
 import Spectate from './Spectate'
+import SummonerNotFound from './SummonerNotFound'
 import numeral from 'numeral'
 
 import api from '../../api/api'
@@ -122,7 +123,12 @@ class Summoner extends Component {
         // save the current state into our store
         this.saveStateToStore(this.state, this.props)
 
-        this.match_list.removeEventListener('wheel', this.handleWheel)
+        try {
+            this.match_list.removeEventListener('wheel', this.handleWheel)
+        }
+        catch(error) {
+            console.log('Attempted to remove event listener but got an error.')
+        }
 
         // window.clearInterval(this.live_game_check_interval)
     }
@@ -135,6 +141,9 @@ class Summoner extends Component {
         }
     }
     saveStateToStore(state, props) {
+        if (state.summoner === false) {
+            return
+        }
         var new_summoners = this.props.store.state.summoners
 
         var region = props.region
@@ -217,8 +226,6 @@ class Summoner extends Component {
                     matches: response.data.matches,
                     match_ids: new Set(response.data.matches.map(x => x.id)),
                     positions: response.data.positions,
-                    is_requesting_page: false,
-                    is_reloading_matches: false,
                 }, () => {
                     if (callback !== undefined) {
                         callback()
@@ -226,7 +233,10 @@ class Summoner extends Component {
                 })
             })
             .catch((error) => {
-                window.alert('No summoner with that name was found.')
+                // window.alert('No summoner with that name was found.')
+                this.setState({summoner: false})
+            })
+            .then(() => {
                 this.setState({is_requesting_page: false, is_reloading_matches: false})
             })
     }
@@ -346,7 +356,12 @@ class Summoner extends Component {
                             </div>
                         </div>
                     }
-                    {!this.state.is_requesting_page &&
+
+                    {!this.state.is_requesting_page && this.state.summoner === false &&
+                        <SummonerNotFound store={this.props.store} />
+                    }
+
+                    {!this.state.is_requesting_page && this.state.summoner !== false &&
                         <div>
                             <div className="row" style={{marginBottom: 0}}>
                                 <div className="col l10 offset-l1">

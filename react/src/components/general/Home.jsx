@@ -25,7 +25,7 @@ class Home extends Component {
         this.getInspirationalMessage = this.getInspirationalMessage.bind(this)
     }
     componentDidMount() {
-        window.$('select').formSelect()
+        // window.$('select').formSelect()
 
         this.getInspirationalMessage()
         var message_interval = window.setInterval(this.getInspirationalMessage, 20 * 1000)
@@ -111,7 +111,9 @@ class Home extends Component {
                                 <select
                                     onChange={(event) => store.setState({region_selected: event.target.value})}
                                     value={store.state.region_selected}
-                                >
+                                    ref={(elt) => {
+                                        window.$(elt).formSelect()
+                                    }} >
                                     {store.state.regions.map((region, key) => {
                                         return (
                                             <option
