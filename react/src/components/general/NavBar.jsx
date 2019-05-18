@@ -12,12 +12,12 @@ class NavBar extends Component {
             redirect: false,
         }
         this.handleKeyDown = this.handleKeyDown.bind(this)
-        this.handleSKey = this.handleSKey.bind(this)
+        this.handleKeyListener = this.handleKeyListener.bind(this)
     }
     componentDidMount() {
         window.$('.sidenav').sidenav()
 
-        window.addEventListener('keydown', this.handleSKey)
+        window.addEventListener('keydown', this.handleKeyListener)
 
         if (this.props.region !== undefined) {
             this.props.store.setState({
@@ -26,14 +26,19 @@ class NavBar extends Component {
         }
     }
     componentWillUnmount() {
-        window.removeEventListener('keydown', this.handleSKey)
+        window.removeEventListener('keydown', this.handleKeyListener)
     }
-    handleSKey(event) {
+    handleKeyListener(event) {
+        console.log(event.key)
         if (this.props.store.state.ignore_tags.has(event.target.tagName.toLowerCase())) {
-            return
+            if (['escape'].indexOf(event.key.toLowerCase()) >= 0) {
+                event.target.blur()
+                event.preventDefault()
+                event.stopPropagation()
+            }
         }
         else {
-            if (event.key.toLowerCase() === 's') {
+            if (['/', 's'].indexOf(event.key.toLowerCase()) >= 0) {
                 this.input.focus()
                 this.input.select()
                 event.preventDefault()

@@ -24,8 +24,6 @@ class Home extends Component {
         this.getInspirationalMessage = this.getInspirationalMessage.bind(this)
     }
     componentDidMount() {
-        // window.$('select').formSelect()
-
         this.getInspirationalMessage()
         var message_interval = window.setInterval(this.getInspirationalMessage, 20 * 1000)
         this.setState({message_interval: message_interval})
