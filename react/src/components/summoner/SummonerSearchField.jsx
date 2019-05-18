@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import Tooltip from "@bit/mui-org.material-ui.tooltip"
 
 
 class SummonerSearchField extends Component {
@@ -65,9 +64,6 @@ class SummonerSearchField extends Component {
         return (
             <div>
                 <div className="col m2 s3">
-                    <Tooltip
-                        placement='top'
-                        title='Select region' >
                         <div className={`input-field ${store.state.theme}`}>
                             <select
                                 onChange={(event) => store.setState({region_selected: event.target.value})}
@@ -87,12 +83,8 @@ class SummonerSearchField extends Component {
                             </select>
                             <label>Region</label>
                         </div>
-                    </Tooltip>
                 </div>
                 <div className="col m10 s9">
-                    <Tooltip
-                        placement='top'
-                        title='Press "/" to focus the search field.' >
                         <div className="input-field">
                             <input
                                 ref={(elt) => {
@@ -117,7 +109,6 @@ class SummonerSearchField extends Component {
                                 </span>
                             </label>
                         </div>
-                    </Tooltip>
                 </div>
             </div>
         )
