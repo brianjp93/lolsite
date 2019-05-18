@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import ReactTooltip from 'react-tooltip'
 
 
 class SummonerSearchField extends Component {
@@ -64,28 +65,44 @@ class SummonerSearchField extends Component {
         return (
             <div>
                 <div className="col m2 s3">
-                        <div className={`input-field ${store.state.theme}`}>
-                            <select
-                                onChange={(event) => store.setState({region_selected: event.target.value})}
-                                value={store.state.region_selected}
-                                ref={(elt) => {
-                                    window.$(elt).formSelect()
-                                }} >
-                                {store.state.regions.map((region, key) => {
-                                    return (
-                                        <option
-                                            key={key}
-                                            value={region} >
-                                            {region}
-                                        </option>
-                                    )
-                                })}
-                            </select>
-                            <label>Region</label>
-                        </div>
+                    <ReactTooltip
+                        id='region-select-tooltip'
+                        effect='solid' >
+                        <span>Select Region</span>
+                    </ReactTooltip>
+                    <div
+                        data-tip
+                        data-for='region-select-tooltip'
+                        className={`input-field ${store.state.theme}`}>
+                        <select
+                            onChange={(event) => store.setState({region_selected: event.target.value})}
+                            value={store.state.region_selected}
+                            ref={(elt) => {
+                                window.$(elt).formSelect()
+                            }} >
+                            {store.state.regions.map((region, key) => {
+                                return (
+                                    <option
+                                        key={key}
+                                        value={region} >
+                                        {region}
+                                    </option>
+                                )
+                            })}
+                        </select>
+                        <label>Region</label>
+                    </div>
                 </div>
                 <div className="col m10 s9">
-                        <div className="input-field">
+                        <ReactTooltip
+                            id='search-field-tooltip'
+                            effect='solid' >
+                            <span>Press "/" to focus the search field.</span>
+                        </ReactTooltip>
+                        <div
+                            data-tip
+                            data-for='search-field-tooltip'
+                            className="input-field">
                             <input
                                 ref={(elt) => {
                                     this.input = elt
