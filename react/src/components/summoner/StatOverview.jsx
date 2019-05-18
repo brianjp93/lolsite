@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import {BarChart, Bar, XAxis, YAxis, Tooltip, Cell} from 'recharts'
 import api from '../../api/api'
 import numeral from 'numeral'
+import ReactTooltip from 'react-tooltip'
 
 
 class StatOverview extends Component {
@@ -210,7 +211,17 @@ class StatOverview extends Component {
 
                             <hr />
                         </span>
-                        <label style={outer_label_style} htmlFor={`${match._id}-total-dmg-to-champ-checkbox`}>
+
+                        <ReactTooltip
+                            id='total-dmg-to-champs-tooltip'
+                            effect='solid'>
+                            <span>Total Damage to Champions</span>
+                        </ReactTooltip>
+                        <label
+                            data-tip
+                            data-for='total-dmg-to-champs-tooltip'
+                            style={outer_label_style}
+                            htmlFor={`${match._id}-total-dmg-to-champ-checkbox`}>
                             <input
                                 value='total_damage_dealt_to_champions'
                                 checked={this.state.selected.has('total_damage_dealt_to_champions')}
@@ -220,47 +231,94 @@ class StatOverview extends Component {
                             <span style={label_style}>Total</span>
                         </label>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-dpm`}>
+                        <ReactTooltip
+                            id='dpm-tooltip'
+                            effect='solid'>
+                            <span>Damage Per Minute</span>
+                        </ReactTooltip>
+                        <label
+                            data-tip
+                            data-for='dpm-tooltip'
+                            style={outer_label_style}
+                            htmlFor={`${match._id}-dpm`}>
                             <input
                                 value='dpm'
                                 checked={this.state.selected.has('dpm')}
                                 onChange={this.toggle}
                                 id={`${match._id}-dpm`}
                                 type="checkbox"/>
-                            <span title='Damage Per Minute' style={label_style}>Dmg / Min</span>
+                            <span style={label_style}>
+                                Dmg / Min
+                            </span>
                         </label>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-dpg`}>
+                        <ReactTooltip
+                            id='dpg-tooltip'
+                            effect='solid'>
+                            <span>Damage Per Gold</span>
+                        </ReactTooltip>
+                        <label
+                            data-tip
+                            data-for='dpg-tooltip'
+                            style={outer_label_style}
+                            htmlFor={`${match._id}-dpg`}>
                             <input
                                 value='dpg'
                                 checked={this.state.selected.has('dpg')}
                                 onChange={this.toggle}
                                 id={`${match._id}-dpg`}
                                 type="checkbox"/>
-                            <span title='Damage Per Gold' style={label_style}>Dmg / Gold</span>
+                            <span style={label_style}>Dmg / Gold</span>
                         </label>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-dpd`}>
+                        <ReactTooltip
+                            id='dpd-tooltip'
+                            effect='solid'>
+                            <span>Damage Per Death</span>
+                        </ReactTooltip>
+                        <label
+                            data-tip
+                            data-for='dpd-tooltip'
+                            style={outer_label_style}
+                            htmlFor={`${match._id}-dpd`}>
                             <input
                                 value='dpd'
                                 checked={this.state.selected.has('dpd')}
                                 onChange={this.toggle}
                                 id={`${match._id}-dpd`}
                                 type="checkbox"/>
-                            <span title='Damage Per Death' style={label_style}>Dmg / Death</span>
+                            <span style={label_style}>Dmg / Death</span>
                         </label>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-kp`}>
+                        <ReactTooltip
+                            id='kp-tooltip'
+                            effect='solid'>
+                            <span>Kill Participation</span>
+                        </ReactTooltip>
+                        <label
+                            data-tip
+                            data-for='kp-tooltip'
+                            style={outer_label_style}
+                            htmlFor={`${match._id}-kp`} >
                             <input
                                 value='kp'
                                 checked={this.state.selected.has('kp')}
                                 onChange={this.toggle}
                                 id={`${match._id}-kp`}
                                 type="checkbox"/>
-                            <span title='Kill Participation %' style={label_style}>KP</span>
+                            <span style={label_style}>KP</span>
                         </label>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-physical`}>
+                        <ReactTooltip
+                            id='physical-dmg-to-champions-tooltip'
+                            effect='solid'>
+                            <span>Physical Damage to Champions</span>
+                        </ReactTooltip>
+                        <label
+                            data-tip
+                            data-for='physical-dmg-to-champions-tooltip'
+                            style={outer_label_style}
+                            htmlFor={`${match._id}-physical`} >
                             <input
                                 value='physical_damage_dealt_to_champions'
                                 checked={this.state.selected.has('physical_damage_dealt_to_champions')}
@@ -270,7 +328,16 @@ class StatOverview extends Component {
                             <span style={label_style}>Physical</span>
                         </label>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-magic`}>
+                        <ReactTooltip
+                            id='magic-damage-to-champions-tooltip'
+                            effect='solid'>
+                            <span>Magic Damage to Champions</span>
+                        </ReactTooltip>
+                        <label
+                            data-tip
+                            data-for='magic-damage-to-champions-tooltip'
+                            style={outer_label_style}
+                            htmlFor={`${match._id}-magic`}>
                             <input
                                 value='magic_damage_dealt_to_champions'
                                 checked={this.state.selected.has('magic_damage_dealt_to_champions')}
@@ -280,7 +347,16 @@ class StatOverview extends Component {
                             <span style={label_style}>Magic</span>
                         </label>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-true`}>
+                        <ReactTooltip
+                            id='true-damage-to-champions-tooltip'
+                            effect='solid'>
+                            <span>True Damage to Champions</span>
+                        </ReactTooltip>
+                        <label
+                            data-tip
+                            data-for='true-damage-to-champions-tooltip'
+                            style={outer_label_style}
+                            htmlFor={`${match._id}-true`}>
                             <input
                                 value='true_damage_dealt_to_champions'
                                 checked={this.state.selected.has('true_damage_dealt_to_champions')}
