@@ -69,7 +69,9 @@ class Home extends Component {
         return (
             <div>
                 <div style={{minHeight: 1200}}>
-                    <NavBar store={store} />
+                    <NavBar
+                        store={store}
+                        ignore_hotkeys={['s', '/']} />
                     <div style={{height:100}}></div>
                     <div className="row">
                         <div style={{height:150}} className="col m3 offset-m4">

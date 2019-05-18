@@ -29,20 +29,24 @@ class NavBar extends Component {
         window.removeEventListener('keydown', this.handleKeyListener)
     }
     handleKeyListener(event) {
-        console.log(event.key)
-        if (this.props.store.state.ignore_tags.has(event.target.tagName.toLowerCase())) {
-            if (['escape'].indexOf(event.key.toLowerCase()) >= 0) {
-                event.target.blur()
-                event.preventDefault()
-                event.stopPropagation()
-            }
+        if (this.props.ignore_hotkeys.indexOf(event.key.toLowerCase()) >= 0) {
+            return
         }
         else {
-            if (['/', 's'].indexOf(event.key.toLowerCase()) >= 0) {
-                this.input.focus()
-                this.input.select()
-                event.preventDefault()
-                event.stopPropagation()
+            if (this.props.store.state.ignore_tags.has(event.target.tagName.toLowerCase())) {
+                if (['escape'].indexOf(event.key.toLowerCase()) >= 0) {
+                    event.target.blur()
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+            }
+            else {
+                if (['/', 's'].indexOf(event.key.toLowerCase()) >= 0) {
+                    this.input.focus()
+                    this.input.select()
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
             }
         }
     }
@@ -157,7 +161,11 @@ class NavBar extends Component {
     }
 }
 NavBar.propTypes = {
-    store: PropTypes.any
+    store: PropTypes.any,
+    ignore_hotkeys: PropTypes.array,
+}
+NavBar.defaultProps = {
+    ignore_hotkeys: [],
 }
 
 export default NavBar
