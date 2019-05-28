@@ -44,6 +44,7 @@ class StatOverview extends Component {
         this.getDTPD = this.getDTPD.bind(this)
         this.getCS = this.getCS.bind(this)
         this.getCSPM = this.getCSPM.bind(this)
+        this.getBarGraphStat = this.getBarGraphStat.bind(this)
     }
     componentDidUpdate(prevProps) {
         if (this.props.is_expanded === true) {
@@ -146,12 +147,36 @@ class StatOverview extends Component {
         }
         return {}
     }
-    render() {
-        // var theme = this.props.store.state.theme
+    getBarGraphStat(title, tooltip, value) {
+        var match = this.props.parent.props.match
         var outer_label_style = {display: 'block', marginLeft:-10}
         var label_style = {
             fontSize: 'smaller'
         }
+        return (
+            <span>
+                <ReactTooltip
+                    id={`${value}-tooltip`}
+                    effect='solid'>
+                    <span>{tooltip}</span>
+                </ReactTooltip>
+                <label
+                    data-tip
+                    data-for={`${value}-tooltip`}
+                    style={outer_label_style}
+                    htmlFor={`${value}-${match._id}`}>
+                    <input
+                        value={value}
+                        checked={this.state.selected.has(value)}
+                        onChange={this.toggle}
+                        id={`${value}-${match._id}`}
+                        type="checkbox"/>
+                    <span style={label_style}>{title}</span>
+                </label>
+            </span>
+        )
+    }
+    render() {
         var summary_width = this.props.parent.state.summary_width
         var match = this.props.parent.props.match
         var team100 = this.props.parent.getTeam100()
@@ -159,44 +184,8 @@ class StatOverview extends Component {
         var parts = [...team100, ...team200]
         var bargraph_height = 370
 
-        // let menu_button_style = {
-        //     display: 'block',
-        //     padding: '0 5px',
-        //     width: '85%',
-        //     marginLeft: '7.5%',
-        //     marginTop: 8,
-        // }
         return (
             <div>
-                
-                {/*
-                <div style={{
-                    position: 'absolute',
-                    top: 230,
-                    width: 25,
-                    height: 145,
-                    left: summary_width + 2,
-                    textAlign: 'center',
-                    borderColor: 'grey',
-                    borderStyle: 'solid',
-                    borderWidth: 1,
-                    borderRadius: 5,
-                    }}>
-                    <button
-                        style={{...menu_button_style, height: '88%'}}
-                        className={`dark btn-small`}
-                        onClick={() => this.setState({selected: new Set()})}>
-                        <div
-                            style={{
-                                display: 'inline-block',
-                                transform: 'rotate(-90deg) translate(0px, 20px)',
-                                transformOrigin: 'bottom left 0',
-                                verticalAlign: 'text-top'}} >
-                            clear
-                        </div>
-                    </button>
-                </div>
-                */}
 
                 <div
                     className='quiet-scroll'
@@ -212,159 +201,15 @@ class StatOverview extends Component {
                             <hr />
                         </span>
 
-                        <ReactTooltip
-                            id='total-dmg-to-champs-tooltip'
-                            effect='solid'>
-                            <span>Total Damage to Champions</span>
-                        </ReactTooltip>
-                        <label
-                            data-tip
-                            data-for='total-dmg-to-champs-tooltip'
-                            style={outer_label_style}
-                            htmlFor={`${match._id}-total-dmg-to-champ-checkbox`}>
-                            <input
-                                value='total_damage_dealt_to_champions'
-                                checked={this.state.selected.has('total_damage_dealt_to_champions')}
-                                onChange={this.toggle}
-                                id={`${match._id}-total-dmg-to-champ-checkbox`}
-                                type="checkbox"/>
-                            <span style={label_style}>Total</span>
-                        </label>
+                        {this.getBarGraphStat('Total', 'Total Damage to Champions', 'total_damage_dealt_to_champions')}
+                        {this.getBarGraphStat('Dmg / Min', 'Damage Per Minute', 'dpm')}
+                        {this.getBarGraphStat('Dmg / Gold', 'Damage Per Gold', 'dpg')}
+                        {this.getBarGraphStat('Dmg / Death', 'Damage Per Death', 'dpd')}
+                        {this.getBarGraphStat('KP', 'Kill Participation', 'kp')}
+                        {this.getBarGraphStat('Physical', 'Physical Damage to Champions', 'physical_damage_dealt_to_champions')}
+                        {this.getBarGraphStat('Magic', 'Magic Damage to Champions', 'magic_damage_dealt_to_champions')}
+                        {this.getBarGraphStat('True', 'True Damage to Champions', 'true_damage_dealt_to_champions')}
 
-                        <ReactTooltip
-                            id='dpm-tooltip'
-                            effect='solid'>
-                            <span>Damage Per Minute</span>
-                        </ReactTooltip>
-                        <label
-                            data-tip
-                            data-for='dpm-tooltip'
-                            style={outer_label_style}
-                            htmlFor={`${match._id}-dpm`}>
-                            <input
-                                value='dpm'
-                                checked={this.state.selected.has('dpm')}
-                                onChange={this.toggle}
-                                id={`${match._id}-dpm`}
-                                type="checkbox"/>
-                            <span style={label_style}>
-                                Dmg / Min
-                            </span>
-                        </label>
-
-                        <ReactTooltip
-                            id='dpg-tooltip'
-                            effect='solid'>
-                            <span>Damage Per Gold</span>
-                        </ReactTooltip>
-                        <label
-                            data-tip
-                            data-for='dpg-tooltip'
-                            style={outer_label_style}
-                            htmlFor={`${match._id}-dpg`}>
-                            <input
-                                value='dpg'
-                                checked={this.state.selected.has('dpg')}
-                                onChange={this.toggle}
-                                id={`${match._id}-dpg`}
-                                type="checkbox"/>
-                            <span style={label_style}>Dmg / Gold</span>
-                        </label>
-
-                        <ReactTooltip
-                            id='dpd-tooltip'
-                            effect='solid'>
-                            <span>Damage Per Death</span>
-                        </ReactTooltip>
-                        <label
-                            data-tip
-                            data-for='dpd-tooltip'
-                            style={outer_label_style}
-                            htmlFor={`${match._id}-dpd`}>
-                            <input
-                                value='dpd'
-                                checked={this.state.selected.has('dpd')}
-                                onChange={this.toggle}
-                                id={`${match._id}-dpd`}
-                                type="checkbox"/>
-                            <span style={label_style}>Dmg / Death</span>
-                        </label>
-
-                        <ReactTooltip
-                            id='kp-tooltip'
-                            effect='solid'>
-                            <span>Kill Participation</span>
-                        </ReactTooltip>
-                        <label
-                            data-tip
-                            data-for='kp-tooltip'
-                            style={outer_label_style}
-                            htmlFor={`${match._id}-kp`} >
-                            <input
-                                value='kp'
-                                checked={this.state.selected.has('kp')}
-                                onChange={this.toggle}
-                                id={`${match._id}-kp`}
-                                type="checkbox"/>
-                            <span style={label_style}>KP</span>
-                        </label>
-
-                        <ReactTooltip
-                            id='physical-dmg-to-champions-tooltip'
-                            effect='solid'>
-                            <span>Physical Damage to Champions</span>
-                        </ReactTooltip>
-                        <label
-                            data-tip
-                            data-for='physical-dmg-to-champions-tooltip'
-                            style={outer_label_style}
-                            htmlFor={`${match._id}-physical`} >
-                            <input
-                                value='physical_damage_dealt_to_champions'
-                                checked={this.state.selected.has('physical_damage_dealt_to_champions')}
-                                onChange={this.toggle}
-                                id={`${match._id}-physical`}
-                                type="checkbox"/>
-                            <span style={label_style}>Physical</span>
-                        </label>
-
-                        <ReactTooltip
-                            id='magic-damage-to-champions-tooltip'
-                            effect='solid'>
-                            <span>Magic Damage to Champions</span>
-                        </ReactTooltip>
-                        <label
-                            data-tip
-                            data-for='magic-damage-to-champions-tooltip'
-                            style={outer_label_style}
-                            htmlFor={`${match._id}-magic`}>
-                            <input
-                                value='magic_damage_dealt_to_champions'
-                                checked={this.state.selected.has('magic_damage_dealt_to_champions')}
-                                onChange={this.toggle}
-                                id={`${match._id}-magic`}
-                                type="checkbox"/>
-                            <span style={label_style}>Magic</span>
-                        </label>
-
-                        <ReactTooltip
-                            id='true-damage-to-champions-tooltip'
-                            effect='solid'>
-                            <span>True Damage to Champions</span>
-                        </ReactTooltip>
-                        <label
-                            data-tip
-                            data-for='true-damage-to-champions-tooltip'
-                            style={outer_label_style}
-                            htmlFor={`${match._id}-true`}>
-                            <input
-                                value='true_damage_dealt_to_champions'
-                                checked={this.state.selected.has('true_damage_dealt_to_champions')}
-                                onChange={this.toggle}
-                                id={`${match._id}-true`}
-                                type="checkbox"/>
-                            <span style={label_style}>True</span>
-                        </label>
                     </div>
 
                     <div>
@@ -374,25 +219,9 @@ class StatOverview extends Component {
                             <hr />
                         </span>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-turrets`}>
-                            <input
-                                value='damage_dealt_to_turrets'
-                                checked={this.state.selected.has('damage_dealt_to_turrets')}
-                                onChange={this.toggle}
-                                id={`${match._id}-turrets`}
-                                type="checkbox"/>
-                            <span style={label_style}>Turrets</span>
-                        </label>
+                        {this.getBarGraphStat('Turrets', 'Damage Dealt to Turrets', 'damage_dealt_to_turrets')}
+                        {this.getBarGraphStat('Objectives', 'Damage Dealt to Objectives', 'damage_dealt_to_objectives')}
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-objectives`}>
-                            <input
-                                value='damage_dealt_to_objectives'
-                                checked={this.state.selected.has('damage_dealt_to_objectives')}
-                                onChange={this.toggle}
-                                id={`${match._id}-objectives`}
-                                type="checkbox"/>
-                            <span style={label_style}>Objectives</span>
-                        </label>
                     </div>
 
                     <div>
@@ -402,45 +231,11 @@ class StatOverview extends Component {
                             <hr />
                         </span>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-healing`}>
-                            <input
-                                value='total_heal'
-                                checked={this.state.selected.has('total_heal')}
-                                onChange={this.toggle}
-                                id={`${match._id}-healing`}
-                                type="checkbox"/>
-                            <span style={label_style}>Healing Done</span>
-                        </label>
+                        {this.getBarGraphStat('Healing Done', 'Healing Done', 'total_heal')}
+                        {this.getBarGraphStat('Damage Taken', 'Total Damage Taken', 'total_damage_taken')}
+                        {this.getBarGraphStat('Dmg / Death', 'Damage Taken Per Death', 'dtpd')}
+                        {this.getBarGraphStat('Self Mitigated', 'Damage Self Mitigated', 'damage_self_mitigated')}
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-damage_taken`}>
-                            <input
-                                value='total_damage_taken'
-                                checked={this.state.selected.has('total_damage_taken')}
-                                onChange={this.toggle}
-                                id={`${match._id}-damage_taken`}
-                                type="checkbox"/>
-                            <span style={label_style}>Damage Taken</span>
-                        </label>
-
-                        <label style={outer_label_style} htmlFor={`${match._id}-dtpd`}>
-                            <input
-                                value='dtpd'
-                                checked={this.state.selected.has('dtpd')}
-                                onChange={this.toggle}
-                                id={`${match._id}-dtpd`}
-                                type="checkbox"/>
-                            <span title='Damage Taken Per Death' style={label_style}>Dmg / Death</span>
-                        </label>
-
-                        <label style={outer_label_style} htmlFor={`${match._id}-self_mitigated_damage`}>
-                            <input
-                                value='damage_self_mitigated'
-                                checked={this.state.selected.has('damage_self_mitigated')}
-                                onChange={this.toggle}
-                                id={`${match._id}-self_mitigated_damage`}
-                                type="checkbox"/>
-                            <span style={label_style}>Self Mitigated</span>
-                        </label>
                     </div>
 
                     <div>
@@ -448,45 +243,12 @@ class StatOverview extends Component {
                             Vision
                             <hr />
                         </span>
-                        <label style={outer_label_style} htmlFor={`${match._id}-vision_score`}>
-                            <input
-                                value='vision_score'
-                                checked={this.state.selected.has('vision_score')}
-                                onChange={this.toggle}
-                                id={`${match._id}-vision_score`}
-                                type="checkbox"/>
-                            <span style={label_style}>Vision Score</span>
-                        </label>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-wards_placed`}>
-                            <input
-                                value='wards_placed'
-                                checked={this.state.selected.has('wards_placed')}
-                                onChange={this.toggle}
-                                id={`${match._id}-wards_placed`}
-                                type="checkbox"/>
-                            <span style={label_style}>Wards Placed</span>
-                        </label>
+                        {this.getBarGraphStat('Vision Score', 'Vision Score', 'vision_score')}
+                        {this.getBarGraphStat('Wards Placed', 'Wards Placed', 'wards_placed')}
+                        {this.getBarGraphStat('Wards Killed', 'Wards Killed', 'wards_killed')}
+                        {this.getBarGraphStat('Control Wards', '# of Control Wards purchased', 'vision_wards_bought_in_game')}
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-wards_killed`}>
-                            <input
-                                value='wards_killed'
-                                checked={this.state.selected.has('wards_killed')}
-                                onChange={this.toggle}
-                                id={`${match._id}-wards_killed`}
-                                type="checkbox"/>
-                            <span style={label_style}>Wards Killed</span>
-                        </label>
-
-                        <label style={outer_label_style} htmlFor={`${match._id}-vision_wards_bought_in_game`}>
-                            <input
-                                value='vision_wards_bought_in_game'
-                                checked={this.state.selected.has('vision_wards_bought_in_game')}
-                                onChange={this.toggle}
-                                id={`${match._id}-vision_wards_bought_in_game`}
-                                type="checkbox"/>
-                            <span style={label_style}>Control Wards</span>
-                        </label>
                     </div>
 
                     <div>
@@ -496,25 +258,9 @@ class StatOverview extends Component {
                             <hr />
                         </span>
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-cs`}>
-                            <input
-                                value='cs'
-                                checked={this.state.selected.has('cs')}
-                                onChange={this.toggle}
-                                id={`${match._id}-cs`}
-                                type="checkbox"/>
-                            <span style={label_style}>Total CS</span>
-                        </label>
+                        {this.getBarGraphStat('Total CS', 'Total CS', 'cs')}
+                        {this.getBarGraphStat('CS / Min', 'CS Per Minute', 'cspm')}
 
-                        <label style={outer_label_style} htmlFor={`${match._id}-cspm`}>
-                            <input
-                                value='cspm'
-                                checked={this.state.selected.has('cspm')}
-                                onChange={this.toggle}
-                                id={`${match._id}-cspm`}
-                                type="checkbox"/>
-                            <span style={label_style}>CS / Min</span>
-                        </label>
                     </div>
 
 
