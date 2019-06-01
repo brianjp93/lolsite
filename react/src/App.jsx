@@ -5,6 +5,7 @@ import Home from './components/general/Home'
 import Summoner from './components/summoner/Summoner'
 import DemoLogin from './components/general/DemoLogin'
 import SignUp from './components/account/SignUp'
+import LogIn from './components/account/LogIn'
 
 import api from './api/api'
 
@@ -154,7 +155,8 @@ function Routes(props) {
                         )
                     })}
 
-                    <Route path='/sign-up/' render={(rest) => <SignUp route={rest} store={props.store} />} />
+                    <Route exact path='/sign-up/' render={(rest) => <SignUp route={rest} store={props.store} />} />
+                    <Route exact path='/login/' render={(rest) => <LogIn route={rest} store={props.store} />} />                    
                     
                     <Route exact path='/themes/' render={() => <Themes store={props.store}/>}/>
                 </Switch>

@@ -1,28 +1,14 @@
 from celery import task
 
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 from .models import Summoner, NameChange
 from .models import simplify
-
 from .models import RankCheckpoint, RankPosition
+from .models import Custom
 
 from match.tasks import get_riot_api
-
-
-# def simplify(name):
-#     """Return the lowercase, no space version of a string.
-
-#     Parameters
-#     ----------
-#     name : str
-
-#     Returns
-#     -------
-#     str
-
-#     """
-#     return ''.join(name.split()).lower()
 
 
 @task(name='player.tasks.import_summoner')
@@ -156,3 +142,65 @@ def import_positions(summoner_id, threshold_days=None):
                 }
                 rankposition = RankPosition(**attrs)
                 rankposition.save()
+
+
+def simplify_email(email):
+    """Remove whitespace and make lowercase.
+
+    Parameters
+    ----------
+    email : str
+
+    Returns
+    -------
+    str
+
+    """
+    return email.strip().lower()
+
+
+def is_new_email_valid(email, password):
+    """Check to see if an email and password are valid.
+
+    Parameters
+    ----------
+    email : str
+    password : str
+
+    Returns
+    -------
+    bool
+
+    """
+    simplified_email = simplify_email(email)
+    query = User.objects.filter(email__iexact=simplified_email)
+    valid = True
+    if query.exists():
+        valid = False
+
+    if len(password) <= 6:
+        valid = False
+    return valid
+
+
+def create_account(email, password):
+    """Create an account.
+
+    Parameters
+    ----------
+    email : str
+    password : str
+
+    Returns
+    -------
+    User
+
+    """
+    is_valid = is_new_email_valid(email, password)
+    user = False
+
+    if is_valid:
+        user = User.objects.create_user(email, email, password)
+        custom = Custom(user=user)
+        custom.save()
+    return user

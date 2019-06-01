@@ -86,7 +86,9 @@ class SummonerSearchField extends Component {
         }
         return (
             <div>
-                <div className='row'>
+                <div
+                    style={{marginBottom: 0}}
+                    className='row'>
                     <div className="col m2 s3">
                         <ReactTooltip
                             id='region-select-tooltip'

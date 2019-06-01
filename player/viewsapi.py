@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view
 
 from django.utils import timezone
 from django.core.cache import cache
+from django.contrib.auth import authenticate, login
 
 from player import tasks as pt
 
@@ -620,5 +621,73 @@ def get_positions(request, format=None):
     else:
         data = {'data': []}
         status_code = 200
+
+    return Response(data, status=status_code)
+
+
+def sign_up(request, format=None):
+    """Create an account.
+
+    POST Parameters
+    ---------------
+    email : str
+    password : str
+
+    Returns
+    -------
+    JSON
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        if request.user.is_authenticated():
+            data = {'message': 'You are already logged in.'}
+            status_code = 403
+        else:
+            email = request.data.get('email')
+            password = request.data.get('password')
+
+            user = pt.create_user(email, password)
+            if user:
+                data = {'message': 'Account created.'}
+            else:
+                data = {'message': 'The email or password was invalid.'}
+                status_code = 403
+    else:
+        data = {'message': 'This resource only supports POSTs.'}
+
+    return Response(data, status=status_code)
+
+
+def login(request, format=None):
+    """Login
+
+    POST Parameters
+    ---------------
+    email : str
+    password : str
+
+    Returns
+    -------
+    JSON
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        email = request.data.get('email')
+        password = request.data.get('password')
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            login(request, user)
+            data = {'Successfully logged in.'}
+        else:
+            data = {'message': 'The email or password was not valid.'}
+            status_code = 403
+    else:
+        data = {'message': 'This resource only accepts POSTs.'}
 
     return Response(data, status=status_code)

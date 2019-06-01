@@ -6,6 +6,8 @@ urlpatterns = [
     path('summoner/', player_views.get_summoner),
     path('summoner-page/', player_views.get_summoner_page),
     path('positions/', player_views.get_positions),
+    path('sign-up/', player_views.sign_up),
+    path('login/', player_views.login),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

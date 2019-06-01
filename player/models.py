@@ -90,7 +90,6 @@ class Summoner(models.Model):
         return checkpoint
 
 
-
 class NameChange(models.Model):
     summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE, related_name='namechanges')
     old_name = models.CharField(max_length=128, default='')
