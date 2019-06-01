@@ -10,10 +10,14 @@ class SummonerSearchField extends Component {
         this.state = {
             summoner_name: '',
             to_summoner_page: false,
+
+            errors: {},
         }
 
         this.handleKeyDown = this.handleKeyDown.bind(this)
         this.handleKeyListener = this.handleKeyListener.bind(this)
+        this.validate = this.validate.bind(this)
+        this.search = this.search.bind(this)
     }
     componentDidMount() {
         window.addEventListener('keydown', this.handleKeyListener)
@@ -30,7 +34,7 @@ class SummonerSearchField extends Component {
     }
     handleKeyDown(event) {
         if (event.key === 'Enter') {
-            this.setState({to_summoner_page: true});
+            this.search()
         }
     }
     handleKeyListener(event) {
@@ -55,8 +59,26 @@ class SummonerSearchField extends Component {
             }
         }
     }
+    validate() {
+        var errors = {}
+
+        if (this.state.summoner_name.length === 0) {
+            errors.search = 'Please type out a summoner\'s name.'
+        }
+
+        this.setState({errors: errors})
+        return errors
+    }
+    search() {
+        var errors = this.validate()
+
+        if (Object.keys(errors).length === 0) {
+            this.setState({to_summoner_page: true})
+        }
+    }
     render() {
         const store = this.props.store
+        const theme = store.state.theme
         if (this.state.to_summoner_page) {
             return (
                 <Redirect push to={`/${store.state.region_selected}/${this.state.summoner_name}/`} />
@@ -64,68 +86,86 @@ class SummonerSearchField extends Component {
         }
         return (
             <div>
-                <div className="col m2 s3">
-                    <ReactTooltip
-                        id='region-select-tooltip'
-                        effect='solid' >
-                        <span>Select Region</span>
-                    </ReactTooltip>
-                    <div
-                        data-tip
-                        data-for='region-select-tooltip'
-                        className={`input-field ${store.state.theme}`}>
-                        <select
-                            onChange={(event) => store.setState({region_selected: event.target.value})}
-                            value={store.state.region_selected}
-                            ref={(elt) => {
-                                window.$(elt).formSelect()
-                            }} >
-                            {store.state.regions.map((region, key) => {
-                                return (
-                                    <option
-                                        key={key}
-                                        value={region} >
-                                        {region}
-                                    </option>
-                                )
-                            })}
-                        </select>
-                        <label>Region</label>
-                    </div>
-                </div>
-                <div className="col m10 s9">
+                <div className='row'>
+                    <div className="col m2 s3">
                         <ReactTooltip
-                            id='search-field-tooltip'
+                            id='region-select-tooltip'
                             effect='solid' >
-                            <span>Press "/" to focus the search field.</span>
+                            <span>Select Region</span>
                         </ReactTooltip>
                         <div
                             data-tip
-                            data-for='search-field-tooltip'
-                            className="input-field">
-                            <input
+                            data-for='region-select-tooltip'
+                            className={`input-field ${store.state.theme}`}>
+                            <select
+                                onChange={(event) => store.setState({region_selected: event.target.value})}
+                                value={store.state.region_selected}
                                 ref={(elt) => {
-                                    this.input = elt
-                                }}
-                                className={store.state.theme}
-                                id='summoner-search'
-                                type="text"
-                                value={this.state.summoner_name}
-                                onChange={(event) => this.setState({summoner_name: event.target.value})}
-                                onKeyDown={this.handleKeyDown} />
-                            <label
-                                htmlFor="summoner-search">
-                                Summoner{' '}
-                                <span style={{
-                                    borderWidth: 1,
-                                    borderStyle: 'solid',
-                                    borderRadius: 4,
-                                    padding: '0px 7px 3px 7px',
-                                }}>
-                                    /
-                                </span>
-                            </label>
+                                    window.$(elt).formSelect()
+                                }} >
+                                {store.state.regions.map((region, key) => {
+                                    return (
+                                        <option
+                                            key={key}
+                                            value={region} >
+                                            {region}
+                                        </option>
+                                    )
+                                })}
+                            </select>
+                            <label>Region</label>
                         </div>
+                    </div>
+                    <div className="col m10 s9">
+                            <ReactTooltip
+                                id='search-field-tooltip'
+                                effect='solid' >
+                                <span>Press "/" to focus the search field.</span>
+                            </ReactTooltip>
+                            <div
+                                data-tip
+                                data-for='search-field-tooltip'
+                                className="input-field">
+                                <input
+                                    ref={(elt) => {
+                                        this.input = elt
+                                    }}
+                                    className={store.state.theme}
+                                    id='summoner-search'
+                                    type="text"
+                                    value={this.state.summoner_name}
+                                    onChange={(event) => this.setState({summoner_name: event.target.value})}
+                                    onKeyDown={this.handleKeyDown} />
+                                <label
+                                    htmlFor="summoner-search">
+                                    Summoner{' '}
+                                    <span style={{
+                                        borderWidth: 1,
+                                        borderStyle: 'solid',
+                                        borderRadius: 4,
+                                        padding: '0px 7px 3px 7px',
+                                    }}>
+                                        /
+                                    </span>
+                                </label>
+                                {this.state.errors.search !== undefined &&
+                                    <div className={`helper-text ${theme} dark error`}>
+                                        {this.state.errors.search}
+                                    </div>
+                                }
+                            </div>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col s12">
+                        <button
+                            style={{width: '100%'}}
+                            onClick={() => this.setState({to_summoner_page: true})}
+                            className={`${theme} btn`}>
+                            Search
+                        </button>
+                    </div>
                 </div>
             </div>
         )
