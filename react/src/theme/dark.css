@@ -19,6 +19,7 @@
     --muted: #7d6a6a;
     --selected: #4074a8;
     --plain: #9aa4b5;
+    --error-color: #e25e5e;
 }
 
 a.dark {
@@ -120,10 +121,24 @@ ul.sidenav.dark {
     background-color: var(--button-color1);
 }
 
+.dark.btn-flat {
+    background-color: #00000000;
+    color: var(--link-color);
+}
+
+.dark.btn-flat:hover {
+    background-color: #4e5569;
+    color: var(--link-color);
+}
+
 .dark.btn-small:hover, .dark.btn:hover, .dark.btn-large:hover {
     background-color: var(--button-color1-hover);
 }
 
 .dark.btn-small.selected, .dark.btn.selected, .dark.btn-large.selected {
     background-color: var(--selected);
+}
+
+.dark.error {
+    color: var(--error-color);
 }

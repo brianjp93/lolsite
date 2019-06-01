@@ -166,4 +166,4 @@ function Routes(props) {
     }
 }
 
-export default App;
+export default App

@@ -19,6 +19,7 @@
     --muted: #7d6a6a;
     --selected: #4074a8;
     --plain: #9aa4b5;
+    --error-color: #e25e5e;
 }
 
 a.light {
@@ -124,6 +125,20 @@ ul.sidenav.light {
     background-color: var(--button-color1-hover);
 }
 
+.light.btn-flat {
+    background-color: #00000000;
+    color: var(--link-color);
+}
+
+.light.btn-flat:hover {
+    background-color: #4e5569;
+    color: var(--link-color);
+}
+
 .light.btn-small.selected, .light.btn.selected, .light.btn-large.selected {
     background-color: var(--selected);
+}
+
+.light.error {
+    color: var(--error-color);
 }

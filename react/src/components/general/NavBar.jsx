@@ -81,7 +81,7 @@ class NavBar extends Component {
                                 className='left'
                                 style={{marginLeft:10, padding:'0px 15px'}}
                             >
-                                Logo
+                                Home
                             </Link>
                             {
                                 // eslint-disable-next-line
