@@ -14,6 +14,51 @@ class LogIn extends Component {
         this.state = {
             email: '',
             password: '',
+
+            errors: {},
+        }
+
+        this.validate = this.validate.bind(this)
+        this.login = this.login.bind(this)
+        this.getHelpText = this.getHelpText.bind(this)
+        this.handleKeyDown = this.handleKeyDown.bind(this)
+    }
+    validate() {
+        var errors = {}
+
+        if (this.state.email.length === 0) {
+            errors.email = 'Please enter an email.'
+        }
+        if (this.state.password.length === 0) {
+            errors.password = 'Please enter a password.'
+        }
+
+        this.setState({errors: errors})
+        return errors
+    }
+    login() {
+        var errors = this.validate()
+
+        if (Object.keys(errors).length === 0) {
+            // Good - No errors
+        }
+    }
+    getHelpText(field) {
+        var elt = null
+        if (this.state.errors[field] !== undefined) {
+            elt = (
+                <div className={`helper-text ${this.props.store.state.theme} error`}>
+                    {this.state.errors[field]}
+                </div>
+            )
+        }
+        return elt
+    }
+    handleKeyDown(event) {
+        if (event.key === 'Enter') {
+            this.login()
+            event.preventDefault()
+            event.stopPropagation()
         }
     }
     render() {
@@ -40,12 +85,14 @@ class LogIn extends Component {
                                 data-for='email-tip'
                                 className="input-field">
                                 <input
+                                    onKeyDown={this.handleKeyDown}
                                     className={theme}
                                     id='email-input-field'
                                     value={this.state.email}
                                     onChange={(event) => this.setState({email: event.target.value})}
                                     type="text" />
                                 <label htmlFor="email-input-field">Email</label>
+                                {this.getHelpText('email')}
                             </div>
 
                             <ReactTooltip
@@ -58,15 +105,18 @@ class LogIn extends Component {
                                 data-for='password-tip'
                                 className="input-field">
                                 <input
+                                    onKeyDown={this.handleKeyDown}
                                     className={theme}
                                     id='password-input-field'
                                     value={this.state.password}
                                     onChange={(event) => this.setState({password: event.target.value})}
                                     type="text" />
                                 <label htmlFor="password-input-field">Password</label>
+                                {this.getHelpText('password')}
                             </div>
 
                             <button
+                                onClick={this.login}
                                 style={{width: '100%'}}
                                 className={`btn ${theme}`}>
                                 Log In
