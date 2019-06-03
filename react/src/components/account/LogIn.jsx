@@ -1,10 +1,9 @@
 import React, { Component } from 'react'
-import { Link, Redirect } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import ReactTooltip from 'react-tooltip'
 import queryString from 'query-string'
 
-import api from '../../api/api'
 import NavBar from '../general/NavBar'
 import Footer from '../general/Footer'
 
@@ -171,6 +170,9 @@ class LogIn extends Component {
             </div>
         )
     }
+}
+LogIn.propTypes = {
+    store: PropTypes.object.isRequired,
 }
 
 export default LogIn

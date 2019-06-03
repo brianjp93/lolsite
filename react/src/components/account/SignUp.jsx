@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import ReactTooltip from 'react-tooltip'
 
 import NavBar from '../general/NavBar'
-import api from '../../api/api'
+// import api from '../../api/api'
 import Footer from '../general/Footer'
 
 
