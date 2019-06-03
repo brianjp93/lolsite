@@ -107,26 +107,24 @@ class SignUp extends Component {
                     <div style={{height: 100}}></div>
 
                     <div className="row">
-                        <div className="col l4 offset-l4 m12">
-                            <div className={`card-panel ${theme}`}>
-                                <h4 style={{marginTop: 0, marginBottom: 0}}>
-                                    Verify Your Email
-                                </h4>
-                                <hr style={{marginTop: 0, marginBottom: 30}} />
+                        <div className="col m6 offset-m3 s12">
+                            <h4 style={{marginTop: 0, marginBottom: 0}}>
+                                Verify Your Email
+                            </h4>
+                            <hr style={{marginTop: 0, marginBottom: 30}} />
 
-                                <div>
-                                    Hey! We just sent you an email.  Once you verify your
-                                    account you'll be able to login.
-                                </div>
+                            <div>
+                                Hey! We just sent you an email.  Once you verify your
+                                account you'll be able to login.
+                            </div>
 
-                                <div style={{marginTop: 20}}>
-                                    <Link
-                                        to='/login'
-                                        style={{width: '100%'}}
-                                        className={`${theme} btn btn-flat`}>
-                                        Go to Login
-                                    </Link>
-                                </div>
+                            <div style={{marginTop: 20}}>
+                                <Link
+                                    to='/login'
+                                    style={{width: '100%'}}
+                                    className={`${theme} btn btn-flat`}>
+                                    Go to Login
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -143,78 +141,75 @@ class SignUp extends Component {
                     <div style={{height: 100}}></div>
 
                     <div className="row">
-                        <div className="col l4 offset-l4 m12">
-                            <div className={`card-panel ${theme}`}>
+                        <div className="col m6 offset-m3 s12">
+                            <h4 style={{marginTop: 0, marginBottom: 0}}>
+                                Sign Up
+                            </h4>
+                            <hr style={{marginTop: 0, marginBottom: 30}} />
+                            <ReactTooltip id='email-tip' effect='solid'>
+                                <span>
+                                    Please enter your email.
+                                </span>
+                            </ReactTooltip>
+                            <div
+                                data-tip
+                                data-for='email-tip'
+                                className="input-field">
+                                <input
+                                    onKeyDown={this.handleKeyDown}
+                                    ref={(elt) => {this.email_field = elt}}
+                                    id='email-input-field'
+                                    className={theme}
+                                    value={this.state.email}
+                                    onChange={(event) => this.setState({email: event.target.value})}
+                                    type="text"/>
+                                <label htmlFor="email-input-field">Email</label>
+                                {this.helperElement('email')}
+                            </div>
 
-                                <h4 style={{marginTop: 0, marginBottom: 0}}>
-                                    Sign Up
-                                </h4>
-                                <hr style={{marginTop: 0, marginBottom: 30}} />
-                                <ReactTooltip id='email-tip' effect='solid'>
-                                    <span>
-                                        Please enter your email.
-                                    </span>
-                                </ReactTooltip>
-                                <div
-                                    data-tip
-                                    data-for='email-tip'
-                                    className="input-field">
-                                    <input
-                                        onKeyDown={this.handleKeyDown}
-                                        ref={(elt) => {this.email_field = elt}}
-                                        id='email-input-field'
-                                        className={theme}
-                                        value={this.state.email}
-                                        onChange={(event) => this.setState({email: event.target.value})}
-                                        type="text"/>
-                                    <label htmlFor="email-input-field">Email</label>
-                                    {this.helperElement('email')}
-                                </div>
+                            <ReactTooltip id='password-tip' effect='solid'>
+                                <span>Please enter a secure password.</span>
+                            </ReactTooltip>
+                            <div
+                                data-tip
+                                data-for='password-tip'
+                                className="input-field">
+                                <input
+                                    onKeyDown={this.handleKeyDown}
+                                    id='password-input'
+                                    type="text"
+                                    className={theme}
+                                    value={this.state.password}
+                                    onChange={(event) => this.setState({password: event.target.value})} />
+                                <label htmlFor="password-input">Password</label>
+                                {this.helperElement('password')}
+                            </div>
 
-                                <ReactTooltip id='password-tip' effect='solid'>
-                                    <span>Please enter a secure password.</span>
-                                </ReactTooltip>
-                                <div
-                                    data-tip
-                                    data-for='password-tip'
-                                    className="input-field">
-                                    <input
-                                        onKeyDown={this.handleKeyDown}
-                                        id='password-input'
-                                        type="text"
-                                        className={theme}
-                                        value={this.state.password}
-                                        onChange={(event) => this.setState({password: event.target.value})} />
-                                    <label htmlFor="password-input">Password</label>
-                                    {this.helperElement('password')}
-                                </div>
+                            <ReactTooltip id='password-verify-tip' effect='solid'>
+                                <span>Please re-type your password.</span>
+                            </ReactTooltip>
+                            <div
+                                data-tip
+                                data-for='password-verify-tip'
+                                className="input-field">
+                                <input
+                                    onKeyDown={this.handleKeyDown}
+                                    id='password-verify-input'
+                                    type="text"
+                                    className={theme}
+                                    value={this.state.password}
+                                    onChange={(event) => this.setState({password_verify: event.target.value})} />
+                                <label htmlFor="password-verify-input">Verify Password</label>
+                                {this.helperElement('password_verify')}
+                            </div>
 
-                                <ReactTooltip id='password-verify-tip' effect='solid'>
-                                    <span>Please re-type your password.</span>
-                                </ReactTooltip>
-                                <div
-                                    data-tip
-                                    data-for='password-verify-tip'
-                                    className="input-field">
-                                    <input
-                                        onKeyDown={this.handleKeyDown}
-                                        id='password-verify-input'
-                                        type="text"
-                                        className={theme}
-                                        value={this.state.password}
-                                        onChange={(event) => this.setState({password_verify: event.target.value})} />
-                                    <label htmlFor="password-verify-input">Verify Password</label>
-                                    {this.helperElement('password_verify')}
-                                </div>
-
-                                <div>
-                                    <button
-                                        style={{width: '100%'}}
-                                        onClick={this.createAccount}
-                                        className={`${theme} btn`}>
-                                        Create Account
-                                    </button>
-                                </div>
+                            <div>
+                                <button
+                                    style={{width: '100%'}}
+                                    onClick={this.createAccount}
+                                    className={`${theme} btn`}>
+                                    Create Account
+                                </button>
                             </div>
                         </div>
                     </div>

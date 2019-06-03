@@ -625,6 +625,7 @@ def get_positions(request, format=None):
     return Response(data, status=status_code)
 
 
+@api_view(['POST'])
 def sign_up(request, format=None):
     """Create an account.
 
@@ -657,37 +658,5 @@ def sign_up(request, format=None):
                 status_code = 403
     else:
         data = {'message': 'This resource only supports POSTs.'}
-
-    return Response(data, status=status_code)
-
-
-def login(request, format=None):
-    """Login
-
-    POST Parameters
-    ---------------
-    email : str
-    password : str
-
-    Returns
-    -------
-    JSON
-
-    """
-    data = {}
-    status_code = 200
-
-    if request.method == 'POST':
-        email = request.data.get('email')
-        password = request.data.get('password')
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            login(request, user)
-            data = {'Successfully logged in.'}
-        else:
-            data = {'message': 'The email or password was not valid.'}
-            status_code = 403
-    else:
-        data = {'message': 'This resource only accepts POSTs.'}
 
     return Response(data, status=status_code)

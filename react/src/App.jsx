@@ -18,6 +18,7 @@ class App extends Component {
         this.state = {
             theme: 'dark',
             language: 'en_US',
+            user: {},
 
             project_title: 'Press R',
 
@@ -68,6 +69,9 @@ class App extends Component {
 
         var static_base = document.getElementById('static-base')
         this.setState({static: static_base.innerHTML.trim()})
+
+        var user_elt = document.getElementById('user-data')
+        this.setState({user: JSON.parse(user_elt.innerHTML)})
     }
     componentWillUnmount() {
     }

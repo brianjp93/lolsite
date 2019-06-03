@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
+import { Link, Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import ReactTooltip from 'react-tooltip'
+import queryString from 'query-string'
 
 import api from '../../api/api'
 import NavBar from '../general/NavBar'
@@ -16,12 +18,24 @@ class LogIn extends Component {
             password: '',
 
             errors: {},
+
+            is_logging_in: false,
+            to_home_page: false,
+
+            is_show_login_error: false,
         }
 
         this.validate = this.validate.bind(this)
         this.login = this.login.bind(this)
         this.getHelpText = this.getHelpText.bind(this)
         this.handleKeyDown = this.handleKeyDown.bind(this)
+    }
+    componentDidMount() {
+        var query_string = this.props.route.location.search
+        const values = queryString.parse(query_string)
+        if (values.error === 'true') {
+            this.setState({is_show_login_error: true})
+        }
     }
     validate() {
         var errors = {}
@@ -41,6 +55,10 @@ class LogIn extends Component {
 
         if (Object.keys(errors).length === 0) {
             // Good - No errors
+
+            this.setState({is_logging_in: true})
+            this.form.submit()
+            
         }
     }
     getHelpText(field) {
@@ -68,12 +86,29 @@ class LogIn extends Component {
             <div>
                 <NavBar store={store} />
 
-                <div style={{height: 150}}></div>
+                <div style={{height: 130}}>
+                </div>
 
                 <div className="row">
                     <div className="col m6 offset-m3 s12">
 
+                        <form
+                            ref={(elt) =>  {this.form = elt}}
+                            id="login-form"
+                            method='post'
+                            action="/login/go/">
                             <h4 style={{textAlign: 'center'}}>Log In</h4>
+
+                            {this.state.is_show_login_error &&
+                                <div
+                                    style={{margin: '30px 0px'}}
+                                    className={`${theme} error-bordered`}>
+                                    <span>Your username or password was incorrect.</span>
+                                </div>
+                            }
+
+                            {/* CSRF Input Field */}
+                            <input name='csrfmiddlewaretoken' type="hidden" defaultValue={store.props.csrf_token} />
 
                             <ReactTooltip
                                 effect='solid'
@@ -85,6 +120,7 @@ class LogIn extends Component {
                                 data-for='email-tip'
                                 className="input-field">
                                 <input
+                                    name='email'
                                     onKeyDown={this.handleKeyDown}
                                     className={theme}
                                     id='email-input-field'
@@ -105,12 +141,13 @@ class LogIn extends Component {
                                 data-for='password-tip'
                                 className="input-field">
                                 <input
+                                    name='password'
                                     onKeyDown={this.handleKeyDown}
                                     className={theme}
                                     id='password-input-field'
                                     value={this.state.password}
                                     onChange={(event) => this.setState({password: event.target.value})}
-                                    type="text" />
+                                    type="password" />
                                 <label htmlFor="password-input-field">Password</label>
                                 {this.getHelpText('password')}
                             </div>
@@ -121,6 +158,12 @@ class LogIn extends Component {
                                 className={`btn ${theme}`}>
                                 Log In
                             </button>
+                        </form>
+
+                        <div style={{marginTop: 5}}>
+                            <span>No account?</span>{' '}
+                            <Link to='/sign-up/'>Sign Up!</Link>
+                        </div>
                     </div>
                 </div>
 

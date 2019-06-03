@@ -5,16 +5,22 @@
 <script id='queues' type='application/json'>
     {{ queues|safe }}
 </script>
+<script id='user-data' type='application/json'>
+    {{ user|safe }}
+</script>
 <script id='static-base' type='text'>
     {% static "" %}
 </script>
 {% endblock header %}
 
 {% block body %}
+    {% csrf_token %}
     <div
+        data-csrf_token='{{ csrf_token }}'
         style=''
         class="__react_root"
         app-name="App"
         data-allow_access="{{ allow_access }}"
         id='app-wrap'></div>
+    }
 {% endblock body %}

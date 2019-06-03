@@ -11,8 +11,18 @@ def home(request, path=''):
     """
     restrict_access = False
 
+    user = request.user
+    try:
+        user_data = {
+            'email': request.user.email,
+            'is_email_verified': user.custom.is_email_verified,
+        }
+    except:
+        user_data = {}
+
     data = {
         'queues': json.dumps(constants.QUEUES),
+        'user': json.dumps(user_data),
     }
     if restrict_access:
         if request.user.is_authenticated:

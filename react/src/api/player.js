@@ -21,9 +21,20 @@ function getPositions(data) {
     return axios.post(url, data)
 }
 
+function signUp(data) {
+    var url = `/api/${version}/player/sign-up/`
+    return axios.post(url, data)
+}
+
+function login(data) {
+    var url = `/api/${version}/player/login/`
+    return axios.post(url, data)
+}
 
 export default {
     getSummoner,
     getSummonerPage,
     getPositions,
+    signUp,
+    login,
 }
