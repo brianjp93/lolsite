@@ -31,10 +31,16 @@ function login(data) {
     return axios.post(url, data)
 }
 
+function verify(data) {
+    var url = `/api/${version}/player/verify/`
+    return axios.post(url, data)
+}
+
 export default {
     getSummoner,
     getSummonerPage,
     getPositions,
     signUp,
     login,
+    verify,
 }

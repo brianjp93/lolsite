@@ -6,6 +6,7 @@ import Summoner from './components/summoner/Summoner'
 import DemoLogin from './components/general/DemoLogin'
 import SignUp from './components/account/SignUp'
 import LogIn from './components/account/LogIn'
+import VerifyEmail from './components/account/VerifyEmail'
 
 import api from './api/api'
 
@@ -143,7 +144,8 @@ class App extends Component {
 }
 
 function Routes(props) {
-    if (['true', 'True', true].indexOf(props.store.props.allow_access) >= 0) {
+    // if (['true', 'True', true].indexOf(props.store.props.allow_access) >= 0) {
+    if (true) {
         return (
             <main>
                 <Switch>
@@ -160,8 +162,9 @@ function Routes(props) {
                     })}
 
                     <Route exact path='/sign-up/' render={(rest) => <SignUp route={rest} store={props.store} />} />
-                    <Route exact path='/login/' render={(rest) => <LogIn route={rest} store={props.store} />} />                    
-                    
+                    <Route exact path='/login/' render={(rest) => <LogIn route={rest} store={props.store} />} />
+                    <Route path='/verify/' render={(rest) => <VerifyEmail route={rest} store={props.store} />} />
+
                     <Route exact path='/themes/' render={() => <Themes store={props.store}/>}/>
                 </Switch>
             </main>

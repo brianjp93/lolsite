@@ -3,9 +3,13 @@
 Model definitions for the player app.
 
 """
+import uuid
+
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
 
 from match.models import Participant
 
@@ -133,3 +137,49 @@ class Custom(models.Model):
         # Always set modified_date on save().
         self.modified_date = timezone.now()
         super(Custom, self).save(*args, **kwargs)
+
+
+class EmailVerification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    code = models.UUIDField(default=uuid.uuid4, blank=True, db_index=True)
+    created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # send verification email for new EmailVerification models.
+        if self.pk == None:
+            self.send_verification_email()
+        super(EmailVerification, self).save(*args, **kwargs)
+
+    def get_verification_url(self):
+        return f'{settings.BASE_URL}/verify/?code={self.code.hex}'
+
+    def send_verification_email(self):
+        subject = 'Verify Email'
+        message = f'''
+            Hi there, you sign up for an account on our league site.  Please go to the following 
+            url to verify your account.
+
+            {self.get_verification_url()}
+
+            If you did not sign up for an account, please ignore this email.
+
+            If you do not verify your email within 24 hours, your account will be deleted.
+        '''
+        html_message = f'''
+            <div>
+                Hi there, you signed up for an account on our league site at 
+                {self.user.date_joined}.  Please click the link below to verify this email. 
+            </div>
+            <br>
+            
+            <div>
+                <a href='{self.get_verification_url()}' >{self.get_verification_url()}</a>
+            </div>
+            <br>
+
+            <div>
+                If you did not sign up for an account, please ignore this email. 
+                If you do not verify your email, your account will be deleted.
+            </div>
+        '''
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.user.email], html_message=html_message)

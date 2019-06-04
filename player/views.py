@@ -3,6 +3,11 @@
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.contrib.auth import authenticate, login, logout
+from django.utils import timezone
+
+from player.models import EmailVerification
+
+from lolsite.views import get_base_react_context
 
 
 def login_action(request):
@@ -23,12 +28,24 @@ def login_action(request):
         password = request.POST.get('password')
         user = authenticate(request, username=email, password=password)
         if user is not None:
-            login(request, user)
-            view_name = 'home'
+            if user.custom.is_email_verified:
+                login(request, user)
+                view_name = 'home'
+            else:
+                view_name = '/login?error=verification'
+                thresh = timezone.now() - timezone.timedelta(minutes=10)
+                query = user.emailverification_set.filter(created_date__gt=thresh)
+                if query.exists():
+                    # recent emailverification models exist
+                    # don't need to create a new one
+                    pass
+                else:
+                    # Create new email verification model.
+                    EmailVerification(user=user).save()
         else:
             view_name = '/login?error=true'
     else:
-        data = {'message': 'This resource only accepts POSTs.'}
+        view_name = '/login'
 
     return redirect(view_name)
 

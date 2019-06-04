@@ -55,8 +55,10 @@ else:
 
 if DEV:
     ALLOWED_HOSTS = ['localhost', '192.168.0.24']
+    BASE_URL = 'http://localhost:8000'
 else:
     ALLOWED_HOSTS = ['.elasticbeanstalk.com']
+    BASE_URL = 'http://lolsite.us-west-2.elasticbeanstalk.com'
 
 GIT_BUILD = 0
 try:
@@ -253,3 +255,5 @@ EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = os.environ.get('LOLSITE_EMAIL_HOST_PASSWORD', '')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+DEFAULT_FROM_EMAIL = 'brianjp93@gmail.com'

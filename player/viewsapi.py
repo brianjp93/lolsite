@@ -11,6 +11,7 @@ from django.core.cache import cache
 from django.contrib.auth import authenticate, login
 
 from player import tasks as pt
+from player.models import EmailVerification
 
 from data.models import ProfileIcon, Champion
 from data.serializers import ProfileIconSerializer
@@ -643,14 +644,14 @@ def sign_up(request, format=None):
     status_code = 200
 
     if request.method == 'POST':
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             data = {'message': 'You are already logged in.'}
             status_code = 403
         else:
             email = request.data.get('email')
             password = request.data.get('password')
 
-            user = pt.create_user(email, password)
+            user = pt.create_account(email, password)
             if user:
                 data = {'message': 'Account created.'}
             else:
@@ -658,5 +659,46 @@ def sign_up(request, format=None):
                 status_code = 403
     else:
         data = {'message': 'This resource only supports POSTs.'}
+
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def verify_email(request, format=None):
+    """Verify a User's email.
+
+    * Also calls player.tasks.remove_old_email_verification to delete
+        old EmailVerification models.
+
+    POST Parameters
+    ---------------
+    code : str
+        uuid string
+
+    Returns
+    -------
+    JSON
+
+    """
+    data = {}
+    status_code = 200
+    age_hours = 1
+    
+    if request.method == 'POST':
+        code = request.data.get('code')
+        verified = pt.verify_user_email(code, age_hours=age_hours)
+        if verified:
+            data = {'message': 'Successfully verified email.'}
+        else:
+            data = {
+                'message': (
+                    'Either the code does not exist, or it is ',
+                    'too old.  Request a new verification email.'
+                )
+            }
+            status_code = 404
+        pt.remove_old_email_verification(age_hours=age_hours)
+    else:
+        data = {'message': 'This resource on supports POSTs.'}
 
     return Response(data, status=status_code)

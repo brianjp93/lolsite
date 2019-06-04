@@ -8,6 +8,7 @@ urlpatterns = [
     path('positions/', player_views.get_positions),
     path('sign-up/', player_views.sign_up),
     path('login/', player_views.login),
+    path('verify/', player_views.verify_email),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

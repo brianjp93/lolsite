@@ -1,6 +1,6 @@
+"""lolsite/views.py
+"""
 from django.template.response import TemplateResponse
-from django.contrib.auth.decorators import login_required
-from fun.models import InspirationalMessage
 
 from data import constants
 import json
@@ -9,9 +9,13 @@ import json
 def home(request, path=''):
     """Return basic home address and let react render the rest.
     """
-    restrict_access = False
-
     user = request.user
+    data = get_base_react_context(user=user)
+    return TemplateResponse(request, 'layout/home.html', data)
+
+def get_base_react_context(user=None):
+    """Get the react context data.
+    """
     try:
         user_data = {
             'email': request.user.email,
@@ -24,11 +28,4 @@ def home(request, path=''):
         'queues': json.dumps(constants.QUEUES),
         'user': json.dumps(user_data),
     }
-    if restrict_access:
-        if request.user.is_authenticated:
-            data['allow_access'] = True
-        else:
-            data['allow_access'] = False
-    else:
-        data['allow_access'] = True
-    return TemplateResponse(request, 'layout/home.html', data)
+    return data

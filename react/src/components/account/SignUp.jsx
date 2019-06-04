@@ -2,9 +2,10 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import ReactTooltip from 'react-tooltip'
+import toastr from 'toastr'
 
 import NavBar from '../general/NavBar'
-// import api from '../../api/api'
+import api from '../../api/api'
 import Footer from '../general/Footer'
 
 
@@ -21,6 +22,7 @@ class SignUp extends Component {
 
             is_creating: false,
             is_await_validation: false,
+            is_show_error: false,
         }
         this.createAccount = this.createAccount.bind(this)
         this.handleKeyDown = this.handleKeyDown.bind(this)
@@ -76,7 +78,23 @@ class SignUp extends Component {
         var errors = this.validate()
         if (Object.keys(errors).length === 0) {
             // no errors, continue
-
+            var data = {
+                email: this.state.email,
+                password: this.state.password,
+            }
+            this.setState({is_creating: true})
+            api.player.signUp(data)
+                .then(response => {
+                    this.setState({is_await_validation: true})
+                })
+                .catch(error => {
+                    console.log(error)
+                    this.setState({is_show_error: true})
+                    toastr.error('There was an error while creating your account.')
+                })
+                .then(() => {
+                    this.setState({is_creating: false})
+                })
         }
     }
     helperElement(field) {
@@ -177,7 +195,7 @@ class SignUp extends Component {
                                 <input
                                     onKeyDown={this.handleKeyDown}
                                     id='password-input'
-                                    type="text"
+                                    type="password"
                                     className={theme}
                                     value={this.state.password}
                                     onChange={(event) => this.setState({password: event.target.value})} />
@@ -195,9 +213,9 @@ class SignUp extends Component {
                                 <input
                                     onKeyDown={this.handleKeyDown}
                                     id='password-verify-input'
-                                    type="text"
+                                    type="password"
                                     className={theme}
-                                    value={this.state.password}
+                                    value={this.state.password_verify}
                                     onChange={(event) => this.setState({password_verify: event.target.value})} />
                                 <label htmlFor="password-verify-input">Verify Password</label>
                                 {this.helperElement('password_verify')}

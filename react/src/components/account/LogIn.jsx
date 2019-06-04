@@ -22,6 +22,7 @@ class LogIn extends Component {
             to_home_page: false,
 
             is_show_login_error: false,
+            is_needs_verification: false,
         }
 
         this.validate = this.validate.bind(this)
@@ -34,6 +35,9 @@ class LogIn extends Component {
         const values = queryString.parse(query_string)
         if (values.error === 'true') {
             this.setState({is_show_login_error: true})
+        }
+        else if (values.error === 'verification') {
+            this.setState({is_needs_verification: true})
         }
     }
     validate() {
@@ -103,6 +107,17 @@ class LogIn extends Component {
                                     style={{margin: '30px 0px'}}
                                     className={`${theme} error-bordered`}>
                                     <span>Your username or password was incorrect.</span>
+                                </div>
+                            }
+                            {this.state.is_needs_verification &&
+                                <div
+                                    style={{margin: '30px 0px'}}
+                                    className={`${theme} error-bordered`}>
+                                    <span>
+                                        This account exists but the email needs to be verified.{' '}
+                                        Please check your inbox for a verification email.  It may be in{' '}
+                                        your spam folder.
+                                    </span>
                                 </div>
                             }
 

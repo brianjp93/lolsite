@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from .models import Summoner, NameChange
 from .models import simplify
 from .models import RankCheckpoint, RankPosition
-from .models import Custom
+from .models import Custom, EmailVerification
 
 from match.tasks import get_riot_api
 
@@ -203,4 +203,52 @@ def create_account(email, password):
         user = User.objects.create_user(email, email, password)
         custom = Custom(user=user)
         custom.save()
+        verification = EmailVerification(user=user)
+        verification.save()
     return user
+
+
+def verify_user_email(code, age_hours=1):
+    """Verify a User's email.
+
+    * Sets is_email_verified to True, then deletes the associated
+        EmailVerification model.
+
+    Parameters
+    ----------
+    code : str
+
+    Returns
+    -------
+    bool
+
+    """
+    verified = False
+    thresh = timezone.now() - timezone.timedelta(hours=age_hours)
+    query = EmailVerification.objects.filter(code=code, created_date__gte=thresh)
+    if query.exists():
+        email_verification = query.first()
+        custom = email_verification.user.custom
+        custom.is_email_verified = True
+        custom.save()
+        email_verification.delete()
+        verified = True
+
+    return verified
+
+
+def remove_old_email_verification(age_hours=1):
+    """Delete all EmailVerification models older than `age_hours`
+
+    Parameters
+    ----------
+    age_hours : int
+
+    Returns
+    -------
+    None
+
+    """
+    thresh = timezone.now() - timezone.timedelta(hours=age_hours)
+    query = EmailVerification.objects.filter(created_date__lt=thresh)
+    query.delete()

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Summoner, NameChange
 from .models import RankCheckpoint, RankPosition
-from .models import Custom
+from .models import Custom, EmailVerification
 
 
 class SummonerAdmin(admin.ModelAdmin):
@@ -33,8 +33,14 @@ class CustomAdmin(admin.ModelAdmin):
     raw_id_fields = ('user',)
 
 
+class EmailVerificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'code')
+    raw_id_fields = ('user',)
+
+
 admin.site.register(Summoner, SummonerAdmin)
 admin.site.register(NameChange, NameChangeAdmin)
 admin.site.register(RankCheckpoint, RankCheckpointAdmin)
 admin.site.register(RankPosition, RankPositionAdmin)
 admin.site.register(Custom, CustomAdmin)
+admin.site.register(EmailVerification, EmailVerificationAdmin)

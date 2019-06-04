@@ -20,6 +20,7 @@
     --selected: #4074a8;
     --plain: #9aa4b5;
     --error-color: #e25e5e;
+    --success-color: #46d87e;
 }
 
 a.light {
@@ -148,6 +149,19 @@ ul.sidenav.light {
     border-style: solid;
     border-width: 1px;
     border-color: var(--error-color);
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.light.success {
+    color: var(--success-color);
+}
+
+.light.success-bordered {
+    color: var(--success-color);
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--success-color);
     padding: 8px;
     border-radius: 5px;
 }
