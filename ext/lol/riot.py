@@ -59,3 +59,4 @@ class Riot:
         self.runes = resource.Runes(self.base)
         self.spectator = resource.Spectator(self.base)
         self.summoner = resource.Summoner(self.base)
+        self.thirdpartycode = resource.ThirdPartyCode(self.base)
