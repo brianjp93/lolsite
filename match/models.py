@@ -14,6 +14,8 @@ from data.models import SummonerSpell
 
 from data import constants as DATA_CONSTANTS
 
+from player.models import simplify
+
 
 def sort_positions(positions):
     """Uses tier_sort, rank_sort and lp_sort to sort positions by descending rank.
@@ -143,6 +145,7 @@ class Participant(models.Model):
     match_history_uri = models.CharField(max_length=128, default='', blank=True)
     summoner_id = models.CharField(max_length=128, default='', blank=True, db_index=True, null=True)
     summoner_name = models.CharField(max_length=256, default='', blank=True)
+    summoner_name_simplified = models.CharField(max_length=128, default='', blank=True, db_index=True)
 
     champion_id = models.IntegerField()
     highest_achieved_season_tier = models.CharField(max_length=64, default='', blank=True)
@@ -156,6 +159,10 @@ class Participant(models.Model):
 
     class Meta:
         unique_together = ('match', '_id')
+
+    def save(self, *args, **kwargs):
+        self.summoner_name_simplified = simplify(self.summoner_name)
+        super(Participant, self).save(*args, **kwargs)
 
     def __str__(self):
         return f'Participant(summoner_name={self.summoner_name}, match={self.match._id})'

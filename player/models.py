@@ -11,8 +11,6 @@ from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
 
-from match.models import Participant
-
 
 def simplify(name):
     """Return the lowercase, no space version of a string.
@@ -72,8 +70,6 @@ class Summoner(models.Model):
         if self.name != self.__original_name and self.__original_name is not None:
             namechange = NameChange(summoner=self, old_name=self.__original_name)
             namechange.save()
-            # query = Participant.objects.filter(current_account_id=self.account_id)
-            # query.update(summoner_name=self.name)
 
         super(Summoner, self).save(*args, **kwargs)
         self.__original_name = self.name

@@ -109,20 +109,8 @@ def match_filter(request, account_id=None):
 
     # get matches with common players
     if with_names:
-        with_account_ids = set()
-        for name in with_names:
-            name = pt.simplify(name)
-            query = Summoner.objects.filter(simple_name=name)
-            if query.exists():
-                friend = query.first()
-                with_account_ids.add(friend.account_id)
-            else:
-                pt.import_summoner(region, name)
-                query = Summoner.objects.filter(simple_name=name)
-                if query.exists():
-                    friend = query.first()
-                    with_account_ids.add(friend.account_id)
-        matches = matches.filter(participants__current_account_id__in=with_account_ids)
+        with_names_simplified = [pt.simplify(name) for name in with_names]
+        matches = matches.filter(participants__=with_names_simplified)
     return matches
 
 
