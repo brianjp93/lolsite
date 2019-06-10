@@ -13,7 +13,7 @@ from data.models import Rito
 
 from player.models import Summoner
 
-from ext.lol.riot import Riot as RiotAPI
+from lol.riot import Riot as RiotAPI
 
 from celery import task
 import logging

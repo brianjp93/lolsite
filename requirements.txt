@@ -31,6 +31,7 @@ idna==2.7
 jmespath==0.9.4
 jsonschema==2.6.0
 kombu==4.3.0
+lolwrapper==1.2
 model-mommy==1.6.0
 pathspec==0.5.9
 promise==2.2.1

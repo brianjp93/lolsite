@@ -641,7 +641,7 @@ class SummonerCard extends Component {
                     {this.props.icon.image_url !== undefined &&
                         <img
                             style={{
-                                width:50,
+                                height:50,
                                 display:'inline-block',
                                 verticalAlign:'middle',
                                 borderRadius:5,
