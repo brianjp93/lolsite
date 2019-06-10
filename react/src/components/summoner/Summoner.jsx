@@ -8,6 +8,7 @@ import Spectate from './Spectate'
 import SummonerNotFound from './SummonerNotFound'
 import numeral from 'numeral'
 
+import MatchFilter from './MatchFilter'
 import api from '../../api/api'
 import Footer from '../general/Footer'
 
@@ -66,6 +67,9 @@ class Summoner extends Component {
 
             is_spectate_modal_open: false,
             is_live_game: false,
+
+            // filtering
+            queue_filter: '',
         }
 
         this.getSummonerPage = this.getSummonerPage.bind(this)
@@ -79,6 +83,7 @@ class Summoner extends Component {
         this.getSpectate = this.getSpectate.bind(this)
         this.checkForLiveGame = this.checkForLiveGame.bind(this)
         this.handleWheel = this.handleWheel.bind(this)
+        this.getFilterParams = this.getFilterParams.bind(this)
     }
     componentDidMount() {
         var first_load = this.loadStateFromStore()
@@ -204,19 +209,26 @@ class Summoner extends Component {
             }
         })
     }
+    getFilterParams() {
+        let params = this.props.route.match.params
+        let data = {
+            summoner_name: params.summoner_name ? params.summoner_name: null,
+            id: params.id ? params.id: null,
+            region: this.props.region,
+            count: this.state.count,
+            queue: this.state.queue_filter,
+        }
+        return data
+    }
     getSummonerPage(callback) {
         if (!this.state.is_reloading_matches) {
             this.setState({is_requesting_page: true})
         }
-        var params = this.props.route.match.params
-        var data = {
-            summoner_name: params.summoner_name ? params.summoner_name: null,
-            id: params.id ? params.id: null,
-            region: this.props.region,
-            update: true,
-            count: this.state.count,
-            trigger_import: true,
-        }
+
+        let data = this.getFilterParams()
+        data.update = true
+        data.trigger_import = true
+
         api.player.getSummonerPage(data)
             .then((response) => {
                 this.setState({
@@ -256,16 +268,13 @@ class Summoner extends Component {
     getNextPage() {
         this.setState({is_requesting_next_page: true})
         var params = this.props.route.match.params
-        var data = {
-            summoner_name: params.summoner_name,
-            id: this.state.summoner.id,
-            region: this.props.region,
-            update: false,
-            count: this.state.count,
-            page: this.state.next_page,
-            trigger_import: true,
-            after_index: this.state.matches.length,
-        }
+
+        let data = this.getFilterParams()
+        data.update = false
+        data.trigger_import = true
+        data.after_index = this.state.matches.length
+        data.page = this.state.next_page
+
         api.player.getSummonerPage(data)
             .then((response) => {
                 var new_matches = []
@@ -339,6 +348,8 @@ class Summoner extends Component {
         this.setState({queues: qdict})
     }
     render() {
+        const custom_max_width = 'col l10 offset-l1 m12 s12'
+        const store = this.props.store
         return (
             <div>
                 <div style={{minHeight: 1200}}>
@@ -385,6 +396,12 @@ class Summoner extends Component {
                                             pageStore={this}
                                             summoner={this.state.summoner} />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className={`${custom_max_width}`}>
+                                    <MatchFilter store={store} parent={this} />
                                 </div>
                             </div>
 

@@ -16,6 +16,7 @@ class NavBar extends Component {
     }
     componentDidMount() {
         window.$('.sidenav').sidenav()
+        window.$('.dropdown-trigger').dropdown()
 
         window.addEventListener('keydown', this.handleKeyListener)
 
@@ -74,6 +75,11 @@ class NavBar extends Component {
         else {
             return (
                 <span>
+                    <ul id="dropdown1" className="dropdown-content">
+                        <li>
+                            <a href="#!">one</a>
+                        </li>
+                    </ul>
                     <nav className={`${theme}`}>
                         <div className="nav-wrapper">
                             <Link
@@ -91,10 +97,14 @@ class NavBar extends Component {
                                 className="sidenav-trigger" >
                                 <i className="material-icons">menu</i>
                             </a>
+
                             {/*
                                 <ul className="left hide-on-med-and-down">
                                     <li>
-                                        <Link to='/themes/'>Themes</Link>
+                                        <a class="dropdown-trigger" href="#!" data-target="dropdown1">
+                                            Account
+                                            <i class="material-icons right">arrow_drop_down</i>
+                                        </a>
                                     </li>
                                 </ul>
                             */}
@@ -103,10 +113,18 @@ class NavBar extends Component {
                                 onSubmit={(event) => {
                                     event.preventDefault()
                                 }}
-                                style={{display: 'inline-block', float: 'right', width: 350, marginRight: '10%'}}>
+                                style={{
+                                    display: 'inline-block',
+                                    width: 350,
+                                    background: '#ffffff20',
+                                }}>
 
                                 <div
-                                    style={{width: 60, display: 'inline-block'}}
+                                    style={{
+                                        width: 60,
+                                        display: 'inline-block',
+                                        paddingLeft: 15,
+                                    }}
                                     className={`input-field ${store.state.theme}`}>
                                     <select
                                         ref={(elt) => {

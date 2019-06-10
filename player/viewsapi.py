@@ -89,6 +89,7 @@ def match_filter(request, account_id=None):
     name = request.data.get('summoner_name', None)
     account_id = request.data.get('account_id', None)
     queue_in = request.data.get('queue_in', [])
+    queue = request.data.get('queue', None)
     with_names = request.data.get('with_names', [])
 
     if account_id is None:
@@ -103,6 +104,8 @@ def match_filter(request, account_id=None):
     matches = Match.objects.filter(participants__current_account_id=account_id)
     if queue_in:
         matches = matches.filter(queue_id__in=queue_in)
+    if queue:
+        matches = matches.filter(queue_id=queue)
 
     # get matches with common players
     if with_names:
@@ -533,7 +536,10 @@ def get_summoner_page(request, format=None):
                     summoner.last_summoner_page_import = timezone.now()
                     summoner.save()
 
-            match_query = match_filter(request, account_id=summoner.account_id)
+            match_query = match_filter(
+                request,
+                account_id=summoner.account_id
+            )
             match_count = match_query.count()
 
             start = (page - 1) * count
