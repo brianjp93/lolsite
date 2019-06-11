@@ -165,3 +165,7 @@ ul.sidenav.dark {
     padding: 8px;
     border-radius: 5px;
 }
+
+div.dark>div>ul.dropdown-content {
+    background-color: #2b2b2b;
+}
