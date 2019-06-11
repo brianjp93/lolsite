@@ -69,7 +69,7 @@ class Summoner extends Component {
             is_live_game: false,
 
             // filtering
-            queue_filter: '',
+            match_filters: {},
         }
 
         this.getSummonerPage = this.getSummonerPage.bind(this)
@@ -84,14 +84,15 @@ class Summoner extends Component {
         this.checkForLiveGame = this.checkForLiveGame.bind(this)
         this.handleWheel = this.handleWheel.bind(this)
         this.getFilterParams = this.getFilterParams.bind(this)
+        this.isTriggerImport = this.isTriggerImport.bind(this)
     }
     componentDidMount() {
-        var first_load = this.loadStateFromStore()
+        let first_load = this.loadStateFromStore()
         if (first_load) {
             this.getSummonerPage(() => {
                 this.getPositions()
                 this.checkForLiveGame()
-                var now = new Date().getTime()
+                let now = new Date().getTime()
                 this.setState({last_refresh: now})
             })
             this.setQueueDict()
@@ -109,12 +110,12 @@ class Summoner extends Component {
         ) {
             this.saveStateToStore(prevState, prevProps)
             this.setDefaults(() => {
-                var first_load = this.loadStateFromStore()
+                let first_load = this.loadStateFromStore()
                 if (first_load) {
                     this.getSummonerPage(() => {
                         this.getPositions()
                         this.checkForLiveGame()
-                        var now = new Date().getTime()
+                        let now = new Date().getTime()
                         this.setState({last_refresh: now})
                     })
                 }
@@ -211,14 +212,26 @@ class Summoner extends Component {
     }
     getFilterParams() {
         let params = this.props.route.match.params
+        let filters = this.state.match_filters
         let data = {
             summoner_name: params.summoner_name ? params.summoner_name: null,
             id: params.id ? params.id: null,
             region: this.props.region,
             count: this.state.count,
-            queue: this.state.queue_filter,
+            queue: filters.queue_filter,
+            with_names: filters.summoner_filter !== undefined ? filters.summoner_filter.split(',') : '',
         }
         return data
+    }
+    isTriggerImport() {
+        // whether or not to check for new matches,
+        // or just get matches from our DB
+        let is_trigger_import = true
+        let filters = this.state.match_filters
+        if (filters.summoner_filter !== undefined && filters.summoner_filter.length > 0) {
+            is_trigger_import = false
+        }
+        return is_trigger_import
     }
     getSummonerPage(callback) {
         if (!this.state.is_reloading_matches) {
@@ -227,7 +240,10 @@ class Summoner extends Component {
 
         let data = this.getFilterParams()
         data.update = true
-        data.trigger_import = true
+
+        if (this.isTriggerImport()) {
+            data.trigger_import = true
+        }
 
         api.player.getSummonerPage(data)
             .then((response) => {

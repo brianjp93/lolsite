@@ -109,8 +109,9 @@ def match_filter(request, account_id=None):
 
     # get matches with common players
     if with_names:
-        with_names_simplified = [pt.simplify(name) for name in with_names]
-        matches = matches.filter(participants__=with_names_simplified)
+        with_names_simplified = [pt.simplify(name) for name in with_names if len(name.strip()) > 0]
+        if with_names_simplified:
+            matches = matches.filter(participants__summoner_name_simplified__in=with_names_simplified)
     return matches
 
 

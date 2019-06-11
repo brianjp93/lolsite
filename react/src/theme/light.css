@@ -165,3 +165,7 @@ ul.sidenav.light {
     padding: 8px;
     border-radius: 5px;
 }
+
+div.light>div>ul.dropdown-content {
+
+}
