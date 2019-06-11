@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import PropTypes from 'prop-types'
 import queryString from 'query-string'
-import ReactTooltip from 'react-tooltip'
 import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
 
 import api from '../../api/api'

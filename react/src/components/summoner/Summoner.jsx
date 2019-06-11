@@ -267,7 +267,6 @@ class Summoner extends Component {
     }
     getNextPage() {
         this.setState({is_requesting_next_page: true})
-        var params = this.props.route.match.params
 
         let data = this.getFilterParams()
         data.update = false
