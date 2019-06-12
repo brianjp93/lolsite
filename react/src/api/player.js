@@ -36,6 +36,11 @@ function verify(data) {
     return axios.post(url, data)
 }
 
+function getChampionsOverview(data) {
+    var url = `/api/${version}/player/champions-overview/`
+    return axios.post(url, data)
+}
+
 export default {
     getSummoner,
     getSummonerPage,
@@ -43,4 +48,5 @@ export default {
     signUp,
     login,
     verify,
+    getChampionsOverview,
 }

@@ -5,7 +5,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 urlpatterns = [
     path('summoner/', player_views.get_summoner),
     path('summoner-page/', player_views.get_summoner_page),
-    path('champion-overview/', player_views.get_summoner_champions_overview),
+    path('champions-overview/', player_views.get_summoner_champions_overview),
     path('positions/', player_views.get_positions),
     path('sign-up/', player_views.sign_up),
     path('login/', player_views.login),
