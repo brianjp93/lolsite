@@ -697,3 +697,28 @@ def verify_email(request, format=None):
         data = {'message': 'This resource on supports POSTs.'}
 
     return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_summoner_champions_overview(request, format=None):
+    """Get overview stats for summoner champions.
+
+    POST Parameters
+    ---------------
+    summoner_id : ID
+        Internal DB ID
+    
+    Returns
+    -------
+    JSON
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        pass
+    else:
+        data = {'message': 'Must use POST for this resource.'}
+
+    return Response(data, status=status_code)
