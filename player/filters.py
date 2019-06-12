@@ -13,13 +13,15 @@ from django.db.models import IntegerField
 def get_summoner_champions_overview(
         summoner_id=None,
         major_version=None,
-        minor_version=None
+        minor_version=None,
+        queue_in=None,
     ):
     """Get QuerySet of Champion Stats for a summoner.
 
     Parameters
     ----------
     summoner_id : ID
+    queue_in : list
     major_version : int
     minor_version : int
 
@@ -36,6 +38,8 @@ def get_summoner_champions_overview(
         query = query.filter(participant__match__major=major_version)
     if minor_version is not None:
         query = query.filter(participant__match__minor=minor_version)
+    if queue_in:
+        query = query.filter(participant__match__queue_id__in=queue_in)
 
     loss_time = 60 * 5
     query = query.annotate(

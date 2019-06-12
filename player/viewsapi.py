@@ -710,6 +710,8 @@ def get_summoner_champions_overview(request, format=None):
         Internal DB ID
     major_version : int  
     minor_version : int  
+    queue_in : list  
+        `Ex: [420, 410]`  
     order_by : str  
     start : int  
     end : int  
@@ -730,6 +732,7 @@ def get_summoner_champions_overview(request, format=None):
             'summoner_id': request.data.get('summoner_id', None),
             'major_version': request.data.get('major_version', None),
             'minor_version': request.data.get('minor_version', None),
+            'queue_in': request.data.get('queue_in', None),
         }
         query = player_filters.get_summoner_champions_overview(**kwargs)
         if order_by is not None:
