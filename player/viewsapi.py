@@ -11,6 +11,7 @@ from django.core.cache import cache
 from django.contrib.auth import authenticate, login
 
 from player import tasks as pt
+from player import filters as player_filters
 from player.models import EmailVerification
 
 from data.models import ProfileIcon, Champion
@@ -705,8 +706,13 @@ def get_summoner_champions_overview(request, format=None):
 
     POST Parameters
     ---------------
-    summoner_id : ID
+    summoner_id : ID  
         Internal DB ID
+    major_version : int  
+    minor_version : int  
+    order_by : str  
+    start : int  
+    end : int  
     
     Returns
     -------
@@ -717,7 +723,20 @@ def get_summoner_champions_overview(request, format=None):
     status_code = 200
 
     if request.method == 'POST':
-        pass
+        start = int(request.data.get('start', 0))
+        end = int(request.data.get('end', 5))
+        order_by = request.data.get('order_by', None)
+        kwargs = {
+            'summoner_id': request.data.get('summoner_id', None),
+            'major_version': request.data.get('major_version', None),
+            'minor_version': request.data.get('minor_version', None),
+        }
+        query = player_filters.get_summoner_champions_overview(**kwargs)
+        if order_by is not None:
+            query = query.order_by(order_by)
+        count = query.count()
+        query = query[start:end]
+        data = {'data': query, 'count': count}
     else:
         data = {'message': 'Must use POST for this resource.'}
 

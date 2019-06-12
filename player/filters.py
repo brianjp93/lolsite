@@ -7,6 +7,7 @@ from match.models import Match, Participant, Stats
 from django.db.models import Sum, Count, F, FloatField
 from django.db.models import ExpressionWrapper, Value, Case, When
 from django.db.models import Subquery, OuterRef
+from django.db.models import IntegerField
 
 
 def get_summoner_champions_overview(
@@ -36,13 +37,28 @@ def get_summoner_champions_overview(
     if minor_version is not None:
         query = query.filter(participant__match__minor=minor_version)
 
-    query = query.annotate(champion_id=F('participant__champion_id'))
+    loss_time = 60 * 5
+    query = query.annotate(
+        champion_id=F('participant__champion_id'),
+        win_true=Case(
+            When(win=True, then=Value(1)),
+            default=Value(0),
+            output_field=IntegerField()
+        ),
+        loss_true=Case(
+            When(win=False, participant__match__game_duration__gt=loss_time, then=Value(1)),
+            default=Value(0),
+            output_field=IntegerField(),
+        )
+    )
     query = query.values('champion_id')
     query = query.annotate(
         count=Count('champion_id'),
         kills_sum=Sum('kills'),
         deaths_sum=Sum('deaths'),
-        assists_sum=Sum('assists')
+        assists_sum=Sum('assists'),
+        wins=Sum('win_true'),
+        losses=Sum('loss_true'),
     )
     query = query.annotate(
         kda=ExpressionWrapper(
