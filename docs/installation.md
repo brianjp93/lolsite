@@ -11,7 +11,7 @@
     * LOLSITE_PASS
     * LOLSITE_HOST
     * LOLSITE_PORT
-    * LOLSITE_EMAIL_HOST_PASSWORD (this is your sendgrip api key)
+    * LOLSITE_EMAIL_HOST_PASSWORD (this is your sendgrid api key)
 4. Create a virtual env and install python packages via requirements.txt
     * create virtual env
     * `pip install -r requirements`
