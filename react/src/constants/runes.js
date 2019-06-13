@@ -419,9 +419,9 @@ var RUNEDATA = {
       "name": "Timewarp Tonic",
       "perkVars": 3,
       "perkDesc": [
-        "TBD?",
-        "TBD?",
-        'TBD?',
+        "Time Spent Hasted",
+        "Total Immediate Health Restored",
+        'Total Immediate Mana',
       ],
       "perkFormat": ["{0}", "{0}", "{0}"]
     },

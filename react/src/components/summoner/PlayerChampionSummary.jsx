@@ -124,10 +124,10 @@ class PlayerChampionSummary extends Component {
         )
     }
     render() {
-        const store = this.props.store
-        const parent = this.props.parent
-        const summoner = this.props.summoner
-        const theme = store.state.theme
+        // const store = this.props.store
+        // const parent = this.props.parent
+        // const summoner = this.props.summoner
+        // const theme = store.state.theme
         const major = this.state.version.major
 
         const unselected_style = {
