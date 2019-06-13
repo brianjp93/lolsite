@@ -21,6 +21,7 @@ class MatchFilter extends Component {
         this.updateParent = this.updateParent.bind(this)
         this.apply = this.apply.bind(this)
         this.openModal = this.openModal.bind(this)
+        this.handleKeyDown = this.handleKeyDown.bind(this)
     }
     componentDidMount() {
         window.$('select').formSelect()
@@ -54,11 +55,19 @@ class MatchFilter extends Component {
     }
     apply(callback) {
         this.updateParent(this.props.parent.reloadMatches)
+        this.setState({is_modal_open: false})
     }
     openModal() {
         this.setState({is_modal_open: true}, () => {
             this.summoner_filter_input.focus()
         })
+    }
+    handleKeyDown(event) {
+        if (event.key === 'Enter') {
+            this.apply()
+            event.preventDefault()
+            event.stopPropagation()
+        }
     }
     render() {
         const store = this.props.store
@@ -124,6 +133,7 @@ class MatchFilter extends Component {
                                         id='summoner_filter_field'
                                         value={this.state.summoner_filter}
                                         onChange={(event) => this.setState({summoner_filter: event.target.value})}
+                                        onKeyDown={this.handleKeyDown}
                                         type="text"
                                         className={`${theme}`} />
                                     <label htmlFor="summoner_filter_field">Summoner Names</label>
@@ -133,11 +143,8 @@ class MatchFilter extends Component {
 
                         <div>
                             <button
-                                onClick={() => {
-                                    this.apply()
-                                    this.setState({is_modal_open: false})
-                                }}
-                                className={`${theme} btn-small`}>
+                                onClick={this.apply}
+                                className={`${theme} btn-small`} >
                                 Apply Filters
                             </button>
                         </div>
