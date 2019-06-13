@@ -26,9 +26,15 @@ function getRunes(data) {
     return axios.post(url, data)
 }
 
+function getCurrentSeason() {
+    var url = `/api/${version}/data/get-current-season/`
+    return axios.post(url)
+}
+
 export default {
     getProfileIcon,
     getItem,
     getRunes,
     items,
+    getCurrentSeason,
 }

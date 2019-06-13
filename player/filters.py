@@ -9,12 +9,16 @@ from django.db.models import ExpressionWrapper, Value, Case, When
 from django.db.models import Subquery, OuterRef
 from django.db.models import IntegerField
 
+from django.utils.dateparse import parse_datetime
+
 
 def get_summoner_champions_overview(
         summoner_id=None,
         major_version=None,
         minor_version=None,
         queue_in=None,
+        start_datetime=None,
+        end_datetime=None,
     ):
     """Get QuerySet of Champion Stats for a summoner.
 
@@ -24,6 +28,8 @@ def get_summoner_champions_overview(
     queue_in : list
     major_version : int
     minor_version : int
+    start_datetime : ISO Datetime
+    end_datetime : ISO Datetime
 
     Returns
     -------
@@ -32,7 +38,11 @@ def get_summoner_champions_overview(
     """
     summoner = Summoner.objects.get(id=summoner_id)
 
-    query = Stats.objects.filter(participant__summoner_id=summoner._id)
+    min_game_time = 60 * 5
+    query = Stats.objects.filter(
+        participant__summoner_id=summoner._id,
+        participant__match__game_duration__gt=min_game_time
+    )
 
     if major_version is not None:
         query = query.filter(participant__match__major=major_version)
@@ -40,8 +50,15 @@ def get_summoner_champions_overview(
         query = query.filter(participant__match__minor=minor_version)
     if queue_in:
         query = query.filter(participant__match__queue_id__in=queue_in)
+    if start_datetime is not None:
+        start_dt = parse_datetime(start_datetime)
+        start_timestamp = start_dt.timestamp() * 1000
+        query = query.filter(participant__match__game_creation__gt=start_timestamp)
+    if end_datetime is not None:
+        end_dt = parse_datetime(end_datetime)
+        end_timestamp = end_dt.timestamp() * 1000
+        query = query.filter(participant__match__game_creation__gt=end_timestamp)
 
-    loss_time = 60 * 5
     query = query.annotate(
         champion_id=F('participant__champion_id'),
         win_true=Case(
@@ -50,7 +67,7 @@ def get_summoner_champions_overview(
             output_field=IntegerField()
         ),
         loss_true=Case(
-            When(win=False, participant__match__game_duration__gt=loss_time, then=Value(1)),
+            When(win=False, then=Value(1)),
             default=Value(0),
             output_field=IntegerField(),
         )

@@ -173,7 +173,6 @@ def all_items(request, format=None):
     return Response(data, status=status_code)
 
 
-
 @api_view(['POST'])
 def get_reforged_runes(request, format=None):
     """Get Reforged Rune data.
@@ -214,5 +213,35 @@ def get_reforged_runes(request, format=None):
             if data and SET_CACHE:
                 new_cache = {'data': data, 'status': status_code}
                 cache.set(cache_key, new_cache, cache_seconds)
+
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_current_season(request, format=None):
+    """Get current season patch data.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    JSON
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        match = Match.objects.all().order_by('-game_version').first()
+        version_data = {
+            'game_version': match.game_version,
+            'major': match.major,
+            'minor': match.minor,
+            'patch': match.patch,
+            'build': match.build,
+        }
+        data = {'data': version_data}
 
     return Response(data, status=status_code)

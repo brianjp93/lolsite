@@ -713,6 +713,8 @@ def get_summoner_champions_overview(request, format=None):
     queue_in : list  
         `Ex: [420, 410]`  
     order_by : str  
+    start_datetime : ISO Datetime
+    end_datetime : ISO Datetime
     start : int  
     end : int  
     
@@ -733,6 +735,8 @@ def get_summoner_champions_overview(request, format=None):
             'major_version': request.data.get('major_version', None),
             'minor_version': request.data.get('minor_version', None),
             'queue_in': request.data.get('queue_in', None),
+            'start_datetime': request.data.get('start_datetime', None),
+            'end_datetime': request.data.get('end_datetime', None),
         }
         query = player_filters.get_summoner_champions_overview(**kwargs)
         if order_by is not None:

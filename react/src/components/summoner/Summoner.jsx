@@ -6,6 +6,7 @@ import NavBar from '../general/NavBar'
 import MatchCard from './MatchCard'
 import Spectate from './Spectate'
 import SummonerNotFound from './SummonerNotFound'
+import PlayerChampionSummary from './PlayerChampionSummary'
 import numeral from 'numeral'
 
 import MatchFilter from './MatchFilter'
@@ -365,9 +366,10 @@ class Summoner extends Component {
     render() {
         const custom_max_width = 'col l10 offset-l1 m12 s12'
         const store = this.props.store
+        const theme = store.state.theme
         return (
             <div>
-                <div style={{minHeight: 1200}}>
+                <div style={{minHeight: 1000}}>
                     <NavBar store={this.props.store} region={this.props.region} />
                     {this.state.is_requesting_page &&
                         <div>
@@ -403,20 +405,36 @@ class Summoner extends Component {
                                                 pageStore={this} />
                                         }
                                     </div>
-                                    
-                                    <div style={{display:'inline-block', verticalAlign:'top'}}>
-                                        <RecentlyPlayedWith
-                                            matches={this.state.matches}
-                                            store={this.props.store}
-                                            pageStore={this}
-                                            summoner={this.state.summoner} />
+
+                                    <div style={{display: 'inline-block', verticalAlign: 'top'}}>
+                                        <div
+                                            style={{marginLeft: 15}}
+                                            className={`${theme} card-panel`}>
+                                            <PlayerChampionSummary
+                                                store={store}
+                                                parent={this}
+                                                summoner={this.state.summoner} />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className={`${custom_max_width}`}>
-                                    <MatchFilter store={store} parent={this} />
+                                    <div className="row">
+                                        <div className="col l6 m12">
+                                            <MatchFilter store={store} parent={this} />
+                                        </div>
+                                        <div className="col l6 m12">
+                                            <div style={{display:'inline-block', verticalAlign:'top'}}>
+                                                <RecentlyPlayedWith
+                                                    matches={this.state.matches}
+                                                    store={this.props.store}
+                                                    pageStore={this}
+                                                    summoner={this.state.summoner} />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -895,8 +913,8 @@ class RecentlyPlayedWith extends Component {
         return (
             <div
                 style={{
-                    width:250,
-                    height:200,
+                    width:270,
+                    height:150,
                     marginLeft:15,
                     padding:15,
                 }}
