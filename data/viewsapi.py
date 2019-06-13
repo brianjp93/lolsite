@@ -2,12 +2,14 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from .models import ProfileIcon, ReforgedRune, ReforgedTree
+from .models import Champion
+
 from match.models import Match, Participant, Stats
 from match.models import Timeline, Team, Ban, Item
 
 from .serializers import ProfileIconSerializer, ItemSerializer
 from .serializers import ItemGoldSerializer, ItemStatSerializer
-from .serializers import ReforgedRuneSerializer
+from .serializers import ReforgedRuneSerializer, ChampionSerializer
 
 from django.core.cache import cache
 
@@ -243,5 +245,36 @@ def get_current_season(request, format=None):
             'build': match.build,
         }
         data = {'data': version_data}
+
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_champions(request, format=None):
+    """Get champion data
+
+    POST Parameters
+    ---------------
+    champions : list
+
+    Returns
+    -------
+    JSON
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        champions = request.data.get('champions', [])
+
+        top = Champion.objects.all().order_by('-major', '-minor', '-patch').first()
+        version = top.version
+
+        query = Champion.objects.filter(version=version, key__in=champions)
+        champion_data = ChampionSerializer(query, many=True).data
+        data = {'data': champion_data}
+    else:
+        data = {'message': 'Must use POST.'}
 
     return Response(data, status=status_code)

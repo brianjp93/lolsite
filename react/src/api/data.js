@@ -31,10 +31,16 @@ function getCurrentSeason() {
     return axios.post(url)
 }
 
+function getChampions(data) {
+    var url = `/api/${version}/data/champions/`
+    return axios.post(url, data)
+}
+
 export default {
     getProfileIcon,
     getItem,
     getRunes,
     items,
     getCurrentSeason,
+    getChampions,
 }

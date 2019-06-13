@@ -8,6 +8,7 @@ urlpatterns = [
     path('items/', data_views.all_items),
     path('reforged-runes/', data_views.get_reforged_runes),
     path('get-current-season/', data_views.get_current_season),
+    path('champions/', data_views.get_champions),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

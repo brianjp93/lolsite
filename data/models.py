@@ -257,6 +257,9 @@ class ProfileIcon(models.Model):
 class Champion(models.Model):
     _id = models.CharField(max_length=128, default='', blank=True, db_index=True)
     version = models.CharField(max_length=128, default='', blank=True, db_index=True)
+    major = models.IntegerField(default=0, db_index=True)
+    minor = models.IntegerField(default=0, db_index=True)
+    patch = models.IntegerField(default=0, db_index=True)
     language = models.CharField(max_length=128, default='', blank=True, db_index=True)
     key = models.IntegerField(db_index=True)
     name = models.CharField(max_length=128, default='', blank=True)
@@ -268,6 +271,15 @@ class Champion(models.Model):
 
     class Meta:
         unique_together = ('_id', 'version', 'language')
+
+    def save(self, *args, **kwargs):
+        if all([self.major == 0, self.minor == 0, self.patch == 0]):
+            parts = self.version.split('.')
+            try:
+                (self.major, self.minor, self.patch) = map(int, parts)
+            except:
+                pass
+        super(Champion, self).save(*args, **kwargs)
 
     def __str__(self):
         return f'Champion(_id="{self._id}", version="{self.version}", language="{self.language}")'

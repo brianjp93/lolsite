@@ -17,6 +17,8 @@ class PlayerChampionSummary extends Component {
             start: 0,
             end: 5,
 
+            champions: {},
+
             stats: [],
 
             queues: [],
@@ -46,8 +48,24 @@ class PlayerChampionSummary extends Component {
             })
     }
     getChampionData() {
-        let data = {
-            champions: this.state.stats.map(stat => stat.key),
+        let champion_keys = []
+        for (let stat of this.state.stats) {
+            if (this.state.champions[stat.champion_id] === undefined) {
+                champion_keys.push(stat.champion_id)
+            }
+        }
+        if (champion_keys.length > 0) {
+            let data = {champions: champion_keys}
+            api.data.getChampions(data)
+                .then(response => {
+                    let new_champ = Object.assign({}, this.state.champions)
+                    for (var champ of response.data.data) {
+                        if (new_champ[champ.key] === undefined) {
+                            new_champ[champ.key] = champ
+                        }
+                    }
+                    this.setState({champions: new_champ})
+                })
         }
     }
     getParams() {
@@ -75,7 +93,7 @@ class PlayerChampionSummary extends Component {
         if (data.summoner_id !== undefined) {
             api.player.getChampionsOverview(data)
                 .then(response => {
-                    this.setState({stats: response.data.data})
+                    this.setState({stats: response.data.data}, this.getChampionData)
                 })
                 .catch(error => {
 
@@ -94,21 +112,44 @@ class PlayerChampionSummary extends Component {
     updateTimeFrame(time_division, time_value) {
         this.setState({time_division, time_value}, this.getChampionStats)
     }
+    truncateName(name) {
+        let out = name
+        if (name.length > 8) {
+            out = `${name.slice(0, 8)}...`
+        }
+        return out
+    }
     renderChampionData(data) {
         let average_kills = data.kills_sum / data.count
         let average_deaths = data.deaths_sum / data.count
         let average_assists = data.assists_sum / data.count
         let win_percentage = (data.wins / (data.wins + data.losses)) * 100
+        let champ = this.state.champions[data.champion_id]
         return(
-            <span>
+            <div
+                style={{
+                    display: 'inline-block',
+                }}>
                 <div>
-                    {data.champion}
+                    {champ !== undefined &&
+                        <img
+                            style={{maxHeight:30, display: 'inline-block', borderRadius: '50%'}}
+                            src={champ.image_url} alt="" />
+                    }
+                    <div style={{
+                            marginLeft: 3,
+                            display: 'inline-block',
+                            fontSize: 'small'
+                        }}>
+                        <div>{this.truncateName(data.champion)}</div>
+                        <div>{data.count} games</div>
+                    </div>
                 </div>
                 <div>
                     <div>
                         {numeral(win_percentage).format('0.0')} %
                     </div>
-                    <div>
+                    <div style={{fontSize: 'small'}}>
                         {data.wins} - {data.losses}
                     </div>
                 </div>
@@ -117,10 +158,10 @@ class PlayerChampionSummary extends Component {
                         KDA {numeral(data.kda).format('0.00')}
                     </div>
                     <div style={{fontSize: 'small'}}>
-                        {numeral(average_kills).format('0.00')}/{numeral(average_deaths).format('0.00')}/{numeral(average_assists).format('0.00')}
+                        {numeral(average_kills).format('0.0')}/{numeral(average_deaths).format('0.0')}/{numeral(average_assists).format('0.0')}
                     </div>
                 </div>
-            </span>
+            </div>
         )
     }
     render() {
@@ -200,8 +241,13 @@ class PlayerChampionSummary extends Component {
                                     style={{
                                         display: 'inline-block',
                                         width: 120,
+                                        borderStyle: 'solid',
+                                        borderWidth: 1,
+                                        borderColor: 'grey',
+                                        borderRadius: 4,
+                                        padding: 8,
                                     }}
-                                    key={`${data.champion}-${key}`}>
+                                    key={`${data.champion_id}-${key}`}>
                                     {this.renderChampionData(data)}    
                                 </div>
                             )
