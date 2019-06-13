@@ -22,6 +22,23 @@ class MatchFilter extends Component {
         this.apply = this.apply.bind(this)
         this.openModal = this.openModal.bind(this)
         this.handleKeyDown = this.handleKeyDown.bind(this)
+        this.setDefaults = this.setDefaults.bind(this)
+    }
+    componentDidUpdate(prevProps, prevState) {
+        let prev_summoner = prevProps.summoner
+        let now_summoner = this.props.summoner
+        if (prev_summoner !== undefined && now_summoner !== undefined) {
+            if (prev_summoner.id !== now_summoner.id) {
+                this.setDefaults()
+            }
+        }
+    }
+    setDefaults() {
+        let data = {
+            queue_filter: '',
+            summoner_filter: '',
+        }
+        this.setState(data)
     }
     componentDidMount() {
         window.$('select').formSelect()
