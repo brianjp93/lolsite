@@ -710,6 +710,7 @@ def get_summoner_champions_overview(request, format=None):
         Internal DB ID
     major_version : int  
     minor_version : int  
+    season : int  
     queue_in : list  
         `Ex: [420, 410]`  
     order_by : str  
@@ -734,6 +735,7 @@ def get_summoner_champions_overview(request, format=None):
             'summoner_id': request.data.get('summoner_id', None),
             'major_version': request.data.get('major_version', None),
             'minor_version': request.data.get('minor_version', None),
+            'season': request.data.get('season', None),
             'queue_in': request.data.get('queue_in', None),
             'start_datetime': request.data.get('start_datetime', None),
             'end_datetime': request.data.get('end_datetime', None),

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import moment from 'moment'
 import numeral from 'numeral'
 import ReactTooltip from 'react-tooltip'
+import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
 
 import api from '../../api/api'
 
@@ -18,11 +19,20 @@ class PlayerChampionSummary extends Component {
             start: 0,
             end: 5,
 
+            queue_selection: '',
+
             champions: {},
 
             stats: [],
 
-            queues: [],
+            queues: {
+                'norms': [2, 430, 400],
+                'solo': [420],
+                'flex': [440],
+                '3v3': [470],
+            },
+
+            is_loading: false,
         }
 
         this.getParams = this.getParams.bind(this)
@@ -32,6 +42,8 @@ class PlayerChampionSummary extends Component {
         this.getCurrentSeason = this.getCurrentSeason.bind(this)
         this.updateTimeFrame = this.updateTimeFrame.bind(this)
         this.renderChampionData = this.renderChampionData.bind(this)
+        this.selectQueue = this.selectQueue.bind(this)
+        this.isQueueSelected = this.isQueueSelected.bind(this)
     }
     componentDidMount() {
         this.getCurrentSeason()
@@ -72,7 +84,6 @@ class PlayerChampionSummary extends Component {
     getParams() {
         let data = {
             summoner_id: this.props.summoner.id,
-            queue_in: this.state.queues,
             start: this.state.start,
             end: this.state.end,
             order_by: '-count',
@@ -83,7 +94,11 @@ class PlayerChampionSummary extends Component {
             data.start_datetime = start.toISOString()
         }
         else if (this.state.time_division === 'season') {
-            data.major_version = this.state.time_value
+            data.season = this.state.time_value
+        }
+
+        if (this.state.queue_selection !== '') {
+            data.queue_in = this.state.queues[this.state.queue_selection]
         }
 
         return data
@@ -92,6 +107,7 @@ class PlayerChampionSummary extends Component {
         let data = this.getParams()
 
         if (data.summoner_id !== undefined) {
+            this.setState({is_loading: true})
             api.player.getChampionsOverview(data)
                 .then(response => {
                     this.setState({stats: response.data.data}, this.getChampionData)
@@ -100,7 +116,7 @@ class PlayerChampionSummary extends Component {
 
                 })
                 .then(() => {
-
+                    this.setState({is_loading: false})
                 })
         }
     }
@@ -119,6 +135,15 @@ class PlayerChampionSummary extends Component {
             out = `${name.slice(0, 8)}...`
         }
         return out
+    }
+    selectQueue(name) {
+        this.setState({queue_selection: name}, this.getChampionStats)
+    }
+    isQueueSelected(name) {
+        if (this.state.queue_selection === name) {
+            return true
+        }
+        return false
     }
     renderChampionData(data) {
         let theme = this.props.store.state.theme
@@ -218,7 +243,7 @@ class PlayerChampionSummary extends Component {
             padding: 3,
             borderRadius: 3,
             cursor: 'pointer',
-            width: 100,
+            width: 90,
             textAlign: 'center',
             margin: '0 4px',
         }
@@ -233,14 +258,16 @@ class PlayerChampionSummary extends Component {
         let queue_selected_style = {
             ...selected_style
         }
-        queue_selected_style.borderColor = 'white'
-        queue_selected_style.color = 'white'
+        queue_selected_style.borderColor = '#9accd2'
+        queue_selected_style.color = '#9accd2'
         return (
             <div>
                 <div
                     style={{marginBottom: 5}}
                     className="row">
-                    <div className='col s12'>
+                    <div
+                        style={{fontSize: 'small'}}
+                        className='col s12'>
                         <div style={{display: 'inline-block'}}>
                             <div
                                 onClick={() => this.updateTimeFrame('days', 30)}
@@ -268,6 +295,44 @@ class PlayerChampionSummary extends Component {
                     </div>
                 </div>
                 <div
+                    style={{marginBottom: 5}}
+                    className="row">
+                    <div
+                        style={{fontSize: 'small'}}
+                        className="col s12">
+                        <div style={{display: 'inline-block'}}>
+                            <div
+                                onClick={() => this.selectQueue('')}
+                                style={this.isQueueSelected('') ? queue_selected_style : unselected_style}>
+                                All
+                            </div>
+                        </div>
+
+                        <div style={{display: 'inline-block', float: 'right'}}>
+                            <div
+                                onClick={() => this.selectQueue('solo')}
+                                style={this.isQueueSelected('solo') ? queue_selected_style : unselected_style}>
+                                Solo/Duo
+                            </div>
+                            <div
+                                onClick={() => this.selectQueue('flex')}
+                                style={this.isQueueSelected('flex') ? queue_selected_style : unselected_style}>
+                                Flex
+                            </div>
+                            <div
+                                onClick={() => this.selectQueue('3v3')}
+                                style={this.isQueueSelected('3v3') ? queue_selected_style : unselected_style}>
+                                3v3
+                            </div>
+                            <div
+                                onClick={() => this.selectQueue('norms')}
+                                style={this.isQueueSelected('norms') ? queue_selected_style : unselected_style}>
+                                Norms
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div
                     style={{marginBottom:0}}
                     className="row">
                     <div className="col s12">
@@ -276,7 +341,7 @@ class PlayerChampionSummary extends Component {
                                 <div
                                     style={{
                                         display: 'inline-block',
-                                        width: 130,
+                                        width: 140,
                                         borderStyle: 'solid',
                                         borderWidth: 1,
                                         borderColor: 'grey',
@@ -285,7 +350,17 @@ class PlayerChampionSummary extends Component {
                                         margin: '0 2px'
                                     }}
                                     key={`${data.champion_id}-${key}`}>
-                                    {this.renderChampionData(data)}    
+                                    {this.state.is_loading &&
+                                        <div style={{textAlign: 'center'}}>
+                                            <AtomSpinner
+                                                color='#ffffff'
+                                                size={80}
+                                                style={{margin: 'auto'}} />
+                                        </div>
+                                    }
+                                    {!this.state.is_loading &&
+                                        this.renderChampionData(data)
+                                    }
                                 </div>
                             )
                         })}

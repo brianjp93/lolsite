@@ -486,3 +486,46 @@ GAMETYPES = [
 LANGUAGES = ["en_US","cs_CZ","de_DE","el_GR","en_AU","en_GB","en_PH","en_SG","es_AR","es_ES","es_MX","fr_FR","hu_HU","id_ID","it_IT","ja_JP","ko_KR","pl_PL","pt_BR","ro_RO","ru_RU","th_TH","tr_TR","vn_VN","zh_CN","zh_MY","zh_TW"]
 
 TIERS_9 = ['unranked', 'iron', 'bronze', 'silver', 'gold', 'platinum', 'diamond', 'master', 'grandmaster', 'challenger']
+
+SEASON_PATCHES = {
+    9: {
+        'preseason': {
+            'start': (8, 23),
+            'end': (9, 1),
+        },
+        'season': {
+            'start': (9, 2),
+            'end': (9, 100),
+        }
+    },
+    8: {
+        'preseason': {
+            'start': (7, 22),
+            'end': (7, 24),
+        },
+        'season': {
+            'start': (8, 1),
+            'end': (8, 22),
+        }
+    },
+    7: {
+        'preseason': {
+            'start': (6, 21),
+            'end': (6, 24),
+        },
+        'season': {
+            'start': (7, 1),
+            'end': (7, 21),
+        }
+    },
+    6: {
+        'preseason': {
+            'start': (5, 22),
+            'end': (5, 24),
+        },
+        'season': {
+            'start': (6, 1),
+            'end': (6, 21),
+        }
+    },
+}

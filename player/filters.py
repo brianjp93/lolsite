@@ -1,5 +1,6 @@
 """player/filters.py
 """
+from data import constants as dc
 from data.models import Champion
 from player.models import Summoner
 from match.models import Match, Participant, Stats
@@ -7,7 +8,7 @@ from match.models import Match, Participant, Stats
 from django.db.models import Sum, Count, F, FloatField
 from django.db.models import ExpressionWrapper, Value, Case, When
 from django.db.models import Subquery, OuterRef
-from django.db.models import IntegerField
+from django.db.models import IntegerField, Q
 
 from django.utils.dateparse import parse_datetime
 
@@ -17,6 +18,7 @@ def get_summoner_champions_overview(
         major_version=None,
         minor_version=None,
         queue_in=None,
+        season=None,
         start_datetime=None,
         end_datetime=None,
     ):
@@ -28,6 +30,7 @@ def get_summoner_champions_overview(
     queue_in : list
     major_version : int
     minor_version : int
+    season : int
     start_datetime : ISO Datetime
     end_datetime : ISO Datetime
 
@@ -58,6 +61,13 @@ def get_summoner_champions_overview(
         end_dt = parse_datetime(end_datetime)
         end_timestamp = end_dt.timestamp() * 1000
         query = query.filter(participant__match__game_creation__gt=end_timestamp)
+    if season is not None:
+        season = int(season)
+        season_start = dc.SEASON_PATCHES[season]['season']['start']
+        season_end = dc.SEASON_PATCHES[season]['season']['end']
+        q = Q(participant__match__major=season_start[0], participant__match__minor__gte=season_start[1])
+        q |= (Q(participant__match__major=season_end[0], participant__match__minor__lte=season_end[1]))
+        query = query.filter(q)
 
     query = query.annotate(
         champion_id=F('participant__champion_id'),

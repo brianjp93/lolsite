@@ -414,7 +414,7 @@ class Summoner extends Component {
                                     <div style={{display: 'inline-block', verticalAlign: 'top'}}>
                                         <div
                                             style={{
-                                                minWidth: 700,
+                                                minWidth: 750,
                                                 padding: 15,
                                             }}
                                             className={`${theme} card-panel`}>
