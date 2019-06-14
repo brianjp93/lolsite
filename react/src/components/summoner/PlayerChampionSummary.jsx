@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import numeral from 'numeral'
+import ReactTooltip from 'react-tooltip'
 
 import api from '../../api/api'
 
@@ -120,6 +121,8 @@ class PlayerChampionSummary extends Component {
         return out
     }
     renderChampionData(data) {
+        let theme = this.props.store.state.theme
+
         let average_kills = data.kills_sum / data.count
         let average_deaths = data.deaths_sum / data.count
         let average_assists = data.assists_sum / data.count
@@ -129,8 +132,25 @@ class PlayerChampionSummary extends Component {
             <div
                 style={{
                     display: 'inline-block',
+                    width: '100%'
                 }}>
-                <div>
+                {champ !== undefined &&
+                    <ReactTooltip
+                        id={`${data.champion_id}-image-tooltip`}
+                        effect='solid'>
+                        <span>{champ.name}: {champ.title}</span>
+                    </ReactTooltip>
+                }
+                {champ === undefined &&
+                    <ReactTooltip
+                        id={`${data.champion_id}-image-tooltip`}
+                        effect='solid'>
+                        <span>{data.champion}</span>
+                    </ReactTooltip>
+                }
+                <div
+                    data-tip
+                    data-for={`${data.champion_id}-image-tooltip`} >
                     {champ !== undefined &&
                         <img
                             style={{maxHeight:30, display: 'inline-block', borderRadius: '50%'}}
@@ -141,21 +161,39 @@ class PlayerChampionSummary extends Component {
                             display: 'inline-block',
                             fontSize: 'small'
                         }}>
-                        <div>{this.truncateName(data.champion)}</div>
-                        <div>{data.count} games</div>
+                        <div style={{fontWeight: 'bold'}}>
+                            {this.truncateName(data.champion)}
+                        </div>
+                        <div>
+                            <span style={{fontWeight: 'bold'}}>
+                                {data.count}
+                            </span>{' '}games
+                        </div>
+                    </div>
+                </div>
+                <div style={{margin: '5px 0'}}>
+                    <div style={{textAlign: 'right'}}>
+                        <div
+                            style={{
+                                fontSize: 'small',
+                                display: 'inline-block',
+                                float: 'left'
+                            }}>
+                            {data.wins} - {data.losses}
+                        </div>
+                        <div
+                            style={{display: 'inline-block'}}
+                            className={`${theme} pill`}>
+                            {numeral(win_percentage).format('0.0')}%
+                        </div>
                     </div>
                 </div>
                 <div>
                     <div>
-                        {numeral(win_percentage).format('0.0')} %
-                    </div>
-                    <div style={{fontSize: 'small'}}>
-                        {data.wins} - {data.losses}
-                    </div>
-                </div>
-                <div>
-                    <div>
-                        KDA {numeral(data.kda).format('0.00')}
+                        <span style={{fontWeight: 'bold'}}>
+                            {numeral(data.kda).format('0.00')}
+                        </span>{' '}
+                        <span>KDA</span>
                     </div>
                     <div style={{fontSize: 'small'}}>
                         {numeral(average_kills).format('0.0')}/{numeral(average_deaths).format('0.0')}/{numeral(average_assists).format('0.0')}
@@ -203,32 +241,30 @@ class PlayerChampionSummary extends Component {
                     style={{marginBottom: 5}}
                     className="row">
                     <div className='col s12'>
-                        <div
-                            onClick={() => this.updateTimeFrame('days', 30)}
-                            style={this.isTimeFrameSelected('days', 30) ? selected_style : unselected_style}>
-                            30 days
+                        <div style={{display: 'inline-block'}}>
+                            <div
+                                onClick={() => this.updateTimeFrame('days', 30)}
+                                style={this.isTimeFrameSelected('days', 30) ? selected_style : unselected_style}>
+                                30 days
+                            </div>
+                            <div
+                                onClick={() => this.updateTimeFrame('days', 60)}
+                                style={this.isTimeFrameSelected('days', 60) ? selected_style : unselected_style}>
+                                60 days
+                            </div>
                         </div>
-                        <div
-                            onClick={() => this.updateTimeFrame('days', 60)}
-                            style={this.isTimeFrameSelected('days', 60) ? selected_style : unselected_style}>
-                            60 days
+                        <div style={{display: 'inline-block', float: 'right'}}>
+                            {major !== undefined && [major, major - 1, major - 2].map((ver, key) => {
+                                return(
+                                    <div
+                                        key={`${ver}-${key}`}
+                                        onClick={() => this.updateTimeFrame('season', ver)}
+                                        style={this.isTimeFrameSelected('season', ver) ? selected_style : unselected_style}>
+                                        Season {ver}
+                                    </div>
+                                )
+                            })}
                         </div>
-                    </div>
-                </div>
-                <div
-                    style={{marginBottom: 5}}
-                    className="row">
-                    <div className="col s12">
-                        {major !== undefined && [major, major - 1, major - 2].map((ver, key) => {
-                            return(
-                                <div
-                                    key={`${ver}-${key}`}
-                                    onClick={() => this.updateTimeFrame('season', ver)}
-                                    style={this.isTimeFrameSelected('season', ver) ? selected_style : unselected_style}>
-                                    Season {ver}
-                                </div>
-                            )
-                        })}
                     </div>
                 </div>
                 <div
@@ -240,12 +276,13 @@ class PlayerChampionSummary extends Component {
                                 <div
                                     style={{
                                         display: 'inline-block',
-                                        width: 120,
+                                        width: 130,
                                         borderStyle: 'solid',
                                         borderWidth: 1,
                                         borderColor: 'grey',
                                         borderRadius: 4,
                                         padding: 8,
+                                        margin: '0 2px'
                                     }}
                                     key={`${data.champion_id}-${key}`}>
                                     {this.renderChampionData(data)}    

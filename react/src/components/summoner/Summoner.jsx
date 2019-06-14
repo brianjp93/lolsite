@@ -394,7 +394,12 @@ class Summoner extends Component {
                         <div>
                             <div className="row" style={{marginBottom: 0}}>
                                 <div className="col l10 offset-l1">
-                                    <div style={{width:400, display:'inline-block'}}>
+                                    <div
+                                        style={{
+                                            width:400,
+                                            display:'inline-block',
+                                            marginRight: 15,
+                                        }}>
                                         {this.state.summoner.name !== undefined &&
                                             <SummonerCard
                                                 last_refresh={this.state.last_refresh}
@@ -408,7 +413,10 @@ class Summoner extends Component {
 
                                     <div style={{display: 'inline-block', verticalAlign: 'top'}}>
                                         <div
-                                            style={{marginLeft: 15}}
+                                            style={{
+                                                minWidth: 700,
+                                                padding: 15,
+                                            }}
                                             className={`${theme} card-panel`}>
                                             <PlayerChampionSummary
                                                 store={store}
