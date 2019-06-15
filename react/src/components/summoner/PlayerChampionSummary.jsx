@@ -160,7 +160,7 @@ class PlayerChampionSummary extends Component {
         const {
             count, kills_sum, deaths_sum, assists_sum,
             wins, losses, champion_id, champion,
-            vspm, cspm, minutes, kda,
+            vspm, cspm, kda,
         } = data
         let theme = this.props.store.state.theme
 
