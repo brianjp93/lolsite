@@ -364,6 +364,21 @@ class PlayerChampionSummary extends Component {
                                 </div>
                             )
                         })}
+                        {this.state.stats.length === 0 && !this.state.is_loading &&
+                            <div
+                                style={{
+                                    display: 'inline-block',
+                                    width: '100%',
+                                    borderStyle: 'solid',
+                                    borderWidth: 1,
+                                    borderColor: 'grey',
+                                    borderRadius: 4,
+                                    padding: 8,
+                                    margin: '0 2px'
+                                }} >
+                                <span>No Data</span>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
