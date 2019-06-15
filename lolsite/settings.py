@@ -262,8 +262,20 @@ DEFAULT_FROM_EMAIL = 'brianjp93@gmail.com'
 
 
 # SENTRY
+def before_breadcrumb(crumb, hint):
+    if crumb.get('category', None) == 'django.security.DisallowedHost':
+        return None
+    return crumb
+
+def before_send(event, hint):
+    if event.get('logger', None) == 'django.security.DisallowedHost':
+        return None
+    return event
+
 if not DEV:
     sentry_sdk.init(
         dsn="https://667badfd0a4143d8a497da7cc7e78ab3@sentry.io/1482754",
-        integrations=[DjangoIntegration()]
+        integrations=[DjangoIntegration()],
+        before_breadcrumb=before_breadcrumb,
+        before_send=before_send,
     )
