@@ -128,7 +128,12 @@ class PlayerChampionSummary extends Component {
         return false
     }
     updateTimeFrame(time_division, time_value) {
-        this.setState({time_division, time_value}, this.getChampionStats)
+        if (this.state.time_division === time_division && this.state.time_value === time_value) {
+            // do nothing
+        }
+        else {
+            this.setState({time_division, time_value}, this.getChampionStats)
+        }
     }
     truncateName(name) {
         let out = name
@@ -138,7 +143,12 @@ class PlayerChampionSummary extends Component {
         return out
     }
     selectQueue(name) {
-        this.setState({queue_selection: name}, this.getChampionStats)
+        if (this.state.queue_selection === name) {
+            // do nothing
+        }
+        else {
+            this.setState({queue_selection: name}, this.getChampionStats)
+        }
     }
     isQueueSelected(name) {
         if (this.state.queue_selection === name) {
@@ -268,7 +278,7 @@ class PlayerChampionSummary extends Component {
                     className="row">
                     <div
                         style={{fontSize: 'small'}}
-                        className='col s12'>
+                        className='col s12 unselectable'>
                         <div style={{display: 'inline-block'}}>
                             <div
                                 onClick={() => this.updateTimeFrame('days', 30)}
@@ -300,7 +310,7 @@ class PlayerChampionSummary extends Component {
                     className="row">
                     <div
                         style={{fontSize: 'small'}}
-                        className="col s12">
+                        className="col s12 unselectable">
                         <div style={{display: 'inline-block'}}>
                             <div
                                 onClick={() => this.selectQueue('')}
