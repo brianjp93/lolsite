@@ -10,10 +10,10 @@ from .models import Event, AssistingParticipants
 from .models import Spectate
 
 from data.models import Rito
+from lolsite.tasks import get_riot_api
 
 from player.models import Summoner
-
-from lol.riot import Riot as RiotAPI
+from player import tasks as pt
 
 from celery import task
 import logging
@@ -25,25 +25,6 @@ logger = logging.getLogger(__name__)
 
 class RateLimitError(Exception):
     pass
-
-def get_riot_api():
-    """Get an instance of the RiotAPI wrapper.
-
-    Uses the token stored in the data.Rito model
-
-    Returns
-    -------
-    RiotAPI or None
-
-    """
-    api = None
-    query = Rito.objects.all()
-    if query.exists():
-        rito = query.first()
-        if rito.token:
-            api = RiotAPI(rito.token)
-    return api
-
 
 def import_match(match_id, region, refresh=False):
     """Import a match by its ID.
@@ -483,6 +464,51 @@ def import_season_matches(season_id, account_id, region, **kwargs):
             index += size
 
 
+def full_import(name=None, account_id=None, region=None, **kwargs):
+    """Import only unimported games for a summoner.
+
+    Looks at summoner.full_import_count to determine how many
+    matches need to be imported.
+
+    Parameters
+    ----------
+    name : str
+    region : str
+    season_id : ID
+    account_id : ID
+        the encrypted account ID
+    queue : int
+    beginTime : Epoch in ms
+    endTime : Epoch in ms
+
+    Returns
+    -------
+    None
+
+    """
+    if region is None:
+        raise Exception('region parameter is required.')
+    if name is not None:
+        summoner_id = pt.import_summoner(region, name=name)
+        summoner = Summoner.objects.get(id=summoner_id, region=region)
+        account_id = summoner.account_id
+    elif account_id is not None:
+        summoner = Summoner.objects.get(account_id=account_id, region=region)
+    else:
+        raise Exception('name or account_id must be provided.')
+
+    old_import_count = summoner.full_import_count
+    total = get_total_matches(account_id, region, **kwargs)
+
+    new_import_count = total - old_import_count
+    if new_import_count > 0:
+        logger.info(f'Importing {new_import_count} matches for {summoner.name}.')
+        is_finished = import_recent_matches(0, new_import_count, account_id, region)
+        if is_finished:
+            summoner.full_import_count = total
+            summoner.save()
+
+
 def import_recent_matches(start, end, account_id, region, **kwargs):
     """Import recent matches for an account_id.
 
@@ -499,11 +525,13 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
 
     Returns
     -------
-    None
+    bool
 
     """
+    is_finished = False
     has_more = True
     api = get_riot_api()
+    pool = ThreadPool(5)
     if api:
         index = start
         size = 100
@@ -524,7 +552,6 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
             if len(matches) > 0:
                 threads = 5
                 new_matches = [x for x in matches if not Match.objects.filter(_id=x['gameId']).exists()]
-                pool = ThreadPool(5)
                 vals = pool.map(lambda x: import_match(x['gameId'], region), new_matches)
                 # print(vals)
             else:
@@ -532,6 +559,39 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
             index += size
             if index >= end:
                 please_continue = False
+        is_finished = True
+    return is_finished
+
+
+def get_total_matches(account_id, region, **kwargs):
+    """Get the total number of matches for a certain summoner.
+
+    Parameters
+    ----------
+    start : int
+    end : int
+    season_id : ID
+    account_id : ID
+        the encrypted account ID
+    queue : int
+    beginTime : Epoch in ms
+    endTime : Epoch in ms
+
+    Returns
+    -------
+    Integer
+
+    """
+    kwargs['beginIndex'] = 5000
+    kwargs['endIndex'] = 5001
+    api = get_riot_api()
+    r = api.match.filter(account_id, region=region, **kwargs)
+    total = None
+    try:
+        total = r.json()['totalGames']
+    except:
+        pass
+    return total
 
 
 def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, recent=None, group_by='summoner_name'):

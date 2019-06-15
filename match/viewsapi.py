@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from match.tasks import get_riot_api
+from lolsite.tasks import get_riot_api
 from match import tasks as mt
 from player import tasks as pt
 

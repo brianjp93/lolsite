@@ -46,6 +46,9 @@ class Summoner(models.Model):
     revision_date = models.BigIntegerField(default=0, db_index=True)
     summoner_level = models.IntegerField(default=0, db_index=True)
 
+    # number of games imported when last match history import was run.
+    full_import_count = models.IntegerField(default=0, blank=True)
+
     last_summoner_page_import = models.DateTimeField(null=True)
     created_date = models.DateTimeField(default=timezone.now, db_index=True)
 

@@ -8,7 +8,7 @@ from .models import simplify
 from .models import RankCheckpoint, RankPosition
 from .models import Custom, EmailVerification
 
-from match.tasks import get_riot_api
+from lolsite.tasks import get_riot_api
 
 
 @task(name='player.tasks.import_summoner')

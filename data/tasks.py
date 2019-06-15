@@ -23,7 +23,7 @@ from django.db.utils import IntegrityError
 
 from . import constants
 from celery import task
-from match.tasks import get_riot_api
+from lolsite.tasks import get_riot_api
 import time
 
 
