@@ -483,10 +483,23 @@ GAMETYPES = [
     },
 ]
 
-LANGUAGES = ["en_US","cs_CZ","de_DE","el_GR","en_AU","en_GB","en_PH","en_SG","es_AR","es_ES","es_MX","fr_FR","hu_HU","id_ID","it_IT","ja_JP","ko_KR","pl_PL","pt_BR","ro_RO","ru_RU","th_TH","tr_TR","vn_VN","zh_CN","zh_MY","zh_TW"]
+LANGUAGES = [
+    "en_US","cs_CZ","de_DE","el_GR","en_AU","en_GB",
+    "en_PH","en_SG","es_AR","es_ES","es_MX","fr_FR",
+    "hu_HU","id_ID","it_IT","ja_JP","ko_KR","pl_PL",
+    "pt_BR","ro_RO","ru_RU","th_TH","tr_TR","vn_VN",
+    "zh_CN","zh_MY","zh_TW"
+]
 
-TIERS_9 = ['unranked', 'iron', 'bronze', 'silver', 'gold', 'platinum', 'diamond', 'master', 'grandmaster', 'challenger']
+TIERS_9 = [
+    'unranked', 'iron', 'bronze', 'silver', 'gold',
+    'platinum', 'diamond', 'master', 'grandmaster',
+    'challenger'
+]
 
+
+# SEASON TIMINGS
+# https://leagueoflegends.fandom.com/wiki/Patch#Pre-Season%20Six
 SEASON_PATCHES = {
     9: {
         'preseason': {
@@ -526,6 +539,36 @@ SEASON_PATCHES = {
         'season': {
             'start': (6, 1),
             'end': (6, 21),
+        }
+    },
+    5: {
+        'preseason': {
+            'start': (4, 20),
+            'end': (4, 21),
+        },
+        'season': {
+            'start': (5, 1),
+            'end': (5, 21),
+        }
+    },
+    4: {
+        'preseason': {
+            'start': (3, 14),
+            'end': (3, 15),
+        },
+        'season': {
+            'start': (4, 1),
+            'end': (4, 19),
+        }
+    },
+    3: {
+        'preseason': {
+            'start': (1, 1),
+            'end': (1, 1),
+        },
+        'season': {
+            'start': (3, 1),
+            'end': (3, 13),
         }
     },
 }
