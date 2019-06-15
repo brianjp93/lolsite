@@ -17,6 +17,10 @@ let queuefilter = [
         name: '5v5 Norms Blind',
         id: 430
     },
+    {
+        name: 'ARAM',
+        id: 450
+    },
 ]
 
 export default queuefilter
