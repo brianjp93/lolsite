@@ -157,13 +157,18 @@ class PlayerChampionSummary extends Component {
         return false
     }
     renderChampionData(data) {
+        const {
+            count, kills_sum, deaths_sum, assists_sum,
+            wins, losses, champion_id, champion,
+            vspm, cspm, minutes, kda,
+        } = data
         let theme = this.props.store.state.theme
 
-        let average_kills = data.kills_sum / data.count
-        let average_deaths = data.deaths_sum / data.count
-        let average_assists = data.assists_sum / data.count
-        let win_percentage = (data.wins / (data.wins + data.losses)) * 100
-        let champ = this.state.champions[data.champion_id]
+        let average_kills = kills_sum / count
+        let average_deaths = deaths_sum / count
+        let average_assists = assists_sum / count
+        let win_percentage = (wins / (wins + losses)) * 100
+        let champ = this.state.champions[champion_id]
         return(
             <div
                 style={{
@@ -172,21 +177,21 @@ class PlayerChampionSummary extends Component {
                 }}>
                 {champ !== undefined &&
                     <ReactTooltip
-                        id={`${data.champion_id}-image-tooltip`}
+                        id={`${champion_id}-image-tooltip`}
                         effect='solid'>
                         <span>{champ.name}: {champ.title}</span>
                     </ReactTooltip>
                 }
                 {champ === undefined &&
                     <ReactTooltip
-                        id={`${data.champion_id}-image-tooltip`}
+                        id={`${champion_id}-image-tooltip`}
                         effect='solid'>
-                        <span>{data.champion}</span>
+                        <span>{champion}</span>
                     </ReactTooltip>
                 }
                 <div
                     data-tip
-                    data-for={`${data.champion_id}-image-tooltip`} >
+                    data-for={`${champion_id}-image-tooltip`} >
                     {champ !== undefined &&
                         <img
                             style={{maxHeight:30, display: 'inline-block', borderRadius: '50%'}}
@@ -198,24 +203,32 @@ class PlayerChampionSummary extends Component {
                             fontSize: 'small'
                         }}>
                         <div style={{fontWeight: 'bold'}}>
-                            {this.truncateName(data.champion)}
+                            {this.truncateName(champion)}
                         </div>
                         <div>
                             <span style={{fontWeight: 'bold'}}>
-                                {data.count}
+                                {count}
                             </span>{' '}games
                         </div>
                     </div>
                 </div>
-                <div style={{margin: '5px 0'}}>
+                <div
+                    style={{
+                        margin: '5px 0',
+                        borderBottomStyle: 'solid',
+                        borderBottomWidth: 1,
+                        borderBottomColor: 'grey',
+                        paddingBottom: 5,
+                    }}>
                     <div style={{textAlign: 'right'}}>
                         <div
                             style={{
                                 fontSize: 'small',
                                 display: 'inline-block',
-                                float: 'left'
+                                float: 'left',
+                                paddingTop: 2,
                             }}>
-                            {data.wins} - {data.losses}
+                            {wins} - {losses}
                         </div>
                         <div
                             style={{display: 'inline-block'}}
@@ -227,12 +240,47 @@ class PlayerChampionSummary extends Component {
                 <div>
                     <div>
                         <span style={{fontWeight: 'bold'}}>
-                            {numeral(data.kda).format('0.00')}
+                            {numeral(kda).format('0.00')}
                         </span>{' '}
                         <span>KDA</span>
                     </div>
-                    <div style={{fontSize: 'small'}}>
-                        {numeral(average_kills).format('0.0')}/{numeral(average_deaths).format('0.0')}/{numeral(average_assists).format('0.0')}
+                    <div style={{fontSize: 'small', paddingLeft: 15}}>
+                        <span style={{fontWeight: 'bold'}}>
+                            {numeral(average_kills).format('0.0')}
+                        </span>
+                        /
+                        <span style={{fontWeight: 'bold'}}>
+                            {numeral(average_deaths).format('0.0')}
+                        </span>
+                        /
+                        <span style={{fontWeight: 'bold'}}>
+                            {numeral(average_assists).format('0.0')}
+                        </span>
+                    </div>
+                </div>
+
+                <div style={{fontSize: 'small', marginTop: 5}}>
+                    <ReactTooltip
+                        id={`${champion_id}-cs-tooltip`}
+                        effect='solid' >
+                        <span>CS per Minute</span>
+                    </ReactTooltip>
+                    <div
+                        data-tip
+                        data-for={`${champion_id}-cs-tooltip`}>
+                        <span>CS/M</span> : <span style={{fontWeight: 'bold'}}>{numeral(cspm).format('0.00')}</span>
+                    </div>
+                </div>
+                <div style={{fontSize: 'small'}}>
+                    <ReactTooltip
+                        id={`${champion_id}-vs-tooltip`}
+                        effect='solid' >
+                        <span>Vision Score per Minute</span>
+                    </ReactTooltip>
+                    <div
+                        data-tip
+                        data-for={`${champion_id}-vs-tooltip`}>
+                        <span>VS/M</span> : <span style={{fontWeight: 'bold'}}>{numeral(vspm).format('0.00')}</span>
                     </div>
                 </div>
             </div>

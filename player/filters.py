@@ -90,6 +90,7 @@ def get_summoner_champions_overview(
         assists_sum=Sum('assists'),
         wins=Sum('win_true'),
         losses=Sum('loss_true'),
+        minutes=ExpressionWrapper(Sum('participant__match__game_duration') / 60.0, output_field=FloatField())
     )
     query = query.annotate(
         kda=ExpressionWrapper(
@@ -100,6 +101,14 @@ def get_summoner_champions_overview(
                 When(deaths_sum=0, then=Value(1.0)),
                 default=F('deaths_sum')
             ),
+            output_field=FloatField()
+        ),
+        cspm=ExpressionWrapper(
+            (Sum('total_minions_killed') + Sum('neutral_minions_killed')) / F('minutes'),
+            output_field=FloatField()
+        ),
+        vspm=ExpressionWrapper(
+            Sum('vision_score') / F('minutes'),
             output_field=FloatField()
         )
     )
