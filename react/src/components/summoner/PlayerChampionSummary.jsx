@@ -30,6 +30,7 @@ class PlayerChampionSummary extends Component {
                 'solo': [420],
                 'flex': [440],
                 '3v3': [470],
+                'aram': [100, 450],
             },
 
             is_loading: false,
@@ -328,6 +329,11 @@ class PlayerChampionSummary extends Component {
                                 onClick={() => this.selectQueue('norms')}
                                 style={this.isQueueSelected('norms') ? queue_selected_style : unselected_style}>
                                 Norms
+                            </div>
+                            <div
+                                onClick={() => this.selectQueue('aram')}
+                                style={this.isQueueSelected('aram') ? queue_selected_style : unselected_style}>
+                                ARAM
                             </div>
                         </div>
                     </div>
