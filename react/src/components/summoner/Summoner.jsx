@@ -49,7 +49,7 @@ class Summoner extends Component {
             icon: {},
             matches: [],
             match_ids: new Set(),
-            count: 10,
+            count: 20,
             next_page: 2,
             last_refresh: null,
 
