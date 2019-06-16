@@ -1,5 +1,8 @@
+"""match/tasks.py
+"""
 from django.db.utils import IntegrityError
 from django.db.models import Count, Subquery, OuterRef
+from django.db import connection
 
 from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
@@ -26,7 +29,7 @@ logger = logging.getLogger(__name__)
 class RateLimitError(Exception):
     pass
 
-def import_match(match_id, region, refresh=False):
+def import_match(match_id, region, refresh=False, close=False):
     """Import a match by its ID.
 
     Parameters
@@ -52,6 +55,8 @@ def import_match(match_id, region, refresh=False):
             return 'not found'
         
         import_match_from_data(match, refresh=refresh, region=region)
+    if close:
+        connection.close()
         
 
 def import_summoner_from_participant(part, region):
@@ -551,7 +556,7 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
                 matches = r.json()['matches']
             if len(matches) > 0:
                 new_matches = [x for x in matches if not Match.objects.filter(_id=x['gameId']).exists()]
-                vals = pool.map(lambda x: import_match(x['gameId'], region), new_matches)
+                vals = pool.map(lambda x: import_match(x['gameId'], region, close=True), new_matches)
                 # print(vals)
             else:
                 has_more = False
