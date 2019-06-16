@@ -4,7 +4,8 @@ awsebcli==3.15.2
 beautifulsoup4==4.7.1
 billiard==3.5.0.5
 blessed==1.15.0
-botocore==1.12.104
+boto3==1.9.169
+botocore==1.12.169
 cached-property==1.5.1
 celery==4.2.1
 cement==2.8.2
@@ -48,6 +49,7 @@ PyYAML==3.13
 redis==3.1.0
 requests==2.20.1
 Rx==1.6.1
+s3transfer==0.2.1
 semantic-version==2.5.0
 sentry-sdk==0.9.0
 singledispatch==3.4.0.3
