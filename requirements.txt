@@ -15,6 +15,7 @@ coverage==4.5.3
 Django==2.2.2
 django-elasticache==1.0.3
 django-elastipymemcache==1.2.1
+django-storages==1.7.1
 djangorestframework==3.9.1
 docker==3.7.0
 docker-compose==1.23.2
