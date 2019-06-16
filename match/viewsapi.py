@@ -285,6 +285,7 @@ def get_spectate(request, format=None):
     """
     data = {}
     status_code = 200
+    pool = ThreadPool(10)
 
     if request.method == 'POST':
         summoner_id = request.data['summoner_id']
@@ -298,8 +299,7 @@ def get_spectate(request, format=None):
         else:
             mt.import_spectate_from_data(spectate_data, region)
             summoners = mt.import_summoners_from_spectate(spectate_data, region)
-            pool = ThreadPool(5)
-            vals = pool.map(lambda x: pt.import_positions(x, threshold_days=3), summoners.values())
+            vals = pool.map(lambda x: pt.import_positions(x, threshold_days=3, close=True), summoners.values())
             for part in spectate_data['participants']:
                 positions = None
                 query = Summoner.objects.filter(region=region, _id=part['summonerId'])

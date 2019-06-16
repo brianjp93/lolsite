@@ -1,5 +1,6 @@
 from celery import task
 
+from django.db import connection
 from django.utils import timezone
 from django.contrib.auth.models import User
 
@@ -71,7 +72,7 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         return summoner_model.id
 
 
-def import_positions(summoner_id, threshold_days=None):
+def import_positions(summoner_id, threshold_days=None, close=False):
     """Get most recent position data for Summoner.
 
     Parameters
@@ -142,6 +143,7 @@ def import_positions(summoner_id, threshold_days=None):
                 }
                 rankposition = RankPosition(**attrs)
                 rankposition.save()
+    connection.close()
 
 
 def simplify_email(email):
