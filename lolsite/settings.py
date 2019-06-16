@@ -201,6 +201,9 @@ USE_TZ = True
 if ENVNAME in ['lolsite', 'lolsite-beat']:
     AWS_ACCESS_KEY_ID = os.environ['AWS_KEY']
     AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET']
+else:
+    AWS_ACCESS_KEY_ID = ''
+    AWS_SECRET_ACCESS_KEY = ''
 
 
 # Static files (CSS, JavaScript, Images)
