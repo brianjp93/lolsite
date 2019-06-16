@@ -193,7 +193,6 @@ class Summoner extends Component {
             icon: {},
             matches: [],
             match_ids: new Set(),
-            count: 10,
             next_page: 2,
             is_requesting_page: false,
             is_requesting_next_page: false,
