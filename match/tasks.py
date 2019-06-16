@@ -531,7 +531,7 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
     is_finished = False
     has_more = True
     api = get_riot_api()
-    pool = ThreadPool(5)
+    pool = ThreadPool(10)
     if api:
         index = start
         size = 100
@@ -550,7 +550,6 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
                 r = api.match.filter(account_id, region=region, **kwargs)
                 matches = r.json()['matches']
             if len(matches) > 0:
-                threads = 5
                 new_matches = [x for x in matches if not Match.objects.filter(_id=x['gameId']).exists()]
                 vals = pool.map(lambda x: import_match(x['gameId'], region), new_matches)
                 # print(vals)
