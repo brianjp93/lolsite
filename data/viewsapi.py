@@ -256,6 +256,11 @@ def get_champions(request, format=None):
     POST Parameters
     ---------------
     champions : list
+        All champions will be serialized if not provided.
+    fields : list
+        A list of fields you want returned in the serialized
+        champion data.
+    order_by : str
 
     Returns
     -------
@@ -267,12 +272,19 @@ def get_champions(request, format=None):
 
     if request.method == 'POST':
         champions = request.data.get('champions', [])
+        fields = request.data.get('fields', None)
+        order_by = request.data.get('order_by', None)
 
         top = Champion.objects.all().order_by('-major', '-minor', '-patch').first()
         version = top.version
 
-        query = Champion.objects.filter(version=version, key__in=champions)
-        champion_data = ChampionSerializer(query, many=True).data
+        query = Champion.objects.filter(version=version)
+        if champions:
+            query = query.filter(key__in=champions)
+
+        if order_by:
+            query = query.order_by(order_by)
+        champion_data = ChampionSerializer(query, many=True, fields=fields).data
         data = {'data': champion_data}
     else:
         data = {'message': 'Must use POST.'}

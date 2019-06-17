@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import Modal from 'react-responsive-modal'
 import ReactTooltip from 'react-tooltip'
+import api from '../../api/api'
+import toastr from 'toastr'
 
 import queuefilter from '../../constants/queuefilter'
 
@@ -13,6 +15,9 @@ class MatchFilter extends Component {
         this.state = {
             queue_filter: '',
             summoner_filter: '',
+            champions: [],
+            champion: '',
+            is_champion_card_open: false,
 
             is_modal_open: false,
         }
@@ -23,6 +28,9 @@ class MatchFilter extends Component {
         this.openModal = this.openModal.bind(this)
         this.handleKeyDown = this.handleKeyDown.bind(this)
         this.setDefaults = this.setDefaults.bind(this)
+        this.getChampions = this.getChampions.bind(this)
+        this.getChampionMatches = this.getChampionMatches.bind(this)
+        this.handleChampionKeyDown = this.handleChampionKeyDown.bind(this)
     }
     componentDidUpdate(prevProps, prevState) {
         let prev_summoner = prevProps.summoner
@@ -33,21 +41,51 @@ class MatchFilter extends Component {
             }
         }
     }
+    getChampions() {
+        let data = {
+            fields: ['key', 'name'],
+            order_by: 'name',
+        }
+        api.data.getChampions(data)
+            .then(response => {
+                this.setState({champions: response.data.data})
+            })
+            .catch(error => {
+
+            })
+            .then(() => {
+
+            })
+    }
     setDefaults() {
         let data = {
             queue_filter: '',
             summoner_filter: '',
+            champion: '',
         }
         this.setState(data)
     }
     componentDidMount() {
         window.$('select').formSelect()
         this.updateParent()
+        this.getChampions()
     }
     getFilterParams() {
+        let champ_key = null
+        if (this.state.champion.length > 0) {
+            for (var champ of this.state.champions) {
+                if (champ.name.toLowerCase() === this.state.champion.toLowerCase()) {
+                    champ_key = champ.key
+                }
+            }
+        }
         let data = {
             queue_filter: this.state.queue_filter,
             summoner_filter: this.state.summoner_filter,
+            champion: champ_key,
+        }
+        if (champ_key !== null) {
+            data.champion = champ_key
         }
         return data
     }
@@ -86,6 +124,38 @@ class MatchFilter extends Component {
             event.stopPropagation()
         }
     }
+    getChampionMatches() {
+        let out = []
+        if (this.state.champion.length > 0) {
+            let reg = this.state.champion.split('').map(l => `${l}(.*)+`)
+            reg[reg.length - 1] = this.state.champion[this.state.champion.length - 1]
+            reg = reg.join('')
+            reg = RegExp(reg, 'i')
+            out = this.state.champions.filter(champ => {return champ.name.match(reg) !== null})
+        }
+        else {
+            out = this.state.champions
+        }
+        return out
+    }
+    handleChampionKeyDown(event) {
+        if (event.key === 'Enter') {
+            if (this.state.champion.length === 0) {
+                this.setState({is_champion_card_open: false})
+                this.apply()
+            }
+            else {
+                let matches = this.getChampionMatches()
+                if (matches.length > 0) {
+                    this.setState({champion: matches[0].name, is_champion_card_open: false}, this.apply)
+                }
+                else {
+                    this.setState({is_champion_card_open: false})
+                    toastr.error('No matches for this string.')
+                }
+            }
+        }
+    }
     render() {
         const store = this.props.store
         // const parent = this.props.parent
@@ -93,19 +163,75 @@ class MatchFilter extends Component {
         return (
             <div>
                 <div>
-                    <div className={`input-field ${theme}`}>
-                        <select
-                            onChange={(elt) => {
-                                this.setState({queue_filter: elt.target.value}, this.apply)}
+                    <div className="row">
+                        <div className="col s6">
+                            <div className={`input-field ${theme}`}>
+                                <select
+                                    onChange={(elt) => {
+                                        this.setState({queue_filter: elt.target.value}, this.apply)}
+                                    }
+                                    value={this.state.queue_filter}>
+                                    {[{name: 'any', id: ''}].concat(queuefilter).map((queue, key) => {
+                                        return (
+                                            <option key={`${queue.id}-${key}`} value={queue.id}>{queue.name}</option>
+                                        )
+                                    })}
+                                </select>
+                                <label>Queue</label>
+                            </div>
+                        </div>
+                        <div
+                            style={{position: 'relative'}}
+                            className="col s6">
+                            <div className={`input-field ${theme}`}>
+                                <input
+                                    id='champ-input-selection'
+                                    className={`${theme}`}
+                                    type="text"
+                                    value={this.state.champion}
+                                    onChange={(event) => this.setState({champion: event.target.value})}
+                                    onClick={() => this.setState({is_champion_card_open: true})}
+                                    onFocus={() => this.setState({is_champion_card_open: true})}
+                                    onKeyDown={this.handleChampionKeyDown} />
+                                <label htmlFor="champ-input-selection">Champion</label>
+                            </div>
+                            {this.state.is_champion_card_open &&
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        width: 400,
+                                        top: 60,
+                                        zIndex: 11,
+                                    }}
+                                    className={`card-panel ${theme}`}>
+                                    <div className="row">
+                                    {this.getChampionMatches().map((champ, key) => {
+                                        return (
+                                            <div
+                                                style={{
+                                                    textAlign: 'center',
+                                                    fontSize: 'small',
+                                                    borderStyle: 'solid',
+                                                    borderWidth: 1,
+                                                    borderColor: 'grey',
+                                                    borderRadius: 4,
+                                                    padding: 3,
+                                                    cursor: 'pointer',
+                                                }}
+                                                className='col s3'
+                                                key={`${key}-${champ.name}`}
+                                                onClick={() => this.setState(
+                                                    {champion: champ.name, is_champion_card_open: false},
+                                                    this.apply
+                                                )} >
+                                                {champ.name}
+                                            </div>
+                                        )
+                                    })}
+                                    </div>
+                                </div>
                             }
-                            value={this.state.queue_filter}>
-                            {[{name: 'any', id: ''}].concat(queuefilter).map((queue, key) => {
-                                return (
-                                    <option key={`${queue.id}-${key}`} value={queue.id}>{queue.name}</option>
-                                )
-                            })}
-                        </select>
-                        <label>Queue</label>
+                        </div>
                     </div>
 
                     <div className="row">

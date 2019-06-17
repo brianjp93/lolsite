@@ -92,6 +92,7 @@ def match_filter(request, account_id=None):
     queue_in = request.data.get('queue_in', [])
     queue = request.data.get('queue', None)
     with_names = request.data.get('with_names', [])
+    champion_key = request.data.get('champion_key', None)
 
     if account_id is None:
         if name:
@@ -107,6 +108,8 @@ def match_filter(request, account_id=None):
         matches = matches.filter(queue_id__in=queue_in)
     if queue:
         matches = matches.filter(queue_id=queue)
+    if champion_key is not None:
+        matches = matches.filter(participants__current_account_id=account_id, participants__champion_id=champion_key)
 
     # get matches with common players
     if with_names:
@@ -403,6 +406,7 @@ def get_summoner_page(request, format=None):
     summoner_name : str
     account_id : str
     region : str
+    champion_key : int
     update : bool
         Whether or not to check riot for update first
     language : str
@@ -433,6 +437,7 @@ def get_summoner_page(request, format=None):
         name = request.data.get('summoner_name', None)
         account_id = request.data.get('account_id', None)
         language = request.data.get('language', 'en_US')
+        champion_key = request.data.get('champion_key', None)
         queue = request.data.get('queue', None)
         page = request.data.get('page', 1)
         count = request.data.get('count', 20)
@@ -512,6 +517,8 @@ def get_summoner_page(request, format=None):
             if trigger_import:
                 kwargs = {}
                 start_index = 0
+                if champion_key is not None:
+                    kwargs['champion'] = champion_key
                 if queue is not None:
                     kwargs['queue'] = queue
                 if after_index is not None:

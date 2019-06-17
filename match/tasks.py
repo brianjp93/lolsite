@@ -549,11 +549,17 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
             kwargs['endIndex'] = end_index
             r = api.match.filter(account_id, region=region, **kwargs)
             try:
-                matches = r.json()['matches']
+                if r.status_code == 404:
+                    matches = []
+                else:
+                    matches = r.json()['matches']
             except Exception as error:
                 time.sleep(10)
                 r = api.match.filter(account_id, region=region, **kwargs)
-                matches = r.json()['matches']
+                if r.status_code == 404:
+                    matches = []
+                else:
+                    matches = r.json()['matches']
             if len(matches) > 0:
                 new_matches = [x for x in matches if not Match.objects.filter(_id=x['gameId']).exists()]
                 vals = pool.map(lambda x: import_match(x['gameId'], region, close=True), new_matches)

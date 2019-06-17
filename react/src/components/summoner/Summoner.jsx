@@ -220,6 +220,7 @@ class Summoner extends Component {
             count: this.state.count,
             queue: filters.queue_filter,
             with_names: filters.summoner_filter !== undefined ? filters.summoner_filter.split(',') : '',
+            champion_key: filters.champion,
         }
         return data
     }
