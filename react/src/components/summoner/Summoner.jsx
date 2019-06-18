@@ -79,8 +79,6 @@ class Summoner extends Component {
         this.getPositions = this.getPositions.bind(this)
         this.setDefaults = this.setDefaults.bind(this)
         this.reloadMatches = this.reloadMatches.bind(this)
-        this.saveStateToStore = this.saveStateToStore.bind(this)
-        this.loadStateFromStore = this.loadStateFromStore.bind(this)
         this.getSpectate = this.getSpectate.bind(this)
         this.checkForLiveGame = this.checkForLiveGame.bind(this)
         this.handleWheel = this.handleWheel.bind(this)
@@ -88,20 +86,13 @@ class Summoner extends Component {
         this.isTriggerImport = this.isTriggerImport.bind(this)
     }
     componentDidMount() {
-        let first_load = this.loadStateFromStore()
-        if (first_load) {
-            this.getSummonerPage(() => {
-                this.getPositions()
-                this.checkForLiveGame()
-                let now = new Date().getTime()
-                this.setState({last_refresh: now})
-            })
-            this.setQueueDict()
-        }
-        else {
-            setTimeout(this.checkForLiveGame, 100)
-        }
-        // this.live_game_check_interval = window.setInterval(this.checkForLiveGame, 120 * 1000)
+        this.getSummonerPage(() => {
+            this.getPositions()
+            this.checkForLiveGame()
+            let now = new Date().getTime()
+            this.setState({last_refresh: now})
+        })
+        this.setQueueDict()
     }
     componentDidUpdate(prevProps, prevState) {
         // new summoner
@@ -109,35 +100,23 @@ class Summoner extends Component {
             this.props.route.match.params.summoner_name !== prevProps.route.match.params.summoner_name ||
             this.props.region !== prevProps.region
         ) {
-            this.saveStateToStore(prevState, prevProps)
-            this.setDefaults(() => {
-                let first_load = this.loadStateFromStore()
-                if (first_load) {
-                    this.getSummonerPage(() => {
-                        this.getPositions()
-                        this.checkForLiveGame()
-                        let now = new Date().getTime()
-                        this.setState({last_refresh: now})
-                    })
-                }
-                else {
-                    setTimeout(this.checkForLiveGame, 100)
-                }
+            this.setState({match_filters: {}}, () => {
+                this.getSummonerPage(() => {
+                    this.getPositions()
+                    this.checkForLiveGame()
+                    let now = new Date().getTime()
+                    this.setState({last_refresh: now})
+                })
             })
         }
     }
     componentWillUnmount() {
-        // save the current state into our store
-        this.saveStateToStore(this.state, this.props)
-
         try {
             this.match_list.removeEventListener('wheel', this.handleWheel)
         }
         catch(error) {
             console.log('Attempted to remove event listener but got an error.')
         }
-
-        // window.clearInterval(this.live_game_check_interval)
     }
     handleWheel(event) {
         if (!this.props.store.state.ignore_horizontal) {
@@ -146,46 +125,6 @@ class Summoner extends Component {
         else {
             return event
         }
-    }
-    saveStateToStore(state, props) {
-        if (state.summoner === false) {
-            return
-        }
-        var new_summoners = this.props.store.state.summoners
-
-        var region = props.region
-
-        if (new_summoners[region] === undefined) {
-            new_summoners[region] = {}
-        }
-        if (state.summoner !== undefined) {
-            if (state.summoner.name !== undefined) {
-                var name = state.summoner.name
-                var simple = name.split(' ').join('').toLowerCase()
-                new_summoners[region][simple] = state
-                this.props.store.setState({summoners: new_summoners})
-            }
-        }
-    }
-    loadStateFromStore() {
-        var name = this.props.route.match.params.summoner_name
-        var simple = name.split(' ').join('').toLowerCase()
-
-        var region = this.props.store.state.region_selected
-
-        var first_load = false
-        if (this.props.store.state.summoners[region] !== undefined) {
-            if (this.props.store.state.summoners[region][simple] !== undefined) {
-                this.setState(this.props.store.state.summoners[region][simple])
-            }
-            else {
-                first_load = true
-            }
-        }
-        else {
-            first_load = true
-        }
-        return first_load
     }
     setDefaults(callback) {
         var defaults = {

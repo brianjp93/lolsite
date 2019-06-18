@@ -37,7 +37,7 @@ class MatchFilter extends Component {
         let now_summoner = this.props.summoner
         if (prev_summoner !== undefined && now_summoner !== undefined) {
             if (prev_summoner.id !== now_summoner.id) {
-                this.setDefaults()
+                // this.setState(this.props.match_filters)
             }
         }
     }
@@ -67,7 +67,7 @@ class MatchFilter extends Component {
     }
     componentDidMount() {
         window.$('select').formSelect()
-        this.updateParent()
+        // this.updateParent()
         this.getChampions()
     }
     getFilterParams() {
