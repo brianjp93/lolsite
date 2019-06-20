@@ -209,7 +209,7 @@ class Summoner extends Component {
                 this.setState({is_requesting_page: false, is_reloading_matches: false})
             })
     }
-    reloadMatches() {
+    reloadMatches(callback) {
         this.setState({
             match_ids: new Set(),
             next_page: 2,
@@ -218,6 +218,9 @@ class Summoner extends Component {
             this.getSummonerPage(() => {
                 this.getPositions()
                 this.setState({last_refresh: new Date().getTime()})
+                if (callback !== undefined) {
+                    callback()
+                }
             })
         })
     }

@@ -19,9 +19,12 @@ class MatchFilter extends Component {
             champion: '',
             is_champion_card_open: false,
 
+            is_applying: false,
+
             is_modal_open: false,
         }
 
+        this.isFiltersApplied = this.isFiltersApplied.bind(this)
         this.getFilterParams = this.getFilterParams.bind(this)
         this.updateParent = this.updateParent.bind(this)
         this.apply = this.apply.bind(this)
@@ -41,6 +44,15 @@ class MatchFilter extends Component {
                 // this.setState(this.props.match_filters)
             }
         }
+    }
+    isFiltersApplied() {
+        let filters = this.getFilterParams()
+        for (let filter in filters) {
+            if (['', null, undefined].indexOf(filters[filter]) === -1) {
+                return true
+            }
+        }
+        return false
     }
     getChampions() {
         let data = {
@@ -63,6 +75,7 @@ class MatchFilter extends Component {
             queue_filter: '',
             summoner_filter: '',
             champion: '',
+            // is_applying: false,
         }
         this.setState(data, () => {
             if (callback !== undefined) {
@@ -113,9 +126,19 @@ class MatchFilter extends Component {
             }
         }
     }
-    apply(callback) {
-        this.updateParent(this.props.parent.reloadMatches)
-        this.setState({is_modal_open: false})
+    apply() {
+        if (!this.state.is_applying) {
+            this.setState({is_applying: true})
+            this.updateParent(() => {
+                this.props.parent.reloadMatches(() => {
+                    this.setState({is_applying: false})
+                })
+            })
+            this.setState({is_modal_open: false})
+        }
+        else {
+            toastr.error('Already applying some filters')
+        }
     }
     openModal() {
         this.setState({is_modal_open: true}, () => {
@@ -162,12 +185,24 @@ class MatchFilter extends Component {
         }
     }
     clearFilters() {
-        this.setDefaults(this.apply)
+        this.setDefaults(() => {
+            this.apply()
+            this.queue_select.focus()
+            this.queue_select.blur()
+        })
     }
     render() {
         const store = this.props.store
         // const parent = this.props.parent
         const theme = store.state.theme
+
+        let clear_filters_params = {}
+        if (!this.isFiltersApplied()) {
+            clear_filters_params.disabled = true
+        }
+        else if (this.state.is_applying) {
+            clear_filters_params.disabled = true
+        }
         return (
             <div>
                 <div>
@@ -177,6 +212,7 @@ class MatchFilter extends Component {
                         <div className="col s6">
                             <div className={`input-field ${theme}`}>
                                 <select
+                                    ref={(elt) => {this.queue_select = elt}}
                                     onChange={(elt) => {
                                         this.setState({queue_filter: elt.target.value}, this.apply)}
                                     }
@@ -252,10 +288,18 @@ class MatchFilter extends Component {
                                 More Filters
                             </button>{' '}
                             <button
+                                {...clear_filters_params}
                                 onClick={this.clearFilters}
                                 className={`${theme} btn-small`}>
                                 Clear Filters
-                            </button>
+                            </button>{' '}
+                            {this.isFiltersApplied() &&
+                                <span
+                                    className={`${theme} success-bordered`}
+                                    style={{fontSize: 'small', padding: 7}}>
+                                    Filters are applied
+                                </span>
+                            }
                         </div>
                     </div>
                 </div>
