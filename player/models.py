@@ -125,7 +125,7 @@ class RankPosition(models.Model):
     rank = models.CharField(max_length=32, default='', blank=True)
     tier = models.CharField(max_length=32, default='', blank=True)
 
-    def save(*args, **kwargs):
+    def save(self, *args, **kwargs):
         super(RankPosition, self).save(*args, **kwargs)
 
 

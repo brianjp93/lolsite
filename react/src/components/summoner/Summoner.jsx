@@ -219,7 +219,12 @@ class Summoner extends Component {
                 this.getPositions()
                 this.setState({last_refresh: new Date().getTime()})
                 if (callback !== undefined) {
-                    callback()
+                    try {
+                        callback()
+                    }
+                    catch(error) {
+                        console.log('Caught error in reloadMatches method in Summoner.jsx.')
+                    }
                 }
             })
         })
