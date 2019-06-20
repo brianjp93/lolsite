@@ -491,11 +491,19 @@ LANGUAGES = [
     "zh_CN","zh_MY","zh_TW"
 ]
 
-TIERS_9 = [
-    'unranked', 'iron', 'bronze', 'silver', 'gold',
-    'platinum', 'diamond', 'master', 'grandmaster',
-    'challenger'
-]
+
+RANKS = {
+    9: {
+        'TIERS': [
+            'unranked', 'iron', 'bronze', 'silver', 'gold',
+            'platinum', 'diamond', 'master', 'grandmaster',
+            'challenger'
+        ],
+        'DIVISIONS': [
+            'I', 'II', 'III', 'IV'
+        ]
+    }
+}
 
 
 # SEASON TIMINGS

@@ -11,6 +11,8 @@ from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
 
+from data import constants as dc
+
 
 def simplify(name):
     """Return the lowercase, no space version of a string.
@@ -122,6 +124,9 @@ class RankPosition(models.Model):
     queue_type = models.CharField(max_length=32, default='', blank=True)
     rank = models.CharField(max_length=32, default='', blank=True)
     tier = models.CharField(max_length=32, default='', blank=True)
+
+    def save(*args, **kwargs):
+        super(RankPosition, self).save(*args, **kwargs)
 
 
 class Custom(models.Model):

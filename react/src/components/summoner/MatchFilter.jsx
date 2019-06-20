@@ -31,6 +31,7 @@ class MatchFilter extends Component {
         this.getChampions = this.getChampions.bind(this)
         this.getChampionMatches = this.getChampionMatches.bind(this)
         this.handleChampionKeyDown = this.handleChampionKeyDown.bind(this)
+        this.clearFilters = this.clearFilters.bind(this)
     }
     componentDidUpdate(prevProps, prevState) {
         let prev_summoner = prevProps.summoner
@@ -57,13 +58,17 @@ class MatchFilter extends Component {
 
             })
     }
-    setDefaults() {
+    setDefaults(callback) {
         let data = {
             queue_filter: '',
             summoner_filter: '',
             champion: '',
         }
-        this.setState(data)
+        this.setState(data, () => {
+            if (callback !== undefined) {
+                callback()
+            }
+        })
     }
     componentDidMount() {
         window.$('select').formSelect()
@@ -156,6 +161,9 @@ class MatchFilter extends Component {
             }
         }
     }
+    clearFilters() {
+        this.setDefaults(this.apply)
+    }
     render() {
         const store = this.props.store
         // const parent = this.props.parent
@@ -163,7 +171,9 @@ class MatchFilter extends Component {
         return (
             <div>
                 <div>
-                    <div className="row">
+                    <div
+                        style={{marginBottom: 0}}
+                        className="row">
                         <div className="col s6">
                             <div className={`input-field ${theme}`}>
                                 <select
@@ -240,6 +250,11 @@ class MatchFilter extends Component {
                                 onClick={this.openModal}
                                 className={`${theme} btn-small`}>
                                 More Filters
+                            </button>{' '}
+                            <button
+                                onClick={this.clearFilters}
+                                className={`${theme} btn-small`}>
+                                Clear Filters
                             </button>
                         </div>
                     </div>
