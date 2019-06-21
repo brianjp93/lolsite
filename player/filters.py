@@ -31,6 +31,8 @@ def get_summoner_champions_overview(
     major_version : int
     minor_version : int
     season : int
+    champion_in : list[int]
+        list of champion keys
     start_datetime : ISO Datetime
     end_datetime : ISO Datetime
 
@@ -39,14 +41,15 @@ def get_summoner_champions_overview(
     QuerySet
 
     """
-    summoner = Summoner.objects.get(id=summoner_id)
-
     min_game_time = 60 * 5
     query = Stats.objects.filter(
-        participant__summoner_id=summoner._id,
         participant__match__game_duration__gt=min_game_time
     )
 
+    if summoner_id is not None:
+        query = query.filter(participant__summoner_id=summoner_id)
+    if champion_in:
+        query = query.filter(participant__champion_id__in=champion_in)
     if major_version is not None:
         query = query.filter(participant__match__major=major_version)
     if minor_version is not None:
