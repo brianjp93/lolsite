@@ -7,42 +7,42 @@ axios.defaults.xsrfCookieName = "csrftoken";
 
 
 function getSummoner(data) {
-    var url = `/api/${version}/player/summoner/`
+    let url = `/api/${version}/player/summoner/`
     return axios.post(url, data)
 }
 
 function getSummonerPage(data) {
-    var url = `/api/${version}/player/summoner-page/`
+    let url = `/api/${version}/player/summoner-page/`
     return axios.post(url, data)
 }
 
 function getPositions(data) {
-    var url = `/api/${version}/player/positions/`
+    let url = `/api/${version}/player/positions/`
     return axios.post(url, data)
 }
 
 function signUp(data) {
-    var url = `/api/${version}/player/sign-up/`
+    let url = `/api/${version}/player/sign-up/`
     return axios.post(url, data)
 }
 
 function login(data) {
-    var url = `/api/${version}/player/login/`
+    let url = `/api/${version}/player/login/`
     return axios.post(url, data)
 }
 
 function verify(data) {
-    var url = `/api/${version}/player/verify/`
+    let url = `/api/${version}/player/verify/`
     return axios.post(url, data)
 }
 
 function getChampionsOverview(data) {
-    var url = `/api/${version}/player/champions-overview/`
+    let url = `/api/${version}/player/champions-overview/`
     return axios.post(url, data)
 }
 
 function summonerSearch(data) {
-    var url `/api/${version}/player/summoner-search/`
+    let url = `/api/${version}/player/summoner-search/`
     return axios.post(url, data)
 }
 
