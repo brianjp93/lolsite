@@ -41,6 +41,11 @@ function getChampionsOverview(data) {
     return axios.post(url, data)
 }
 
+function summonerSearch(data) {
+    var url `/api/${version}/player/summoner-search/`
+    return axios.post(url, data)
+}
+
 export default {
     getSummoner,
     getSummonerPage,
@@ -49,4 +54,5 @@ export default {
     login,
     verify,
     getChampionsOverview,
+    summonerSearch,
 }

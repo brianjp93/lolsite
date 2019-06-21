@@ -148,6 +148,7 @@ class NavBar extends Component {
                                     style={{display: 'inline-block', width: 280}}
                                     className="input-field">
                                     <input
+                                        autocomplete='off'
                                         ref={(elt) => this.input = elt}
                                         style={{color: '#929292'}}
                                         value={this.state.summoner_name}

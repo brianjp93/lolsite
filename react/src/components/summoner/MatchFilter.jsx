@@ -231,6 +231,8 @@ class MatchFilter extends Component {
                             className="col s6">
                             <div className={`input-field ${theme}`}>
                                 <input
+                                    ref={(elt) => {this.champion_select = elt}}
+                                    autocomplete='off'
                                     id='champ-input-selection'
                                     className={`${theme}`}
                                     type="text"
@@ -251,6 +253,13 @@ class MatchFilter extends Component {
                                     }}
                                     className={`card-panel ${theme}`}>
                                     <div className="row">
+                                        <button
+                                            onClick={() => this.setState({is_champion_card_open: false})}
+                                            style={{width: '100%'}} className={`${theme} btn-small`}>
+                                            close
+                                        </button>
+                                    </div>
+                                    <div className="row">
                                     {this.getChampionMatches().map((champ, key) => {
                                         return (
                                             <div
@@ -268,7 +277,12 @@ class MatchFilter extends Component {
                                                 key={`${key}-${champ.name}`}
                                                 onClick={() => this.setState(
                                                     {champion: champ.name, is_champion_card_open: false},
-                                                    this.apply
+                                                    () => {
+                                                        this.apply()
+                                                        this.champion_select.focus()
+                                                        this.champion_select.blur()
+                                                        this.setState({is_champion_card_open: false})
+                                                    }
                                                 )} >
                                                 {champ.name}
                                             </div>

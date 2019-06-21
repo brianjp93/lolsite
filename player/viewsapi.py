@@ -757,3 +757,46 @@ def get_summoner_champions_overview(request, format=None):
         data = {'message': 'Must use POST for this resource.'}
 
     return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def summoner_search(request, format=None):
+    """
+
+    POST Parameters
+    ---------------
+    simple_name__icontains : str
+    region : str
+    start : int
+    end : int
+    fields : list[str]
+
+    Returns
+    -------
+    JSON Response
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        simple_name__icontains = request.data.get('simple_name__icontains', None)
+        simple_name = request.data.get('simple_name', None)
+        region = request.data.get('region', None)
+        start = int(request.data.get('start', 0))
+        end = int(request.data.get('end', 10))
+        if end - start > 100:
+            end = start + 100
+        fields = request.data.get('fields', None)
+
+        kwargs = {
+            'simple_name__icontains': simple_name__icontains,
+            'simple_name': simple_name,
+            'region': region,
+        }
+        query = player_filters.summoner_search(**kwargs)
+        query = query[start: end]
+        serialized = SummonerSerializer(query, many=True, fields=fields).data
+        data = {'data': serialized}
+
+    return Response(data, status=status_code)

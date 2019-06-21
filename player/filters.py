@@ -122,3 +122,32 @@ def get_summoner_champions_overview(
     ))
 
     return query
+
+
+def summoner_search(
+        simple_name__icontains=None,
+        simple_name=None,
+        region=None,
+    ):
+    """filter for summoners.
+
+    Parameters
+    ----------
+    simple_name__icontains : str
+    simple_name : str
+    region : str
+
+    Returns
+    -------
+    QueryResponse
+
+    """
+    query = Summoner.objects.all()
+
+    if simple_name__icontains is not None:
+        query = query.filter(simple_name__icontains=simple_name__icontains)
+    if simple_name is not None:
+        query = query.filter(simple_name=simple_name)
+    if region is not None:
+        query = query.filter(region=region)
+    return query
