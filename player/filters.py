@@ -19,6 +19,7 @@ def get_summoner_champions_overview(
         minor_version=None,
         queue_in=None,
         season=None,
+        champion_in=None,
         start_datetime=None,
         end_datetime=None,
     ):
@@ -47,8 +48,9 @@ def get_summoner_champions_overview(
     )
 
     if summoner_id is not None:
-        query = query.filter(participant__summoner_id=summoner_id)
-    if champion_in:
+        summoner = Summoner.objects.get(id=summoner_id)
+        query = query.filter(participant__summoner_id=summoner._id)
+    if champion_in is not None:
         query = query.filter(participant__champion_id__in=champion_in)
     if major_version is not None:
         query = query.filter(participant__match__major=major_version)
