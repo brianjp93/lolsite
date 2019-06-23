@@ -180,7 +180,7 @@ class NavBar extends Component {
                             </span>
                         }
                         {summoner_level === 0 &&
-                            <span>NA</span>
+                            <span>##</span>
                         }
                     </span>
                 </div>
