@@ -169,3 +169,7 @@ ul.sidenav.light {
 div.light>div>ul.dropdown-content {
 
 }
+
+.hover-lighten:hover {
+    background-color: #ffffff20;
+}

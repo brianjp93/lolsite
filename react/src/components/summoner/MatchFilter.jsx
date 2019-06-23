@@ -232,7 +232,7 @@ class MatchFilter extends Component {
                             <div className={`input-field ${theme}`}>
                                 <input
                                     ref={(elt) => {this.champion_select = elt}}
-                                    autocomplete='off'
+                                    autoComplete='off'
                                     id='champ-input-selection'
                                     className={`${theme}`}
                                     type="text"

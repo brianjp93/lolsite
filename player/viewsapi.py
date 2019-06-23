@@ -769,6 +769,7 @@ def summoner_search(request, format=None):
     region : str
     start : int
     end : int
+    order_by : str
     fields : list[str]
 
     Returns
@@ -785,6 +786,7 @@ def summoner_search(request, format=None):
         region = request.data.get('region', None)
         start = int(request.data.get('start', 0))
         end = int(request.data.get('end', 10))
+        order_by = request.data.get('order_by', None)
         if end - start > 100:
             end = start + 100
         fields = request.data.get('fields', None)
@@ -793,6 +795,7 @@ def summoner_search(request, format=None):
             'simple_name__icontains': simple_name__icontains,
             'simple_name': simple_name,
             'region': region,
+            'order_by': order_by,
         }
         query = player_filters.summoner_search(**kwargs)
         query = query[start: end]

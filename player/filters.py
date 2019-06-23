@@ -128,6 +128,7 @@ def summoner_search(
         simple_name__icontains=None,
         simple_name=None,
         region=None,
+        order_by=None,
     ):
     """filter for summoners.
 
@@ -150,4 +151,6 @@ def summoner_search(
         query = query.filter(simple_name=simple_name)
     if region is not None:
         query = query.filter(region=region)
+    if order_by is not None:
+        query = query.order_by(order_by)
     return query
