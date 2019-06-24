@@ -129,9 +129,8 @@ class SummonerSearchField extends Component {
                                 data-for='search-field-tooltip'
                                 className="input-field">
                                 <input
-                                    ref={(elt) => {
-                                        this.input = elt
-                                    }}
+                                    ref={(elt) => {this.input = elt}}
+                                    autoComplete='off'
                                     className={store.state.theme}
                                     id='summoner-search'
                                     type="text"

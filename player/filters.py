@@ -93,6 +93,10 @@ def get_summoner_champions_overview(
         kills_sum=Sum('kills'),
         deaths_sum=Sum('deaths'),
         assists_sum=Sum('assists'),
+        damage_dealt_to_turrets_sum=Sum('damage_dealt_to_turrets'),
+        damage_dealt_to_objectives_sum=Sum('damage_dealt_to_objectives'),
+        total_damage_dealt_to_champions_sum=Sum('total_damage_dealt_to_champions'),
+        gold_earned_sum=Sum('gold_earned'),
         wins=Sum('win_true'),
         losses=Sum('loss_true'),
         minutes=ExpressionWrapper(Sum('participant__match__game_duration') / 60.0, output_field=FloatField())
@@ -115,7 +119,19 @@ def get_summoner_champions_overview(
         vspm=ExpressionWrapper(
             Sum('vision_score') / F('minutes'),
             output_field=FloatField()
-        )
+        ),
+        dpm=ExpressionWrapper(
+            F('total_damage_dealt_to_champions_sum') / F('minutes'),
+            output_field=FloatField()
+        ),
+        objective_dpm=ExpressionWrapper(
+            F('damage_dealt_to_objectives_sum') / F('minutes'),
+            output_field=FloatField()
+        ),
+        turret_dpm=ExpressionWrapper(
+            F('damage_dealt_to_turrets_sum') / F('minutes'),
+            output_field=FloatField()
+        ),
     )
     query = query.annotate(champion=Subquery(
         Champion.objects.filter(key=OuterRef('champion_id')).values('name')[:1]
