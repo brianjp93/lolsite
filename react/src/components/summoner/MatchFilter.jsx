@@ -187,8 +187,11 @@ class MatchFilter extends Component {
     clearFilters() {
         this.setDefaults(() => {
             this.apply()
-            this.queue_select.focus()
-            this.queue_select.blur()
+            try {
+                this.queue_select.parentElement.getElementsByTagName('input')[0].click()
+                this.queue_select.parentElement.getElementsByTagName('input')[0].click()
+            }
+            catch(error) {}
         })
     }
     render() {
@@ -259,7 +262,9 @@ class MatchFilter extends Component {
                                             close
                                         </button>
                                     </div>
-                                    <div className="row">
+                                    <div
+                                        style={{height: 300, overflow: 'scroll', marginBottom: 0}}
+                                        className="row">
                                     {this.getChampionMatches().map((champ, key) => {
                                         return (
                                             <div
