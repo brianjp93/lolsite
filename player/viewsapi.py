@@ -725,6 +725,8 @@ def get_summoner_champions_overview(request, format=None):
     end_datetime : ISO Datetime
     start : int  
     end : int  
+    fields : list[str]
+        leave empty to return all fields
     
     Returns
     -------
@@ -746,6 +748,7 @@ def get_summoner_champions_overview(request, format=None):
             'queue_in': request.data.get('queue_in', None),
             'start_datetime': request.data.get('start_datetime', None),
             'end_datetime': request.data.get('end_datetime', None),
+            'fields': request.data.get('fields', []),
         }
         query = player_filters.get_summoner_champions_overview(**kwargs)
         if order_by is not None:

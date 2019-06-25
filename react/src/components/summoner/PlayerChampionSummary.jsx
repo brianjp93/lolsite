@@ -34,6 +34,12 @@ class PlayerChampionSummary extends Component {
                 'aram': [100, 450],
             },
 
+            fields: [
+                'kda', 'kills_sum', 'deaths_sum', 'assists_sum',
+                'dpm', 'gpm', 'cspm', 'vspm', 'dtpd', 'minutes',
+                'wins', 'losses',
+            ],
+
             is_loading: false,
         }
 
@@ -89,6 +95,7 @@ class PlayerChampionSummary extends Component {
             start: this.state.start,
             end: this.state.end,
             order_by: '-count',
+            fields: this.state.fields,
         }
         if (this.state.time_division === 'days') {
             let now = moment()
@@ -161,7 +168,7 @@ class PlayerChampionSummary extends Component {
         const {
             count, kills_sum, deaths_sum, assists_sum,
             wins, losses, champion_id, champion,
-            vspm, cspm, kda,
+            vspm, cspm, kda, dpm, dtpd,
         } = data
         let theme = this.props.store.state.theme
 
@@ -258,6 +265,32 @@ class PlayerChampionSummary extends Component {
 
                 <div style={{fontSize: 'small', marginTop: 5}}>
                     <ReactTooltip
+                        id={`${champion_id}-dpm-tooltip`}
+                        effect='solid' >
+                        <span>Damage per Minute</span>
+                    </ReactTooltip>
+                    <div
+                        data-tip
+                        data-for={`${champion_id}-dpm-tooltip`}>
+                        <span>DPM</span> : <span style={{fontWeight: 'bold'}}>{numeral(dpm).format('0,0')}</span>
+                    </div>
+                </div>
+
+                <div style={{fontSize: 'small'}}>
+                    <ReactTooltip
+                        id={`${champion_id}-dtpd-tooltip`}
+                        effect='solid' >
+                        <span>Damage Taken per Death</span>
+                    </ReactTooltip>
+                    <div
+                        data-tip
+                        data-for={`${champion_id}-dtpd-tooltip`}>
+                        <span>DT/D</span> : <span style={{fontWeight: 'bold'}}>{numeral(dtpd).format('0,0')}</span>
+                    </div>
+                </div>
+
+                <div style={{fontSize: 'small'}}>
+                    <ReactTooltip
                         id={`${champion_id}-cs-tooltip`}
                         effect='solid' >
                         <span>CS per Minute</span>
@@ -268,6 +301,7 @@ class PlayerChampionSummary extends Component {
                         <span>CS/M</span> : <span style={{fontWeight: 'bold'}}>{numeral(cspm).format('0.00')}</span>
                     </div>
                 </div>
+
                 <div style={{fontSize: 'small'}}>
                     <ReactTooltip
                         id={`${champion_id}-vs-tooltip`}
