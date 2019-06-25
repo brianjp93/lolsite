@@ -4,6 +4,7 @@ import moment from 'moment'
 import numeral from 'numeral'
 import ReactTooltip from 'react-tooltip'
 import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
+import StatBar from '../general/StatBar'
 
 import api from '../../api/api'
 
@@ -167,7 +168,7 @@ class PlayerChampionSummary extends Component {
         let average_kills = kills_sum / count
         let average_deaths = deaths_sum / count
         let average_assists = assists_sum / count
-        let win_percentage = (wins / (wins + losses)) * 100
+        // let win_percentage = (wins / (wins + losses)) * 100
         let champ = this.state.champions[champion_id]
         return(
             <div
@@ -212,31 +213,27 @@ class PlayerChampionSummary extends Component {
                         </div>
                     </div>
                 </div>
+                
+                <div>
+                    <StatBar
+                        theme={theme}
+                        val1={wins}
+                        val2={losses}
+                        label1={<span>{wins} Wins</span>}
+                        label2={<span>{losses} Losses</span>} />
+                </div>
+
                 <div
                     style={{
-                        margin: '5px 0',
+                        marginTop: -5,
+                        marginBottom: 5,
                         borderBottomStyle: 'solid',
                         borderBottomWidth: 1,
                         borderBottomColor: 'grey',
                         paddingBottom: 5,
                     }}>
-                    <div style={{textAlign: 'right'}}>
-                        <div
-                            style={{
-                                fontSize: 'small',
-                                display: 'inline-block',
-                                float: 'left',
-                                paddingTop: 2,
-                            }}>
-                            {wins} - {losses}
-                        </div>
-                        <div
-                            style={{display: 'inline-block'}}
-                            className={`${theme} pill`}>
-                            {numeral(win_percentage).format('0.0')}%
-                        </div>
-                    </div>
                 </div>
+
                 <div>
                     <div>
                         <span style={{fontWeight: 'bold'}}>
