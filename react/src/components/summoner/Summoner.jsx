@@ -438,7 +438,12 @@ class Summoner extends Component {
                                         className={`card-panel ${this.props.store.state.theme}`}>
                                         <div style={{height: '100%', paddingTop: 100, textAlign: 'center'}}>
                                             {this.state.is_requesting_next_page &&
-                                                <span>Loading...</span>
+                                                <span>
+                                                    <AtomSpinner
+                                                        color='#ffffff'
+                                                        size={50}
+                                                        style={{margin: 'auto'}} />
+                                                </span>
                                             }
                                             {!this.state.is_requesting_next_page &&
                                                 <span style={{fontWeight: 'bold', textDecoration: 'underline'}}>More</span>
