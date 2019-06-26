@@ -163,7 +163,10 @@ def get_summoner_champions_overview(
         )
     if all_fields or 'dtpd' in fields:
         annotation_kwargs['dtpd'] = ExpressionWrapper(
-            F('total_damage_taken_sum') / F('deaths_sum'),
+            F('total_damage_taken_sum') / Case(
+                When(deaths_sum=0, then=Value(1.0)),
+                default=F('deaths_sum')
+            ),
             output_field=FloatField()
         )
     if all_fields or 'gpm' in fields:
