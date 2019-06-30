@@ -92,7 +92,25 @@ def import_summoner_from_participant(part, region):
 
 def import_match_from_data(data, refresh=False, region=''):
     """Import a match given the riot data response json.
+
+    Ignore tutorial games.
+
+    Parameters
+    ----------
+    data : dict
+        Riot JSON data
+    refresh : bool
+    region : str
+
+    Returns
+    -------
+    None, or False if failed.
+
     """
+    game_mode = data['gameMode']
+    if 'tutorial' in game_mode.lower():
+        return False
+
     parsed = parse_match(data)
     
     match_data = parsed.pop('match')
@@ -235,7 +253,10 @@ def parse_match(data):
                     tl['value'] = round(time_value, 1)
                 tls.append(dict(tl))
 
-        _s = p['stats']
+        try:
+            _s = p['stats']
+        except KeyError:
+            raise KeyError(f'Could not parse stats for region {data["platformId"]} gameId {data["gameId"]}.')
         stats = {
             'assists': _s['assists'],
             'champ_level': _s['champLevel'],
