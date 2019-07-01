@@ -1,7 +1,9 @@
 """match/tasks.py
 """
 from django.db.utils import IntegrityError
-from django.db.models import Count, Subquery, OuterRef
+from django.db.models import Count, Subquery, OuterRef, F
+from django.db.models import Case, When, Sum
+from django.db.models import IntegerField
 from django.db import connection
 
 from .models import Match, Participant, Stats
@@ -678,8 +680,22 @@ def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, r
                 .values('team_id')[:1]
             )
         )
+    else:
+        p = p.filter(
+            team_id=Subquery(
+                Participant.objects.filter(match__participants__id=OuterRef('id'), current_account_id=summoner.account_id)
+                .values('team_id')[:1]
+            )
+        )
+    p = p.annotate(
+        win=Case(
+            When(stats__win=True, then=1),
+            default=0,
+            output_field=IntegerField()
+        )
+    )
 
-    p = p.values(group_by).annotate(count=Count(group_by))
+    p = p.values(group_by).annotate(count=Count(group_by), wins=Sum('win'))
     p = p.order_by('-count')
 
     return p
