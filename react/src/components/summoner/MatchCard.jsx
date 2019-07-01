@@ -353,7 +353,11 @@ class MatchCard extends Component {
                         {!is_me &&
                             <small>
                                 {part.account_id !== '0' &&
-                                    <Link title={part.summoner_name} className={`${this.props.store.state.theme} silent`} to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
+                                    <Link
+                                        target='_blank'
+                                        title={part.summoner_name}
+                                        className={`${this.props.store.state.theme} silent`}
+                                        to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
                                         {this.formattedName(part.summoner_name)}
                                     </Link>
                                 }
@@ -434,7 +438,11 @@ class MatchCard extends Component {
                         {!is_me &&
                             <small>
                                 {part.account_id !== '0' &&
-                                    <Link title={part.summoner_name} className={`${this.props.store.state.theme} silent`} to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
+                                    <Link
+                                        target='_blank'
+                                        title={part.summoner_name}
+                                        className={`${this.props.store.state.theme} silent`}
+                                        to={`/${this.props.pageStore.props.region}/${part.summoner_name}/`}>
                                         {this.formattedName(part.summoner_name)}
                                     </Link>
                                 }

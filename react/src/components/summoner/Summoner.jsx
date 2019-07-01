@@ -892,7 +892,10 @@ class RecentlyPlayedWith extends Component {
                                 <tbody key={`row-for-${data.summoner_name}`} style={{fontSize:'small'}}>
                                     <tr>
                                         <td style={td_style}>
-                                            <Link className={`${this.props.store.state.theme}`} to={`/${this.props.pageStore.props.region}/${data.summoner_name}/`}>
+                                            <Link
+                                                target='_blank'
+                                                className={`${this.props.store.state.theme}`}
+                                                to={`/${this.props.pageStore.props.region}/${data.summoner_name}/`}>
                                                 {data.summoner_name}
                                             </Link>
                                         </td>

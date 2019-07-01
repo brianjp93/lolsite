@@ -18,6 +18,10 @@ Another league of legends match history and stats site.
     * This will most likely welcome post game toxicity, but I think it will be fun, too.
     * Need to add verified user accounts to allow this to become a reality.
 
+* Open summoner page links in a new tab.
+* Show winrates with friends
+* Show overall played with stats
+
 
 # Other Technical Information
 
