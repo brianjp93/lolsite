@@ -537,6 +537,52 @@ def full_import(name=None, account_id=None, region=None, **kwargs):
             summoner.save()
 
 
+def ranked_import(name=None, account_id=None, region=None, **kwargs):
+    """Same as full_import except it only pulls from the 3 ranked queues.
+
+    Parameters
+    ----------
+    name : str
+    account_id : ID
+    region : str
+    season_id : ID
+    account_id : ID
+        the encrypted account ID
+    queue : int
+    beginTime : Epoch in ms
+    endTime : Epoch in ms
+
+    Returns
+    -------
+    None
+
+    """
+    queue = [420, 440, 470]
+    kwargs['queue'] = queue
+
+    if region is None:
+        raise Exception('region parameter is required.')
+    if name is not None:
+        summoner_id = pt.import_summoner(region, name=name)
+        summoner = Summoner.objects.get(id=summoner_id, region=region)
+        account_id = summoner.account_id
+    elif account_id is not None:
+        summoner = Summoner.objects.get(account_id=account_id, region=region)
+    else:
+        raise Exception('name or account_id must be provided.')
+
+    old_import_count = summoner.ranked_import_count
+    total = get_total_matches(account_id, region, **kwargs)
+
+    new_import_count = total - old_import_count
+    if new_import_count > 0:
+        print(f'Importing {new_import_count} ranked matches for {summoner.name}.')
+        is_finished = import_recent_matches(0, new_import_count, account_id, region, **kwargs)
+        if is_finished:
+            summoner.ranked_import_count = total
+            summoner.save()    
+
+
 def import_recent_matches(start, end, account_id, region, **kwargs):
     """Import recent matches for an account_id.
 
@@ -628,7 +674,7 @@ def get_total_matches(account_id, region, **kwargs):
 
 
 def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, recent=None, group_by='summoner_name'):
-    """
+    """Find the summoner names that you have played with the most.
 
     Parameters
     ----------

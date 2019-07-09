@@ -50,6 +50,7 @@ class Summoner(models.Model):
 
     # number of games imported when last match history import was run.
     full_import_count = models.IntegerField(default=0, blank=True)
+    ranked_import_count = models.IntegerField(default=0, blank=True)
 
     last_summoner_page_import = models.DateTimeField(null=True)
     created_date = models.DateTimeField(default=timezone.now, db_index=True)
