@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import ReactTooltip from 'react-tooltip'
 import queryString from 'query-string'
+import api from '../../api/api'
+import toastr from 'toastr'
 
 import NavBar from '../general/NavBar'
 import Footer from '../general/Footer'
@@ -18,6 +20,8 @@ class LogIn extends Component {
 
             errors: {},
 
+            is_logged_in: false,
+
             is_logging_in: false,
             to_home_page: false,
 
@@ -29,6 +33,7 @@ class LogIn extends Component {
         this.login = this.login.bind(this)
         this.getHelpText = this.getHelpText.bind(this)
         this.handleKeyDown = this.handleKeyDown.bind(this)
+        this.verifyLoggedIn = this.verifyLoggedIn.bind(this)
     }
     componentDidMount() {
         var query_string = this.props.route.location.search
@@ -39,6 +44,20 @@ class LogIn extends Component {
         else if (values.error === 'verification') {
             this.setState({is_needs_verification: true})
         }
+        else {
+            this.verifyLoggedIn()
+        }
+    }
+    verifyLoggedIn() {
+        api.player.isLoggedIn()
+            .then(response => {
+                if (response.data.data.is_logged_in) {
+                    this.setState({is_logged_in: true})
+                }
+            })
+            .catch(error => {
+                toastr.error('Couldn\'t check if user is logged in.')
+            })
     }
     validate() {
         var errors = {}
@@ -85,105 +104,112 @@ class LogIn extends Component {
     render() {
         var store = this.props.store
         var theme = store.state.theme
-        return (
-            <div>
-                <NavBar store={store} />
+        if (this.state.is_logged_in) {
+            return (
+                <Redirect push to={`/`} />
+            )
+        }
+        else {
+            return (
+                <div>
+                    <NavBar store={store} />
 
-                <div style={{height: 130}}>
-                </div>
+                    <div style={{height: 130}}>
+                    </div>
 
-                <div className="row">
-                    <div className="col m6 offset-m3 s12">
+                    <div className="row">
+                        <div className="col m6 offset-m3 s12">
 
-                        <form
-                            ref={(elt) =>  {this.form = elt}}
-                            id="login-form"
-                            method='post'
-                            action="/login/go/">
-                            <h4 style={{textAlign: 'center'}}>Log In</h4>
+                            <form
+                                ref={(elt) =>  {this.form = elt}}
+                                id="login-form"
+                                method='post'
+                                action="/login/go/">
+                                <h4 style={{textAlign: 'center'}}>Log In</h4>
 
-                            {this.state.is_show_login_error &&
+                                {this.state.is_show_login_error &&
+                                    <div
+                                        style={{margin: '30px 0px'}}
+                                        className={`${theme} error-bordered`}>
+                                        <span>Your username or password was incorrect.</span>
+                                    </div>
+                                }
+                                {this.state.is_needs_verification &&
+                                    <div
+                                        style={{margin: '30px 0px'}}
+                                        className={`${theme} error-bordered`}>
+                                        <span>
+                                            This account exists but the email needs to be verified.{' '}
+                                            Please check your inbox for a verification email.  It may be in{' '}
+                                            your spam folder.
+                                        </span>
+                                    </div>
+                                }
+
+                                {/* CSRF Input Field */}
+                                <input name='csrfmiddlewaretoken' type="hidden" defaultValue={store.props.csrf_token} />
+
+                                <ReactTooltip
+                                    effect='solid'
+                                    id='email-tip'>
+                                    <span>Enter your email address.</span>
+                                </ReactTooltip>
                                 <div
-                                    style={{margin: '30px 0px'}}
-                                    className={`${theme} error-bordered`}>
-                                    <span>Your username or password was incorrect.</span>
+                                    data-tip
+                                    data-for='email-tip'
+                                    className="input-field">
+                                    <input
+                                        name='email'
+                                        onKeyDown={this.handleKeyDown}
+                                        className={theme}
+                                        id='email-input-field'
+                                        value={this.state.email}
+                                        onChange={(event) => this.setState({email: event.target.value})}
+                                        type="text" />
+                                    <label htmlFor="email-input-field">Email</label>
+                                    {this.getHelpText('email')}
                                 </div>
-                            }
-                            {this.state.is_needs_verification &&
+
+                                <ReactTooltip
+                                    effect='solid'
+                                    id='password-tip' >
+                                    <span>Enter your password.</span>
+                                </ReactTooltip>
                                 <div
-                                    style={{margin: '30px 0px'}}
-                                    className={`${theme} error-bordered`}>
-                                    <span>
-                                        This account exists but the email needs to be verified.{' '}
-                                        Please check your inbox for a verification email.  It may be in{' '}
-                                        your spam folder.
-                                    </span>
+                                    data-tip
+                                    data-for='password-tip'
+                                    className="input-field">
+                                    <input
+                                        name='password'
+                                        onKeyDown={this.handleKeyDown}
+                                        className={theme}
+                                        id='password-input-field'
+                                        value={this.state.password}
+                                        onChange={(event) => this.setState({password: event.target.value})}
+                                        type="password" />
+                                    <label htmlFor="password-input-field">Password</label>
+                                    {this.getHelpText('password')}
                                 </div>
-                            }
 
-                            {/* CSRF Input Field */}
-                            <input name='csrfmiddlewaretoken' type="hidden" defaultValue={store.props.csrf_token} />
+                                <button
+                                    onClick={this.login}
+                                    style={{width: '100%'}}
+                                    className={`btn ${theme}`}>
+                                    Log In
+                                </button>
+                            </form>
 
-                            <ReactTooltip
-                                effect='solid'
-                                id='email-tip'>
-                                <span>Enter your email address.</span>
-                            </ReactTooltip>
-                            <div
-                                data-tip
-                                data-for='email-tip'
-                                className="input-field">
-                                <input
-                                    name='email'
-                                    onKeyDown={this.handleKeyDown}
-                                    className={theme}
-                                    id='email-input-field'
-                                    value={this.state.email}
-                                    onChange={(event) => this.setState({email: event.target.value})}
-                                    type="text" />
-                                <label htmlFor="email-input-field">Email</label>
-                                {this.getHelpText('email')}
+                            <div style={{marginTop: 5}}>
+                                <span>No account?</span>{' '}
+                                <Link to='/sign-up/'>Sign Up!</Link>
                             </div>
-
-                            <ReactTooltip
-                                effect='solid'
-                                id='password-tip' >
-                                <span>Enter your password.</span>
-                            </ReactTooltip>
-                            <div
-                                data-tip
-                                data-for='password-tip'
-                                className="input-field">
-                                <input
-                                    name='password'
-                                    onKeyDown={this.handleKeyDown}
-                                    className={theme}
-                                    id='password-input-field'
-                                    value={this.state.password}
-                                    onChange={(event) => this.setState({password: event.target.value})}
-                                    type="password" />
-                                <label htmlFor="password-input-field">Password</label>
-                                {this.getHelpText('password')}
-                            </div>
-
-                            <button
-                                onClick={this.login}
-                                style={{width: '100%'}}
-                                className={`btn ${theme}`}>
-                                Log In
-                            </button>
-                        </form>
-
-                        <div style={{marginTop: 5}}>
-                            <span>No account?</span>{' '}
-                            <Link to='/sign-up/'>Sign Up!</Link>
                         </div>
                     </div>
-                </div>
 
-                <Footer store={store} />
-            </div>
-        )
+                    <Footer store={store} />
+                </div>
+            )
+        }
     }
 }
 LogIn.propTypes = {

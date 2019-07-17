@@ -46,6 +46,11 @@ function summonerSearch(data) {
     return axios.post(url, data)
 }
 
+function isLoggedIn() {
+    let url = `/api/${version}/player/is-logged-in/`
+    return axios.post(url)
+}
+
 export default {
     getSummoner,
     getSummonerPage,
@@ -55,4 +60,5 @@ export default {
     verify,
     getChampionsOverview,
     summonerSearch,
+    isLoggedIn,
 }

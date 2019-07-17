@@ -806,3 +806,22 @@ def summoner_search(request, format=None):
         data = {'data': serialized}
 
     return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def is_logged_in(request, format=None):
+    """Check if a user is logged in.
+
+    Returns
+    -------
+    JSON Response
+
+    """
+    status_code = 200
+    is_authenticated = request.user.is_authenticated
+    data = {
+        'data': {
+            'is_logged_in': is_authenticated
+        }
+    }
+    return Response(data, status=status_code)

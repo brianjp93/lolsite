@@ -11,6 +11,7 @@ urlpatterns = [
     path('sign-up/', player_views.sign_up),
     path('login/', player_views.login),
     path('verify/', player_views.verify_email),
+    path('is-logged-in/', player_views.is_logged_in),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
