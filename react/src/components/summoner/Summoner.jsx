@@ -539,8 +539,8 @@ class SummonerCard extends Component {
         return `${this.props.store.state.static}ranked-emblems/emblems/Emblem_${tier}.png`
     }
     soloPositions() {
-        var pos = []
-        for (var p of this.props.positions) {
+        let pos = []
+        for (let p of this.props.positions) {
             if (p.position !== 'NONE') {
                 pos.push(p)
             }
@@ -548,7 +548,7 @@ class SummonerCard extends Component {
         return pos
     }
     setRefreshTime() {
-        var now = new Date().getTime()
+        let now = new Date().getTime()
         var last_refresh = this.props.pageStore.state.last_refresh
         if (last_refresh !== null) {
             var diff = Math.round((now - last_refresh) / 1000)
@@ -767,7 +767,7 @@ class SummonerCard extends Component {
                         {this.props.positions.map(pos => {
                             if (pos.queue_type !== 'RANKED_SOLO_5x5') {
                                 return (
-                                    <div key={`${pos.position}-${this.props.summoner._id}`}>
+                                    <div key={`${pos.position}-${pos.queue_type}-${this.props.summoner._id}`}>
                                         <hr/>
                                         <div>
                                             <div style={{display: 'inline-block', width:50}}>
