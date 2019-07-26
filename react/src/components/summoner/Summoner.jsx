@@ -630,6 +630,7 @@ class SummonerCard extends Component {
             'RANKED_SOLO_5x5': 'Solo/Duo',
             'RANKED_FLEX_SR': '5v5 Flex',
             'RANKED_FLEX_TT': '3v3 Flex',
+            'RANKED_TFT': 'TFT',
         }
         if (convert[queue] !== undefined) {
             out = convert[queue]
@@ -649,25 +650,49 @@ class SummonerCard extends Component {
             <span>
                 <div style={{position:'relative', padding:18}} className={`card-panel ${this.props.store.state.theme}`}>
                     {this.props.icon.image_url !== undefined &&
-                        <img
-                            style={{
-                                height:50,
-                                display:'inline-block',
-                                verticalAlign:'middle',
-                                borderRadius:5,
-                            }}
-                            src={this.props.icon.image_url}
-                            alt={`profile icon ${this.props.icon._id}`}/>
+                        <span style={{position: 'relative', display: 'inline-block'}}>
+                            <img
+                                style={{
+                                    height:50,
+                                    display:'inline-block',
+                                    verticalAlign:'middle',
+                                    borderRadius:5,
+                                }}
+                                src={this.props.icon.image_url}
+                                alt={`profile icon ${this.props.icon._id}`} />
+                            <span style={{
+                                display: 'inline-block',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                fontSize: 'smaller',
+                                width: 50,
+                                }} >
+                                <span
+                                    style={{
+                                        display: 'inline-block',
+                                        width: 'inherit',
+                                        height: 'inherit',
+                                        textAlign: 'center',
+                                        marginTop: 43,
+                                    }}>
+                                    <span
+                                        style={{borderRadius: 4, color: 'black', background: 'white', padding: '0 2px'}}>
+                                        {this.props.summoner.summoner_level}
+                                    </span>
+                                </span>
+                            </span>
+                        </span>
                     }
 
                     <div
                         style={{
                             display: 'inline-block',
-                            width:300,
-                            maxWidth:'87%',
+                            width: 300,
+                            maxWidth: '87%',
                             textAlign: 'center',
                             verticalAlign: 'middle',
-                            height:25,
+                            height: 25,
                         }}>
                         <span style={{textDecoration: 'underline', fontWeight: 'bold',}}>{this.props.summoner.name}</span>
                         <br/>
