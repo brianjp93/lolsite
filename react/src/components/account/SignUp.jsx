@@ -90,7 +90,13 @@ class SignUp extends Component {
                 .catch(error => {
                     console.log(error)
                     this.setState({is_show_error: true})
-                    toastr.error('There was an error while creating your account.')
+                    try {
+                        toastr.error(error.response.data.message)
+                    }
+                    catch(err) {
+                        toastr.error('There was an error while creating your account.')
+                    }
+
                 })
                 .then(() => {
                     this.setState({is_creating: false})

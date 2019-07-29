@@ -10,10 +10,10 @@ def home(request, path=''):
     """Return basic home address and let react render the rest.
     """
     user = request.user
-    data = get_base_react_context(user=user)
+    data = get_base_react_context(request, user=user)
     return TemplateResponse(request, 'layout/home.html', data)
 
-def get_base_react_context(user=None):
+def get_base_react_context(request, user=None):
     """Get the react context data.
     """
     try:
@@ -21,7 +21,7 @@ def get_base_react_context(user=None):
             'email': request.user.email,
             'is_email_verified': user.custom.is_email_verified,
         }
-    except:
+    except Exception as e:
         user_data = {}
 
     data = {

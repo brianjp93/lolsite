@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view
 from django.utils import timezone
 from django.core.cache import cache
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 
 from player import tasks as pt
 from player import filters as player_filters
@@ -658,7 +659,10 @@ def sign_up(request, format=None):
             if user:
                 data = {'message': 'Account created.'}
             else:
-                data = {'message': 'The email or password was invalid.'}
+                if User.objects.filter(email__iexact=email):
+                    data = {'message': 'The email given already exists.  Try logging in.'}
+                else:
+                    data = {'message': 'The email or password was invalid.'}
                 status_code = 403
     else:
         data = {'message': 'This resource only supports POSTs.'}
