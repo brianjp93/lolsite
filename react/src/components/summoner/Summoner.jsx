@@ -677,7 +677,15 @@ class SummonerCard extends Component {
                                         marginTop: 43,
                                     }}>
                                     <span
-                                        style={{borderRadius: 4, color: 'black', background: 'white', padding: '0 2px'}}>
+                                        style={{
+                                            fontWeght: 'bold',
+                                            display: 'inline-block',
+                                            width: 40,
+                                            borderRadius: 4,
+                                            color: 'black',
+                                            background: 'white',
+                                            padding: '0 2px'
+                                        }}>
                                         {this.props.summoner.summoner_level}
                                     </span>
                                 </span>

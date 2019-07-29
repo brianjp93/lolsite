@@ -15,12 +15,15 @@ class NavBar extends Component {
             is_quicksearch_open: false,
             highlight_index: null,
 
+            is_show_user_dropdown: false,
+
             redirect: false,
         }
         this.handleKeyDown = this.handleKeyDown.bind(this)
         this.handleKeyListener = this.handleKeyListener.bind(this)
         this.doSearch = this.doSearch.bind(this)
         this.quickSearchLine = this.quickSearchLine.bind(this)
+        this.isLoggedIn = this.isLoggedIn.bind(this)
     }
     componentDidMount() {
         window.$('.sidenav').sidenav()
@@ -36,6 +39,14 @@ class NavBar extends Component {
     }
     componentWillUnmount() {
         window.removeEventListener('keydown', this.handleKeyListener)
+    }
+    isLoggedIn() {
+        let store = this.props.store
+        let user = store.state.user
+        if (user.email !== undefined) {
+            return true
+        }
+        return false
     }
     doSearch() {
         if (this.state.summoner_name.length >= 3) {
@@ -193,6 +204,7 @@ class NavBar extends Component {
     render() {
         var store = this.props.store
         let theme = store.state.theme
+        let user = store.state.user
         // var region = store.state.region_selected
         if (this.state.redirect) {
             this.setState({redirect: false})
@@ -329,6 +341,47 @@ class NavBar extends Component {
                                     }
                                 </div>
                             </form>
+                            {this.isLoggedIn() &&
+                                <span
+                                    style={{display: 'inline-block', marginRight: 15, position: 'relative'}}
+                                    className='right'>
+                                    <span
+                                        onClick={() => this.setState({is_show_user_dropdown: !this.state.is_show_user_dropdown})}
+                                        style={{cursor: 'pointer'}}>
+                                        {user.email}{' '}
+                                        {this.state.is_show_user_dropdown &&
+                                            <i style={{display: 'inline', verticalAlign: 'bottom'}} className="material-icons">
+                                                arrow_drop_up
+                                            </i>
+                                        }
+                                        {!this.state.is_show_user_dropdown &&
+                                            <i style={{display: 'inline', verticalAlign: 'bottom'}} className="material-icons">
+                                                arrow_drop_down
+                                            </i>
+                                        }
+                                    </span>
+
+                                    {this.state.is_show_user_dropdown &&
+                                        <div className={`${theme} card-panel`}
+                                            style={{
+                                                position: 'absolute',
+                                                top: 50,
+                                                right: 0,
+                                                width: 300,
+                                                margin: 0,
+                                                padding: '5px 10px',
+                                            }}>
+                                            
+                                            <a style={{width: '100%'}} href='/logout'>Logout</a>
+                                        </div>
+                                    }
+                                </span>
+                            }
+                            {!this.isLoggedIn() &&
+                                <Link className='right' to='/login' style={{marginRight: 15}}>
+                                    <span>Login</span>
+                                </Link>
+                            }
                         </div>
                     </nav>
 
