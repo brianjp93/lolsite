@@ -9,6 +9,7 @@ import Item from '../data/Item'
 // import StatPie from './StatPie'
 import StatOverview from './StatOverview'
 import RunePage from './RunePage'
+import ChampionTimelines from './ChampionTimelines'
 import {
     ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from 'recharts'
@@ -81,6 +82,7 @@ class MatchCard extends Component {
         this.getReferenceEvents = this.getReferenceEvents.bind(this)
         this.handleKeyDown = this.handleKeyDown.bind(this)
         this.getNumFromIndex = this.getNumFromIndex.bind(this)
+        this.combineTimelineCS = this.combineTimelineCS.bind(this)
     }
     componentDidMount() {
         window.addEventListener('keydown', this.handleKeyDown)
@@ -676,6 +678,7 @@ class MatchCard extends Component {
                             .then(response => {
                                 var timeline = this.addTeamGoldToTimeline(response.data.data)
                                 timeline = this.sortTimelineEvents(timeline)
+                                timeline = this.combineTimelineCS(timeline)
                                 this.setState({timeline: timeline})
                             })
                             .catch(error => {
@@ -691,6 +694,14 @@ class MatchCard extends Component {
 
             }
         })
+    }
+    combineTimelineCS(timeline) {
+        for (let i=0; i<timeline.length; i++) {
+            for (let j=0; j<timeline[i].participantframes.length; j++) {
+                timeline[i].participantframes[j].cs = timeline[i].participantframes[j].jungle_minions_killed + timeline[i].participantframes[j].minions_killed
+            }
+        }
+        return timeline
     }
     sortTimelineEvents(timeline) {
         for (var i=0; i<timeline.length; i++) {
@@ -1521,7 +1532,13 @@ class MatchCard extends Component {
 
                                             {this.state.timeline_view === 'champ' &&
                                                 <div style={{marginLeft: 30}}>
-                                                    
+                                                    <ChampionTimelines
+                                                        theme={theme}
+                                                        my_part={this.getMyPart()}
+                                                        summoner={this.props.pageStore.state.summoner}
+                                                        participants={this.state.participants}
+                                                        timeline={this.state.timeline}
+                                                        expanded_width={this.state.expanded_width - this.state.summary_width} />
                                                 </div>
                                             }
 
