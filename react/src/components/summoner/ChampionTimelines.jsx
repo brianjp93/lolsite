@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip} from 'recharts'
 import api from '../../api/api'
@@ -33,7 +33,8 @@ function ChampionTimelines(props) {
                         participant={participant}
                         padding_pixels={padding_pixels}
                         theme={props.theme}
-                        handleClick={event => {
+                        handleClick={useCallback(
+                            event => {
                             let new_selection = [...participant_selection]
                             if (participant_selection.indexOf(participant._id) >= 0) {
                                 new_selection = new_selection.filter(id => id !== participant._id)
@@ -42,7 +43,8 @@ function ChampionTimelines(props) {
                                 new_selection.push(participant._id)
                             }
                             setParticipantSelection(new_selection)
-                        }} />
+                        })
+                    } />
                 )
             })}
             
@@ -78,13 +80,17 @@ function ChampionTimelines(props) {
                         if (id !== props.my_part._id) {
                             stroke_width = 1
                         }
+                        let stroke_type = 'monotone'
+                        if (graph_type === 'level') {
+                            stroke_type = 'stepAfter'
+                        }
                         return (
                             <Line
                                 name={getParticipant(props.participants, id).champion.name}
                                 key={`${id}-line-chart`}
                                 isAnimationActive={false}
                                 yAxisId='left'
-                                type="monotone"
+                                type={stroke_type}
                                 dot={false}
                                 dataKey={(frame) => {
                                     for (let part of frame.participantframes) {
@@ -118,25 +124,32 @@ function ChampionTimelines(props) {
                 </LineChart>
             </div>
 
-            <div className='row'>
-                <div className="col s4">
+            <div className='row' style={{marginLeft: 20, marginRight: 15}}>
+                <div className="col s3">
                     <label htmlFor="gold-champion-graph">
                         <input id='gold-champion-graph' onChange={() => setGraphType('total_gold')} type="radio" checked={graph_type === 'total_gold'}/>
                         <span>Gold</span>
                     </label>
                 </div>
 
-                <div className="col s4">
+                <div className="col s3">
                     <label htmlFor="cs-champion-graph">
                         <input id='cs-champion-graph' onChange={() => setGraphType('cs')} type="radio" checked={graph_type === 'cs'}/>
                         <span>CS</span>
                     </label>
                 </div>
 
-                <div className="col s4">
+                <div className="col s3">
                     <label htmlFor="xp-champion-graph">
                         <input id='xp-champion-graph' onChange={() => setGraphType('xp')} type="radio" checked={graph_type === 'xp'}/>
                         <span>XP</span>
+                    </label>
+                </div>
+
+                <div className="col s3">
+                    <label htmlFor="level-champion-graph">
+                        <input id='level-champion-graph' onChange={() => setGraphType('level')} type="radio" checked={graph_type === 'level'}/>
+                        <span>Level</span>
                     </label>
                 </div>
 
