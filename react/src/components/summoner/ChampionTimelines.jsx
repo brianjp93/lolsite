@@ -47,6 +47,22 @@ function ChampionTimelines(props) {
                     } />
                 )
             })}
+
+            <div className='row' style={{marginLeft: 0, marginRight: 0}}>
+                <div className="col s6">
+                    <button
+                        onClick={useCallback(() => setParticipantSelection([]))}
+                        style={{width: '100%'}} className={`${props.theme} btn-small`}>Clear All</button>
+                </div>
+                <div className="col s6">
+                    <button
+                        onClick={useCallback(() => {
+                            let parts = participants.map(part => part._id)
+                            setParticipantSelection(parts)
+                        })}
+                        style={{width: '100%'}} className={`${props.theme} btn-small`}>Select All</button>
+                </div>
+            </div>
             
             <div>
                 <LineChart
