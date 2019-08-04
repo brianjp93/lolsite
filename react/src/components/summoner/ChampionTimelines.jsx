@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip} from 'recharts'
 import numeral from 'numeral'
-import ReactTooltip from 'react-tooltip'
 
 // MAIN
 function ChampionTimelines(props) {

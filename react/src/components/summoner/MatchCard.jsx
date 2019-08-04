@@ -6,6 +6,7 @@ import api from '../../api/api'
 import numeral from 'numeral'
 import moment from 'moment'
 import Item from '../data/Item'
+import ReactTooltip from 'react-tooltip'
 // import StatPie from './StatPie'
 import StatOverview from './StatOverview'
 import RunePage from './RunePage'
@@ -1181,7 +1182,17 @@ class MatchCard extends Component {
                                     borderWidth: 1,
                                     borderRadius: 5,
                                     }}>
+
+                                    <ReactTooltip
+                                        id='overview-button-tt'
+                                        effect='solid' >
+                                        <span>
+                                            Overview
+                                        </span>
+                                    </ReactTooltip>
                                     <button
+                                        data-tip
+                                        data-for='overview-button-tt'
                                         title='Overview'
                                         style={menu_button_style}
                                         className={`dark btn-small ${this.state.expanded_view === 'overview' ? 'selected': ''}`}
@@ -1189,14 +1200,33 @@ class MatchCard extends Component {
                                         o
                                     </button>
                                     
+                                    <ReactTooltip
+                                        id='timeline-button-tt'
+                                        effect='solid' >
+                                        <span>
+                                            Team/Champion Timelines
+                                        </span>
+                                    </ReactTooltip>
                                     <button
+                                        data-tip
+                                        data-for='timeline-button-tt'
                                         title='Timeline'
                                         style={menu_button_style}
                                         className={`dark btn-small ${this.state.expanded_view === 'timeline' ? 'selected': ''}`}
                                         onClick={() => this.setState({expanded_view: 'timeline'})} >
                                         t
                                     </button>
+
+                                    <ReactTooltip
+                                        id='runes-button-tt'
+                                        effect='solid' >
+                                        <span>
+                                            Runes
+                                        </span>
+                                    </ReactTooltip>
                                     <button
+                                        data-tip
+                                        data-for='runes-button-tt'
                                         title='Runes'
                                         style={menu_button_style}
                                         className={`dark btn-small ${this.state.expanded_view === 'runes' ? 'selected': ''}`}
