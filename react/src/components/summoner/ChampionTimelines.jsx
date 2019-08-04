@@ -99,6 +99,7 @@ function ChampionTimelines(props) {
                         )
                     })}
                     <Tooltip
+                        wrapperStyle={{zIndex: 10}}
                         formatter={(value, name, props) => {
                             let output
                             if (graph_type === 'total_gold') {
