@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip} from 'recharts'
-import api from '../../api/api'
 import numeral from 'numeral'
 import ReactTooltip from 'react-tooltip'
 
@@ -20,6 +19,7 @@ function ChampionTimelines(props) {
     ]
     const participant_ids = participants.map(participant => participant._id)
     const colors = ['#d94630', '#d98d30', '#d9d330', '#90d930' ,'#3ca668', '#3ca69a', '#3c71a6', '#545acc', '#8c4fd6', '#d24fd6', '#f55fa0', '#994352']
+
     return (
         <div>
             {participants.map((participant, index) => {
@@ -33,8 +33,7 @@ function ChampionTimelines(props) {
                         participant={participant}
                         padding_pixels={padding_pixels}
                         theme={props.theme}
-                        handleClick={useCallback(
-                            event => {
+                        handleClick={event => {
                             let new_selection = [...participant_selection]
                             if (participant_selection.indexOf(participant._id) >= 0) {
                                 new_selection = new_selection.filter(id => id !== participant._id)
@@ -42,16 +41,14 @@ function ChampionTimelines(props) {
                             else {
                                 new_selection.push(participant._id)
                             }
-                            setParticipantSelection(new_selection)
-                        })
-                    } />
+                            setParticipantSelection(new_selection)}} />
                 )
             })}
 
             <div className='row' style={{marginLeft: 0, marginRight: 0}}>
                 <div className="col s6">
                     <button
-                        onClick={useCallback(() => setParticipantSelection([]))}
+                        onClick={useCallback(() => setParticipantSelection([]), [])}
                         style={{width: '100%'}} className={`${props.theme} btn-small`}>Clear All</button>
                 </div>
                 <div className="col s6">
@@ -59,7 +56,7 @@ function ChampionTimelines(props) {
                         onClick={useCallback(() => {
                             let parts = participants.map(part => part._id)
                             setParticipantSelection(parts)
-                        })}
+                        }, [participants])}
                         style={{width: '100%'}} className={`${props.theme} btn-small`}>Select All</button>
                 </div>
             </div>

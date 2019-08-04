@@ -112,8 +112,13 @@ class RunePage extends Component {
                 if (is_selected) {
                     select_style = {
                         borderStyle: 'solid',
-                        borderWidth: 2,
+                        borderWidth: 3,
                         borderColor: 'white',
+                    }
+                }
+                else {
+                    select_style = {
+                        opacity: .4,
                     }
                 }
                 return (
