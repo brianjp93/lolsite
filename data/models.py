@@ -127,6 +127,9 @@ class ReforgedRune(models.Model):
 class Item(models.Model):
     _id = models.IntegerField(db_index=True)
     version = models.CharField(max_length=128, default='', db_index=True, blank=True)
+    major = models.IntegerField(default=0, db_index=True, blank=True)
+    minor = models.IntegerField(default=0, db_index=True, blank=True)
+    patch = models.IntegerField(default=0, db_index=True, blank=True)
     language = models.CharField(max_length=32, default='en_US', db_index=True, blank=True)
     colloq = models.CharField(max_length=256, default='', blank=True)
     depth = models.IntegerField(null=True)
@@ -144,6 +147,15 @@ class Item(models.Model):
 
     class Meta:
         unique_together = ('_id', 'version', 'language')
+
+    def save(self, *args, **kwargs):
+        if all([self.major == 0, self.minor == 0, self.patch == 0]):
+            parts = self.version.split('.')
+            try:
+                (self.major, self.minor, self.patch) = map(int, parts)
+            except:
+                pass
+        super(Item, self).save(*args, **kwargs)
 
     def __str__(self):
         return f'Item(name="{self.name}", version="{self.version}", language="{self.language}")'

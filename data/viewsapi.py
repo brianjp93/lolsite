@@ -95,6 +95,7 @@ def get_item(request, format=None):
     POST Parameters
     ---------------
     item_id : int
+    item_list : [int]
     major : int
         major version - 9.4.1 => 9
     minor : int
@@ -107,22 +108,34 @@ def get_item(request, format=None):
     """
     data = {}
     status_code = 200
-    # 120 minute cache
-    cache_seconds = 60 * 120
 
-    item_id = request.data['item_id']
-    major = request.data['major']
-    minor = request.data['minor']
+    item_id = request.data.get('item_id', None)
+    item_list = request.data.get('item_list', None)
+    major = request.data.get('major')
+    minor = request.data.get('minor')
 
+    if None in [major, minor]:
+        item = Item.objects.all().order_by('-major', '-minor').first()
+        major = item.major
+        minor = item.minor
     version = f'{major}.{minor}.1'
-    query = Item.objects.filter(_id=item_id, version=version)
-    if query.exists():
-        item = query.first()
-        item_data = serialize_item(item)
-        data['data'] = item_data
-    else:
-        status_code = 404
-        data = {'message': 'Item not found.'}
+
+    if item_id:
+        query = Item.objects.filter(_id=item_id, version=version)
+        if query.exists():
+            item = query.first()
+            item_data = serialize_item(item)
+            data['data'] = item_data
+        else:
+            status_code = 404
+            data = {'message': 'Item not found.'}
+    elif item_list:
+        query = Item.objects.filter(_id__in=item_list, version=version)
+        serialized_items = []
+        for item in query:
+            item_data = serialize_item(item)
+            serialized_items.append(item_data)
+        data['data'] = serialized_items
 
     return Response(data, status=status_code)
 
@@ -150,9 +163,13 @@ def all_items(request, format=None):
     # 120 minute cache
     cache_seconds = 60 * 120
 
-    major = request.data['major']
-    minor = request.data['minor']
+    major = request.data.get('major', None)
+    minor = request.data.get('minor', None)
 
+    if None in [major, minor]:
+        item = Item.objects.all().order_by('-major', '-minor').first()
+        major = item.major
+        minor = item.minor
     version = f'{major}.{minor}.1'
 
     cache_key = f'items/{version}'

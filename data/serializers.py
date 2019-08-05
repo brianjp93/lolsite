@@ -28,6 +28,7 @@ class ProfileIconSerializer(serializers.ModelSerializer):
 
 
 class ItemSerializer(serializers.ModelSerializer):
+    image_url = serializers.CharField()
 
     class Meta:
         model = Item

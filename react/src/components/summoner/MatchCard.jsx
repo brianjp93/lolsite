@@ -10,6 +10,7 @@ import ReactTooltip from 'react-tooltip'
 // import StatPie from './StatPie'
 import StatOverview from './StatOverview'
 import RunePage from './RunePage'
+import BuildOrder from './BuildOrder'
 import ChampionTimelines from './ChampionTimelines'
 import {
     ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
@@ -1233,6 +1234,23 @@ class MatchCard extends Component {
                                         onClick={() => this.setState({expanded_view: 'runes'})} >
                                         r
                                     </button>
+
+                                    <ReactTooltip
+                                        id='build-button-tt'
+                                        effect='solid' >
+                                        <span>
+                                            Build Order
+                                        </span>
+                                    </ReactTooltip>
+                                    <button
+                                        data-tip
+                                        data-for='build-button-tt'
+                                        title='Build Order'
+                                        style={menu_button_style}
+                                        className={`dark btn-small ${this.state.expanded_view === 'build' ? 'selected': ''}`}
+                                        onClick={() => this.setState({expanded_view: 'build'})} >
+                                        b
+                                    </button>
                                 </div>
                             }
 
@@ -1564,7 +1582,7 @@ class MatchCard extends Component {
                                                 <div style={{marginLeft: 30}}>
                                                     <ChampionTimelines
                                                         theme={theme}
-                                                        my_part={this.getMyPart()}
+                                                        my_part={mypart}
                                                         summoner={this.props.pageStore.state.summoner}
                                                         participants={this.state.participants}
                                                         timeline={this.state.timeline}
@@ -1591,6 +1609,20 @@ class MatchCard extends Component {
                                 <div>
                                     <div>
                                         <RunePage store={this.props.store} pageStore={this.props.pageStore} parent={this} />
+                                    </div>
+                                </div>
+                            }
+
+                            {this.state.is_expanded && this.state.expanded_view === 'build' &&
+                                <div>
+                                    <div>
+                                        <BuildOrder
+                                            theme={theme}
+                                            timeline={this.state.timeline}
+                                            expanded_width={this.state.expanded_width - this.state.summary_width}
+                                            participants={this.state.participants}
+                                            summoner={this.props.pageStore.state.summoner}
+                                            my_part={mypart} />
                                     </div>
                                 </div>
                             }
