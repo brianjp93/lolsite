@@ -1616,13 +1616,15 @@ class MatchCard extends Component {
                             {this.state.is_expanded && this.state.expanded_view === 'build' &&
                                 <div>
                                     <div>
-                                        <BuildOrder
-                                            theme={theme}
-                                            timeline={this.state.timeline}
-                                            expanded_width={this.state.expanded_width - this.state.summary_width}
-                                            participants={this.state.participants}
-                                            summoner={this.props.pageStore.state.summoner}
-                                            my_part={mypart} />
+                                        {this.state.participants !== null &&
+                                            <BuildOrder
+                                                theme={theme}
+                                                timeline={this.state.timeline}
+                                                expanded_width={this.state.expanded_width - this.state.summary_width}
+                                                participants={this.state.participants}
+                                                summoner={this.props.pageStore.state.summoner}
+                                                my_part={mypart} />
+                                        }
                                     </div>
                                 </div>
                             }

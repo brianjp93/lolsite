@@ -74,8 +74,10 @@ function BuildOrder(props) {
                     setItems(new_items)
                 })
         }
-    }, [participant_selection, purchase_history])
+    }, [participant_selection, purchase_history, items])
 
+    let count = 0
+    let lines = 1
     return (
         <div style={{marginLeft: 30}}>
             {participants.map((participant, index) => {
@@ -101,39 +103,74 @@ function BuildOrder(props) {
                     let total_seconds = group[0].timestamp / 1000
                     let minutes = Math.floor(total_seconds / 60)
                     let seconds = Math.floor(total_seconds % 60)
+                    count++
+                    let div_style = {display: 'inline-block'}
+                    if (count > (lines * 9)) {
+                        lines++
+                        div_style = {display: 'block'}
+                    }
                     return (
-                        <div key={key}>
-                            <div style={{display: 'inline-block', color: 'grey', width: 50}}>
-                                {minutes}:{numeral(seconds).format('00')}
+                        <span key={key}>
+                            <div style={div_style}>
+                                    
                             </div>
-                            {group.map((event, sub_key) => {
-                                if (items[event.item_id] !== undefined) {
-                                    let image_style = {}
-                                    if (event._type === 'ITEM_SOLD') {
-                                        image_style = {
-                                            ...image_style,
-                                            opacity: .3,
-                                            borderWidth: 3,
-                                            borderStyle: 'solid',
-                                            borderColor: 'darkred',
+                            <div style={{display: 'inline-block'}} key={key}>
+                                <div style={{display: 'block', color: 'grey', width: 50}}>
+                                    {minutes}:{numeral(seconds).format('00')}
+                                </div>
+                                <div>
+                                    {group.map((event, sub_key) => {
+                                        if (items[event.item_id] !== undefined) {
+                                            let image_style = {}
+                                            let action = 'purchased'
+                                            if (event._type === 'ITEM_SOLD') {
+                                                action = 'sold'
+                                                image_style = {
+                                                    ...image_style,
+                                                    opacity: .3,
+                                                    borderWidth: 3,
+                                                    borderStyle: 'solid',
+                                                    borderColor: 'darkred',
+                                                }
+                                            }
+                                            count++
+                                            let item_data = items[event.item_id]
+                                            let total_seconds = event.timestamp / 1000
+                                            let minutes = Math.floor(total_seconds / 60)
+                                            let seconds = Math.floor(total_seconds % 60)
+                                            return (
+                                                <div key={sub_key} style={{display: 'inline-block'}}>
+                                                    <div style={{display: 'inline-block'}}>
+                                                        <ReactTooltip
+                                                            id={`${item_data._id}-${sub_key}-tt`}
+                                                            effect='solid' >
+                                                            <h4 style={{marginBottom: 0}}>{item_data.name}</h4>
+
+                                                            <div style={{marginBottom: 15}}>{action} at {minutes}:{numeral(seconds).format('00')}.</div>
+
+                                                            <div
+                                                                className='item-description-tt'
+                                                                style={{maxWidth: 500, wordBreak: 'break-all', whiteSpace: 'normal'}}
+                                                                dangerouslySetInnerHTML={{__html: item_data.description}}>
+                                                            </div>
+                                                        </ReactTooltip>
+                                                        <img
+                                                            data-tip
+                                                            data-for={`${item_data._id}-${sub_key}-tt`}
+                                                            style={{width: 30, borderRadius: 5, ...image_style}}
+                                                            src={item_data.image_url} alt=""/>
+                                                    </div>
+                                                </div>
+                                            )
                                         }
+                                        return null
+                                    })}
+                                    {key < participant_groups.length - 1 &&
+                                        <span><i className="small material-icons">arrow_forward</i></span>
                                     }
-                                    return (
-                                        <div key={sub_key} style={{display: 'inline-block'}}>
-                                            <div style={{display: 'inline-block'}}>
-                                                <img
-                                                    style={{width: 30, borderRadius: 5, ...image_style}}
-                                                    src={items[event.item_id].image_url} alt=""/>
-                                            </div>
-                                        </div>
-                                    )
-                                }
-                                return null
-                            })}
-                            {key < participant_groups.length - 1 &&
-                                <span><i className="small material-icons">arrow_forward</i></span>
-                            }
-                        </div>
+                                </div>
+                            </div>
+                        </span>
                     )
                 })}
             </div>
