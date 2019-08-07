@@ -24,10 +24,26 @@ function BuildOrder(props) {
         if (purchase_history[participant_selection] !== undefined) {
             for (let i in purchase_history[participant_selection]) {
                 let group = purchase_history[participant_selection][i]
+                group.count = 1
                 groups.push(group)
             }
         }
-        return groups
+        
+        let groups_with_count = []
+        for (let group of groups) {
+            let group_count = {}
+            for (let event of group) {
+                if (group_count[event.item_id] === undefined) {
+                    event.count = 1
+                    group_count[event.item_id] = event
+                }
+                else {
+                    group_count[event.item_id].count++
+                }
+            }
+            groups_with_count.push(group_count)
+        }
+        return groups_with_count
     }, [purchase_history, participant_selection])
 
     // PURCHASE HISTORY EFFECT
@@ -100,7 +116,7 @@ function BuildOrder(props) {
             
             <div style={{marginTop: 5}}>
                 {participant_groups.map((group, key) => {
-                    let total_seconds = group[0].timestamp / 1000
+                    let total_seconds = Object.values(group)[0].timestamp / 1000
                     let minutes = Math.floor(total_seconds / 60)
                     let seconds = Math.floor(total_seconds % 60)
                     count++
@@ -119,7 +135,8 @@ function BuildOrder(props) {
                                     {minutes}:{numeral(seconds).format('00')}
                                 </div>
                                 <div>
-                                    {group.map((event, sub_key) => {
+                                    {Object.values(group).map((event, sub_key) => {
+                                        // let event = group[item_id]
                                         if (items[event.item_id] !== undefined) {
                                             let image_style = {}
                                             let action = 'purchased'
@@ -140,7 +157,7 @@ function BuildOrder(props) {
                                             let seconds = Math.floor(total_seconds % 60)
                                             return (
                                                 <div key={sub_key} style={{display: 'inline-block'}}>
-                                                    <div style={{display: 'inline-block'}}>
+                                                    <div style={{display: 'inline-block', position: 'relative'}}>
                                                         <ReactTooltip
                                                             id={`${item_data._id}-${sub_key}-tt`}
                                                             effect='solid' >
@@ -157,8 +174,27 @@ function BuildOrder(props) {
                                                         <img
                                                             data-tip
                                                             data-for={`${item_data._id}-${sub_key}-tt`}
-                                                            style={{width: 30, borderRadius: 5, ...image_style}}
-                                                            src={item_data.image_url} alt=""/>
+                                                            style={{
+                                                                width: 30,
+                                                                borderRadius: 5,
+                                                                ...image_style
+                                                            }}
+                                                            src={item_data.image_url} alt="" />
+                                                        {event.count > 1 &&
+                                                            <div style={{
+                                                                    position: 'absolute',
+                                                                    bottom: 0,
+                                                                    right: 0,
+                                                                    width: 20,
+                                                                    background: 'white',
+                                                                    color: 'black',
+                                                                    textAlign: 'center',
+                                                                    fontSize: 'smaller',
+                                                                    borderRadius: 5,
+                                                                }}>
+                                                                {event.count}
+                                                            </div>
+                                                        }
                                                     </div>
                                                 </div>
                                             )
