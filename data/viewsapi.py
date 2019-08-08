@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from .models import ProfileIcon, ReforgedRune, ReforgedTree
-from .models import Champion
+from .models import Champion, ChampionSpell
 
 from match.models import Match, Participant, Stats
 from match.models import Timeline, Team, Ban, Item
@@ -10,6 +10,7 @@ from match.models import Timeline, Team, Ban, Item
 from .serializers import ProfileIconSerializer, ItemSerializer
 from .serializers import ItemGoldSerializer, ItemStatSerializer
 from .serializers import ReforgedRuneSerializer, ChampionSerializer
+from .serializers import ChampionSpellSerializer
 
 from django.core.cache import cache
 
@@ -306,4 +307,39 @@ def get_champions(request, format=None):
     else:
         data = {'message': 'Must use POST.'}
 
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_champion_spells(request, format=None):
+    """
+
+    POST Parameters
+    ---------------
+    champion_id : int
+    major : int
+    minor : int
+    
+    Returns
+    -------
+    JSON Response
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        champion_id = request.data['champion_id']
+        query = Champion.objects.all().order_by('-major', '-minor', '-patch')
+        query = query.filter(_id=champion_id)
+        if query.exists():
+            champion = query.first()
+            spells = champion.spells.all()
+            data['data'] = ChampionSpellSerializer(spells, many=True).data
+        else:
+            data['data'] = []
+            data['message'] = 'Could not find champion.'
+            status_code = 404
+    else:
+        data = {'message': 'Must use POST.'}
     return Response(data, status=status_code)

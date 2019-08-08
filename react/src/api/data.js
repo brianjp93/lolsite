@@ -36,6 +36,11 @@ function getChampions(data) {
     return axios.post(url, data)
 }
 
+function getChampionSpells(data) {
+    var url = `/api/${version}/data/champion-spells/`
+    return axios.post(url, data)
+}
+
 export default {
     getProfileIcon,
     getItem,
@@ -43,4 +48,5 @@ export default {
     items,
     getCurrentSeason,
     getChampions,
+    getChampionSpells,
 }

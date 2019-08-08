@@ -1239,7 +1239,7 @@ class MatchCard extends Component {
                                         id='build-button-tt'
                                         effect='solid' >
                                         <span>
-                                            Build Order
+                                            Build/Skill Order
                                         </span>
                                     </ReactTooltip>
                                     <button
