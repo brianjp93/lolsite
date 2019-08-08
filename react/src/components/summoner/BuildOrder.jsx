@@ -24,6 +24,15 @@ function BuildOrder(props) {
         ...props.participants.filter(participant => participant.team_id === 200)
     ]
 
+    const participant_data = useMemo(() => {
+        for (var part of props.participants) {
+            if (part._id === participant_selection) {
+                return part
+            }
+        }
+        return null
+    }, [props.participants, participant_selection])
+
     const participant_groups = useMemo(() => {
         let groups = []
         if (purchase_history[participant_selection] !== undefined) {
@@ -209,7 +218,7 @@ function BuildOrder(props) {
 
                                                                 <div
                                                                     className='item-description-tt'
-                                                                    style={{maxWidth: 500, wordBreak: 'break-all', whiteSpace: 'normal'}}
+                                                                    style={{maxWidth: 500, wordBreak: 'normal', whiteSpace: 'normal'}}
                                                                     dangerouslySetInnerHTML={{__html: item_data.description}}>
                                                                 </div>
                                                             </ReactTooltip>
@@ -257,6 +266,7 @@ function BuildOrder(props) {
                 <SkillLevelUp
                     skills={skills[participant_selection]}
                     my_part={props.my_part}
+                    selected_participant={participant_data}
                     expanded_width={props.expanded_width} />
             }
         </div>
@@ -315,13 +325,15 @@ function SkillLevelUp(props) {
     const [spells, setSpells] = useState({})
     
     useEffect(() => {
-        let params = {champion_id: props.my_part.champion._id}
+        let params = {champion_id: props.selected_participant.champion._id}
         api.data.getChampionSpells(params)
             .then(response => {
                 let output = {}
                 let data = response.data.data
-                for (let spell of data) {
-                    let letter = spell._id[spell._id.length - 1].toLowerCase()
+                for (let i=0; i<data.length; i++) {
+                    let spell = data[i]
+                    let letter = ['q', 'w', 'e', 'r'][i]
+                    // let letter = spell._id[spell._id.length - 1].toLowerCase()
                     output[letter] = spell
                 }
                 setSpells(output)
@@ -329,9 +341,9 @@ function SkillLevelUp(props) {
             .catch(error => {
                 toastr.error('Error while getting champion abilities.')
             })
-    }, [props.my_part])
+    }, [props.selected_participant])
 
-    let div_width = (props.expanded_width - 60) / 18
+    let div_width = (props.expanded_width - 65) / 18
     let div_height = 30
     return (
         <div>
@@ -351,7 +363,7 @@ function SkillLevelUp(props) {
                             if (num === 0) {
                                 div_style = {
                                     height: div_height,
-                                    width: div_width,
+                                    width: 30,
                                     borderStyle: 'solid',
                                     borderColor: 'grey',
                                     borderWidth: 0,
@@ -360,9 +372,9 @@ function SkillLevelUp(props) {
                                     output = (
                                         <span>
                                             <ReactTooltip
-                                                id={`${skill_num}-ability`}
+                                                id={`${props.selected_participant._id}-${skill_num}-ability`}
                                                 effect='solid' >
-                                                <div style={{maxWidth: 500, wordBreak: 'break-all', whiteSpace: 'normal'}}>
+                                                <div style={{maxWidth: 500, wordBreak: 'normal', whiteSpace: 'normal'}}>
                                                     {spells[skill_num] !== undefined &&
                                                         <div>
                                                             <div>
@@ -375,8 +387,7 @@ function SkillLevelUp(props) {
                                                                     {spells[skill_num].name}
                                                                 </h4>
                                                             </div>
-                                                            <div>
-                                                                {spells[skill_num].description}
+                                                            <div dangerouslySetInnerHTML={{__html: spells[skill_num].description}}>
                                                             </div>
                                                         </div>
                                                     }
@@ -384,8 +395,24 @@ function SkillLevelUp(props) {
                                             </ReactTooltip>
                                             <div
                                                 data-tip
-                                                data-for={`${skill_num}-ability`} >
+                                                data-for={`${props.selected_participant._id}-${skill_num}-ability`}
+                                                style={{width: 30, height: 30, position: 'relative'}} >
                                                 {skill_num}
+
+                                                {spells[skill_num] !== undefined &&
+                                                    <img
+                                                        src={spells[skill_num].image_url}
+                                                        alt=""
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: 0,
+                                                            left: 0,
+                                                            width: 30,
+                                                            borderStyle: 'solid',
+                                                            borderColor: 'grey',
+                                                            borderWidth: 2,
+                                                        }}/>
+                                                }
                                             </div>
                                         </span>
                                     )

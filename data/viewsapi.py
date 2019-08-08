@@ -334,7 +334,7 @@ def get_champion_spells(request, format=None):
         query = query.filter(_id=champion_id)
         if query.exists():
             champion = query.first()
-            spells = champion.spells.all()
+            spells = champion.spells.all().order_by('id')
             data['data'] = ChampionSpellSerializer(spells, many=True).data
         else:
             data['data'] = []
