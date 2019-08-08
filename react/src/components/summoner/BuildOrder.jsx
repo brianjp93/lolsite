@@ -433,7 +433,7 @@ function SkillLevelUp(props) {
                                 div_style = {
                                     ...div_style,
                                     textAlign: 'center',
-                                    background: 'white',
+                                    background: '#196893',
                                 }
                                 output = skill_num
                             }
