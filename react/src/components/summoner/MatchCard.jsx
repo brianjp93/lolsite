@@ -1623,7 +1623,8 @@ class MatchCard extends Component {
                                                 expanded_width={this.state.expanded_width - this.state.summary_width}
                                                 participants={this.state.participants}
                                                 summoner={this.props.pageStore.state.summoner}
-                                                my_part={mypart} />
+                                                my_part={mypart}
+                                                match_id={this.props.match._id} />
                                         }
                                     </div>
                                 </div>

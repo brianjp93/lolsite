@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import numeral from 'numeral'
 import ReactTooltip from 'react-tooltip'
@@ -150,14 +150,14 @@ function BuildOrder(props) {
 
             <div style={{marginTop: 5, marginBottom: 5}} className='row'>
                 <div className="col s6">
-                    <label htmlFor="build-selection">
-                        <input id='build-selection' onChange={() => setDisplayPage('build')} type="radio" checked={display_page === 'build'}/>
+                    <label htmlFor={`${props.match_id}-build-selection`}>
+                        <input id={`${props.match_id}-build-selection`} onChange={useCallback(() => setDisplayPage('build'))} type="radio" checked={display_page === 'build'}/>
                         <span>Build Order</span>
                     </label>
                 </div>
                 <div className="col s6">
-                    <label htmlFor="skill-selection">
-                        <input id='skill-selection' onChange={() => setDisplayPage('skill')} type="radio" checked={display_page === 'skill'}/>
+                    <label htmlFor={`${props.match_id}-skill-selection`}>
+                        <input id={`${props.match_id}-skill-selection`} onChange={useCallback(() => setDisplayPage('skill'))} type="radio" checked={display_page === 'skill'}/>
                         <span>Skill Order</span>
                     </label>
                 </div>
@@ -165,7 +165,9 @@ function BuildOrder(props) {
             
 
             {display_page === 'build' &&
-                <div style={{marginTop: 5}}>
+                <div
+                    className='quiet-scroll'
+                    style={{marginTop: 5, overflowY: 'scroll', height: 300, width: 385}}>
                     {participant_groups.map((group, key) => {
                         let total_seconds = Object.values(group)[0].timestamp / 1000
                         let minutes = Math.floor(total_seconds / 60)
@@ -177,7 +179,7 @@ function BuildOrder(props) {
                             div_style = {display: 'block'}
                         }
                         return (
-                            <span key={key}>
+                            <span key={`${props.match_id}-${key}`}>
                                 <div style={div_style}>
                                         
                                 </div>
@@ -279,6 +281,7 @@ BuildOrder.propTypes = {
     participants: PropTypes.array,
     summoner: PropTypes.object,
     expanded_width: PropTypes.number,
+    match_id: PropTypes.any,
 }
 
 function ChampionImage(props) {
