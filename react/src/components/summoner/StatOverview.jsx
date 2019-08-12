@@ -27,6 +27,7 @@ class StatOverview extends Component {
                 'vision_wards_bought_in_game': 'control wards',
                 'dpd': 'dmg / death',
                 'dtpd': 'dmg taken / death',
+                'time_ccing_others': 'time ccing others',
 
                 'cs': 'total cs',
                 'cspm': 'cs / min'
@@ -209,6 +210,7 @@ class StatOverview extends Component {
                         {this.getBarGraphStat('Physical', 'Physical Damage to Champions', 'physical_damage_dealt_to_champions')}
                         {this.getBarGraphStat('Magic', 'Magic Damage to Champions', 'magic_damage_dealt_to_champions')}
                         {this.getBarGraphStat('True', 'True Damage to Champions', 'true_damage_dealt_to_champions')}
+                        {this.getBarGraphStat('CC Time', 'Time CCing Others', 'time_ccing_others')}
 
                     </div>
 
