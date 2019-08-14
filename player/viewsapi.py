@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 
 from player import tasks as pt
 from player import filters as player_filters
-from player.models import EmailVerification
+from player.models import EmailVerification, RankPosition
 
 from data.models import ProfileIcon, Champion
 from data.serializers import ProfileIconSerializer
@@ -829,3 +829,30 @@ def is_logged_in(request, format=None):
         }
     }
     return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_rank_history(request, format=None):
+    """Get a history of a player's rank.
+
+    POST Parameters
+    ---------------
+    id : int
+        The ID of the summoner.  (internal ID)
+    group_by : str
+        enum('day', 'month')
+        No grouping, if not provided
+
+    Returns
+    -------
+    JSON Response
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        summoner_id = request.data.get('id')
+        group_by = request.data.get('group_by', None)
+        
+    return Reponse(data, status=status_code)

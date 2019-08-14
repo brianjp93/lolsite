@@ -6,7 +6,8 @@ import NavBar from '../general/NavBar'
 import MatchCard from './MatchCard'
 import Spectate from './Spectate'
 import SummonerNotFound from './SummonerNotFound'
-import PlayerChampionSummary from './PlayerChampionSummary'
+// import PlayerChampionSummary from './PlayerChampionSummary'
+import OverviewSelection from './OverviewSelection'
 import numeral from 'numeral'
 
 import MatchFilter from './MatchFilter'
@@ -365,7 +366,7 @@ class Summoner extends Component {
                                                 padding: 15,
                                             }}
                                             className={`${theme} card-panel`}>
-                                            <PlayerChampionSummary
+                                            <OverviewSelection
                                                 store={store}
                                                 parent={this}
                                                 summoner={this.state.summoner} />

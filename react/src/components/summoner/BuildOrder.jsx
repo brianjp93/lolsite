@@ -151,13 +151,13 @@ function BuildOrder(props) {
             <div style={{marginTop: 5, marginBottom: 5}} className='row'>
                 <div className="col s6">
                     <label htmlFor={`${props.match_id}-build-selection`}>
-                        <input id={`${props.match_id}-build-selection`} onChange={useCallback(() => setDisplayPage('build'))} type="radio" checked={display_page === 'build'}/>
+                        <input id={`${props.match_id}-build-selection`} onChange={useCallback(() => setDisplayPage('build'), [])} type="radio" checked={display_page === 'build'}/>
                         <span>Build Order</span>
                     </label>
                 </div>
                 <div className="col s6">
                     <label htmlFor={`${props.match_id}-skill-selection`}>
-                        <input id={`${props.match_id}-skill-selection`} onChange={useCallback(() => setDisplayPage('skill'))} type="radio" checked={display_page === 'skill'}/>
+                        <input id={`${props.match_id}-skill-selection`} onChange={useCallback(() => setDisplayPage('skill'), [])} type="radio" checked={display_page === 'skill'}/>
                         <span>Skill Order</span>
                     </label>
                 </div>
