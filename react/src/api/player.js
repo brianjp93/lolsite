@@ -51,6 +51,11 @@ function isLoggedIn() {
     return axios.post(url)
 }
 
+function getRankHistory(data) {
+    let url = `/api/${version}/player/rank-history/`
+    return axios.post(url, data)
+}
+
 export default {
     getSummoner,
     getSummonerPage,
@@ -61,4 +66,5 @@ export default {
     getChampionsOverview,
     summonerSearch,
     isLoggedIn,
+    getRankHistory,
 }

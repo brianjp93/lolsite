@@ -10,10 +10,13 @@ from django.utils import timezone
 from django.core.cache import cache
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.db.models.functions import Extract
+from django.db.models import Max, Min
 
 from player import tasks as pt
 from player import filters as player_filters
 from player.models import EmailVerification, RankPosition
+from player.models import decode_int_to_rank
 
 from data.models import ProfileIcon, Champion
 from data.serializers import ProfileIconSerializer
@@ -840,8 +843,12 @@ def get_rank_history(request, format=None):
     id : int
         The ID of the summoner.  (internal ID)
     group_by : str
-        enum('day', 'month')
+        enum('day', 'month', 'week')
         No grouping, if not provided
+    queue : str
+        enum('RANKED_SOLO_5x5', '')
+    start : ISO Date
+    end : ISO Date
 
     Returns
     -------
@@ -854,5 +861,44 @@ def get_rank_history(request, format=None):
     if request.method == 'POST':
         summoner_id = request.data.get('id')
         group_by = request.data.get('group_by', None)
-        
-    return Reponse(data, status=status_code)
+        queue = request.data['queue']
+        start = request.data.get('start', None)
+        end = request.data.get('end', None)
+
+        query = RankPosition.objects.filter(checkpoint__summoner__id=summoner_id, queue_type=queue)
+        if start is not None:
+            query = query.filter(created_date__gte=start)
+        if end is not None:
+            query = query.filter(created_date__lte=end)
+
+        if group_by is not None:
+            query = query.annotate(
+                day=Extract('checkpoint__created_date', 'day'),
+                month=Extract('checkpoint__created_date', 'month'),
+                year=Extract('checkpoint__created_date', 'year'),
+                week=Extract('checkpoint__created_date', 'week'),
+            )
+            if group_by == 'day':
+                query = query.values('day', 'month', 'year', 'week')
+                query = query.annotate(
+                    peak_rank_integer=Max('rank_integer'),
+                    trough_rank_integer=Min('rank_integer'),
+                )
+                query = query.order_by('year', 'month', 'day')
+            elif group_by == 'week':
+                query = query.values('month', 'year', 'week')
+                query = query.annotate(
+                    peak_rank_integer=Max('rank_integer'),
+                    trough_rank_integer=Min('rank_integer'),
+                )
+                query = query.order_by('year', 'month', 'week')
+
+            query = query.annotate(start_date=Min('checkpoint__created_date'))
+            for elt in query:
+                elt['peak_rank'] = decode_int_to_rank(elt['peak_rank_integer'])
+                elt['trough_rank'] = decode_int_to_rank(elt['trough_rank_integer'])
+            data['data'] = query
+        else:
+            pass
+
+    return Response(data, status=status_code)

@@ -29,7 +29,9 @@ function OverviewSelection(props) {
                         summoner={props.summoner} />
                 }
                 {selection === 'rank-history' &&
-                    <RankHistory />
+                    <RankHistory
+                        summoner={props.summoner}
+                        theme={props.store.state.theme} />
                 }
             </div>
         </div>

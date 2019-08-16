@@ -125,9 +125,54 @@ class RankPosition(models.Model):
     queue_type = models.CharField(max_length=32, default='', blank=True)
     rank = models.CharField(max_length=32, default='', blank=True)
     tier = models.CharField(max_length=32, default='', blank=True)
+    rank_integer = models.IntegerField(default=0, db_index=True)
 
     def save(self, *args, **kwargs):
+        if self.rank_integer == 0:
+            self.rank_integer = self.encode()
         super(RankPosition, self).save(*args, **kwargs)
+
+    def encode(self):
+        """Encode tier, rank, league_points to an integer.
+
+        Returns
+        -------
+        int
+
+        """
+        return encode_rank_to_int(self.tier, self.rank, self.league_points)
+
+    def decode(self):
+        """Decodes rank_integer back into the tier, division, and league_points
+
+        Returns
+        -------
+        dict
+
+        """
+        return decode_int_to_rank(self.rank_integer)
+
+
+def encode_rank_to_int(tier, division, lp):
+    ranks = dc.RANKS[9]
+    tier_index = ranks['TIERS'].index(tier.lower())
+    division_index = len(ranks['DIVISIONS']) - 1 - ranks['DIVISIONS'].index(division.upper())
+    rank_integer = int(f'{tier_index:02}{division_index:02}{lp:04}')
+    return rank_integer
+
+
+def decode_int_to_rank(rank_integer):
+    ranks = dc.RANKS[9]
+    lp = rank_integer % 10_000
+    rest = rank_integer // 10_000
+    division_index = len(ranks['DIVISIONS']) - 1 - rest % 100
+    tier_index = (rank_integer // 1_000_000)
+    data = {
+        'tier': ranks['TIERS'][tier_index],
+        'division': ranks['DIVISIONS'][division_index],
+        'league_points': lp
+    }
+    return data
 
 
 class Custom(models.Model):
