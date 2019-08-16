@@ -64,11 +64,11 @@ function RankHistory(props) {
             else {
                 add_lp = lp / 100
             }
-            num = 4 * index + div_number + add_lp
+            num = (4 * index) + div_number + add_lp
         }
         else if (one_div_tiers.indexOf(tier.toUpperCase()) >= 0) {
             let index = one_div_tiers.indexOf(tier.toUpperCase())
-            let div_number = (four_div_tiers.length * 4) + (index * 4)
+            let div_number = (four_div_tiers.length * 4) + (index * 4) - 4
             let lp_number = (lp / top_rank_lp[tier.toLowerCase()].get) * 4
             num = div_number + lp_number
         }
@@ -176,9 +176,12 @@ function RankHistory(props) {
                 <Area dataKey='numeric_rank_range' />
 
                 {[...four_div_tiers, ...one_div_tiers].map((tier, key) => {
-                    return (
-                        <ReferenceLine key={key} y={4 * (key + 1)} label={`${tier}`} stroke="#ffffff" />
-                    )
+                    if (key > 0) {
+                        return (
+                            <ReferenceLine key={key} y={4 * (key)} label={`${tier}`} stroke="#ffffff" />
+                        )
+                    }
+                    return null
                 })}
 
                 {four_div_tiers.map((tier, key) => {
