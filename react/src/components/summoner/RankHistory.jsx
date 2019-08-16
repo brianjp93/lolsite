@@ -1,46 +1,58 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import api from '../../api/api'
-import { AreaChart, XAxis, YAxis, Area, Tooltip } from 'recharts'
+import { AreaChart, XAxis, YAxis, Area, Tooltip, ReferenceLine } from 'recharts'
 import moment from 'moment'
 
 
 function RankHistory(props) {
     const [rank_data, setRankData] = useState([])
+    const [modified_rank_data, setModifiedRankData] =  useState([])
     const [top_master_lp, setTopMasterLP] = useState(100)
     const [top_grandmaster_lp, setTopGrandMasterLP] = useState(100)
     const [top_challenger_lp, setTopChallengerLP] = useState(100)
 
-    const four_div_tiers = [
+    // eslint-disable-next-line
+    const [four_div_tiers, setFourDivTiers] = useState([
         'IRON',
         'BRONZE',
         'SILVER',
         'GOLD',
         'PLATINUM',
         'DIAMOND',
-    ]
-    const one_div_tiers = [
+    ])
+
+    // eslint-disable-next-line
+    const [one_div_tiers, setOneDivTiers] = useState([
         'MASTER',
         'GRANDMASTER',
         'CHALLENGER'
-    ]
+    ])
 
-    let top_rank_lp = {
-        master: {
-            get: top_master_lp,
-            set: setTopMasterLP
-        },
-        grandmaster: {
-            get: top_grandmaster_lp,
-            set: setTopGrandMasterLP
-        },
-        challenger: {
-            get: top_challenger_lp,
-            set: setTopChallengerLP
-        },
-    }
+    const top_rank_lp = useMemo(() => {
+        return {
+            master: {
+                get: top_master_lp,
+                set: setTopMasterLP
+            },
+            grandmaster: {
+                get: top_grandmaster_lp,
+                set: setTopGrandMasterLP
+            },
+            challenger: {
+                get: top_challenger_lp,
+                set: setTopChallengerLP
+            },
+        }
+    },
+        [
+            top_master_lp,
+            top_grandmaster_lp,
+            top_challenger_lp,
+        ]
+    )
 
-    let calculateLinearRankNumber = useCallback((tier, division, lp) => {
+    const calculateLinearRankNumber = useCallback((tier, division, lp) => {
         let num
         if (four_div_tiers.indexOf(tier.toUpperCase()) >= 0) {
             let index = four_div_tiers.indexOf(tier.toUpperCase())
@@ -61,7 +73,7 @@ function RankHistory(props) {
             num = div_number + lp_number
         }
         return num
-    }, [one_div_tiers, four_div_tiers, top_rank_lp])
+    }, [top_rank_lp, one_div_tiers, four_div_tiers])
 
     // GET RANKED HISTORY DATA
     useEffect(() => {
@@ -69,20 +81,11 @@ function RankHistory(props) {
         let data = {
             id: props.summoner.id,
             queue: 'RANKED_SOLO_5x5',
-            group_by: 'week',
+            group_by: 'day',
         }
         api.player.getRankHistory(data)
             .then(response => {
                 let d = response.data.data
-                for (let i=0; i<d.length; i++) {
-                    let m = moment(d[i].start_date)
-                    d[i].epoch = m.unix()
-                    let peak = d[i].peak_rank
-                    let trough = d[i].trough_rank
-                    d[i].numeric_rank_peak = calculateLinearRankNumber(peak.tier, peak.division, peak.league_points)
-                    d[i].numeric_rank_trough = calculateLinearRankNumber(trough.tier, trough.division, trough.league_points)
-                    d[i].numeric_rank_range = [d[i].numeric_rank_trough, d[i].numeric_rank_peak]
-                }
                 setRankData(d)
             })
     }, [props.summoner])
@@ -90,74 +93,110 @@ function RankHistory(props) {
 
     // SET TOP LP VALUES TO CORRECTLY SCALE
     useEffect(() => {
+
+        let temp_master_lp
+        let temp_grandmaster_lp
+        let temp_challenger_lp
         for (let d of rank_data) {
             // console.log(d)
             let peak_rank = d.peak_rank
             if (one_div_tiers.indexOf(peak_rank.tier.toUpperCase()) >= 0) {
-                if (peak_rank.league_points > top_rank_lp[peak_rank.tier.toLowerCase()].get) {
-                    top_rank_lp[peak_rank.tier.toLowerCase()].set(peak_rank.league_points)
+                let lp_value = peak_rank.league_points
+
+                temp_master_lp = top_master_lp
+                temp_grandmaster_lp = top_grandmaster_lp
+                temp_challenger_lp = top_challenger_lp
+
+                let tier = peak_rank.tier.toLowerCase()
+                if (tier === 'master') {
+                    if (lp_value > temp_master_lp) {
+                        temp_master_lp = lp_value
+                    }
+                }
+                else if (tier === 'grandmaster') {
+                    if (lp_value > temp_grandmaster_lp) {
+                        temp_grandmaster_lp = lp_value
+                    }
+                }
+                else if (tier === 'challenger') {
+                    if (lp_value > temp_challenger_lp) {
+                        temp_challenger_lp = lp_value
+                    }
                 }
             }
         }
-    }, [rank_data, top_rank_lp, one_div_tiers])
+
+        if (temp_master_lp > top_master_lp) {
+            setTopMasterLP(temp_master_lp)
+        }
+        if (temp_grandmaster_lp > top_grandmaster_lp) {
+            setTopGrandMasterLP(temp_grandmaster_lp)
+        }
+        if (temp_challenger_lp > top_challenger_lp) {
+            setTopChallengerLP(temp_challenger_lp)
+        }
+
+    }, [rank_data, top_rank_lp, one_div_tiers, top_master_lp, top_grandmaster_lp, top_challenger_lp])
+
+    // MODIFY RANK DATA 
+    useEffect(() => {
+        let d = rank_data
+        for (let i=0; i<d.length; i++) {
+            let m = moment(d[i].start_date)
+            d[i].epoch = m.unix() * 1000
+            let peak = d[i].peak_rank
+            let trough = d[i].trough_rank
+            d[i].numeric_rank_peak = calculateLinearRankNumber(peak.tier, peak.division, peak.league_points)
+            d[i].numeric_rank_trough = calculateLinearRankNumber(trough.tier, trough.division, trough.league_points)
+            d[i].numeric_rank_range = [d[i].numeric_rank_trough, d[i].numeric_rank_peak]
+        }
+        setModifiedRankData(d)
+    }, [rank_data, calculateLinearRankNumber, modified_rank_data])
 
     return (
         <div>
-            <div style={{height: 15}}></div>
             <AreaChart
-                margin={{left: 70, top: 5}}
+                margin={{left: 0, top: 5}}
                 width={700}
                 height={200}
-                data={rank_data}>
+                data={modified_rank_data}>
 
                 <XAxis
-                    tickFormatter={(tickItem) => {
-                        var m = moment(tickItem)
+                    tickFormatter={(tick) => {
+                        var m = moment(tick)
                         return `${m.format('ll')}`
                     }}
                     dataKey='epoch' />
+
+                {/*
+                */}
                 <YAxis
-                    tickFormatter={(tick) => {
-                        let all_tiers = [...four_div_tiers, ...one_div_tiers]
-                        let tier_index = Math.floor(tick / 4)
-                        let tier = all_tiers[tier_index]
-
-                        if (tier === undefined) {
-                            return ''
-                        }
-
-                        let division
-                        let lp
-                        if (tier_index >= 6) {
-                            division = 'I'
-                        }
-                        else {
-                            let div_index = Math.floor(tick) % 4
-                            division = ['IV', 'III', 'II', 'I'][div_index]
-                        }
-
-                        if (tier_index >= 6 ) {
-                            let top_lp = top_rank_lp[tier.toLowerCase()].get
-                            lp = Math.round(((tick % 4) / 4) * top_lp)
-                        }
-                        else {
-                            if (Math.round(10000 * (tick % 1)) === 9999) {
-                                lp = 100
-                            }
-                            else {
-                                lp = Math.round((tick % 1) * 100)
-                            }
-                        }
-                        return `${tier} ${division} ${lp}LP`
-                    }}
+                    tick={false}
                     domain={['dataMin', 'dataMax']} />
                 <Area dataKey='numeric_rank_range' />
+
+                {[...four_div_tiers, ...one_div_tiers].map((tier, key) => {
+                    return (
+                        <ReferenceLine key={key} y={4 * (key + 1)} label={`${tier}`} stroke="#ffffff" />
+                    )
+                })}
+
+                {four_div_tiers.map((tier, key) => {
+                    return (
+                        [
+                            <ReferenceLine key={`${key}-1`} y={(4 * key) + 1} stroke="#ffffff20" strokeDasharray="3 3" />,
+                            <ReferenceLine key={`${key}-2`} y={(4 * key) + 2} stroke="#ffffff20" strokeDasharray="3 3" />,
+                            <ReferenceLine key={`${key}-3`} y={(4 * key) + 3} stroke="#ffffff20" strokeDasharray="3 3" />
+                        ]
+                    )
+                })}
+
                 <Tooltip
                     formatter={(value, name, props) => {
-                        console.log(value)
+                        // console.log(value)
                         let peak = props.payload.peak_rank
                         let trough = props.payload.trough_rank
-                        let output = `${trough.tier.toUpperCase()} ${trough.division} ${trough.league_points} to ${peak.tier.toUpperCase()} ${peak.division} ${peak.league_points}`
+                        let output = `${trough.tier.toUpperCase()} ${trough.division} ${trough.league_points} -to- ${peak.tier.toUpperCase()} ${peak.division} ${peak.league_points}`
                         return [output, 'Rank']
                     }}
                     labelFormatter={(label) => {

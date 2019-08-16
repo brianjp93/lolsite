@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import PlayerChampionSummary from './PlayerChampionSummary'
 import RankHistory from './RankHistory'
@@ -9,17 +9,16 @@ function OverviewSelection(props) {
 
     return (
         <div style={{display: 'inline-block'}}>
-            <div>
-                <button
-                    onClick={() => setSelection('champion-overview')}
-                    className={`${props.store.state.theme} btn-small`}>
-                    Champion Overview
-                </button>
-                <button
-                    onClick={() => setSelection('rank-history')}
-                    className={`${props.store.state.theme} btn-small`}>
-                    Rank History
-                </button>
+            <div style={{paddingBottom: 10}}>
+                <label htmlFor={`champion-overview-selection`}>
+                    <input id={`champion-overview-selection`} onChange={useCallback(() => setSelection('champion-overview'), [])} type="radio" checked={selection === 'champion-overview'}/>
+                    <span>Champion Overview</span>
+                </label>
+                <div style={{display: 'inline-block', width: 10}}></div>
+                <label htmlFor={`rank-history-selection`}>
+                    <input id={`rank-history-selection`} onChange={useCallback(() => setSelection('rank-history'), [])} type="radio" checked={selection === 'rank-history'}/>
+                    <span>Rank History</span>
+                </label>
             </div>
             <div>
                 {selection === 'champion-overview' &&
