@@ -225,7 +225,7 @@ class NavBar extends Component {
                                 className='left'
                                 style={{marginLeft:10, padding:'0px 15px'}}
                             >
-                                Home
+                                HardStuck
                             </Link>
                             {
                                 // eslint-disable-next-line

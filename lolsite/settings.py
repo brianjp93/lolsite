@@ -61,7 +61,7 @@ if DEV:
 else:
     ALLOWED_HOSTS = ['.elasticbeanstalk.com', '.hardstuck.club']
     # BASE_URL = 'http://lolsite.us-west-2.elasticbeanstalk.com'
-    BASE_URL = 'http://hardstuck.club'
+    BASE_URL = 'http://www.hardstuck.club'
 
 GIT_BUILD = 0
 try:

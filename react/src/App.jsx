@@ -21,7 +21,7 @@ class App extends Component {
             language: 'en_US',
             user: {},
 
-            project_title: 'Press R',
+            project_title: 'HardStuck',
 
             summoners: {},
             items: {},
