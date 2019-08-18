@@ -1084,16 +1084,54 @@ class MatchCard extends Component {
                             </div>*/}
 
                             <div style={{width: '90%'}}>
-                                <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
-                                    <div title='CS Per Minute' style={{...statbox_style, backgroundColor: '#65543a'}}>
+
+                                <ReactTooltip
+                                    effect='solid'
+                                    id={`${match._id}-csm-tooltip`}>
+                                    <div>
+                                        <div>
+                                            Total CS: {mypart.stats.total_minions_killed + mypart.stats.neutral_minions_killed}
+                                        </div>
+                                        <div>
+                                            Neutral Minions Killed: {mypart.stats.neutral_minions_killed}
+                                        </div>
+                                    </div>
+                                </ReactTooltip>
+                                <div
+                                    data-tip
+                                    data-for={`${match._id}-csm-tooltip`}
+                                    style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
+                                    <div style={{...statbox_style, backgroundColor: '#65543a'}}>
                                         <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>CS/Min</div>
                                         <div>
                                             {numeral(csm).format('0.0')}
                                         </div>
                                     </div>
                                 </div>
-                                <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
-                                    <div title='Vision Score Per Minute' style={{...statbox_style, backgroundColor: '#276159'}}>
+
+                                <ReactTooltip
+                                    effect='solid'
+                                    id={`${match._id}-vision-score-tooltip`}>
+                                    <div>
+                                        <div>
+                                            Total Vision Score: {mypart.stats.vision_score}
+                                        </div>
+                                        <div>
+                                            Control Wards Purchased: {mypart.stats.vision_wards_bought_in_game}
+                                        </div>
+                                        <div>
+                                            Wards Killed: {mypart.stats.wards_killed}
+                                        </div>
+                                        <div>
+                                            Wards Placed: {mypart.stats.wards_placed}
+                                        </div>
+                                    </div>
+                                </ReactTooltip>
+                                <div
+                                    data-tip
+                                    data-for={`${match._id}-vision-score-tooltip`}
+                                    style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
+                                    <div style={{...statbox_style, backgroundColor: '#276159'}}>
                                         <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>VS/Min</div>
                                         <div>
                                             {numeral(vision_score_per_minute).format('0.00')}
@@ -1101,16 +1139,54 @@ class MatchCard extends Component {
                                     </div>
                                 </div>
                                 <br/>
-                                <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
-                                    <div title='Damage Per Minute' style={{...statbox_style, backgroundColor: '#56262a'}}>
+
+                                <ReactTooltip
+                                    effect='solid'
+                                    id={`${match._id}-champion-damage-tooltip`}>
+                                    <div>
+                                        <div>
+                                            Champion Damage: {numeral(mypart.stats.total_damage_dealt_to_champions).format('0,0')}
+                                        </div>
+                                        <div>
+                                            Damage per Death: {mypart.stats.deaths === 0 ? numeral(mypart.stats.total_damage_dealt_to_champions).format('0,0'): numeral(mypart.stats.total_damage_dealt_to_champions / mypart.stats.deaths).format('0,0')}
+                                        </div>
+                                    </div>
+                                </ReactTooltip>
+                                <div
+                                    data-tip
+                                    data-for={`${match._id}-champion-damage-tooltip`}
+                                    style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
+                                    <div style={{...statbox_style, backgroundColor: '#56262a'}}>
                                         <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>DPM</div>
                                         <div>
                                             {numeral(dpm).format('0,0')}
                                         </div>
                                     </div>
                                 </div>
-                                <div style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
-                                    <div title='Damage Taken Per Minute' style={{...statbox_style, backgroundColor: '#1f1f1f'}}>
+
+                                <ReactTooltip
+                                    effect='solid'
+                                    id={`${match._id}-damage-taken-tooltip`}>
+                                    <div>
+                                        <div>
+                                            Total Damage Taken: {numeral(mypart.stats.total_damage_taken).format('0,0')}
+                                        </div>
+                                        <div>
+                                            Damage Taken Per Death: 
+                                            {mypart.stats.deaths === 0 &&
+                                                <span>{' '}{numeral(mypart.stats.total_damage_taken).format('0,0')}</span>
+                                            }
+                                            {mypart.stats.deaths > 0 &&
+                                                <span>{' '}{numeral(mypart.stats.total_damage_taken / mypart.stats.deaths).format('0,0')}</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </ReactTooltip>
+                                <div
+                                    data-tip
+                                    data-for={`${match._id}-damage-taken-tooltip`}
+                                    style={{width: '50%', textAlign: 'center', display: 'inline-block'}}>
+                                    <div style={{...statbox_style, backgroundColor: '#1f1f1f'}}>
                                         <div style={{textDecoration: 'underline', fontWeight: 'bold'}}>DT/Min</div>
                                         <div>
                                             {numeral(damage_taken_per_minute).format('0,0')}

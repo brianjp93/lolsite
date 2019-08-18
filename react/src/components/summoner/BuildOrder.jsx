@@ -212,7 +212,7 @@ function BuildOrder(props) {
                                                     <div key={sub_key} style={{display: 'inline-block'}}>
                                                         <div style={{display: 'inline-block', position: 'relative'}}>
                                                             <ReactTooltip
-                                                                id={`${item_data._id}-${sub_key}-tt`}
+                                                                id={`${props.match_id}-${item_data._id}-${key}-${sub_key}-tt`}
                                                                 effect='solid' >
                                                                 <h4 style={{marginBottom: 0}}>{item_data.name}</h4>
 
@@ -226,7 +226,7 @@ function BuildOrder(props) {
                                                             </ReactTooltip>
                                                             <img
                                                                 data-tip
-                                                                data-for={`${item_data._id}-${sub_key}-tt`}
+                                                                data-for={`${props.match_id}-${item_data._id}-${key}-${sub_key}-tt`}
                                                                 style={{
                                                                     width: 30,
                                                                     borderRadius: 5,
