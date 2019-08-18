@@ -174,61 +174,76 @@ function RankHistory(props) {
                 </label>
             </div>
 
-            <div style={{display: 'inline-block'}}>
-                <AreaChart
-                    margin={{left: -20, top: 5}}
-                    width={650}
-                    height={200}
-                    data={modified_rank_data}>
+            {modified_rank_data.length > 1 &&
+                <div style={{display: 'inline-block'}}>
+                    <AreaChart
+                        margin={{left: -20, top: 5}}
+                        width={650}
+                        height={200}
+                        data={modified_rank_data}>
 
-                    <XAxis
-                        tickFormatter={(tick) => {
-                            var m = moment(tick)
-                            return `${m.format('ll')}`
-                        }}
-                        dataKey='epoch' />
+                        <XAxis
+                            tickFormatter={(tick) => {
+                                var m = moment(tick)
+                                return `${m.format('ll')}`
+                            }}
+                            dataKey='epoch' />
 
-                    {/*
-                    */}
-                    <YAxis
-                        tick={false}
-                        domain={['dataMin', 'dataMax']} />
-                    <Area dataKey='numeric_rank_range' />
+                        {/*
+                        */}
+                        <YAxis
+                            tick={false}
+                            domain={['dataMin', 'dataMax']} />
+                        <Area dataKey='numeric_rank_range' />
 
-                    {[...four_div_tiers, ...one_div_tiers].map((tier, key) => {
-                        if (key > 0) {
+                        {[...four_div_tiers, ...one_div_tiers].map((tier, key) => {
+                            if (key > 0) {
+                                return (
+                                    <ReferenceLine key={key} y={4 * (key)} label={`${tier}`} stroke="#ffffff" />
+                                )
+                            }
+                            return null
+                        })}
+
+                        {four_div_tiers.map((tier, key) => {
                             return (
-                                <ReferenceLine key={key} y={4 * (key)} label={`${tier}`} stroke="#ffffff" />
+                                [
+                                    <ReferenceLine key={`${key}-1`} y={(4 * key) + 1} stroke="#ffffff20" strokeDasharray="3 3" />,
+                                    <ReferenceLine key={`${key}-2`} y={(4 * key) + 2} stroke="#ffffff20" strokeDasharray="3 3" />,
+                                    <ReferenceLine key={`${key}-3`} y={(4 * key) + 3} stroke="#ffffff20" strokeDasharray="3 3" />
+                                ]
                             )
-                        }
-                        return null
-                    })}
+                        })}
 
-                    {four_div_tiers.map((tier, key) => {
-                        return (
-                            [
-                                <ReferenceLine key={`${key}-1`} y={(4 * key) + 1} stroke="#ffffff20" strokeDasharray="3 3" />,
-                                <ReferenceLine key={`${key}-2`} y={(4 * key) + 2} stroke="#ffffff20" strokeDasharray="3 3" />,
-                                <ReferenceLine key={`${key}-3`} y={(4 * key) + 3} stroke="#ffffff20" strokeDasharray="3 3" />
-                            ]
-                        )
-                    })}
+                        <Tooltip
+                            formatter={(value, name, props) => {
+                                // console.log(value)
+                                let peak = props.payload.peak_rank
+                                let trough = props.payload.trough_rank
+                                let output = `${trough.tier.toUpperCase()} ${trough.division} ${trough.league_points} -to- ${peak.tier.toUpperCase()} ${peak.division} ${peak.league_points}`
+                                return [output, 'Rank']
+                            }}
+                            labelFormatter={(label) => {
+                                var m = moment(label)
+                                return `${m.format('ll')}`
+                            }}  />
+                    </AreaChart>
+                </div>
+            }
 
-                    <Tooltip
-                        formatter={(value, name, props) => {
-                            // console.log(value)
-                            let peak = props.payload.peak_rank
-                            let trough = props.payload.trough_rank
-                            let output = `${trough.tier.toUpperCase()} ${trough.division} ${trough.league_points} -to- ${peak.tier.toUpperCase()} ${peak.division} ${peak.league_points}`
-                            return [output, 'Rank']
-                        }}
-                        labelFormatter={(label) => {
-                            var m = moment(label)
-                            return `${m.format('ll')}`
-                        }}  />
-                </AreaChart>
-                
-            </div>
+            {modified_rank_data.length <= 1 &&
+                <div style={{display: 'inline-block'}}>
+                    <div style={{height: 20}}></div>
+                    <span style={{
+                        borderStyle: 'solid',
+                        borderRadius: 5,
+                        padding: 10,
+                        marginLeft: 40,
+                    }}>
+                        No rank history saved.
+                    </span>
+                </div>
+            }
         </div>
     )
 }
