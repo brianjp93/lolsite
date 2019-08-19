@@ -11,6 +11,7 @@ react/node_modules
 
 .coverage
 htmlcov/
+wily-report.html
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
