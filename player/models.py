@@ -233,3 +233,17 @@ class EmailVerification(models.Model):
             </div>
         '''
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.user.email], html_message=html_message)
+
+
+class SummonerLink(models.Model):
+    uuid = models.CharField(max_length=128, default=uuid.uuid4, db_index=True)
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+    summoner = models.ForeignKey('Summoner', null=True, on_delete=models.CASCADE)
+
+    created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
+    modified_date = models.DateTimeField(default=timezone.now, blank=True)
+
+    def save(self, *args, **kwargs):
+        # Always set modified_date on save().
+        self.modified_date = timezone.now()
+        super(SummonerLink, self).save(*args, **kwargs)
