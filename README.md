@@ -22,6 +22,10 @@ Another league of legends match history and stats site.
 * Show winrates with friends
 * Show overall played with stats
 
+* Add multisearch functionality
+* carry score
+* per game rank average
+
 
 # Other Technical Information
 
