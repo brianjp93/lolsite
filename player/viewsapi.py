@@ -544,7 +544,7 @@ def get_summoner_page(request, format=None):
                 request,
                 account_id=summoner.account_id
             )
-            match_count = match_query.count()
+            # match_count = match_query.count()
 
             start = (page - 1) * count
             end = page * count
@@ -554,7 +554,7 @@ def get_summoner_page(request, format=None):
 
             data = {
                 'matches': matches,
-                'match_count': match_count,
+                # 'match_count': match_count,
                 'profile_icon': profile_icon_data,
                 'summoner': summoner_data,
                 'positions': rank_positions,
