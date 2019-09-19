@@ -141,6 +141,9 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
     Serialized Match List
 
     """
+    cache_get_time = 0
+    cache_set_time = 0
+    
     perk_cache = {}
     perk_tree_cache = {}
     item_cache = {}
@@ -151,7 +154,12 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
     for match in match_query:
         # match_serializer = MatchSerializer(match)
         cache_key = f'account/{account_id}/match/{match._id}'
+
+        cache_get_time_temp = time.time()
         cached = cache.get(cache_key)
+        cache_get_time_temp = time.time() - cache_get_time_temp
+        cache_get_time += cache_get_time_temp
+
         if cached:
             matches.append(cached)
         else:
@@ -403,7 +411,14 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
             match_data['teams'] = teams
 
             matches.append(match_data)
+
+            cache_set_time_temp = time.time()
             cache.set(cache_key, match_data, None)
+            cache_set_time_temp = time.time() - cache_set_time_temp
+            cach_set_time += cache_set_time_temp
+
+    print(f'Cache GET time : {cache_get_time}')
+    print(f'Cache SET time : {cache_set_time}')
     return matches
 
 
@@ -563,9 +578,13 @@ def get_summoner_page(request, format=None):
 
             match_query_time = time.time()
             match_query = match_query[start: end]
-            matches = serialize_matches(match_query, summoner.account_id)
             match_query_time = time.time() - match_query_time
-            print(f'Match query and serialization time was {match_query_time}.')
+            print(f'Match query time : {match_query_time}.')
+
+            match_serialize_time = time.time()
+            matches = serialize_matches(match_query, summoner.account_id)
+            match_serialize_time = time.time() - match_serialize_time
+            print(f'Match serialize time : {match_serialize_time}')
 
             data = {
                 'matches': matches,
