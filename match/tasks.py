@@ -616,7 +616,10 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
             if end_index > end:
                 end_index = end
             kwargs['endIndex'] = end_index
+            riot_match_request_time = time.time()
             r = api.match.filter(account_id, region=region, **kwargs)
+            riot_match_request_time = time.time() - riot_match_request_time
+            print(f'Riot API match filter request time : {riot_match_request_time}')
             try:
                 if r.status_code == 404:
                     matches = []
@@ -630,8 +633,11 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
                 else:
                     matches = r.json()['matches']
             if len(matches) > 0:
-                new_matches = [x for x in matches if not Match.objects.filter(_id=x['gameId']).exists()]
-                vals = pool.map(lambda x: import_match(x['gameId'], region, close=True), new_matches)
+                game_ids = [x['gameId'] for x in matches]
+                existing_ids = [x._id for x in Match.objects.filter(_id__in=game_ids)]
+                # new_matches = [x for x in matches if not Match.objects.filter(_id=x['gameId']).exists()]
+                new_matches = list(set(game_ids) - set(existing_ids))
+                vals = pool.map(lambda x: import_match(x, region, close=True), new_matches)
                 # print(vals)
             else:
                 has_more = False

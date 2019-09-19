@@ -106,7 +106,10 @@ def match_filter(request, account_id=None):
             query = Summoner.objects.filter(simple_name=simplified, region=region)
         elif account_id:
             query = Summoner.objects.filter(account_id=account_id, region=region)
+        summoner_get_time = time.time()
         summoner = query.first()
+        summoner_get_time = time.time() - summoner_get_time
+        print(f'Summoner get time in match_filter() : {summoner_get_time}.')
         account_id = summoner.account_id
 
     matches = Match.objects.filter(participants__current_account_id=account_id)
