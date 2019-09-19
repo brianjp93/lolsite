@@ -30,6 +30,8 @@ from .models import Summoner
 from .serializers import SummonerSerializer
 from .serializers import RankPositionSerializer
 
+import time
+
 
 @api_view(['POST'])
 def get_summoner(request, format=None):
@@ -462,6 +464,7 @@ def get_summoner_page(request, format=None):
         elif _id:
             query = Summoner.objects.filter(id=_id, region=region)
 
+        summoner_time = time.time()
         if query.exists():
             summoner = query.first()
         else:
@@ -483,6 +486,8 @@ def get_summoner_page(request, format=None):
                     summoner = None
                     data = {'error': 'Could not find a summoner in this region with that name.'}
                     status_code = 404
+        summoner_time = time.time() - summoner_time
+        print(f'Took {summoner_time} to get summoner.')
 
         if update:
             # enable delay when celery is working
@@ -521,6 +526,7 @@ def get_summoner_page(request, format=None):
                 profile_icon_data = {}
 
             # check for new games
+            import_time = time.time()
             if trigger_import:
                 kwargs = {}
                 start_index = 0
@@ -539,6 +545,8 @@ def get_summoner_page(request, format=None):
                 if queue is None and after_index in [None, 0]:
                     summoner.last_summoner_page_import = timezone.now()
                     summoner.save()
+            import_time = time.time() - import_time
+            print(f'Match import time took {import_time}.')
 
             match_query = match_filter(
                 request,
@@ -549,8 +557,12 @@ def get_summoner_page(request, format=None):
             start = (page - 1) * count
             end = page * count
             match_query = match_query.order_by(order_by)
+
+            match_query_time = time.time()
             match_query = match_query[start: end]
             matches = serialize_matches(match_query, summoner.account_id)
+            match_query_time = time.time() - match_query_time
+            print(f'Match query and serialization time was {match_query_time}.')
 
             data = {
                 'matches': matches,
