@@ -143,7 +143,7 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
     """
     cache_get_time = 0
     cache_set_time = 0
-    
+
     perk_cache = {}
     perk_tree_cache = {}
     item_cache = {}

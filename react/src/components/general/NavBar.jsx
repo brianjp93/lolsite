@@ -54,7 +54,7 @@ class NavBar extends Component {
             let name = this.state.summoner_name
             name = name.split(' ').join('').toLowerCase()
             let data = {
-                simple_name__icontains: name,
+                simple_name: name,
                 region: region,
                 order_by: 'simple_name',
                 start: 0,
