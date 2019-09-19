@@ -45,8 +45,8 @@ class Summoner(models.Model):
     simple_name = models.CharField(max_length=32, default='', blank=True, db_index=True)
     profile_icon_id = models.IntegerField(default=0)
     puuid = models.CharField(max_length=256, default='', blank=True)
-    revision_date = models.BigIntegerField(default=0, db_index=True)
-    summoner_level = models.IntegerField(default=0, db_index=True)
+    revision_date = models.BigIntegerField(default=0)
+    summoner_level = models.IntegerField(default=0)
 
     # number of games imported when last match history import was run.
     full_import_count = models.IntegerField(default=0, blank=True)
