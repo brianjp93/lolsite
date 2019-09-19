@@ -89,7 +89,7 @@ def lp_sort(position):
 
 class Match(models.Model):
     _id = models.BigIntegerField(unique=True)
-    game_creation = models.BigIntegerField()
+    game_creation = models.BigIntegerField(db_index=True)
     game_duration = models.IntegerField()
     game_mode = models.CharField(max_length=32, default='', blank=True)
     game_type = models.CharField(max_length=32, default='', blank=True)
