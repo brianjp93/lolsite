@@ -619,7 +619,7 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
             riot_match_request_time = time.time()
             r = api.match.filter(account_id, region=region, **kwargs)
             riot_match_request_time = time.time() - riot_match_request_time
-            print(f'Riot API match filter request time : {riot_match_request_time}')
+            # print(f'Riot API match filter request time : {riot_match_request_time}')
             try:
                 if r.status_code == 404:
                     matches = []

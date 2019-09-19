@@ -109,7 +109,7 @@ def match_filter(request, account_id=None):
         summoner_get_time = time.time()
         summoner = query.first()
         summoner_get_time = time.time() - summoner_get_time
-        print(f'Summoner get time in match_filter() : {summoner_get_time}.')
+        # print(f'Summoner get time in match_filter() : {summoner_get_time}.')
         account_id = summoner.account_id
 
     matches = Match.objects.filter(participants__current_account_id=account_id)
@@ -415,10 +415,10 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
             cache_set_time_temp = time.time()
             cache.set(cache_key, match_data, None)
             cache_set_time_temp = time.time() - cache_set_time_temp
-            cach_set_time += cache_set_time_temp
+            cache_set_time += cache_set_time_temp
 
-    print(f'Cache GET time : {cache_get_time}')
-    print(f'Cache SET time : {cache_set_time}')
+    # print(f'Cache GET time : {cache_get_time}')
+    # print(f'Cache SET time : {cache_set_time}')
     return matches
 
 
@@ -505,7 +505,7 @@ def get_summoner_page(request, format=None):
                     data = {'error': 'Could not find a summoner in this region with that name.'}
                     status_code = 404
         summoner_time = time.time() - summoner_time
-        print(f'Took {summoner_time} to get summoner.')
+        # print(f'Took {summoner_time} to get summoner.')
 
         if update:
             # enable delay when celery is working
@@ -564,7 +564,7 @@ def get_summoner_page(request, format=None):
                     summoner.last_summoner_page_import = timezone.now()
                     summoner.save()
             import_time = time.time() - import_time
-            print(f'Match import time took {import_time}.')
+            # print(f'Match import time took {import_time}.')
 
             match_query = match_filter(
                 request,
@@ -579,12 +579,12 @@ def get_summoner_page(request, format=None):
             match_query_time = time.time()
             match_query = match_query[start: end]
             match_query_time = time.time() - match_query_time
-            print(f'Match query time : {match_query_time}.')
+            # print(f'Match query time : {match_query_time}.')
 
             match_serialize_time = time.time()
             matches = serialize_matches(match_query, summoner.account_id)
             match_serialize_time = time.time() - match_serialize_time
-            print(f'Match serialize time : {match_serialize_time}')
+            # print(f'Match serialize time : {match_serialize_time}')
 
             data = {
                 'matches': matches,
