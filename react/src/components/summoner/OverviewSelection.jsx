@@ -25,7 +25,8 @@ function OverviewSelection(props) {
                     <PlayerChampionSummary
                         store={props.store}
                         parent={props.parent}
-                        summoner={props.summoner} />
+                        summoner={props.summoner}
+                        theme={props.store.state.theme} />
                 }
                 {selection === 'rank-history' &&
                     <RankHistory

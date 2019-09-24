@@ -41,6 +41,7 @@ class PlayerChampionSummary extends Component {
             ],
 
             is_loading: false,
+            is_load_all: false,
         }
 
         this.getParams = this.getParams.bind(this)
@@ -96,6 +97,9 @@ class PlayerChampionSummary extends Component {
             end: this.state.end,
             order_by: '-count',
             fields: this.state.fields,
+        }
+        if (this.state.is_load_all) {
+            data.end = 500
         }
         if (this.state.time_division === 'days') {
             let now = moment()
@@ -430,33 +434,38 @@ class PlayerChampionSummary extends Component {
                 <div
                     style={{marginBottom:0}}
                     className="row">
-                    <div className="col s12">
+                    <div className="col s12 quiet-scroll" style={{maxHeight: 300, overflowY: 'scroll'}}>
                         {this.state.stats.map((data, key) => {
                             return (
-                                <div
-                                    style={{
-                                        display: 'inline-block',
-                                        width: 140,
-                                        borderStyle: 'solid',
-                                        borderWidth: 1,
-                                        borderColor: 'grey',
-                                        borderRadius: 4,
-                                        padding: 8,
-                                        margin: '0 2px'
-                                    }}
-                                    key={`${data.champion_id}-${key}`}>
-                                    {this.state.is_loading &&
-                                        <div style={{textAlign: 'center'}}>
-                                            <AtomSpinner
-                                                color='#ffffff'
-                                                size={80}
-                                                style={{margin: 'auto'}} />
-                                        </div>
+                                <x>
+                                    <div
+                                        style={{
+                                            display: 'inline-block',
+                                            width: 140,
+                                            borderStyle: 'solid',
+                                            borderWidth: 1,
+                                            borderColor: 'grey',
+                                            borderRadius: 4,
+                                            padding: 8,
+                                            margin: '0 2px'
+                                        }}
+                                        key={`${data.champion_id}-${key}`}>
+                                        {this.state.is_loading &&
+                                            <div style={{textAlign: 'center'}}>
+                                                <AtomSpinner
+                                                    color='#ffffff'
+                                                    size={80}
+                                                    style={{margin: 'auto'}} />
+                                            </div>
+                                        }
+                                        {!this.state.is_loading &&
+                                            this.renderChampionData(data)
+                                        }
+                                    </div>
+                                    {(key + 1) % 5 === 0 &&
+                                        <br/>
                                     }
-                                    {!this.state.is_loading &&
-                                        this.renderChampionData(data)
-                                    }
-                                </div>
+                                </x>
                             )
                         })}
                         {this.state.stats.length === 0 && !this.state.is_loading &&
@@ -474,6 +483,15 @@ class PlayerChampionSummary extends Component {
                                 <span>No Data</span>
                             </div>
                         }
+                        {!(this.state.stats.length === 0 && !this.state.is_loading) && !this.state.is_load_all &&
+                            <div style={{paddingTop: 8}}>
+                                <button
+                                    onClick={() => this.setState({is_load_all: true}, this.getChampionStats)}
+                                    className={`${this.props.theme} btn-small`} style={{width: '100%'}}>
+                                    Load All
+                                </button>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -484,6 +502,7 @@ PlayerChampionSummary.propTypes = {
     store: PropTypes.object.isRequired,
     parent: PropTypes.object.isRequired,
     summoner: PropTypes.object.isRequired,
+    theme: PropTypes.string,
 }
 
 
