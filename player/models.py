@@ -96,6 +96,22 @@ class Summoner(models.Model):
         return checkpoint
 
 
+class Following(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE)
+    sort_int = models.IntegerField(null=True, default=None)
+
+    def __str__(self):
+        return f'Following(user="{self.user.username}")'
+
+    def save(self, *args, **kwargs):
+        # set sort_int if it hasn't yet.
+        if self.sort_int is None:
+            count = Following.objects.filter(user=self.user).count()
+            self.sort_int = count
+        super(Following, self).save(*args, **kwargs)
+
+
 class NameChange(models.Model):
     summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE, related_name='namechanges')
     old_name = models.CharField(max_length=128, default='')
