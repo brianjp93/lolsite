@@ -6,6 +6,7 @@ import NavBar from '../general/NavBar'
 import MatchCard from './MatchCard'
 import Spectate from './Spectate'
 import SummonerNotFound from './SummonerNotFound'
+import ReactTooltip from 'react-tooltip'
 // import PlayerChampionSummary from './PlayerChampionSummary'
 import OverviewSelection from './OverviewSelection'
 import numeral from 'numeral'
@@ -477,6 +478,8 @@ class SummonerCard extends Component {
         this.soloPositions = this.soloPositions.bind(this)
         this.miniSeries = this.miniSeries.bind(this)
         this.setRefreshTime = this.setRefreshTime.bind(this)
+        this.toggleFavorite = this.toggleFavorite.bind(this)
+        this.isFavorite = this.isFavorite.bind(this)
     }
     componentDidMount() {
         this.setRefreshTime()
@@ -642,6 +645,31 @@ class SummonerCard extends Component {
         var rate = wins / (wins + losses)
         return rate * 100
     }
+    toggleFavorite() {
+        let data = {
+            summoner_id: this.props.summoner.id
+        }
+        if (this.isFavorite()) {
+            data.verb = 'remove'
+        }
+        else {
+            data.verb = 'set'
+        }
+        api.player.Favorite(data)
+            .then(response => {
+                // console.log(response)
+                this.props.store.setState({favorites: response.data.data})
+            })
+    }
+    isFavorite() {
+        let summoner_id = this.props.summoner.id
+        for (let favorite of this.props.store.state.favorites) {
+            if (favorite.summoner === summoner_id) {
+                return true
+            }
+        }
+        return false
+    }
     render() {
         var reload_attrs = {
             disabled: this.props.pageStore.state.is_reloading_matches ? true: false,
@@ -739,6 +767,28 @@ class SummonerCard extends Component {
                             <i className="material-icons">autorenew</i>
                         </button>
                     </span>
+
+                    
+                    {this.props.store.state.user.email !== undefined &&
+                        <x>
+                        <ReactTooltip
+                            effect='solid'
+                            id='favorite-button'>
+                            <span>
+                                {this.isFavorite() ? 'Remove favorite': 'Set favorite'}
+                            </span>
+                        </ReactTooltip>
+                        <span style={{position: 'absolute', right: 2, top: 38}}>
+                            <button
+                                data-tip
+                                data-for='favorite-button'
+                                className="dark btn-small"
+                                onClick={this.toggleFavorite} >
+                                <i className="material-icons">{this.isFavorite() ? 'favorite': 'favorite_border'}</i>
+                            </button>
+                        </span>
+                        </x>
+                    }
 
                     {this.soloPositions().length > 0 &&
                         <hr/>

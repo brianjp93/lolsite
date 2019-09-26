@@ -5,6 +5,7 @@ from rest_framework import serializers
 from data.serializers import DynamicSerializer
 from .models import Summoner
 from .models import RankPosition, Custom
+from .models import Favorite
 
 
 class SummonerSerializer(DynamicSerializer):
@@ -21,4 +22,13 @@ class RankPositionSerializer(DynamicSerializer):
 class CustomSerializer(DynamicSerializer):
     class Meta:
         model = Custom
+        fields = '__all__'
+
+
+class FavoriteSerializer(DynamicSerializer):
+    name = serializers.CharField()
+    region = serializers.CharField()
+
+    class Meta:
+        model = Favorite
         fields = '__all__'

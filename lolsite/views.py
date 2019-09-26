@@ -2,6 +2,8 @@
 """
 from django.template.response import TemplateResponse
 
+from player.serializers import FavoriteSerializer
+
 from data import constants
 import json
 
@@ -24,8 +26,16 @@ def get_base_react_context(request, user=None):
     except Exception as e:
         user_data = {}
 
+    try:
+        favorites = request.user.favorite_set.all().order_by('sort_int')
+        favorite_data = FavoriteSerializer(favorites, many=True).data
+    except Exception as e:
+        print(e)
+        favorite_data = []
+
     data = {
         'queues': json.dumps(constants.QUEUES),
         'user': json.dumps(user_data),
+        'favorites': json.dumps(favorite_data)
     }
     return data

@@ -96,20 +96,26 @@ class Summoner(models.Model):
         return checkpoint
 
 
-class Following(models.Model):
+class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE)
     sort_int = models.IntegerField(null=True, default=None)
 
     def __str__(self):
-        return f'Following(user="{self.user.username}")'
+        return f'Favorite(user="{self.user.username}")'
 
     def save(self, *args, **kwargs):
         # set sort_int if it hasn't yet.
         if self.sort_int is None:
-            count = Following.objects.filter(user=self.user).count()
+            count = Favorite.objects.filter(user=self.user).count()
             self.sort_int = count
-        super(Following, self).save(*args, **kwargs)
+        super(Favorite, self).save(*args, **kwargs)
+
+    def name(self):
+        return self.summoner.name if self.summoner else ''
+
+    def region(self):
+        return self.summoner.region if self.summoner else ''
 
 
 class NameChange(models.Model):

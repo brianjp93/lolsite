@@ -371,6 +371,34 @@ class NavBar extends Component {
                                                 margin: 0,
                                                 padding: '5px 10px',
                                             }}>
+
+                                            <div style={{height: 10}}></div>
+
+                                            {store.state.favorites.map(favorite => {
+                                                return (
+                                                    <div style={{margin: '0 0 10px 0', lineHeight: 1.5}} className='row'>
+                                                        <div className="col s12">
+                                                            <Link onClick={() => this.setState({is_show_user_dropdown: false})} to={`/${favorite.region}/${favorite.name}/`} style={{marginRight: 15}}>
+                                                                <span>
+                                                                    <div style={{
+                                                                            display: 'inline-block',
+                                                                            padding: 5,
+                                                                            borderRadius: 3,
+                                                                            color: 'grey',
+                                                                            borderColor: 'grey',
+                                                                            borderStyle: 'solid',
+                                                                            borderWidth: 1,
+                                                                            fontSize: 'small',
+                                                                        }}>
+                                                                        {favorite.region}
+                                                                    </div>
+                                                                    {' '}{favorite.name}
+                                                                </span>
+                                                            </Link>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
                                             
                                             <a style={{width: '100%'}} href='/logout'>Logout</a>
                                         </div>

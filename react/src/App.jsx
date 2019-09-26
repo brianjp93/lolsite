@@ -26,6 +26,7 @@ class App extends Component {
             summoners: {},
             items: {},
             runes: {},
+            favorites: [],
 
             queues: [],
             queue_convert: {},
@@ -73,6 +74,9 @@ class App extends Component {
 
         var user_elt = document.getElementById('user-data')
         this.setState({user: JSON.parse(user_elt.innerHTML)})
+
+        let favorite_elt = document.getElementById('favorite-data')
+        this.setState({favorites: JSON.parse(favorite_elt.innerHTML)})
     }
     componentWillUnmount() {
     }

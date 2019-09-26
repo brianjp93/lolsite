@@ -13,6 +13,7 @@ urlpatterns = [
     path('verify/', player_views.verify_email),
     path('is-logged-in/', player_views.is_logged_in),
     path('rank-history/', player_views.get_rank_history),
+    path('favorites/', player_views.favorites),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

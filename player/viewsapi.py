@@ -16,6 +16,7 @@ from django.db.models import Max, Min
 from player import tasks as pt
 from player import filters as player_filters
 from player.models import EmailVerification, RankPosition
+from player.models import Favorite
 from player.models import decode_int_to_rank
 
 from data.models import ProfileIcon, Champion
@@ -29,6 +30,7 @@ from match.models import sort_positions
 from .models import Summoner
 from .serializers import SummonerSerializer
 from .serializers import RankPositionSerializer
+from .serializers import FavoriteSerializer
 
 import time
 
@@ -937,5 +939,74 @@ def get_rank_history(request, format=None):
             data['data'] = query
         else:
             pass
+
+    return Response(data, status=status_code)
+
+
+@api_view(['GET', 'POST'])
+def favorites(request, format=None):
+    """
+
+    POST Parameters
+    ---------------
+    verb : enum('set', 'remove', 'order')
+    
+    set OR remove
+        summoner_id : ID
+            internal ID of the summoner that you want to follow
+
+    order
+        favorite_ids : [favorite_id, ...]
+            List of ordered ID's
+
+    Returns
+    -------
+    Favorites serialized
+
+    """
+    data = {}
+    status_code = 200
+    user = request.user
+    favorite = user.favorite_set.all()
+
+    if request.method == 'GET':
+        favorite = favorite.order_by('sort_int')
+        serialized = FavoriteSerializer(favorite, many=True).data
+        data['data'] = serialized
+    elif request.method == 'POST':
+        verb = request.data.get('verb')
+        if verb == 'set':
+            summoner_id = request.data.get('summoner_id')
+            summoner = Summoner.objects.get(id=summoner_id)
+            if favorite.filter(summoner=summoner).exists():
+                # already exists
+                data['message'] = 'The summoner selected is already being followed.  No changes made.'
+            else:
+                favorite_model = Favorite(user=user, summoner=summoner)
+                favorite_model.save()
+                data['message'] = 'Successfully saved favorite model.'
+        elif verb == 'remove':
+            summoner_id = request.data.get('summoner_id')
+            summoner = Summoner.objects.get(id=summoner_id)
+            if favorite.filter(summoner=summoner).exists():
+                favorite_model = favorite.get(summoner=summoner)
+                favorite_model.delete()
+                data['message'] = 'The summoner was removed from your follow list.'
+            else:
+                data['message'] = 'The summoner isn\'t being followed.  No action taken.'
+        elif verb == 'order':
+            id_list = request.data.get('favorite_ids')
+            for i, _id in enumerate(id_list):
+                if favorite.filter(id=_id).exists():
+                    favorite_model = favorite.get(id=_id)
+                    favorite_model.sort_int = i
+                    favorite_model.save()
+            data['message'] = 'Saved ordering.'
+
+        favorite = user.favorite_set.all()
+        favorite = favorite.order_by('sort_int')
+        serialized = FavoriteSerializer(favorite, many=True).data
+        data['data'] = serialized
+
 
     return Response(data, status=status_code)

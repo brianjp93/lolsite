@@ -56,6 +56,16 @@ function getRankHistory(data) {
     return axios.post(url, data)
 }
 
+function getFavorites() {
+    let url = `/api/${version}/player/favorites/`
+    return axios.get(url)
+}
+
+function Favorite(data) {
+    let url = `/api/${version}/player/favorites/`
+    return axios.post(url, data)
+}
+
 export default {
     getSummoner,
     getSummonerPage,
@@ -67,4 +77,6 @@ export default {
     summonerSearch,
     isLoggedIn,
     getRankHistory,
+    getFavorites,
+    Favorite,
 }
