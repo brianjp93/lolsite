@@ -362,7 +362,7 @@ class NavBar extends Component {
                                     </span>
 
                                     {this.state.is_show_user_dropdown &&
-                                        <div className={`${theme} card-panel`}
+                                        <div id='user-dropdown' className={`${theme} card-panel`}
                                             style={{
                                                 position: 'absolute',
                                                 top: 50,
@@ -377,9 +377,9 @@ class NavBar extends Component {
                                             {store.state.favorites.map(favorite => {
                                                 return (
                                                     <div style={{margin: '0 0 10px 0', lineHeight: 1.5}} className='row'>
-                                                        <div className="col s12">
+                                                        <div style={{height: 30}} className="col s12">
                                                             <Link onClick={() => this.setState({is_show_user_dropdown: false})} to={`/${favorite.region}/${favorite.name}/`} style={{marginRight: 15}}>
-                                                                <span>
+                                                                <div style={{width: '100%'}}>
                                                                     <div style={{
                                                                             display: 'inline-block',
                                                                             padding: 5,
@@ -393,7 +393,7 @@ class NavBar extends Component {
                                                                         {favorite.region}
                                                                     </div>
                                                                     {' '}{favorite.name}
-                                                                </span>
+                                                                </div>
                                                             </Link>
                                                         </div>
                                                     </div>
