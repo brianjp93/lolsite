@@ -147,7 +147,7 @@ class Participant(models.Model):
     summoner_name = models.CharField(max_length=256, default='', blank=True)
     summoner_name_simplified = models.CharField(max_length=128, default='', blank=True, db_index=True)
 
-    champion_id = models.IntegerField()
+    champion_id = models.IntegerField(db_index=True)
     highest_achieved_season_tier = models.CharField(max_length=64, default='', blank=True)
     spell_1_id = models.IntegerField()
     spell_2_id = models.IntegerField()
