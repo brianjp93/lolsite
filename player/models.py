@@ -41,7 +41,7 @@ class Summoner(models.Model):
     _id = models.CharField(max_length=128, default='', blank=True, unique=True, db_index=True)
     region = models.CharField(max_length=8, default='', blank=True, db_index=True)
     account_id = models.CharField(max_length=128, default='', blank=True, null=True, db_index=True)
-    name = models.CharField(max_length=32, default='', blank=True, db_index=True)
+    name = models.CharField(max_length=32, default='', blank=True)
     simple_name = models.CharField(max_length=32, default='', blank=True, db_index=True)
     profile_icon_id = models.IntegerField(default=0)
     puuid = models.CharField(max_length=256, default='', blank=True)
