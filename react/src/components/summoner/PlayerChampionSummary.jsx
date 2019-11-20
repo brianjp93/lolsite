@@ -149,6 +149,9 @@ class PlayerChampionSummary extends Component {
     }
     truncateName(name) {
         let out = name
+        if (name === null) {
+            return ''
+        }
         if (name.length > 8) {
             out = `${name.slice(0, 8)}...`
         }
@@ -437,7 +440,7 @@ class PlayerChampionSummary extends Component {
                     <div className="col s12 quiet-scroll" style={{maxHeight: 300, overflowY: 'scroll'}}>
                         {this.state.stats.map((data, key) => {
                             return (
-                                <x>
+                                <x key={`${data.champion_id}-${key}`}>
                                     <div
                                         style={{
                                             display: 'inline-block',

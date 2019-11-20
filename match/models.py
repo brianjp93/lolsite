@@ -94,9 +94,9 @@ class Match(models.Model):
     game_mode = models.CharField(max_length=32, default='', blank=True)
     game_type = models.CharField(max_length=32, default='', blank=True)
     map_id = models.IntegerField()
-    platform_id = models.CharField(max_length=16, default='', blank=True, db_index=True)
+    platform_id = models.CharField(max_length=16, default='', blank=True)
     queue_id = models.IntegerField(db_index=True)
-    season_id = models.IntegerField(db_index=True)
+    season_id = models.IntegerField()
 
     game_version = models.CharField(max_length=32, default='', blank=True)
     major = models.IntegerField(db_index=True)
@@ -143,7 +143,7 @@ class Participant(models.Model):
     current_platform_id = models.CharField(max_length=16, default='', blank=True)
     platform_id = models.CharField(max_length=16, default='', blank=True)
     match_history_uri = models.CharField(max_length=128, default='', blank=True)
-    summoner_id = models.CharField(max_length=128, default='', blank=True, db_index=True, null=True)
+    summoner_id = models.CharField(max_length=128, default='', blank=True, null=True)
     summoner_name = models.CharField(max_length=256, default='', blank=True)
     summoner_name_simplified = models.CharField(max_length=128, default='', blank=True, db_index=True)
 
@@ -435,7 +435,7 @@ class Team(models.Model):
     vilemaw_kills = models.IntegerField(default=0, blank=True)
     # this is a string field in the api but it should be a boolean?
     win = models.BooleanField(default=False, blank=True)
-    win_str = models.CharField(default='', blank=True, db_index=True, max_length=128)
+    win_str = models.CharField(default='', blank=True, max_length=128)
 
 
     def __str__(self):

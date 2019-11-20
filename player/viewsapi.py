@@ -19,6 +19,7 @@ from player.models import EmailVerification, RankPosition
 from player.models import Favorite
 from player.models import decode_int_to_rank
 
+from data.constants import IS_PRINT_TIMERS
 from data.models import ProfileIcon, Champion
 from data.serializers import ProfileIconSerializer
 
@@ -143,6 +144,8 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
     Serialized Match List
 
     """
+    timer_start = time.time()
+
     cache_get_time = 0
     cache_set_time = 0
 
@@ -421,6 +424,9 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
 
     # print(f'Cache GET time : {cache_get_time}')
     # print(f'Cache SET time : {cache_set_time}')
+    timer_end = time.time()
+    if IS_PRINT_TIMERS:
+        print(f'Match serialize_matches() took {timer_end - timer_start}.')
     return matches
 
 
@@ -456,6 +462,7 @@ def get_summoner_page(request, format=None):
     JSON Summoner Page Data
 
     """
+    timer_start = time.time()
     data = {}
     status_code = 200
 
@@ -557,11 +564,16 @@ def get_summoner_page(request, format=None):
                 if after_index is not None:
                     start_index = after_index
                 end_index = start_index + count
+
+                timer_matches_import = time.time()
                 mt.import_recent_matches(
                     start_index, end_index,
                     summoner.account_id, region,
                     **kwargs
                 )
+                if IS_PRINT_TIMERS:
+                    print(f'mt.import_recent_matches() took {time.time() - timer_matches_import}.')
+
                 if queue is None and after_index in [None, 0]:
                     summoner.last_summoner_page_import = timezone.now()
                     summoner.save()
@@ -596,6 +608,9 @@ def get_summoner_page(request, format=None):
                 'positions': rank_positions,
             }
 
+    timer_end = time.time()
+    if IS_PRINT_TIMERS:
+        print(f'get_summoner_page() took {timer_end - timer_start}.')
     return Response(data, status=status_code)
 
 def participant_sort(part):

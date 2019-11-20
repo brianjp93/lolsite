@@ -374,6 +374,14 @@ class NavBar extends Component {
 
                                             <div style={{height: 10}}></div>
 
+                                            <div>
+                                                <Link to='/account'>
+                                                    <div style={{width: '100%'}}>
+                                                        My Account
+                                                    </div>
+                                                </Link>
+                                            </div>
+
                                             {store.state.favorites.map(favorite => {
                                                 return (
                                                     <div style={{margin: '0 0 10px 0', lineHeight: 1.5}} className='row'>
