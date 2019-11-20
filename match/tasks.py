@@ -616,7 +616,7 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
     is_finished = False
     has_more = True
     api = get_riot_api()
-    pool = ThreadPool(20)
+    pool = ThreadPool(10)
     if api:
         index = start
         size = 100
