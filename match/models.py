@@ -143,7 +143,7 @@ class Participant(models.Model):
     current_platform_id = models.CharField(max_length=16, default='', blank=True)
     platform_id = models.CharField(max_length=16, default='', blank=True)
     match_history_uri = models.CharField(max_length=128, default='', blank=True)
-    summoner_id = models.CharField(max_length=128, default='', blank=True, null=True)
+    summoner_id = models.CharField(max_length=128, default='', blank=True, null=True, db_index=True)
     summoner_name = models.CharField(max_length=256, default='', blank=True)
     summoner_name_simplified = models.CharField(max_length=128, default='', blank=True, db_index=True)
 
