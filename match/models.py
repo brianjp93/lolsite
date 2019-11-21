@@ -139,8 +139,8 @@ class Participant(models.Model):
     _id = models.IntegerField() # participantID
 
     account_id = models.CharField(max_length=128, default='', blank=True, db_index=True)
-    current_account_id = models.CharField(max_length=128, default='', blank=True)
-    current_platform_id = models.CharField(max_length=16, default='', blank=True)
+    current_account_id = models.CharField(max_length=128, default='', blank=True, db_index=True)
+    current_platform_id = models.CharField(max_length=16, default='', blank=True, db_index=True)
     platform_id = models.CharField(max_length=16, default='', blank=True)
     match_history_uri = models.CharField(max_length=128, default='', blank=True)
     summoner_id = models.CharField(max_length=128, default='', blank=True, null=True, db_index=True)
