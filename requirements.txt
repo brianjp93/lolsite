@@ -33,7 +33,7 @@ idna==2.7
 jmespath==0.9.4
 jsonschema==2.6.0
 kombu==4.3.0
-lolwrapper==1.2
+lolwrapper==1.3
 Markdown==3.1.1
 model-mommy==1.6.0
 pathspec==0.5.9
