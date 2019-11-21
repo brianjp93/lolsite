@@ -10,7 +10,7 @@ from .models import Event, AssistingParticipants
 class MatchAdmin(admin.ModelAdmin):
     list_display = ('_id', 'get_creation', 'queue_id', 'game_version')
     list_filter = ('platform_id', 'major')
-    search_fields = ('participants__summoner_name_simplified', 'participants__summoner_id', 'participants__account_id', '_id')
+    search_fields = ('participants__summoner_name_simplified', 'participants__summoner_id', '_id')
 
 
 class ParticipantAdmin(admin.ModelAdmin):

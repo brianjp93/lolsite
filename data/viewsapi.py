@@ -254,7 +254,7 @@ def get_current_season(request, format=None):
     status_code = 200
 
     if request.method == 'POST':
-        match = Match.objects.all().order_by('-game_version').first()
+        match = Match.objects.all().order_by('-major', '-minor').first()
         version_data = {
             'game_version': match.game_version,
             'major': match.major,
