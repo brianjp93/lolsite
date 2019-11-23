@@ -32,11 +32,9 @@ var RUNEDATA = {
     "8010": {
       "id": 8010,
       "name": "Conqueror",
-      "perkVars": 3,
+      "perkVars": 1,
       "perkDesc": [
-        "True Damage Dealt",
-        "Otherwise Mitigated",
-        "Healed"
+        "Healed",
       ],
       "perkFormat": ["{0}", "{0}", "{0}"]
     },
