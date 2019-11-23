@@ -36,7 +36,7 @@ var RUNEDATA = {
       "perkDesc": [
         "Healed",
       ],
-      "perkFormat": ["{0}", "{0}", "{0}"]
+      "perkFormat": ["{0}"]
     },
     "8014": {
       "id": 8014,
