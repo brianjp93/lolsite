@@ -66,6 +66,21 @@ function Favorite(data) {
     return axios.post(url, data)
 }
 
+function generateCode(data) {
+    let url = `/api/${version}/player/generate-code/`
+    return axios.post(url, data)
+}
+
+function connectAccount(data) {
+    let url = `/api/${version}/player/connect-account/`
+    return axios.post(url, data)
+}
+
+function getConnectedAccounts() {
+    let url = `/api/${version}/player/get-connected-accounts/`
+    return axios.post(url)
+}
+
 export default {
     getSummoner,
     getSummonerPage,
@@ -79,4 +94,7 @@ export default {
     getRankHistory,
     getFavorites,
     Favorite,
+    generateCode,
+    connectAccount,
+    getConnectedAccounts,
 }

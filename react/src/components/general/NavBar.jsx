@@ -370,6 +370,7 @@ class NavBar extends Component {
                                                 width: 300,
                                                 margin: 0,
                                                 padding: '5px 10px',
+                                                zIndex: 10,
                                             }}>
 
                                             <div style={{height: 10}}></div>

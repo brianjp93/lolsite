@@ -13,10 +13,12 @@ from django.contrib.auth.models import User
 from django.db.models.functions import Extract
 from django.db.models import Max, Min
 
+from lolsite.tasks import get_riot_api
+
 from player import tasks as pt
 from player import filters as player_filters
 from player.models import EmailVerification, RankPosition
-from player.models import Favorite
+from player.models import Favorite, SummonerLink
 from player.models import decode_int_to_rank
 
 from data.constants import IS_PRINT_TIMERS
@@ -1024,4 +1026,150 @@ def favorites(request, format=None):
         data['data'] = serialized
 
 
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def generate_code(request, format=None):
+    """Generate code for connecting summoner account.
+
+    POST Parameters
+    ---------------
+    action: str
+        enum(create, get)
+
+    Returns
+    -------
+    UUID - Truncated
+
+    """
+    status_code = 200
+    data = {}
+
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            action = request.data.get('action', 'get')
+            if action == 'get':
+                query = SummonerLink.objects.filter(user=request.user, verified=False)
+                if query.exists():
+                    link = query.first()
+                    now = timezone.now()
+                    if now > (link.created_date + timezone.timedelta(hours=2)):
+                        link.delete()
+                        data = {'message': 'Old link.  Please create a new link.'}
+                        status_code = 400
+                    else:
+                        data = {'uuid': link.uuid}
+                else:
+                    data = {'message': 'No SummonerLink found for this user.'}
+                    status_code = 404
+            elif action == 'create':
+                user = request.user
+
+                query = SummonerLink.objects.filter(user=user, verified=False)
+                if query.exists():
+                    link = query.first()
+                    link.delete()
+                link = SummonerLink(user=user)
+                link.save()
+                link.refresh_from_db()
+                data = {'uuid': link.uuid}
+            else:
+                data = {'message': 'action must be "create" or "get".'}
+                status_code = 400
+        else:
+            data = {'message': 'User must be logged in.'}
+            status_code = 403
+    else:
+        data = {'message': 'This endpoint only allows POSTs.'}
+        status_code = 400
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def connect_account(request, format=None):
+    """Attempt to connect a User to a LoL Summoner
+
+    POST Parameters
+    ---------------
+    summoner_name : str
+    region : str
+
+    Returns
+    -------
+    success or fail message
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        name = request.data['summoner_name']
+        region = request.data['region']
+        api = get_riot_api()
+
+        try:
+            _id = pt.import_summoner(region, name=name)
+        except:
+            # COULDN'T IMPORT SUMMONER
+            data = {'success': False, 'message': 'Could not find a summoner with the name given.'}
+        else:
+            # SUMMONER FOUND AND IMPORTED
+            query = Summoner.objects.filter(id=_id)
+            if query.exists():
+                summoner = query.first()
+
+                r = api.thirdpartycode.get(summoner._id, region=summoner.region)
+
+                client_code = r.text.strip('"')
+
+                query = SummonerLink.objects.filter(user=request.user, summoner=summoner, verified=True)
+                if query.exists():
+                    # ALREADY CONNECTED
+                    data = {'success': False, 'message': 'This summoner is already linked to this user.'}
+                else:
+                    # NOT YET CONNECTED
+                    query = SummonerLink.objects.filter(user=request.user, verified=False)
+                    if query.exists():
+                        summonerlink = query.first()
+                        if client_code == summonerlink.uuid:
+                            summonerlink.verified = True
+                            summonerlink.summoner = summoner
+                            summonerlink.save()
+                            data = {'success': True, 'message': 'Successfully connected summoner account.'}
+                        else:
+                            data = {'success': False, 'message': 'Codes did not match.  Make sure you pasted the code into the client correctly.'}
+                    else:
+                        # no summonerlink exists
+                        data = {'success': False, 'message': 'Could not find SummonerLink for this user.'}
+            else:
+                data = {'success': False, 'message': 'Could not find a Summoner with the given name.'}
+    else:
+        data = {'message': 'Only POST requests allowed.'}
+        status_code = 400
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_connected_accounts(request, format=None):
+    """Get a list of connected Summoner Accounts.
+
+    Post Parameters
+    ---------------
+    None
+
+    Returns
+    -------
+    Summoners
+
+    """
+    data = {}
+    status_code = 200
+    if request.method == 'POST':
+        id_list = [x.summoner.id for x in SummonerLink.objects.filter(user=request.user, verified=True)]
+        query = Summoner.objects.filter(id__in=id_list)
+        serialized = SummonerSerializer(query, many=True).data
+        data = {'data': serialized}
+    else:
+        pass
     return Response(data, status=status_code)

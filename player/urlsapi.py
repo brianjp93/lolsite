@@ -14,6 +14,9 @@ urlpatterns = [
     path('is-logged-in/', player_views.is_logged_in),
     path('rank-history/', player_views.get_rank_history),
     path('favorites/', player_views.favorites),
+    path('generate-code/', player_views.generate_code),
+    path('connect-account/', player_views.connect_account),
+    path('get-connected-accounts/', player_views.get_connected_accounts),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -423,6 +423,15 @@ var RUNEDATA = {
       ],
       "perkFormat": ["{0}", "{0}", "{0}"]
     },
+    "8358": {
+      "id": 8358,
+      "name": "Omnistone",
+      "perkVars": 1,
+      "perkDesc": [
+        "Keystones Used"
+      ],
+      "perkFormat": ["{0}"]
+    },
     "8359": {
       "id": 8359,
       "name": "Kleptomancy",

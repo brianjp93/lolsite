@@ -258,14 +258,18 @@ class EmailVerification(models.Model):
 
 
 class SummonerLink(models.Model):
-    uuid = models.CharField(max_length=128, default=uuid.uuid4, db_index=True)
+    uuid = models.CharField(max_length=128, default='', db_index=True)
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     summoner = models.ForeignKey('Summoner', null=True, on_delete=models.CASCADE)
+    verified = models.BooleanField(default=False, db_index=True)
 
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
     modified_date = models.DateTimeField(default=timezone.now, blank=True)
 
     def save(self, *args, **kwargs):
+        # Set new uuid if one isn't set.
+        if self.uuid == '':
+            self.uuid = uuid.uuid4().hex[-6:]
         # Always set modified_date on save().
         self.modified_date = timezone.now()
         super(SummonerLink, self).save(*args, **kwargs)
