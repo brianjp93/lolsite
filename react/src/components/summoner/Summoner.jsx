@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import ReactGA from 'react-ga'
 import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
 import PropTypes from 'prop-types'
 import NavBar from '../general/NavBar'
@@ -88,6 +89,11 @@ class Summoner extends Component {
         this.isTriggerImport = this.isTriggerImport.bind(this)
     }
     componentDidMount() {
+        ReactGA.event({
+          category: "Summoner Page",
+          action: "Summoner.jsx was mounted.",
+        });
+
         this.getSummonerPage(() => {
             this.getPositions()
             this.checkForLiveGame()

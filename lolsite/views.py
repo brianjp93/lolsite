@@ -22,6 +22,7 @@ def get_base_react_context(request, user=None):
         user_data = {
             'email': request.user.email,
             'is_email_verified': user.custom.is_email_verified,
+            'id': user.id,
         }
     except Exception as e:
         user_data = {}

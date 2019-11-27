@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
-import {Switch, Route} from 'react-router-dom'
+import {Switch, Route, withRouter} from 'react-router-dom'
+
+import ReactGA from 'react-ga'
 import Themes from './components/test/Themes'
 import Home from './components/general/Home'
 import Summoner from './components/summoner/Summoner'
@@ -10,6 +12,18 @@ import VerifyEmail from './components/account/VerifyEmail'
 import Account from './components/account/Account'
 
 import api from './api/api'
+
+const trackingId = "UA-153444087-1"
+ReactGA.initialize(trackingId)
+
+window.$(document).ready(function() {
+    const user_data = JSON.parse(document.getElementById('user-data').innerHTML)
+    ReactGA.set({
+      user_id: user_data.id,
+      user_email: user_data.email,
+    })
+})
+
 
 // import { Cookies } from 'react-cookie';
 
@@ -63,6 +77,12 @@ class App extends Component {
             this.removeTheme(prevState.theme)
             this.setTheme(this.state.theme)
         }
+
+        // update location info for GA
+        if (prevProps.location.pathname !== this.props.location.pathname) {
+            ReactGA.set({ page: this.props.location.pathname }); // Update the user's current page
+            ReactGA.pageview(this.props.location.pathname); // Record a pageview for the given page
+        }
     }
     componentDidMount() {
         this.setTheme(this.state.theme)
@@ -78,8 +98,6 @@ class App extends Component {
 
         let favorite_elt = document.getElementById('favorite-data')
         this.setState({favorites: JSON.parse(favorite_elt.innerHTML)})
-    }
-    componentWillUnmount() {
     }
     setQueueDict() {
         var queues = this.state.queues
@@ -181,4 +199,4 @@ function Routes(props) {
     }
 }
 
-export default App
+export default withRouter(App)

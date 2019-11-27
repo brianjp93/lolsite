@@ -16,6 +16,10 @@
 <script id='static-base' type='text'>
     {% static "" %}
 </script>
+
+<script id='user-id' type='text'>
+    {{ request.user.id }}
+</script>
 {% endblock header %}
 
 {% block body %}

@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Link, Redirect } from 'react-router-dom'
+import ReactGA from 'react-ga'
 import PropTypes from 'prop-types'
 import ReactTooltip from 'react-tooltip'
 import queryString from 'query-string'
@@ -36,6 +37,11 @@ class LogIn extends Component {
         this.verifyLoggedIn = this.verifyLoggedIn.bind(this)
     }
     componentDidMount() {
+        ReactGA.event({
+            category: "Log In",
+            action: "LogIn page was mounted.",
+        });
+
         var query_string = this.props.route.location.search
         const values = queryString.parse(query_string)
         if (values.error === 'true') {

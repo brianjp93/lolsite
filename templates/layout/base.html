@@ -21,16 +21,6 @@
         {# <link rel='stylesheet' href='{{ react_dev.css }}' > #}
     {% else %}
 
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-153444087-1"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          gtag('config', 'UA-153444087-1');
-        </script>
-
         <script src="{% static react_data.js %}"></script>
         <script src="{% static react_data.chunk %}"></script>
         <script src="{% static react_data.runtime %}"></script>
