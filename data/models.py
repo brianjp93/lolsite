@@ -65,7 +65,7 @@ class Map(models.Model):
                 version = query.first().version
             else:
                 version = '9.5.1'
-        return f'http://ddragon.leagueoflegends.com/cdn/{version}/img/map/map{self._id}.png'
+        return f'https://ddragon.leagueoflegends.com/cdn/{version}/img/map/map{self._id}.png'
 
 
 class GameMode(models.Model):
@@ -101,7 +101,7 @@ class ReforgedTree(models.Model):
     def image_url(self):
         """Return image url.
         """
-        return f'http://ddragon.leagueoflegends.com/cdn/img/{self.icon}'
+        return f'https://ddragon.leagueoflegends.com/cdn/img/{self.icon}'
 
 
 class ReforgedRune(models.Model):
@@ -121,7 +121,7 @@ class ReforgedRune(models.Model):
     def image_url(self):
         """Return image url.
         """
-        return f'http://ddragon.leagueoflegends.com/cdn/img/{self.icon}'
+        return f'https://ddragon.leagueoflegends.com/cdn/img/{self.icon}'
 
 
 class Item(models.Model):
@@ -211,7 +211,7 @@ class ItemImage(models.Model):
     def image_url(self):
         """Get item image url.
         """
-        return f'http://ddragon.leagueoflegends.com/cdn/{self.item.version}/img/item/{self.full}'
+        return f'https://ddragon.leagueoflegends.com/cdn/{self.item.version}/img/item/{self.full}'
 
 
 class ItemMap(models.Model):
@@ -263,7 +263,7 @@ class ProfileIcon(models.Model):
         return f'ProfileIcon(_id={self._id}, version="{self.version}", language="{self.language}")'
 
     def image_url(self):
-        return f'http://ddragon.leagueoflegends.com/cdn/{self.version}/img/profileicon/{self.full}'
+        return f'https://ddragon.leagueoflegends.com/cdn/{self.version}/img/profileicon/{self.full}'
 
 
 class Champion(models.Model):
@@ -319,13 +319,13 @@ class ChampionImage(models.Model):
         return f'ChampionImage(champion="{self.champion._id}")'
 
     def image_url(self):
-        return f'http://ddragon.leagueoflegends.com/cdn/{self.champion.version}/img/champion/{self.full}'
+        return f'https://ddragon.leagueoflegends.com/cdn/{self.champion.version}/img/champion/{self.full}'
 
     def splash_url(self, skin=0):
-        return f'http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{self.champion._id}_{skin}.jpg'
+        return f'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{self.champion._id}_{skin}.jpg'
 
     def loading_art_url(self, skin=0):
-        return f'http://ddragon.leagueoflegends.com/cdn/img/champion/loading/{self.champion._id}_{skin}.jpg'
+        return f'https://ddragon.leagueoflegends.com/cdn/img/champion/loading/{self.champion._id}_{skin}.jpg'
 
 
 class ChampionInfo(models.Model):
@@ -405,7 +405,7 @@ class ChampionPassiveImage(models.Model):
         return f'ChampionPassiveImage(passive="{self.passive.name}", version="{self.passive.champion.version}", language="{self.passive.champion.language}")'
 
     def image_url(self):
-        return f'http://ddragon.leagueoflegends.com/cdn/{self.passive.champion.version}/img/passive/{self.full}'
+        return f'https://ddragon.leagueoflegends.com/cdn/{self.passive.champion.version}/img/passive/{self.full}'
 
 
 class ChampionSkin(models.Model):
@@ -486,7 +486,7 @@ class ChampionSpellImage(models.Model):
         return f'ChampionSpellImage(champion="{self.spell.champion._id}", spell="{self.spell._id}")'
 
     def image_url(self):
-        return f'http://ddragon.leagueoflegends.com/cdn/{self.spell.champion.version}/img/spell/{self.full}'
+        return f'https://ddragon.leagueoflegends.com/cdn/{self.spell.champion.version}/img/spell/{self.full}'
 
 
 class ChampionEffectBurn(models.Model):
@@ -573,7 +573,7 @@ class SummonerSpellImage(models.Model):
         return f'SummonerSpellImage(spell="{self.spell._id}")'
 
     def image_url(self):
-        return f'http://ddragon.leagueoflegends.com/cdn/{self.spell.version}/img/spell/{self.full}'
+        return f'https://ddragon.leagueoflegends.com/cdn/{self.spell.version}/img/spell/{self.full}'
 
 
 class SummonerSpellMode(models.Model):
