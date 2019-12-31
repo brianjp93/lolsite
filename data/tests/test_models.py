@@ -64,16 +64,16 @@ class MapTest(TestCase):
         map_model = mommy.make('data.Map', _id=10)
         self.assertEqual(
             map_model.minimap_url(),
-            'http://ddragon.leagueoflegends.com/cdn/9.5.1/img/map/map10.png'
+            'https://ddragon.leagueoflegends.com/cdn/9.5.1/img/map/map10.png'
         )
 
         item = mommy.make('data.Item', version='9.6.1')
         item_old = mommy.make('data.Item', version='9.3.1')
         self.assertEqual(
             map_model.minimap_url(),
-            'http://ddragon.leagueoflegends.com/cdn/9.6.1/img/map/map10.png'
+            'https://ddragon.leagueoflegends.com/cdn/9.6.1/img/map/map10.png'
         )
         self.assertEqual(
             map_model.minimap_url(version='9.7.1'),
-            'http://ddragon.leagueoflegends.com/cdn/9.7.1/img/map/map10.png'
+            'https://ddragon.leagueoflegends.com/cdn/9.7.1/img/map/map10.png'
         )
