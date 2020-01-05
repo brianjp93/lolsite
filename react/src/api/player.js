@@ -81,6 +81,11 @@ function getConnectedAccounts() {
     return axios.post(url)
 }
 
+function changePassword(data) {
+    let url = `/api/${version}/player/change-password/`
+    return axios.post(url, data)
+}
+
 export default {
     getSummoner,
     getSummonerPage,
@@ -97,4 +102,5 @@ export default {
     generateCode,
     connectAccount,
     getConnectedAccounts,
+    changePassword,
 }

@@ -19,7 +19,7 @@ from player import tasks as pt
 from player import filters as player_filters
 from player.models import EmailVerification, RankPosition
 from player.models import Favorite, SummonerLink
-from player.models import decode_int_to_rank
+from player.models import decode_int_to_rank, validate_password
 
 from data.constants import IS_PRINT_TIMERS
 from data.models import ProfileIcon, Champion
@@ -1172,4 +1172,46 @@ def get_connected_accounts(request, format=None):
         data = {'data': serialized}
     else:
         pass
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def change_password(request, format=None):
+    """Request a password change
+
+    POST Parameters
+    ---------------
+    current_password
+    new_password
+
+    Returns
+    -------
+    bool
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        password = request.data.get('current_password', '')
+        new_password = request.data.get('new_password', '')
+        new_password, is_valid, validators = validate_password(new_password)
+
+        if request.user.is_authenticated:
+            is_pass_correct = request.user.check_password(password)
+            if is_pass_correct:
+                # good
+                if is_valid:
+                    request.user.set_password(new_password)
+                    request.user.save()
+                    data = {'data': True, 'message': 'Successfully set new password.'}
+                else:
+                    data = {'data': False, 'message': 'The new password was invalid.'}
+                    status_code = 400
+            else:
+                data = {'data': False, 'message': 'The current password was incorrect.'}
+                status_code = 400
+        else:
+            data = {'data': False, 'message': 'Must be logged in to use this function.'}
+            status_code = 400
     return Response(data, status=status_code)

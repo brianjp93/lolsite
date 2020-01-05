@@ -29,6 +29,32 @@ def simplify(name):
     return ''.join(name.split()).lower()
 
 
+def validate_password(password):
+    """Validate a password.
+
+    Parameters
+    ----------
+    password: str
+
+    Returns
+    -------
+    tuple(password[str], is_valid[bool], validation[dict])
+
+    """
+    MIN_LEN = dc.MIN_PASSWORD_LENGTH
+    validation = {}
+    password = password.strip()
+    if len(password) < MIN_LEN:
+        validation['length'] = f'Your password must be at least {MIN_LEN} characters.'
+
+    if len(list(validation.keys())) == 0:
+        is_valid = True
+    else:
+        is_valid = False
+
+    return (password, is_valid, validation)
+
+
 class Summoner(models.Model):
     user = models.ForeignKey(
         User,

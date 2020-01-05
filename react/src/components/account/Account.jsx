@@ -97,7 +97,7 @@ function Account(props) {
                             })}
                         </div>
 
-                        <div className="col l4">
+                        <div className="col l4 m12">
                             <div className={`card-panel ${theme}`}>
                                 <div>
                                     Connect a LoL Account
@@ -171,6 +171,20 @@ function Account(props) {
                                 }
                             </div>
                         </div>
+
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col s10 offset-s1">
+                        <h4>Change Password</h4>
+                        <div className="row">
+                            <div className="col s12 m12 l4">
+                                <div className={`card-panel ${theme}`}>
+                                    <ChangePassword store={props.store} />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -181,6 +195,132 @@ function Account(props) {
 }
 Account.propTypes = {
     store: PropTypes.object,
+}
+
+
+function ChangePassword(props) {
+    let theme = props.store.state.theme
+
+    let [error, setError] = useState('')
+    let [old_password, setOldPassword] = useState('')
+    let [new_password, setNewPassword] = useState('')
+    let [new_password_verify, setNewPasswordVerify] = useState('')
+
+    let sendChange = () => {
+        let data = {
+            current_password: old_password,
+            new_password: new_password,
+        }
+        api.player.changePassword(data)
+            .then(response => {
+                if (response.data.data === true) {
+                    // console.log('SUCCESS')
+                    window.location.href = '/login'
+                }
+            })
+            .catch(error => {
+                setError('There was a problem setting your password.  Make sure you typed in your current password correctly.')
+            })
+    }
+
+    let is_passwords_match = (new_password === new_password_verify && new_password.length > 0)
+    let is_password_min_length = new_password.length >= 7
+
+    let change_pass_attr = {}
+    if (!is_passwords_match || old_password.length === 0 || !is_password_min_length) {
+        change_pass_attr.disabled = true
+    }
+    return(
+        <div>
+            <div className="row">
+                {error &&
+                    <div style={{color: 'orange'}}>
+                        {error}    
+                    </div>
+                }
+                <div className="col s12">
+                    <div className='input-field'>
+                        <input
+                            id='old-password-input'
+                            className={theme}
+                            type="password"
+                            value={old_password}
+                            onChange={(event) => setOldPassword(event.target.value)}
+                        />
+                        <label
+                            htmlFor="old-password-input">
+                            <span>
+                                Current Password
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div className="row" style={{marginBottom: 0}}>
+                <div className="col s12">
+                    Type in your new password.  Must be at least 7 characters.
+                </div>
+            </div>
+
+            <div className="row">
+                <div className="col s12">
+                    <div className='input-field'>
+                        <input
+                            id='new-password-input'
+                            className={theme}
+                            type="password"
+                            value={new_password}
+                            onChange={(event) => setNewPassword(event.target.value)}
+                        />
+                        <label
+                            htmlFor="new-password-input">
+                            <span>
+                                New Password
+                            </span>
+                        </label>
+                    </div>
+
+                    <div className='input-field'>
+                        <input
+                            id='retype-new-password-input'
+                            className={theme}
+                            type="password"
+                            value={new_password_verify}
+                            onChange={(event) => setNewPasswordVerify(event.target.value)}
+                        />
+                        <label
+                            htmlFor="retype-new-password-input">
+                            <span>
+                                Retype New Password
+                            </span>
+                        </label>
+                    </div>
+                    {!is_passwords_match && new_password_verify.length > 0 &&
+                        <div style={{marginTop: -20, fontSize: 13, color: 'orange'}}>
+                            Passwords don't match
+                        </div>
+                    }
+                    {new_password_verify.length > 0 && !is_password_min_length &&
+                        <div style={{fontSize: 13, color: 'orange'}}>
+                            Password must be at least 7 characters.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div className="row" style={{marginBottom: 0}}>
+                <div className="col s12">
+                    <button
+                        onClick={sendChange}
+                        {...change_pass_attr}
+                        className={`${theme} btn-small`}>
+                        Change Password
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
 }
 
 export default Account

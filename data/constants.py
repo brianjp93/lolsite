@@ -1,6 +1,7 @@
 # data constants to add to DB
 
 IS_PRINT_TIMERS = True
+MIN_PASSWORD_LENGTH = 7
 
 TRUTHY = ['true', 'True', 'TRUE', True]
 FALSEY = ['false', 'False', 'FALSE', False]

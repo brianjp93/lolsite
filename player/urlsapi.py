@@ -17,6 +17,7 @@ urlpatterns = [
     path('generate-code/', player_views.generate_code),
     path('connect-account/', player_views.connect_account),
     path('get-connected-accounts/', player_views.get_connected_accounts),
+    path('change-password/', player_views.change_password),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
