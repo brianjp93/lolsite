@@ -63,6 +63,14 @@ SEASONS = [
         '_id': 13,
         'name': 'SEASON 2019',
     },
+    {
+        '_id': 14,
+        'name': 'PRESEASON 2020',
+    },
+    {
+        '_id': 15,
+        'name': 'SEASON 2020',
+    }
 ]
 
 QUEUES = [
@@ -512,6 +520,16 @@ RANKS = {
 # SEASON TIMINGS
 # https://leagueoflegends.fandom.com/wiki/Patch#Pre-Season%20Six
 SEASON_PATCHES = {
+    10: {
+        'preseason': {
+            'start': (9, 23),
+            'end': (9, 24),
+        },
+        'season': {
+            'start': (10, 1),
+            'end': (10, 100),
+        }
+    },
     9: {
         'preseason': {
             'start': (8, 23),
@@ -519,7 +537,7 @@ SEASON_PATCHES = {
         },
         'season': {
             'start': (9, 2),
-            'end': (9, 100),
+            'end': (9, 22),
         }
     },
     8: {
@@ -583,3 +601,4 @@ SEASON_PATCHES = {
         }
     },
 }
+

@@ -214,7 +214,6 @@ function ChangePassword(props) {
         api.player.changePassword(data)
             .then(response => {
                 if (response.data.data === true) {
-                    // console.log('SUCCESS')
                     window.location.href = '/login'
                 }
             })
