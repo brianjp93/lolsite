@@ -63,7 +63,7 @@ def import_match(match_id, region, refresh=False, close=False):
         import_match_from_data(match, refresh=refresh, region=region)
     if close:
         connection.close()
-        
+
 
 def import_summoner_from_participant(part, region):
     """Import a summoner using participant data.
@@ -139,7 +139,7 @@ def import_match_from_data(data, refresh=False, region=''):
             import_summoner_from_participant(_p_data, region)
         except IntegrityError as error:
             match_model.delete()
-            raise error        
+            raise error
 
         timelines_data = _p_data.pop('timelines')
         stats_data = _p_data.pop('stats')
@@ -591,7 +591,7 @@ def ranked_import(name=None, account_id=None, region=None, **kwargs):
         is_finished = import_recent_matches(0, new_import_count, account_id, region, **kwargs)
         if is_finished:
             summoner.ranked_import_count = total
-            summoner.save()    
+            summoner.save()
 
 
 def import_recent_matches(start, end, account_id, region, **kwargs):
