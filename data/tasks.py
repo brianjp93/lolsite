@@ -1,5 +1,7 @@
 """data/tasks.py
 """
+from multiprocessing.dummy import Pool as ThreadPool
+
 from .models import Season, Map, Queue
 from .models import GameMode, GameType
 from .models import ReforgedTree, ReforgedRune
@@ -651,18 +653,14 @@ def import_all_champion_advanced(version, language='en_US', overwrite=False):
     query = Champion.objects.filter(version=version)
     if language:
         query = query.filter(language=language)
-    for champion in query:
-        has_lore = False
-        if champion.lore:
-            has_lore = True
-        if not has_lore or overwrite:
-            try:
+    with ThreadPool(10) as pool:
+        for champion in query:
+            has_lore = False
+            if champion.lore:
+                has_lore = True
+            if not has_lore or overwrite:
                 print(f'Importing data for {champion._id}.')
-                import_champion_advanced(champion.id, overwrite=overwrite)
-            except Exception as e:
-                print(e)
-                time.sleep(20)
-                import_champion_advanced(champion.id, overwrite=overwrite)
+                pool.apply_async(import_champion_advanced, (champion.id, overwrite))
 
 
 def import_summoner_spells(version='', language='en_US', overwrite=False):
