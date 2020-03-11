@@ -5,7 +5,7 @@ from .models import Custom, EmailVerification
 
 
 class SummonerAdmin(admin.ModelAdmin):
-    list_display = ('name', '_id', 'account_id', 'region')
+    list_display = ('simple_name', '_id', 'account_id', 'region')
     search_fields = ('name', 'simple_name', 'account_id', '_id', 'puuid')
     list_filter = ('region',)
 
