@@ -14,7 +14,7 @@ class MatchAdmin(admin.ModelAdmin):
 
 
 class ParticipantAdmin(admin.ModelAdmin):
-    list_display = ('_id', 'summoner_name', 'champion_id', 'team_id')
+    list_display = ('_id', 'summoner_name_simplified', 'champion_id', 'team_id')
     raw_id_fields = ('match',)
     search_fields = ('summoner_name', 'match___id')
 
@@ -45,8 +45,7 @@ class BanAdmin(admin.ModelAdmin):
 # ADVANCEDTIMELINE STUFF
 
 class AdvancedTimelineAdmin(admin.ModelAdmin):
-    list_display = ('match', )
-
+    list_display = ('match',)
     raw_id_fields = ('match',)
 
 
@@ -78,9 +77,9 @@ admin.site.register(Stats, StatsAdmin)
 admin.site.register(Timeline, TimelineAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(Ban, BanAdmin)
-
 admin.site.register(AdvancedTimeline, AdvancedTimelineAdmin)
 admin.site.register(Frame, FrameAdmin)
 admin.site.register(ParticipantFrame, ParticipantFrameAdmin)
 admin.site.register(Event, EventAdmin)
 admin.site.register(AssistingParticipants, AssistingParticipantsAdmin)
+
