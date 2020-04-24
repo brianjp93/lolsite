@@ -8,9 +8,37 @@ from .models import Summoner, NameChange
 from .models import simplify
 from .models import RankCheckpoint, RankPosition
 from .models import Custom, EmailVerification
+from .models import Pro
+
+from . import constants
 
 from lolsite.tasks import get_riot_api
 
+
+def import_pros(overwrite=False):
+    # TODO import pros
+    if overwrite:
+        for pro in Pros.objects.all():
+            pro.delete()
+    for alias in constants.PROS:
+        query = Pro.objects.filter(ign=alias)
+        if not query.exists():
+            pro = Pro(ign=alias)
+            pro.save()
+        else:
+            pro = query.first()
+        for ign, region in constants.PROS[alias]:
+            ign = simplify(ign)
+            query = Summoner.objects.filter(region=region, simple_name=ign)
+            if not query.exists():
+                summoner_id = import_summoner(region, name=ign)
+                summoner = Summoner.objects.get(id=summoner_id)
+            else:
+                summoner = query.first()
+            if not summoner.pro == pro:
+                summoner.pro = pro
+                summoner.save()
+        
 
 @task(name='player.tasks.import_summoner')
 def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=None):
@@ -26,7 +54,7 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
 
     Returns
     -------
-    None
+    summoner_id
 
     """
     api = get_riot_api()

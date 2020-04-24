@@ -971,7 +971,7 @@ class MatchCard extends Component {
                                     </div>
                                 </div>
                                 <div style={{padding:'5px 0px 0px 0px'}} className="col s6">
-                                    {this.getTeam200(match).map((part, key) =>  <div key={`${key}-${part.account_id}`}>{this.rightTeamChampion(part, team_size, match)}</div>)}
+                                    {this.getTeam200(match).map((part, key) => <div key={`${key}-${part.account_id}`}>{this.rightTeamChampion(part, team_size, match)}</div>)}
 
                                     <div
                                         style={{

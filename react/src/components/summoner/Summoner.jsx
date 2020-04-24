@@ -5,6 +5,7 @@ import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
 import PropTypes from 'prop-types'
 import NavBar from '../general/NavBar'
 import MatchCard from './MatchCard'
+// import MatchCard from './MatchCardHorizontal'
 import Spectate from './Spectate'
 import SummonerNotFound from './SummonerNotFound'
 import ReactTooltip from 'react-tooltip'
@@ -401,7 +402,22 @@ class Summoner extends Component {
                                 </div>
                             </div>
 
-                            <div className='row' >
+                            <div className="row" style={{visibility: 'hidden', display: 'none'}}>
+                                <div className='col l10 offset-l1 m12 s12'>
+                                    {this.state.matches.map((match, key) => {
+                                        return (
+                                            <MatchCard
+                                                key={`${key}-${match._id}`}
+                                                index={key}
+                                                store={this.props.store}
+                                                pageStore={this}
+                                                match={match} />
+                                        )
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className='row' style={{visibility: 'visible'}} >
                                 <div
                                     style={{paddingTop:15, background: '#ffffff14', borderRadius: 5}}
                                     className="horizontal-scroll quiet-scroll col l10 offset-l1 m12 s12"

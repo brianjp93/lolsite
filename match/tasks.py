@@ -909,5 +909,4 @@ def import_summoners_from_spectate(data, region):
                 if query.exists():
                     summoner = query.first()
                     summoners[summoner._id] = summoner.id
-
     return summoners

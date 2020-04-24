@@ -24,6 +24,7 @@ from .models import SummonerSpellVar
 from django.db.utils import IntegrityError
 
 from . import constants
+from player import constants as player_constants
 from celery import task
 from lolsite.tasks import get_riot_api
 import time

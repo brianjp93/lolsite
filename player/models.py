@@ -73,6 +73,7 @@ class Summoner(models.Model):
     puuid = models.CharField(max_length=256, default='', blank=True)
     revision_date = models.BigIntegerField(default=0)
     summoner_level = models.IntegerField(default=0)
+    pro = models.ForeignKey('Pro', null=True, on_delete=models.SET_NULL, blank=True)
 
     # number of games imported when last match history import was run.
     full_import_count = models.IntegerField(default=0, blank=True)
@@ -120,6 +121,21 @@ class Summoner(models.Model):
         except:
             checkpoint = None
         return checkpoint
+
+
+class Pro(models.Model):
+    position_choices = (
+        ('top', 'top'),
+        ('jg', 'jg'),
+        ('mid', 'mid'),
+        ('adc', 'adc'),
+        ('sup', 'sup')
+    )
+    ign = models.CharField(max_length=256, db_index=True, default='', blank=True, unique=True)
+    position = models.CharField(choices=position_choices, max_length=8, db_index=True, blank=True, default='')
+
+    def __str__(self):
+        return f'Pro(ign={self.ign}, position={self.position if self.position else "NA"})'
 
 
 class Favorite(models.Model):
