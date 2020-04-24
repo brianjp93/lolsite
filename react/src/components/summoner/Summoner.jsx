@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import ReactGA from 'react-ga'
 import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
@@ -792,7 +792,7 @@ class SummonerCard extends Component {
 
                     
                     {this.props.store.state.user.email !== undefined &&
-                        <x>
+                        <Fragment>
                         <ReactTooltip
                             effect='solid'
                             id='favorite-button'>
@@ -809,7 +809,7 @@ class SummonerCard extends Component {
                                 <i className="material-icons">{this.isFavorite() ? 'favorite': 'favorite_border'}</i>
                             </button>
                         </span>
-                        </x>
+                        </Fragment>
                     }
 
                     {this.soloPositions().length > 0 &&

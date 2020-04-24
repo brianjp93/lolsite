@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
 import PropTypes from 'prop-types'
@@ -518,6 +518,7 @@ class MatchCard extends Component {
                     margin:'0px 2px',
                 }}
                 item={item}
+                getItem={this.getItem}
                 tooltip_style={this.props.store.state.tooltip_style}
                 pageStore={this}
                 item_id={id}
@@ -1223,14 +1224,14 @@ class MatchCard extends Component {
                                 <div style={{position:'absolute', bottom:0, left: this.state.summary_width - 180, width:150, textAlign: 'right'}}>
                                     <small className={`${this.props.store.state.theme} ${this.matchHighlightColor(match)}`}>
                                         {this.props.pageStore.state.queues[match.queue_id] &&
-                                            <x>
+                                            <Fragment>
                                             {this.convertQueue(this.props.pageStore.state.queues[match.queue_id].description)}
-                                            </x>
+                                            </Fragment>
                                         }
                                         {this.props.pageStore.state.queues[match.queue_id] === undefined &&
-                                            <x>
+                                            <Fragment>
                                             {match.queue_id}
-                                            </x>
+                                            </Fragment>
                                         }
                                     </small>
                                 </div>

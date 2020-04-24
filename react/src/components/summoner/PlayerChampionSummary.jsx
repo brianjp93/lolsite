@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import numeral from 'numeral'
@@ -440,7 +440,7 @@ class PlayerChampionSummary extends Component {
                     <div className="col s12 quiet-scroll" style={{maxHeight: 300, overflowY: 'scroll'}}>
                         {this.state.stats.map((data, key) => {
                             return (
-                                <x key={`${data.champion_id}-${key}`}>
+                                <Fragment key={`${data.champion_id}-${key}`}>
                                     <div
                                         style={{
                                             display: 'inline-block',
@@ -468,7 +468,7 @@ class PlayerChampionSummary extends Component {
                                     {(key + 1) % 5 === 0 &&
                                         <br/>
                                     }
-                                </x>
+                                </Fragment>
                             )
                         })}
                         {this.state.stats.length === 0 && !this.state.is_loading &&
