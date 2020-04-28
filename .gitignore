@@ -8,6 +8,7 @@ react/node_modules
 .DS_Store
 .ipynb_checkpoints/*
 *.ipynb
+.vscode
 
 .coverage
 htmlcov/
