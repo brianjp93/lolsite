@@ -400,11 +400,12 @@ function MatchCard(props) {
     }
     const TEAMSWIDTH = 120
     const TOPPAD = 20
+    const CARDHEIGHT = 130
     return (
         <div
             style = {{
                     width: 600,
-                    height: 130,
+                    height: CARDHEIGHT,
                     paddingTop: 15,
                     paddingBottom: 10,
                     position: 'relative',
@@ -570,11 +571,17 @@ function MatchCard(props) {
                     top: 0,
                     backgroundColor: '#ffffff20',
                     width: 40,
-                    height: 130,
+                    height: CARDHEIGHT,
                     textAlign: 'center'
                 }}
                 onClick={openModal} >
-                <i className='material-icons'>arrow_downward</i>
+                <i
+                    style={{
+                        position: 'absolute',
+                        bottom: 3,
+                        right: 7,
+                    }}
+                    className='material-icons'>arrow_downward</i>
             </div>
         </div>
     )
