@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import {Switch, Route, withRouter} from 'react-router-dom'
 
 import ReactGA from 'react-ga'
+import Modal from 'react-modal'
 import Themes from './components/test/Themes'
 import Home from './components/general/Home'
 import Summoner from './components/summoner/Summoner'
@@ -98,6 +99,8 @@ class App extends Component {
 
         let favorite_elt = document.getElementById('favorite-data')
         this.setState({favorites: JSON.parse(favorite_elt.innerHTML)})
+
+        Modal.setAppElement('#app-wrap')
     }
     setQueueDict() {
         var queues = this.state.queues

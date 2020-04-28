@@ -6,6 +6,8 @@ import api from '../../api/api'
 import numeral from 'numeral'
 import moment from 'moment'
 import Item from '../data/Item'
+import Modal from 'react-modal'
+import MatchCardModal from './MatchCardModal'
 import ReactTooltip from 'react-tooltip'
 // import StatPie from './StatPie'
 import StatOverview from './StatOverview'
@@ -26,10 +28,22 @@ function formatDatetimeFull(epoch) {
 }
 
 function formatName(name) {
-    if (name.length > 6) {
-        return name.slice(0, 6) + '...'
+    if (name.length > 9) {
+        return name.slice(0, 9) + '...'
     }
     return name
+}
+
+const MODALSTYLE = {
+    overlay: {
+        zIndex: 2,
+        backgroundColor: '#484848b0'
+    },
+    content : {
+        zIndex: 2,
+        backgroundColor: '#292E49',
+        border: 'none',
+    }
 }
 
 function matchHighlightColor(queue_id) {
@@ -69,6 +83,9 @@ function MatchCard(props) {
     const match = props.match
     const store = props.store
     const pageStore = props.pageStore
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    function openModal() {setIsModalOpen(true)}
+    function closeModal() {setIsModalOpen(false)}
     const retrieveItem = (item_id, major, minor) => {
         // get item from store
         let version = `${major}.${minor}`
@@ -221,52 +238,204 @@ function MatchCard(props) {
         }
         return queue
     }
+    const getMaxDamage = match => {
+        let max = 0
+        for (let player of match.participants) {
+            if (player.stats.total_damage_dealt_to_champions > max) {
+                max = player.stats.total_damage_dealt_to_champions
+            }
+        }
+        return max
+    }
+    const getDamagePercentage = (part, match) => {
+        let perc = part.stats.total_damage_dealt_to_champions / getMaxDamage(match) * 100
+        perc = Math.round(perc)
+        return perc
+    }
+    const getTotalKills = match => {
+        let team100 = match.participants.filter(part => part.team_id === 100)
+        let team200 = match.participants.filter(part => part.team_id === 200)
+
+        let kills = {
+            100: 0,
+            200: 0
+        }
+        let part
+        for (part of team100) {
+            kills[100] = kills[100] + part.stats.kills
+        }
+        for (part of team200) {
+            kills[200] = kills[200] + part.stats.kills
+        }
+        return kills
+    }
+    const getKp = (match, part) => {
+        var team_id = part.team_id
+        var total = getTotalKills(match)[team_id]
+        var kills_and_assists = part.stats.kills + part.stats.assists
+        var percentage = 0
+        if (total > 0) {
+            percentage = (kills_and_assists / total) * 100
+        }
+        return percentage
+    }
+    const getTeamMaxKp = (match, team_id) => {
+        let max = 0
+        let kp
+        for (let part of match.participants) {
+            if (part.team_id === team_id) {
+                kp = getKp(match, part)
+                if (kp > max) {
+                    max = kp
+                }
+            }
+        }
+        return max
+    }
+    const getTeamKpPercentage = (match, part) => {
+        let kp = getKp(match, part)
+        let max = getTeamMaxKp(match, part.team_id)
+        let perc = kp / max * 100
+        return perc
+    }
     const getTeam = (team_id) => {
         let team = match.participants.filter((participant) => participant.team_id === team_id)
-        console.log(team)
         return (
             <div>
                 {team.map(part => {
+                    let dmg_perc = getDamagePercentage(part, match)
+                    let wid = dmg_perc * .90
+
+                    let kp = getKp(match, part)
+                    let kp_perc = getTeamKpPercentage(match, part)
+                    let kp_wid = kp_perc * .90
+
+                    if (kp_wid < 0) {
+                        kp_wid = 0
+                    }
+                    if (wid < 0) {
+                        wid = 0
+                    }
+                    let is_me = part.account_id === mypart.account_id
                     return (
-                        <div>
+                        <div key={`${match.id}-${part._id}`} style={{position: 'relative'}}>
+
+                            {/* KP PERCENTAGE */}
+                            <div
+                                title={`${numeral(kp).format('0')}% kp`}
+                                style={{
+                                    title: `${kp}% kp`,
+                                    position: 'absolute',
+                                    left: 17,
+                                    top: 2,
+                                    height: 3,
+                                    borderRadius: 10,
+                                    width: `${kp_wid}%`,
+                                    background: is_me ? '#4b9bcd': '#4b9bcd60'}}>
+                            </div>
+
+                            {/* DAMAGE PERCENTAGE */}
+                            <div
+                                title={`${numeral(part.stats.total_damage_dealt_to_champions).format('0,0')} damage to champions`}
+                                style={{
+                                    position: 'absolute',
+                                    left: 17,
+                                    top: 15,
+                                    height: 3,
+                                    borderRadius: 10,
+                                    width: `${wid}%`,
+                                    background: is_me ? '#dc5f5f': '#dc5f5f60'}}>
+                            </div>
+
                             <img src={part.champion.image_url} alt={part.champion.name}
-                                style={{height: 15, borderRadius: 5}} />
+                                style={{height: 15, borderRadius: 5, paddingRight: 2}} />
                             <div
                                 title={part.summoner_name}
                                 style={{
+                                    position: 'relative',
                                     fontSize: 'smaller',
-                                    display: 'inline-block'
+                                    display: 'inline-block',
+                                    verticalAlign: 'top',
                                 }}
                                 key={`${match._id}-${part._id}`}>
-                                {formatName(part.summoner_name)}
+
+                                {is_me &&
+                                    <small style={{fontWeight:'bold'}}>
+                                        {formatName(part.summoner_name)}
+                                    </small>
+                                }
+                                {!is_me &&
+                                    <small>
+                                        {part.account_id !== '0' &&
+                                            <Link
+                                                target='_blank'
+                                                title={part.summoner_name}
+                                                className={`${theme} silent`}
+                                                to={`/${pageStore.props.region}/${part.summoner_name}/`}>
+                                                {formatName(part.summoner_name)}
+                                            </Link>
+                                        }
+                                        {part.account_id === '0' &&
+                                            <span title={part.summoner_name}>
+                                                {formatName(part.summoner_name)}
+                                            </span>
+                                        }
+                                    </small>
+                                }
                             </div>
+                            <small
+                                style={{
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: 2,
+                                    fontSize: 'x-small'
+                                }}>
+                                {part.stats.kills}/{part.stats.deaths}/{part.stats.assists}
+                            </small>
                         </div>
                     )
                 })}
             </div>
         )
     }
+    const TEAMSWIDTH = 120
+    const TOPPAD = 20
     return (
         <div
-            style={{
-                    width: 500,
+            style = {{
+                    width: 600,
+                    height: 130,
                     paddingTop: 15,
                     paddingBottom: 10,
                     position: 'relative',
                 }}
             className={`card-panel ${theme}`}>
+
+            <Modal
+                isOpen={isModalOpen}
+                onRequestClose={closeModal}
+                style={MODALSTYLE} >
+                    <MatchCardModal />
+            </Modal>
+
             <div
                 style={{
                     display: 'inline-block',
                     width: 6,
-                    height: 80,
+                    height: 90,
                     background: `${topBarColor()}`,
                     borderRadius: 2,
                     marginLeft: -15,
                     marginRight: 8,
                 }} >
             </div>
-            <div style={{display: 'inline-block', paddingRight:5}}>
+            <div
+                style={{
+                    display: 'inline-block',
+                    paddingRight:5,
+                    verticalAlign: 'top',
+                    paddingTop: TOPPAD,
+            }}>
                 <div>
                     <img
                         style={{height: 40, display:'inline'}}
@@ -299,7 +468,12 @@ function MatchCard(props) {
                     src={mypart.stats.item_6_image_url} alt=""/>
             </div>
 
-            <span style={{display: 'inline-block'}}>
+            <span
+                style = {{
+                    display: 'inline-block',
+                    verticalAlign: 'top',
+                    paddingTop: TOPPAD
+                }}>
                 <div style={{width:100}}>
                     <span>
                         {item(mypart.stats.item_0, mypart.stats.item_0_image_url)}
@@ -327,7 +501,9 @@ function MatchCard(props) {
             <div style={{
                     display: 'inline-block',
                     width: 100,
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    verticalAlign: 'top',
+                    paddingTop: TOPPAD,
                 }}>
                 <div style={{fontSize: 'small'}}>
                     {kda} KDA
@@ -340,19 +516,29 @@ function MatchCard(props) {
                 </div>
             </div>
 
-            <div style={{display: 'inline-block'}}>
+            <div
+                style={{
+                    display: 'inline-block',
+                    width: TEAMSWIDTH,
+                }}>
                 {getTeam(100)}
             </div>
             <div style={{display: 'inline-block', width: 8}}>
             </div>
-            <div style={{display: 'inline-block'}}>
+            <div
+                style={{
+                    display: 'inline-block',
+                    width: TEAMSWIDTH,
+                }}>
                 {getTeam(200)}
             </div>
 
-            <div style={{
-                position: 'absolute',
-                top: 0,
-                right: 5}} >
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 10,
+                    left: 26
+                }} >
                 <small title={formatDatetimeFull(match.game_creation)} style={{lineHeight:1, display: 'inline-block'}}>
                     {formatDatetime(match.game_creation)}
                 </small>
@@ -362,7 +548,7 @@ function MatchCard(props) {
             </div>
 
             <div
-                style={{display: 'block', position: 'absolute', bottom: 3, right: 5}}>
+                style={{display: 'block', position: 'absolute', bottom: 3, left: 26}}>
                 <small className={`${store.state.theme} ${matchHighlightColor(match.queue_id)}`}>
                     {pageStore.state.queues[match.queue_id] &&
                         <Fragment>
@@ -376,6 +562,20 @@ function MatchCard(props) {
                     }
                 </small>
             </div>
+
+            <div
+                style = {{
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    backgroundColor: '#ffffff20',
+                    width: 40,
+                    height: 130,
+                    textAlign: 'center'
+                }}
+                onClick={openModal} >
+                <i className='material-icons'>arrow_downward</i>
+            </div>
         </div>
     )
 }
@@ -387,4 +587,3 @@ MatchCard.propTypes = {
 }
 
 export default MatchCard
-

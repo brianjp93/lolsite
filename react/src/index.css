@@ -74,3 +74,7 @@ hr {
 ::-moz-selection {
   background: #ffb7b7; /* Gecko Browsers */
 }
+
+.ReactModal__Body--open {
+  overflow-y: hidden;
+}
