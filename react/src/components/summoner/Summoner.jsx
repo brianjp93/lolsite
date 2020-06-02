@@ -52,7 +52,8 @@ const MODALSTYLE = {
     },
     content : {
         zIndex: 2,
-        backgroundColor: '#292E49',
+        // backgroundColor: '#292E49',
+        backgroundColor: '#2c2d2f',
         border: 'none',
     }
 }
@@ -431,6 +432,7 @@ class Summoner extends Component {
                                     }}
                                     style={MODALSTYLE} >
                                         <MatchCardModal
+                                            summoner={this.state.summoner}
                                             region={this.props.region}
                                             store={store} route={this.props.route} />
                                 </Modal>

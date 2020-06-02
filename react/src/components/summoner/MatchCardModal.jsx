@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+
+import { Timeline } from './Timeline'
+
 import api from '../../api/api'
 import {
     formatDatetime,
@@ -16,7 +19,7 @@ function MatchCardModal(props) {
     
     const [match, setMatch] = useState({})
     const [participants, setParticipants] = useState([])
-    const [timeline, setTimeline] = useState({})
+    const [timeline, setTimeline] = useState([])
 
     const team_100 = getTeam(100, participants)
     const team_200 = getTeam(200, participants)
@@ -52,20 +55,31 @@ function MatchCardModal(props) {
     }
 
     function showParticipants() {
+        let div_style = {
+            width: 450,
+            display: 'inline-block',
+            borderWidth: 1,
+            borderColor: 'grey',
+            borderStyle: 'solid',
+            borderRadius: 4,
+            padding: '0px 8px',
+        }
         return (
             <div>
                 <div className="center-align">
                     <div
                         className='left-align'
-                        style={{width: 400, display: 'inline-block'}}>
+                        style={div_style}>
                         {team_100.map(part => {
                             return <div key={`${part.id}`}>{participantLine(part)}</div>
                         })}
                     </div>
 
+                    <div style={{width: 8, display: 'inline-block'}}></div>
+
                     <div
                         className='left-align'
-                        style={{width: 400, display: 'inline-block'}}>
+                        style={div_style}>
                         {team_200.map(part => {
                             return <div key={`${part.id}`}>{participantLine(part)}</div>
                         })}
@@ -79,7 +93,9 @@ function MatchCardModal(props) {
         return (
             <div style={{height: 120}}>
                 <div style={{marginBottom: 3}}>
-                    <Link to={`/${props.region}/${part.summoner_name}/`}>
+                    <Link
+                        target='_blank'
+                        to={`/${props.region}/${part.summoner_name}/`}>
                         {part.summoner_name}
                     </Link>
                 </div>
@@ -135,7 +151,7 @@ function MatchCardModal(props) {
     }, [match_id])
 
     return (
-        <div>
+        <div style={{marginBottom: 300}}>
             <div>
                 <h4
                     style={{
@@ -159,6 +175,18 @@ function MatchCardModal(props) {
 
             <div>
                 {showParticipants()}
+            </div>
+
+            <div style={{marginTop: 10}}>
+                {timeline.length > 0 && participants.length > 0 && match._id !== undefined &&
+                    <Timeline
+                        summoner={props.summoner}
+                        match={match}
+                        participants={participants}
+                        timeline={timeline}
+                        store={props.store}
+                        route={props.route} />
+                }
             </div>
         </div>
     )
