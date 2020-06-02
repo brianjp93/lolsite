@@ -6,17 +6,7 @@ import api from '../../api/api'
 import numeral from 'numeral'
 import moment from 'moment'
 import Item from '../data/Item'
-import Modal from 'react-modal'
-import MatchCardModal from './MatchCardModal'
 import ReactTooltip from 'react-tooltip'
-// import StatPie from './StatPie'
-import StatOverview from './StatOverview'
-import RunePage from './RunePage'
-import BuildOrder from './BuildOrder'
-import ChampionTimelines from './ChampionTimelines'
-import {
-    ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
-} from 'recharts'
 
 
 function formatDatetime(epoch) {
@@ -32,18 +22,6 @@ function formatName(name) {
         return name.slice(0, 9) + '...'
     }
     return name
-}
-
-const MODALSTYLE = {
-    overlay: {
-        zIndex: 2,
-        backgroundColor: '#484848b0'
-    },
-    content : {
-        zIndex: 2,
-        backgroundColor: '#292E49',
-        border: 'none',
-    }
 }
 
 function matchHighlightColor(queue_id) {
@@ -83,9 +61,6 @@ function MatchCard(props) {
     const match = props.match
     const store = props.store
     const pageStore = props.pageStore
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    function openModal() {setIsModalOpen(true)}
-    function closeModal() {setIsModalOpen(false)}
     const retrieveItem = (item_id, major, minor) => {
         // get item from store
         let version = `${major}.${minor}`
@@ -412,18 +387,11 @@ function MatchCard(props) {
                 }}
             className={`card-panel ${theme}`}>
 
-            <Modal
-                isOpen={isModalOpen}
-                onRequestClose={closeModal}
-                style={MODALSTYLE} >
-                    <MatchCardModal />
-            </Modal>
-
             <div
                 style={{
                     display: 'inline-block',
-                    width: 6,
-                    height: 90,
+                    width: 8,
+                    height: 100,
                     background: `${topBarColor()}`,
                     borderRadius: 2,
                     marginLeft: -15,
@@ -564,7 +532,8 @@ function MatchCard(props) {
                 </small>
             </div>
 
-            <div
+            <Link
+                to={`match/${match._id}/`}
                 style = {{
                     position: 'absolute',
                     right: 0,
@@ -573,16 +542,13 @@ function MatchCard(props) {
                     width: 40,
                     height: CARDHEIGHT,
                     textAlign: 'center'
-                }}
-                onClick={openModal} >
+                }} >
                 <i
-                    style={{
-                        position: 'absolute',
-                        bottom: 3,
-                        right: 7,
-                    }}
-                    className='material-icons'>arrow_downward</i>
-            </div>
+                    className='material-icons'
+                    style={{position: 'absolute', bottom: 5, right: 8}}>
+                    arrow_downward
+                </i>
+            </Link>
         </div>
     )
 }

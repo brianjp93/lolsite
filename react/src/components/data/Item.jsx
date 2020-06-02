@@ -76,7 +76,7 @@ class ItemPopover extends Component {
         this.setState({is_open: !this.state.is_open})
         if (this.props.item === null && this.state.attempted_get === false) {
             if (this.props.item_id) {
-                this.props.getItem(this.props.item_id, this.props.major, this.props.minor)
+                this.props.getItem(this.props.item_id, this.props.major, this.props.minor, this.props.store)
                 this.setState({attempted_get: true})
             }
         }

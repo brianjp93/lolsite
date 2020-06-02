@@ -25,9 +25,15 @@ function checkForLiveGame(data) {
     return axios.post(url, data)
 }
 
+function getMatch(data) {
+    var url = `/api/${version}/match/get/`
+    return axios.post(url, data)
+}
+
 export default {
     timeline,
     participants,
     getSpectate,
     checkForLiveGame,
+    getMatch,
 }

@@ -12,18 +12,10 @@ import StatOverview from './StatOverview'
 import RunePage from './RunePage'
 import BuildOrder from './BuildOrder'
 import ChampionTimelines from './ChampionTimelines'
+import { formatDatetime, formatDatetimeFull } from '../../constants/general'
 import {
     ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from 'recharts'
-
-
-function formatDatetime(epoch) {
-    return moment(epoch).format('MMM DD h:mm a')
-}
-
-function formatDatetimeFull(epoch) {
-    return moment(epoch).format('MMM DD, YYYY h:mm a')
-}
 
 
 class MatchCard extends Component {

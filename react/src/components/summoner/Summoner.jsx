@@ -16,12 +16,14 @@ import numeral from 'numeral'
 import MatchFilter from './MatchFilter'
 import api from '../../api/api'
 import Footer from '../general/Footer'
+import Modal from 'react-modal'
+import MatchCardModal from './MatchCardModal'
 
 
 function convertVerticalScroll(event)  {
     var elt = event.currentTarget
     var delta = (Math.abs(event.deltaX) < Math.abs(event.deltaY) ? event.deltaY : event.deltaX)
-    
+
     if (delta < 0) {
         if (elt.scrollLeft === 0) {
             // comment out to revert to vertical scroll when we hit the left edge
@@ -43,6 +45,17 @@ function convertVerticalScroll(event)  {
     event.preventDefault()
 }
 
+const MODALSTYLE = {
+    overlay: {
+        zIndex: 2,
+        backgroundColor: '#484848b0'
+    },
+    content : {
+        zIndex: 2,
+        backgroundColor: '#292E49',
+        border: 'none',
+    }
+}
 
 class Summoner extends Component {
     constructor(props) {
@@ -54,6 +67,7 @@ class Summoner extends Component {
             matches: [],
             match_ids: new Set(),
             count: 20,
+            page: 1,
             next_page: 2,
             last_refresh: null,
 
@@ -76,7 +90,6 @@ class Summoner extends Component {
             // filtering
             match_filters: {},
         }
-
         this.getSummonerPage = this.getSummonerPage.bind(this)
         this.getNextPage = this.getNextPage.bind(this)
         this.setQueueDict = this.setQueueDict.bind(this)
@@ -88,6 +101,8 @@ class Summoner extends Component {
         this.handleWheel = this.handleWheel.bind(this)
         this.getFilterParams = this.getFilterParams.bind(this)
         this.isTriggerImport = this.isTriggerImport.bind(this)
+        this.pagination = this.pagination.bind(this)
+        this.getPage = this.getPage.bind(this)
     }
     componentDidMount() {
         ReactGA.event({
@@ -270,6 +285,58 @@ class Summoner extends Component {
                 })
             })
     }
+    getPage() {
+        this.setState({is_requesting_next_page: true})
+
+        let data = this.getFilterParams()
+        data.update = false
+        data.trigger_import = true
+        data.page = this.state.page
+
+        api.player.getSummonerPage(data)
+            .then(response => {
+                this.setState({
+                    summoner: response.data.summoner,
+                    region: this.props.region,
+                    icon: response.data.profile_icon,
+                    matches: response.data.matches,
+                    is_requesting_next_page: false,
+                })
+            })
+            .catch(error => {
+            })
+    }
+    pagination() {
+        const theme = this.props.store.state.theme
+        return (
+            <div>
+                <button
+                    onClick={() => {
+                        let page = this.state.page
+                        page = page - 1
+                        if (page >= 1) {
+                            this.setState({page}, this.getPage)
+                        }
+                    }}
+                    className={`${theme} btn-small`}>
+                    <i className="material-icons">chevron_left</i>
+                </button>
+                <button
+                    style={{marginLeft: 8}}
+                    onClick={() => {
+                        let page = this.state.page
+                        page = page + 1
+                        this.setState({page}, this.getPage)
+                    }}
+                    className={`${theme} btn-small`}>
+                    <i className="material-icons">chevron_right</i>
+                </button>
+                <div style={{display: 'inline-block', marginLeft: 8}}>
+                    {this.state.page}
+                </div>
+            </div>
+        )
+    }
     getSpectate() {
         var data = {
             region: this.props.region,
@@ -323,6 +390,11 @@ class Summoner extends Component {
         const custom_max_width = 'col l10 offset-l1 m12 s12'
         const store = this.props.store
         const theme = store.state.theme
+        const match_id = this.props.route.match.params.match_id
+        let is_match_modal_open = false
+        if (match_id !== undefined) {
+            is_match_modal_open = true
+        }
         return (
             <div>
                 <div style={{minHeight: 1000}}>
@@ -348,6 +420,21 @@ class Summoner extends Component {
 
                     {!this.state.is_requesting_page && this.state.summoner !== false &&
                         <div>
+                            {this.state.matches.length > 0 &&
+                                <Modal
+                                    isOpen={is_match_modal_open}
+                                    onRequestClose={() => {
+                                        let href = this.props.route.location.pathname
+                                        href = href.split('/')
+                                        href = href.slice(0, href.length - 3).join('/') + '/'
+                                        this.props.route.history.push(href)
+                                    }}
+                                    style={MODALSTYLE} >
+                                        <MatchCardModal
+                                            region={this.props.region}
+                                            store={store} route={this.props.route} />
+                                </Modal>
+                            }
                             <div className="row" style={{marginBottom: 0}}>
                                 <div className="col l10 offset-l1">
                                     <div
@@ -404,6 +491,7 @@ class Summoner extends Component {
 
                             <div className="row" style={{visibility: 'visibile'}}>
                                 <div className='col l10 offset-l1 m12 s12'>
+                                    {this.pagination()}
                                     {this.state.matches.map((match, key) => {
                                         return (
                                             <MatchCard
@@ -414,6 +502,7 @@ class Summoner extends Component {
                                                 match={match} />
                                         )
                                     })}
+                                    {this.pagination()}
                                 </div>
                             </div>
 

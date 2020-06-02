@@ -13,6 +13,8 @@ class MatchSerializer(serializers.ModelSerializer):
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
+    perk_sub_style_image_url = serializers.CharField()
+
     class Meta:
         model = Participant
         fields = '__all__'

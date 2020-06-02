@@ -181,6 +181,16 @@ function Routes(props) {
                         return (
                             <Route
                                 key={key}
+                                path={`/${region}/:summoner_name/match/:match_id/`}
+                                render={(rest) => <Summoner route={rest} region={region} store={props.store} />}
+                            />
+                        )
+                    })}
+
+                    {props.store.state.regions.map((region, key) => {
+                        return (
+                            <Route
+                                key={key}
                                 path={`/${region}/:summoner_name/`}
                                 render={(rest) => <Summoner route={rest} region={region} store={props.store} />}
                             />

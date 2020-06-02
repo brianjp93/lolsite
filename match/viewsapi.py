@@ -15,7 +15,7 @@ from player.models import Summoner
 
 from data.models import Champion
 
-from .serializers import FullMatchSerializer
+from .serializers import FullMatchSerializer, MatchSerializer
 from .serializers import AdvancedTimelineSerializer, FrameSerializer, ParticipantFrameSerializer
 from .serializers import EventSerializer, AssistingParticipantsSerializer
 
@@ -132,6 +132,28 @@ def get_match_timeline(request, format=None):
 
 
 @api_view(['POST'])
+def get_match(request, format=None):
+    """
+    """
+    data = {}
+    status_code = 200
+    if request.method == 'POST':
+        match_id = request.data['match_id']
+        query = Match.objects.filter(_id=match_id)
+        if query.exists():
+            match = query.first()
+            serializer = MatchSerializer(match)
+            data = {'data': serializer.data}
+        else:
+            data = {'message': 'Match not found.'}
+            status_code = 404
+    else:
+        data = {'message': 'Only POST allowed.'}
+        status_code = 403
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
 def get_participants(request, format=None):
     """
 
@@ -139,6 +161,8 @@ def get_participants(request, format=None):
     ---------------
     match_id : ID
         Internal match ID
+    match__id : ID
+        RIOT match ID
     language : str
         default - 'en_US'
 
@@ -152,9 +176,13 @@ def get_participants(request, format=None):
     cache_seconds = 60 * 60 * 24
 
     if request.method == 'POST':
-        match_id = request.data['match_id']
+        match_id = request.data.get('match_id')
+        match__id = request.data.get('match__id')
         language = request.data.get('language', 'en_US')
-        match = Match.objects.get(id=match_id)
+        if match_id:
+            match = Match.objects.get(id=match_id)
+        else:
+            match = Match.objects.get(_id=match__id)
 
         cache_key = f'match/{match._id}/participants'
         cache_data = cache.get(cache_key)
@@ -203,12 +231,19 @@ def get_participants(request, format=None):
                         'deaths': stats.deaths,
                         'gold_earned': stats.gold_earned,
                         'item_0': stats.item_0,
+                        'item_0_image_url': stats.item_0_image_url(),
                         'item_1': stats.item_1,
+                        'item_1_image_url': stats.item_1_image_url(),
                         'item_2': stats.item_2,
+                        'item_2_image_url': stats.item_2_image_url(),
                         'item_3': stats.item_3,
+                        'item_3_image_url': stats.item_3_image_url(),
                         'item_4': stats.item_4,
+                        'item_4_image_url': stats.item_4_image_url(),
                         'item_5': stats.item_5,
+                        'item_5_image_url': stats.item_5_image_url(),
                         'item_6': stats.item_6,
+                        'item_6_image_url': stats.item_6_image_url(),
                         'kills': stats.kills,
                         'largest_multi_kill': stats.largest_multi_kill,
                         'magic_damage_dealt': stats.magic_damage_dealt,
@@ -249,6 +284,7 @@ def get_participants(request, format=None):
                         'perk_5_var_3': stats.perk_5_var_3,
                         'perk_primary_style': stats.perk_primary_style,
                         'perk_sub_style': stats.perk_sub_style,
+                        'perk_sub_style_image_url': stats.perk_sub_style_image_url(),
                         'physical_damage_dealt_to_champions': stats.physical_damage_dealt_to_champions,
                         'physical_damage_taken': stats.physical_damage_taken,
                         'time_ccing_others': stats.time_ccing_others,
