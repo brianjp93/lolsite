@@ -5,7 +5,7 @@ import numeral from 'numeral'
 
 // MAIN
 function ChampionTimelines(props) {
-    const [participant_selection, setParticipantSelection] = useState([props.my_part._id])
+    const [participant_selection, setParticipantSelection] = useState(props.participants.map(item => item._id))
     const [graph_type, setGraphType] = useState('total_gold')
 
     const image_width = 30
@@ -65,7 +65,7 @@ function ChampionTimelines(props) {
                     margin={{
                       left: -10, right: 20,
                     }}
-                    width={usable_width} height={250} data={props.timeline}>
+                    width={usable_width} height={400} data={props.timeline}>
                     <CartesianGrid
                         vertical={false}
                         stroke='#777'

@@ -327,7 +327,7 @@ function Timeline(props) {
             }} >
             {big_events.length === 0 &&
                 <div style={{textAlign: 'center', paddingTop: 20}}>
-                    No events
+                    Hover over graph to see events.
                 </div>
             }
             {big_events.map((event, key) => {

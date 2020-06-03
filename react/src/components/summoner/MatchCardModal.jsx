@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Timeline } from './Timeline'
+import ChampionTimelines from './ChampionTimelines'
 
 import api from '../../api/api'
 import {
@@ -142,6 +143,30 @@ function MatchCardModal(props) {
         )
     }
 
+    function getMyPart() {
+        // get my participant
+        let account_id = props.summoner.account_id
+        for (let part of participants) {
+            if (part.account_id === account_id) {
+                return part
+            }
+        }
+    }
+
+    function isDataAcquired() {
+        let out = true
+        if (timeline.length === 0) {
+            out = false
+        }
+        if (participants.length === 0) {
+            out = false
+        }
+        if (match._id === undefined) {
+            out = false
+        }
+        return out
+    }
+
     useEffect(() => {
         if (match_id !== undefined) {
             getMatch()
@@ -177,16 +202,33 @@ function MatchCardModal(props) {
                 {showParticipants()}
             </div>
 
-            <div style={{marginTop: 10}}>
-                {timeline.length > 0 && participants.length > 0 && match._id !== undefined &&
-                    <Timeline
-                        summoner={props.summoner}
-                        match={match}
-                        participants={participants}
-                        timeline={timeline}
-                        store={props.store}
-                        route={props.route} />
+            <div style={{marginTop: 20}}>
+
+                {isDataAcquired() &&
+                    <React.Fragment>
+                        <div style={{display: 'inline-block'}}>
+                            <Timeline
+                                summoner={props.summoner}
+                                match={match}
+                                participants={participants}
+                                timeline={timeline}
+                                store={props.store}
+                                route={props.route} />
+                        </div>
+                        <div style={{display: 'inline-block', verticalAlign: 'top'}}>
+                            <div style={{marginLeft: 30}}>
+                                <ChampionTimelines
+                                    theme={store.state.theme}
+                                    my_part={getMyPart()}
+                                    summoner={props.summoner}
+                                    participants={participants}
+                                    timeline={timeline}
+                                    expanded_width={500} />
+                            </div>
+                        </div>
+                    </React.Fragment>
                 }
+
             </div>
         </div>
     )
