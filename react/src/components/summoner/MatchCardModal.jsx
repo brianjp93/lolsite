@@ -177,6 +177,14 @@ function MatchCardModal(props) {
         }
     }, [match_id])
 
+    const header_style = {
+        textAlign: 'center',
+        textDecoration: 'underline',
+    }
+    const comp_style = {
+        display: 'inline-block',
+        verticalAlign: 'top'
+    }
     return (
         <div style={{marginBottom: 300}}>
             <div>
@@ -211,35 +219,52 @@ function MatchCardModal(props) {
 
                 {isDataAcquired() &&
                     <React.Fragment>
-                        <div style={{display: 'inline-block'}}>
-                            <Timeline
-                                summoner={props.summoner}
-                                match={match}
-                                participants={participants}
-                                timeline={timeline}
-                                store={props.store}
-                                route={props.route} />
-                        </div>
-                        <div style={{display: 'inline-block', verticalAlign: 'top'}}>
-                            <div style={{marginLeft: 30}}>
-                                <ChampionTimelines
-                                    theme={store.state.theme}
-                                    my_part={getMyPart()}
+
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                justifyContent: 'center'
+                            }}>
+                            <div style={comp_style}>
+                                <h5 style={header_style}>
+                                    Game Timeline
+                                </h5>
+                                <Timeline
                                     summoner={props.summoner}
+                                    match={match}
                                     participants={participants}
                                     timeline={timeline}
-                                    expanded_width={500} />
+                                    store={props.store}
+                                    route={props.route} />
                             </div>
-                        </div>
-
-                        <div>
-                            <StatOverview
-                                participants={participants}
-                                match={match}
-                                store={props.store}
-                                pageStore={props.pageStore}
-                                mypart={getMyPart()}
-                                is_expanded={true} />
+                            <div style={comp_style}>
+                                <div style={{marginLeft: 30, marginRight: 8}}>
+                                    <h5 style={header_style}>
+                                        Champion Timelines
+                                    </h5>
+                                    <ChampionTimelines
+                                        theme={store.state.theme}
+                                        my_part={getMyPart()}
+                                        summoner={props.summoner}
+                                        participants={participants}
+                                        timeline={timeline}
+                                        expanded_width={500} />
+                                </div>
+                            </div>
+                            <div style={comp_style}>
+                                <h5 style={header_style}>
+                                    Champion Stats
+                                </h5>
+                                <StatOverview
+                                    participants={participants}
+                                    match={match}
+                                    store={props.store}
+                                    pageStore={props.pageStore}
+                                    mypart={getMyPart()}
+                                    is_expanded={true} />
+                            </div>
                         </div>
                     </React.Fragment>
                 }

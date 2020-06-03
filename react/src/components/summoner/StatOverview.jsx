@@ -169,14 +169,19 @@ class StatOverview extends Component {
         let team100 = this.getTeam(100)
         let team200 = this.getTeam(200)
         let parts = [...team100, ...team200]
-        let bargraph_height = 370
+        let bargraph_height = 420
 
         return (
-            <div style={{position: 'relative'}}>
+            <div
+                style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    width: 700,
+                    }}>
                 <div
                     className='quiet-scroll'
                     style={{
-                        overflowY: 'scroll', height: 370, width:115, display: 'inline-block'
+                        overflowY: 'scroll', height: 420, width:115, display: 'inline-block'
                     }}>
 
                     <div>
