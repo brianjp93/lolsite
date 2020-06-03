@@ -432,6 +432,7 @@ class Summoner extends Component {
                                     }}
                                     style={MODALSTYLE} >
                                         <MatchCardModal
+                                            pageStore={this}
                                             summoner={this.state.summoner}
                                             region={this.props.region}
                                             store={store} route={this.props.route} />

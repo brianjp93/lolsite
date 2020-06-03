@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import { Timeline } from './Timeline'
 import ChampionTimelines from './ChampionTimelines'
+import StatOverview from './StatOverview'
 
 import api from '../../api/api'
 import {
@@ -225,6 +226,16 @@ function MatchCardModal(props) {
                                     timeline={timeline}
                                     expanded_width={500} />
                             </div>
+                        </div>
+
+                        <div>
+                            <StatOverview
+                                participants={participants}
+                                match={match}
+                                store={props.store}
+                                pageStore={props.pageStore}
+                                mypart={getMyPart()}
+                                is_expanded={true} />
                         </div>
                     </React.Fragment>
                 }

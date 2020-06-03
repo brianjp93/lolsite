@@ -39,20 +39,13 @@ class StatOverview extends Component {
         this.getPart = this.getPart.bind(this)
         this.getDPM = this.getDPM.bind(this)
         this.getDPG = this.getDPG.bind(this)
-        this.getParticipants = this.getParticipants.bind(this)
         this.getKP = this.getKP.bind(this)
         this.getDPD = this.getDPD.bind(this)
         this.getDTPD = this.getDTPD.bind(this)
         this.getCS = this.getCS.bind(this)
         this.getCSPM = this.getCSPM.bind(this)
         this.getBarGraphStat = this.getBarGraphStat.bind(this)
-    }
-    componentDidUpdate(prevProps) {
-        if (this.props.is_expanded === true) {
-            if (this.props.parent.state.participants === null) {
-                this.getParticipants()
-            }
-        }
+        this.getTeam = this.getTeam.bind(this)
     }
     toggle(event) {
         var select_value = event.target.value
@@ -62,21 +55,14 @@ class StatOverview extends Component {
         select.add(select_value)
         this.setState({selected: select})
     }
-    getParticipants() {
-        var data = {'match_id': this.props.parent.props.match.id}
-        api.match.participants(data)
-            .then(response => {
-                this.props.parent.setState({participants: response.data.data})
-            })
-            .catch(error => {
-
-            })
+    getTeam(num) {
+        return this.props.participants.filter(item => item.team_id === num)
     }
     getData() {
-        var team100 = this.props.parent.getTeam100()
-        var team200 = this.props.parent.getTeam200()
-        var parts = [...team100, ...team200]
-        for (var i=0; i<parts.length; i++) {
+        let team100 = this.getTeam(100)
+        let team200 = this.getTeam(200)
+        let parts = [...team100, ...team200]
+        for (let i=0; i<parts.length; i++) {
             parts[i] = {...parts[i], ...parts[i].stats}
 
             parts[i].dpm = this.getDPM(parts[i])
@@ -90,7 +76,7 @@ class StatOverview extends Component {
         return parts
     }
     getDPM(part) {
-        var minutes = this.props.parent.props.match.game_duration / 60
+        let minutes = this.props.match.game_duration / 60
         return part.total_damage_dealt_to_champions / minutes
     }
     getDPG(part) {
@@ -114,7 +100,7 @@ class StatOverview extends Component {
         return part.stats.total_minions_killed + part.stats.neutral_minions_killed
     }
     getCSPM(part) {
-        var minutes = this.props.parent.props.match.game_duration / 60
+        var minutes = this.props.match.game_duration / 60
         var cs = this.getCS(part)
         return cs / minutes
     }
@@ -123,10 +109,10 @@ class StatOverview extends Component {
         var total = 0
         var parts
         if (team_id === 100) {
-            parts = this.props.parent.getTeam100()
+            parts = this.getTeam(100)
         }
         else (
-            parts = this.props.parent.getTeam200()
+            parts = this.getTeam(200)
         )
         for (var _part of parts) {
             total += _part.stats.kills
@@ -135,11 +121,11 @@ class StatOverview extends Component {
     }
     getPart(name) {
         var parts
-        if (this.props.parent.state.participants !== null) {
-            parts = this.props.parent.state.participants
+        if (this.props.participants !== null) {
+            parts = this.props.participants
         }
         else {
-            parts = this.props.parent.props.match.participants
+            parts = this.props.participants
         }
         for (var part of parts) {
             if (part.summoner_name === name) {
@@ -149,7 +135,7 @@ class StatOverview extends Component {
         return {}
     }
     getBarGraphStat(title, tooltip, value) {
-        var match = this.props.parent.props.match
+        var match = this.props.match
         var outer_label_style = {display: 'block', marginLeft:-10}
         var label_style = {
             fontSize: 'smaller'
@@ -178,21 +164,20 @@ class StatOverview extends Component {
         )
     }
     render() {
-        var summary_width = this.props.parent.state.summary_width
-        var match = this.props.parent.props.match
-        var team100 = this.props.parent.getTeam100()
-        var team200 = this.props.parent.getTeam200()
-        var parts = [...team100, ...team200]
-        var bargraph_height = 370
+        let summary_width = 500
+        let match = this.props.match
+        let team100 = this.getTeam(100)
+        let team200 = this.getTeam(200)
+        let parts = [...team100, ...team200]
+        let bargraph_height = 370
 
         return (
-            <div>
-
+            <div style={{position: 'relative'}}>
                 <div
                     className='quiet-scroll'
-                    onMouseEnter={() => this.props.store.setState({ignore_horizontal: true})}
-                    onMouseLeave={() => this.props.store.setState({ignore_horizontal: false})}
-                    style={{overflowY: 'scroll', height: 370, width:115, display: 'inline-block'}}>
+                    style={{
+                        overflowY: 'scroll', height: 370, width:115, display: 'inline-block'
+                    }}>
 
                     <div>
                         <span style={{fontSize:'small'}}>
@@ -271,7 +256,7 @@ class StatOverview extends Component {
                 </div>
 
 
-                <div style={{position: 'absolute', top: 26, bottom: 0, left: summary_width + 155, zIndex:5, marginTop: (10 - parts.length) * 2.6}}>
+                <div style={{position: 'absolute', top: 12, left: 140, zIndex:5, marginTop: (10 - parts.length) * 2.6}}>
                     {parts.map(part => {
                         var heights = (bargraph_height - 40) / parts.length
                         return (
@@ -283,64 +268,62 @@ class StatOverview extends Component {
 
                 </div>
 
-                {this.props.parent.state.is_expanded &&
-                    <div style={{display: 'inline-block', marginLeft: summary_width - 254}}>
-                        <BarChart layout='vertical' width={235} height={bargraph_height} data={this.getData()}>
-                            <YAxis
-                                width={0}
-                                type='category'
-                                dataKey="summoner_name"
-                                interval={0}
-                                tickFormatter={() => ''}
-                                />
-                            <XAxis
-                                tickFormatter={(value) => {
-                                    if (value.toString().indexOf('.') >= 0) {
-                                        return numeral(value).format('0,0.00')
-                                    }
-                                    else {
-                                        return numeral(value).format('0,0')
-                                    }
-                                }}
-                                domain={[0, 'dataMax']} type='number'/>
-                            <Tooltip formatter={(value, name, props) => {
-                                var convert = this.state.convert
-                                if (convert[name] !== undefined) {
-                                    name = convert[name]
-                                }
-
+                <div style={{display: 'inline-block', marginLeft: 50}}>
+                    <BarChart layout='vertical' width={500} height={bargraph_height} data={this.getData()}>
+                        <YAxis
+                            width={0}
+                            type='category'
+                            dataKey="summoner_name"
+                            interval={0}
+                            tickFormatter={() => ''}
+                            />
+                        <XAxis
+                            tickFormatter={(value) => {
                                 if (value.toString().indexOf('.') >= 0) {
-                                    value = numeral(value).format('0,0.00')
+                                    return numeral(value).format('0,0.00')
                                 }
                                 else {
-                                    value = numeral(value).format('0,0')
+                                    return numeral(value).format('0,0')
                                 }
-                                return [value, name]
-                            }} />
-                            {[...this.state.selected].map((key) => {
-                                return (
-                                    <Bar key={`${key}-bar`} dataKey={key} >
-                                        {this.getData().map(part => {
-                                            var mypart = this.props.parent.getMyPart()
-                                            if (part.account_id === mypart.account_id) {
-                                                return <Cell key={`${match.id}-${part._id}-cell`} fill='#a7bed0' />
-                                            }
-                                            else if (part.team_id === mypart.team_id) {
-                                                return <Cell key={`${match.id}-${part._id}-cell`} fill="#437296" />
-                                            }
-                                            else if (part.team_id !== mypart.team_id) {
-                                                return <Cell key={`${match.id}-${part._id}-cell`} fill="#954e4e" />
-                                            }
-                                            else {
-                                                return <Cell key={`${match.id}-${part._id}-cell`} fill="#5e7ca7" />
-                                            }
-                                        })}
-                                    </Bar>
-                                )
-                            })}
-                        </BarChart>
-                    </div>
-                }
+                            }}
+                            domain={[0, 'dataMax']} type='number'/>
+                        <Tooltip formatter={(value, name, props) => {
+                            var convert = this.state.convert
+                            if (convert[name] !== undefined) {
+                                name = convert[name]
+                            }
+
+                            if (value.toString().indexOf('.') >= 0) {
+                                value = numeral(value).format('0,0.00')
+                            }
+                            else {
+                                value = numeral(value).format('0,0')
+                            }
+                            return [value, name]
+                        }} />
+                        {[...this.state.selected].map((key) => {
+                            return (
+                                <Bar key={`${key}-bar`} dataKey={key} >
+                                    {this.getData().map(part => {
+                                        let mypart = this.props.mypart
+                                        if (part.account_id === mypart.account_id) {
+                                            return <Cell key={`${match.id}-${part._id}-cell`} fill='#a7bed0' />
+                                        }
+                                        else if (part.team_id === mypart.team_id) {
+                                            return <Cell key={`${match.id}-${part._id}-cell`} fill="#437296" />
+                                        }
+                                        else if (part.team_id !== mypart.team_id) {
+                                            return <Cell key={`${match.id}-${part._id}-cell`} fill="#954e4e" />
+                                        }
+                                        else {
+                                            return <Cell key={`${match.id}-${part._id}-cell`} fill="#5e7ca7" />
+                                        }
+                                    })}
+                                </Bar>
+                            )
+                        })}
+                    </BarChart>
+                </div>
             </div>
         )
     }
