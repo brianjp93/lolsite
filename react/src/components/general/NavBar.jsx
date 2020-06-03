@@ -7,6 +7,9 @@ import api from '../../api/api'
 class NavBar extends Component {
     constructor(props)  {
         super(props)
+        this.search_ref = React.createRef()
+        this.user_dropdown_ref = React.createRef()
+
         this.state = {
             summoner_name: '',
 
@@ -24,12 +27,16 @@ class NavBar extends Component {
         this.doSearch = this.doSearch.bind(this)
         this.quickSearchLine = this.quickSearchLine.bind(this)
         this.isLoggedIn = this.isLoggedIn.bind(this)
+        this.handleSearchOutsideClick = this.handleSearchOutsideClick.bind(this)
+        this.handleUserDropdownOutsideClick = this.handleUserDropdownOutsideClick.bind(this)
     }
     componentDidMount() {
         window.$('.sidenav').sidenav()
         window.$('.dropdown-trigger').dropdown()
 
         window.addEventListener('keydown', this.handleKeyListener)
+        window.addEventListener('mousedown', this.handleSearchOutsideClick)
+        window.addEventListener('mousedown', this.handleUserDropdownOutsideClick)
 
         if (this.props.region !== undefined) {
             this.props.store.setState({
@@ -39,6 +46,22 @@ class NavBar extends Component {
     }
     componentWillUnmount() {
         window.removeEventListener('keydown', this.handleKeyListener)
+        window.removeEventListener('mousedown', this.handleSearchOutsideClick)
+        window.removeEventListener('mousedown', this.handleUserDropdownOutsideClick)
+    }
+    handleSearchOutsideClick(event) {
+        if (this.search_ref.current && !this.search_ref.current.contains(event.target)) {
+            if (this.state.is_quicksearch_open) {
+                this.setState({is_quicksearch_open: false})
+            }
+        }
+    }
+    handleUserDropdownOutsideClick(event) {
+        if (this.user_dropdown_ref.current && !this.user_dropdown_ref.current.contains(event.target)) {
+            if (this.state.is_show_user_dropdown) {
+                this.setState({is_show_user_dropdown: false})
+            }
+        }
     }
     isLoggedIn() {
         let store = this.props.store
@@ -310,6 +333,7 @@ class NavBar extends Component {
                                     </i>
                                     {this.state.is_quicksearch_open &&
                                         <div
+                                            ref={this.search_ref}
                                             className={`${theme} card-panel`}
                                             style={{
                                                 position: 'absolute',
@@ -362,7 +386,9 @@ class NavBar extends Component {
                                     </span>
 
                                     {this.state.is_show_user_dropdown &&
-                                        <div id='user-dropdown' className={`${theme} card-panel`}
+                                        <div
+                                            ref={this.user_dropdown_ref}
+                                            id='user-dropdown' className={`${theme} card-panel`}
                                             style={{
                                                 position: 'absolute',
                                                 top: 50,

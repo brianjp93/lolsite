@@ -12,6 +12,8 @@ class MatchFilter extends Component {
     constructor(props) {
         super(props)
 
+        this.champ_card = React.createRef()
+
         this.state = {
             queue_filter: '',
             summoner_filter: '',
@@ -35,6 +37,7 @@ class MatchFilter extends Component {
         this.getChampionMatches = this.getChampionMatches.bind(this)
         this.handleChampionKeyDown = this.handleChampionKeyDown.bind(this)
         this.clearFilters = this.clearFilters.bind(this)
+        this.handleOutsideClick = this.handleOutsideClick.bind(this)
     }
     componentDidUpdate(prevProps, prevState) {
         let prev_summoner = prevProps.summoner
@@ -44,6 +47,9 @@ class MatchFilter extends Component {
                 // this.setState(this.props.match_filters)
             }
         }
+    }
+    componentWillUnmount() {
+        document.removeEventListener('mousedown', this.handleOutsideClick)
     }
     isFiltersApplied() {
         let filters = this.getFilterParams()
@@ -83,10 +89,18 @@ class MatchFilter extends Component {
             }
         })
     }
+    handleOutsideClick(event) {
+        if (this.champ_card.current && !this.champ_card.current.contains(event.target)) {
+            if (this.state.is_champion_card_open) {
+                this.setState({is_champion_card_open: false})
+            }
+        }
+    }
     componentDidMount() {
         window.$('select').formSelect()
         // this.updateParent()
         this.getChampions()
+        document.addEventListener("mousedown", this.handleOutsideClick);
     }
     getFilterParams() {
         let champ_key = null
@@ -248,6 +262,7 @@ class MatchFilter extends Component {
                             </div>
                             {this.state.is_champion_card_open &&
                                 <div
+                                    ref={this.champ_card}
                                     style={{
                                         position: 'absolute',
                                         width: 400,

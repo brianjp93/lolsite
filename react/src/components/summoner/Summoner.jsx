@@ -508,66 +508,6 @@ class Summoner extends Component {
                                     {this.pagination()}
                                 </div>
                             </div>
-
-                            <div className='row' style={{visibility: 'hidden', display: 'none'}} >
-                                <div
-                                    style={{paddingTop:15, background: '#ffffff14', borderRadius: 5}}
-                                    className="horizontal-scroll quiet-scroll col l10 offset-l1 m12 s12"
-                                    ref={(elt) => {
-                                        this.match_list = elt
-                                        try {
-                                            elt.addEventListener('wheel', this.handleWheel, {passive: false})
-                                        } catch (error) {}
-                                    }}
-                                    onScroll={(event) => {
-                                        setTimeout(() => {
-                                            var epoch = (new Date()).getTime()
-                                            if (epoch - this.state.last_scroll_time > 1000) {
-                                                this.setState({last_scroll_time: epoch, scroll_left: this.match_list.scrollLeft})
-                                            }
-                                        }, 1000)
-                                    }} >
-                                        
-                                    {/* MATCH CARD */}
-                                    {this.state.matches.map((match, key) => {
-                                        return (
-                                            <MatchCard
-                                                key={`${key}-${match._id}`}
-                                                index={key}
-                                                store={this.props.store}
-                                                pageStore={this}
-                                                match={match} />
-                                        )
-                                    })}
-
-                                    <div
-                                        style={{
-                                            width:100, height: this.state.match_card_height,
-                                            display: 'inline-block',
-                                            margin: '0px 10px 10px 10px',
-                                            paddingTop:15,
-                                            verticalAlign: 'top',
-                                            cursor: 'pointer',
-                                            position: 'relative',
-                                        }}
-                                        onClick={this.getNextPage}
-                                        className={`card-panel ${this.props.store.state.theme}`}>
-                                        <div style={{height: '100%', paddingTop: 100, textAlign: 'center'}}>
-                                            {this.state.is_requesting_next_page &&
-                                                <span>
-                                                    <AtomSpinner
-                                                        color='#ffffff'
-                                                        size={50}
-                                                        style={{margin: 'auto'}} />
-                                                </span>
-                                            }
-                                            {!this.state.is_requesting_next_page &&
-                                                <span style={{fontWeight: 'bold', textDecoration: 'underline'}}>More</span>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     }
                 </div>
