@@ -95,6 +95,18 @@ function MatchCardModal(props) {
     }
 
     function participantLine(part) {
+        const stat_style = {
+            borderRadius: 4,
+            padding: '0px 4px',
+            marginBottom: 3,
+        }
+        const gametime = match.game_duration / 60
+        let dpm = part.stats.total_damage_dealt_to_champions / gametime
+        dpm = numeral(dpm).format('0,0')
+        let vspm = part.stats.vision_score / gametime
+        vspm = numeral(vspm).format('0.0')
+        let cspm = (part.stats.neutral_minions_killed + part.stats.total_minions_killed) / gametime
+        cspm = numeral(cspm).format('0.0')
         return (
             <div style={{height: 120}}>
                 <div style={{marginBottom: 3}}>
@@ -142,6 +154,37 @@ function MatchCardModal(props) {
                 </div>
 
                 {participantItems(part, match, store)}
+
+                <div
+                    style={{
+                        marginLeft: 8,
+                        display: 'inline-block',
+                        verticalAlign: 'top',
+                    }}>
+                    <h6 style={{marginTop: 0}}>
+                        <span style={{color: '#4f8fc7'}}>{part.stats.kills}</span>
+                        <span> / </span>
+                        <span style={{color: '#d43030'}}>{part.stats.deaths}</span>
+                        <span> / </span>
+                        <span style={{color: '#419241'}}>{part.stats.assists}</span>
+                    </h6>
+                    <div>
+                        {numeral(part.stats.gold_earned).format('0,0')} gold
+                    </div>
+                    <div>
+                        level {part.stats.champ_level}
+                    </div>
+                </div>
+
+                <div style={{
+                    display: 'inline-block',
+                    verticalAlign: 'top',
+                    marginLeft: 15,
+                }}>
+                    <div style={{...stat_style, background: '#714545'}}>{dpm} DPM</div>
+                    <div style={{...stat_style, background: '#406286'}}>{vspm} VS/m</div>
+                    <div style={{...stat_style, background: '#7d763d'}}>{cspm} CS/m</div>
+                </div>
 
             </div>
         )
