@@ -477,8 +477,8 @@ def get_summoner_page(request, format=None):
         language = request.data.get('language', 'en_US')
         champion_key = request.data.get('champion_key', None)
         queue = request.data.get('queue', None)
-        page = request.data.get('page', 1)
-        count = request.data.get('count', 20)
+        page = int(request.data.get('page', 1))
+        count = int(request.data.get('count', 20))
         order_by = request.data.get('order_by', '-game_creation')
         trigger_import = request.data.get('trigger_import', False)
         after_index = request.data.get('after_index', None)
@@ -565,6 +565,8 @@ def get_summoner_page(request, format=None):
                     kwargs['queue'] = queue
                 if after_index is not None:
                     start_index = after_index
+                elif page is not None:
+                    start_index = (page - 1) * count
                 end_index = start_index + count
 
                 timer_matches_import = time.time()
