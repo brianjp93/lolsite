@@ -125,7 +125,7 @@ class Summoner extends Component {
             this.props.route.match.params.summoner_name !== prevProps.route.match.params.summoner_name ||
             this.props.region !== prevProps.region
         ) {
-            this.setState({match_filters: {}}, () => {
+            this.setState({match_filters: {}, page: 1}, () => {
                 this.getSummonerPage(() => {
                     this.getPositions()
                     this.checkForLiveGame()
@@ -158,6 +158,7 @@ class Summoner extends Component {
             matches: [],
             match_ids: new Set(),
             next_page: 2,
+            page: 1,
             is_requesting_page: false,
             is_requesting_next_page: false,
 
