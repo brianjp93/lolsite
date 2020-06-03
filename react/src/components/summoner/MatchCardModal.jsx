@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { Timeline } from './Timeline'
 import ChampionTimelines from './ChampionTimelines'
 import StatOverview from './StatOverview'
+import BuildOrder from './BuildOrder'
+import RunePage from './RunePage'
 
 import numeral from 'numeral'
 import api from '../../api/api'
@@ -177,6 +179,7 @@ function MatchCardModal(props) {
         }
     }, [match_id])
 
+    const mypart = getMyPart()
     const header_style = {
         textAlign: 'center',
         textDecoration: 'underline',
@@ -246,7 +249,7 @@ function MatchCardModal(props) {
                                     </h5>
                                     <ChampionTimelines
                                         theme={store.state.theme}
-                                        my_part={getMyPart()}
+                                        my_part={mypart}
                                         summoner={props.summoner}
                                         participants={participants}
                                         timeline={timeline}
@@ -262,8 +265,28 @@ function MatchCardModal(props) {
                                     match={match}
                                     store={props.store}
                                     pageStore={props.pageStore}
-                                    mypart={getMyPart()}
+                                    mypart={mypart}
                                     is_expanded={true} />
+                            </div>
+                            <div style={{...comp_style, alignSelf: 'baseline'}}>
+                                <h5 style={header_style}>Build Order</h5>
+                                <BuildOrder
+                                    theme={store.state.theme}
+                                    timeline={timeline}
+                                    expanded_width={500}
+                                    participants={participants}
+                                    summoner={props.summoner}
+                                    my_part={mypart}
+                                    match_id={match._id} /> 
+                            </div>
+                            <div style={{...comp_style, alignSelf: 'baseline'}}>
+                                <h5 style={header_style}>Runes</h5>
+                                <RunePage
+                                    mypart={mypart}
+                                    participants={participants}
+                                    match={match}
+                                    store={props.store}
+                                    pageStore={props.pageStore} />
                             </div>
                         </div>
                     </React.Fragment>

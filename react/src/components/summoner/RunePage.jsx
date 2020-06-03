@@ -15,7 +15,6 @@ class RunePage extends Component {
 
         this.getVersion = this.getVersion.bind(this)
         this.getRune = this.getRune.bind(this)
-        this.participants = this.participants.bind(this)
         this.getPerks = this.getPerks.bind(this)
         this.setDefaultParticipant = this.setDefaultParticipant.bind(this)
         this.partSelection = this.partSelection.bind(this)
@@ -29,17 +28,17 @@ class RunePage extends Component {
     }
     componentDidUpdate(prevProps, prevState) {
         if (prevState.selected_part === null) {
-            if (this.participants() !== null) {
+            if (this.props.participants !== null) {
                 this.setDefaultParticipant()
             }
         }
     }
     setDefaultParticipant() {
-        var mypart = this.props.parent.getMyPart()
-        var my_id = mypart._id
-        var participants = this.participants()
+        let mypart = this.props.mypart
+        let my_id = mypart._id
+        let participants = this.props.participants
         if (participants) {
-            for (var part of this.participants()) {
+            for (let part of participants) {
                 if (part._id === my_id) {
                     this.setState({selected_part: part})
                     break
@@ -47,12 +46,8 @@ class RunePage extends Component {
             }
         }
     }
-    participants() {
-        return this.props.parent.state.participants
-    }
     getVersion() {
-        var parent = this.props.parent
-        var match = parent.props.match
+        var match = this.props.match
         var version = `${match.major}.${match.minor}.1`
         return version
     }
@@ -100,8 +95,9 @@ class RunePage extends Component {
         return perks
     }
     partSelection() {
-        var match = this.props.parent.props.match
-        let parts = [...this.props.parent.getTeam100(), ...this.props.parent.getTeam200()]
+        var match = this.props.match
+        // let parts = [...this.props.parent.getTeam100(), ...this.props.parent.getTeam200()]
+        let parts = this.props.participants
         return (
             parts.map(part => {
                 var is_selected = false
@@ -134,7 +130,7 @@ class RunePage extends Component {
         )
     }
     render() {
-        let match = this.props.parent.props.match
+        let match = this.props.match
         // let mypart = this.props.parent.getMyPart()
         var rune_stat_height = (this.props.pageStore.state.match_card_height - 20) / 6
         // let parts = [...this.props.parent.getTeam100(), ...this.props.parent.getTeam200()]
