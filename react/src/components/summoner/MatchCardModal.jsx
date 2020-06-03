@@ -5,6 +5,7 @@ import { Timeline } from './Timeline'
 import ChampionTimelines from './ChampionTimelines'
 import StatOverview from './StatOverview'
 
+import numeral from 'numeral'
 import api from '../../api/api'
 import {
     formatDatetime,
@@ -182,6 +183,7 @@ function MatchCardModal(props) {
                 <h4
                     style={{
                         display: 'inline-block',
+                        marginTop: 4,
                         marginBottom: 8,
                         marginRight: 8,
                     }}>
@@ -193,6 +195,8 @@ function MatchCardModal(props) {
                 </h4>
                 <div style={{display: 'inline-block'}}>
                     {formatDatetimeFull(match.game_creation)}
+                    <span> -- </span>
+                    {`${Math.floor(match.game_duration / 60)}:${numeral(match.game_duration % 60).format('00')}`}
                 </div>
                 <div>
                     patch {match.major}.{match.minor}
