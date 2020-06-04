@@ -158,8 +158,8 @@ class Participant(models.Model):
     role = models.CharField(max_length=64, default='', blank=True)
 
     # custom added fields.
-    rank = models.CharField(max_length=32, default='', blank=True)
-    tier = models.CharField(max_length=32, default='', blank=True)
+    rank = models.CharField(max_length=32, default='', blank=True, null=True)
+    tier = models.CharField(max_length=32, default='', blank=True, null=True)
 
     class Meta:
         unique_together = ('match', '_id')

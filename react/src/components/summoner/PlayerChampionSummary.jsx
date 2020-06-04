@@ -416,11 +416,11 @@ class PlayerChampionSummary extends Component {
                                 style={this.isQueueSelected('flex') ? queue_selected_style : unselected_style}>
                                 Flex
                             </div>
-                            <div
+                            {/* <div
                                 onClick={() => this.selectQueue('3v3')}
                                 style={this.isQueueSelected('3v3') ? queue_selected_style : unselected_style}>
                                 3v3
-                            </div>
+                            </div> */}
                             <div
                                 onClick={() => this.selectQueue('norms')}
                                 style={this.isQueueSelected('norms') ? queue_selected_style : unselected_style}>
