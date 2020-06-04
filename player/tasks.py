@@ -1,4 +1,5 @@
 from celery import task
+from multiprocessing.dummy import Pool as ThreadPool
 
 from django.db import connection
 from django.utils import timezone

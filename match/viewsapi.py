@@ -165,6 +165,9 @@ def get_participants(request, format=None):
         RIOT match ID
     language : str
         default - 'en_US'
+    apply_ranks : bool
+        attempt to apply each player's rank to their
+        participant data.
 
     Returns
     -------
@@ -179,6 +182,7 @@ def get_participants(request, format=None):
         match_id = request.data.get('match_id')
         match__id = request.data.get('match__id')
         language = request.data.get('language', 'en_US')
+        apply_ranks = request.data.get('apply_ranks', False)
         if match_id:
             match = Match.objects.get(id=match_id)
         else:
@@ -190,6 +194,8 @@ def get_participants(request, format=None):
             data = cache_data['data']
             status_code = cache_data['status']
         else:
+            if apply_ranks:
+                mt.apply_player_ranks(match.id, threshold_days=1)
             participants = []
             for part in match.participants.all().select_related('stats'):
                 p = {
@@ -209,6 +215,8 @@ def get_participants(request, format=None):
                     'team_id': part.team_id,
                     'lane': part.lane,
                     'role': part.role,
+                    'tier': part.tier,
+                    'rank': part.rank,
                 }
                 champion = Champion.objects.filter(language=language, key=part.champion_id).order_by('-version').first()
                 p['champion'] = {

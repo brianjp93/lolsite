@@ -5,6 +5,7 @@ from django.db.models import Count, Subquery, OuterRef, F
 from django.db.models import Case, When, Sum
 from django.db.models import IntegerField
 from django.db import connection
+from django.utils import timezone
 
 from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
@@ -910,3 +911,45 @@ def import_summoners_from_spectate(data, region):
                     summoner = query.first()
                     summoners[summoner._id] = summoner.id
     return summoners
+
+def get_player_ranks(match_id, threshold_days=1):
+    """
+    """
+    query = Match.objects.filter(id=match_id)
+    if query.exists():
+        summoners = []
+        match = query.first()
+        participants = match.participants.all()
+        for part in participants:
+            query = Summoner.objects.filter(_id=part.summoner_id)
+            summoners.append(query.first())
+        with ThreadPool(10) as pool:
+            pool.map(lambda x: pt.import_positions(x.id, threshold_days=threshold_days), summoners)
+
+def apply_player_ranks(match_id, threshold_days=1):
+    """
+    """
+    query = Match.objects.filter(id=match_id)
+    if query.exists():
+        match = query.first()
+        now = timezone.now()
+        one_day_ago = now - timezone.timedelta(days=1)
+        if match.get_creation() > one_day_ago:
+            # ok -- apply ranks
+            get_player_ranks(match_id, threshold_days=threshold_days)
+            for part in match.participants.all():
+                if not part.tier:
+                    # only applying if it is not already applied
+                    query = Summoner.objects.filter(_id=part.summoner_id, account_id=part.account_id)
+                    if query.exists():
+                        summoner = query.first()
+                        checkpoint = summoner.get_newest_rank_checkpoint()
+                        if checkpoint:
+                            query = checkpoint.positions.filter(queue_type='RANKED_SOLO_5x5')
+                            if query.exists():
+                                position = query.first()
+                                part.rank, part.tier = position.rank, position.tier
+                                part.save()
+                else:
+                    # if any tiers are already applied, stop
+                    return

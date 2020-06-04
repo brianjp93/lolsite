@@ -1,8 +1,6 @@
 """player.viewsapi
 """
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
-
-
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 

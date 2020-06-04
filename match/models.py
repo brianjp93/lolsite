@@ -157,6 +157,10 @@ class Participant(models.Model):
     lane = models.CharField(max_length=64, default='', blank=True)
     role = models.CharField(max_length=64, default='', blank=True)
 
+    # custom added fields.
+    rank = models.CharField(max_length=32, default='', blank=True)
+    tier = models.CharField(max_length=32, default='', blank=True)
+
     class Meta:
         unique_together = ('match', '_id')
 

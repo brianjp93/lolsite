@@ -10,10 +10,11 @@ import RunePage from './RunePage'
 import numeral from 'numeral'
 import api from '../../api/api'
 import {
-    formatDatetime,
     formatDatetimeFull,
     getTeam,
     participantItems,
+    convertTier,
+    convertRank,
 } from '../../constants/general'
 
 
@@ -42,6 +43,7 @@ function MatchCardModal(props) {
     function getParticipants() {
         let data = {
             match__id: match_id,
+            apply_ranks: true,
         }
         api.match.participants(data)
             .then(response => {
@@ -184,6 +186,20 @@ function MatchCardModal(props) {
                     <div style={{...stat_style, background: '#714545'}}>{dpm} DPM</div>
                     <div style={{...stat_style, background: '#406286'}}>{vspm} VS/m</div>
                     <div style={{...stat_style, background: '#7d763d'}}>{cspm} CS/m</div>
+                </div>
+
+                <div
+                    style={{
+                        marginLeft: 8,
+                        display: 'inline-block',
+                        verticalAlign: 'top',
+                        float: 'right',
+                    }}>
+                    {part.tier &&
+                        <div style={{...stat_style, background: '#6b41a0', fontSize: 'large'}}>
+                            {convertTier(part.tier)}{convertRank(part.rank)}
+                        </div>
+                    }
                 </div>
 
             </div>

@@ -16,6 +16,32 @@ export function getTeam(num, participants) {
     return participants.filter(item => item.team_id === num)
 }
 
+export function convertTier(tier) {
+    let out = ''
+    if (tier.toLowerCase() === 'grandmaster') {
+        out = 'GM'
+    }
+    else {
+        out = tier[0]
+    }
+    return out
+}
+
+export function convertRank(rank) {
+    let out = rank
+    let dict = {
+        'I': '1',
+        'II': '2',
+        'III': '3',
+        'IV': '4',
+        'V': '5',
+    }
+    if (dict[rank] !== undefined) {
+        out = dict[rank]
+    }
+    return out
+}
+
 function getItem(item_id, major, minor, store) {
     // request item info if it isn't in the store
     let version = `${major}.${minor}`
