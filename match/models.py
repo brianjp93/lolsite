@@ -134,6 +134,7 @@ class Match(models.Model):
                 output = ''
         return output.title()
 
+
 class Participant(models.Model):
     match = models.ForeignKey('Match', on_delete=models.CASCADE, related_name='participants')
     _id = models.IntegerField(db_index=True) # participantID
@@ -207,13 +208,13 @@ class Participant(models.Model):
 
         if not max_spell:
             max_spell = Participant.objects.all().order_by('-spell_1_id')[0].spell_1_id
-        spells = [0] * max_spell
+        spells = [0] * (max_spell + 1)
         spells[self.spell_1_id] = 1
         spells[self.spell_2_id] = 1
 
         if not max_champ:
             max_champ = Participant.objects.all().order_by('-champion_id')[0].champion_id
-        champions = [0] * max_champ
+        champions = [0] * (max_champ + 1)
         champions[self.champion_id] = 1
 
         data = lane + spells + champions

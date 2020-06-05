@@ -197,7 +197,11 @@ def get_participants(request, format=None):
             if apply_ranks:
                 mt.apply_player_ranks(match.id, threshold_days=1)
             participants = []
-            for part in match.participants.all().select_related('stats'):
+
+            part_query = mt.get_sorted_participants(match)
+            if len(part_query) != match.participants.count():
+                part_query = match.participants.all().select_related('stats')
+            for part in part_query:
                 p = {
                     'id': part.id,
                     '_id': part._id,
@@ -310,7 +314,8 @@ def get_participants(request, format=None):
                         'wards_placed': stats.wards_placed,
                     }
                 participants.append(p)
-            participants.sort(key=lambda x: participant_sort(x))
+            # participants.sort(key=lambda x: participant_sort(x))
+
             data = {'data': participants}
             
             new_cache = {'data': data, 'status': status_code}

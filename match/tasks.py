@@ -16,7 +16,7 @@ from .models import Event, AssistingParticipants
 from .models import Spectate
 
 from data.constants import IS_PRINT_TIMERS
-from data.models import Rito
+from data.models import Rito, Champion, SummonerSpell
 from lolsite.tasks import get_riot_api
 
 from player.models import Summoner
@@ -27,8 +27,10 @@ import logging
 from multiprocessing.dummy import Pool as ThreadPool
 import time
 from sklearn import svm
+import joblib
 
 
+ROLES = ['top', 'jg', 'mid', 'adc', 'sup']
 logger = logging.getLogger(__name__)
 
 class RateLimitError(Exception):
@@ -955,7 +957,90 @@ def apply_player_ranks(match_id, threshold_days=1):
                     # if any tiers are already applied, stop
                     return
 
-def create_role_model_fit(recent_days=None):
+def create_role_model_fit(recent_days=None, max_entries=10_000):
     """
     """
-    pass
+    query = Participant.objects.filter(role_label__isnull=False)
+    if recent_days:
+        now = timezone.now()
+        start = now - timezone.timedelta(days=recent_days)
+        start = start.timestamp() * 1000
+        start = int(start)
+        query = query.filter(match__game_creation__gt=start)
+    query = query[:max_entries]
+
+    max_spell = Participant.objects.all().order_by('-spell_1_id')[0].spell_1_id
+    max_champ = Participant.objects.all().order_by('-champion_id')[0].champion_id
+
+    x_input = [x.as_data_row(max_spell=max_spell, max_champ=max_champ) for x in query]
+    y_output = [y.role_label for y in query]
+
+    clf = svm.SVC(decision_function_shape='ovr')
+    clf.fit(x_input, y_output)
+    joblib.dump(clf, 'role_predict.svc')
+
+    # query = Participant.objects.filter(lane='NONE', role_label__isnull=True, match__queue_id=420)
+    # for p in query[:50]:
+    #     guess = clf.predict([p.as_data_row()])[0]
+    #     champ = Champion.objects.filter(key=p.champion_id).first()
+    #     spell1 = SummonerSpell.objects.filter(key=p.spell_1_id).first()
+    #     spell2 = SummonerSpell.objects.filter(key=p.spell_2_id).first()
+    #     lane = roles[guess]
+    #     print(f'Guessing {champ.name:15} {p.lane:10} {spell1.name:10} + {spell2.name:10} == {lane.upper():5}')
+
+def predict_role(participant, clf=None, classifier_file='role_predict.svc', number=False):
+    """
+
+    Parameters
+    ----------
+    participant : Participant Model
+    clf : svm.SVC instance
+    classifier_file : str
+        file of saved classifier instance using joblib
+    """
+    convert = ['top', 'jg', 'mid', 'adc', 'sup']
+    if clf is None:
+        clf = joblib.load(classifier_file)
+    guess = clf.predict([participant.as_data_row()])[0]
+    if number:
+        out = guess
+    else:
+        out = convert[guess]
+    return out
+
+def load_clf(classifier_file='role_predict.svc'):
+    clf = joblib.load(classifier_file)
+    return clf
+
+def guess_roles():
+    query = Participant.objects.filter(lane='NONE', role_label__isnull=True, match__queue_id=420)
+    for p in query[:50]:
+        guess = predict_role(p)
+        champ = Champion.objects.filter(key=p.champion_id).first()
+        spell1 = SummonerSpell.objects.filter(key=p.spell_1_id).first()
+        spell2 = SummonerSpell.objects.filter(key=p.spell_2_id).first()
+        lane = guess
+        print(f'Guessing {champ.name:15} {p.lane:10} {spell1.name:10} + {spell2.name:10} == {lane.upper():5}')
+
+def get_sorted_participants(match):
+    """Use ML classifier to guess lane/role
+    """
+    ordered = []
+    clf = load_clf()
+
+    for team_id in [100, 200]:
+        allowed = set(list(range(5)))
+        team = [''] * 5
+        unknown = []
+        for p in match.participants.filter(team_id=team_id):
+            role = predict_role(p, clf=clf, number=True)
+            if role in allowed:
+                team[role] = p
+                allowed.remove(role)
+            else:
+                unknown.append(p)
+        for p in unknown:
+            index = team.index('')
+            team[index] = p
+        ordered += team
+    return ordered

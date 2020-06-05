@@ -180,7 +180,8 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
             }
 
             participants = []
-            for participant in match.participants.all():
+            part_query = mt.get_sorted_participants(match)
+            for participant in part_query:
                 # participant_ser = ParticipantSerializer(participant)
 
                 # SPELLS
@@ -395,7 +396,7 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
                 participants.append(participant_data)
 
             # SORT PARTICIPANTS SO THAT LANES MATCH UP (imperfect)
-            participants.sort(key=participant_sort)
+            # participants.sort(key=participant_sort)
 
             match_data['participants'] = participants
 
