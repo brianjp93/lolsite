@@ -213,7 +213,11 @@ class Participant(models.Model):
         champions = [0] * max_champ
         champions[self.champion_id] = 1
 
-        data = lane + spells + champions
+        vs = self.stats.vision_score
+        max_vs = self.match.participants.filter(team_id=self.team_id).order_by('-stats__vision_score')[0].stats.vision_score
+        is_max_vs = int(vs==max_vs)
+
+        data = lane + spells + champions + [is_max_vs]
         return data
 
 
