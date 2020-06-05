@@ -26,6 +26,7 @@ from celery import task
 import logging
 from multiprocessing.dummy import Pool as ThreadPool
 import time
+from sklearn import svm
 
 
 logger = logging.getLogger(__name__)
@@ -953,3 +954,8 @@ def apply_player_ranks(match_id, threshold_days=1):
                 else:
                     # if any tiers are already applied, stop
                     return
+
+def create_role_model_fit(recent_days=None):
+    """
+    """
+    pass
