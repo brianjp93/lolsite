@@ -969,10 +969,7 @@ def create_role_model_fit(recent_days=None, max_entries=10_000):
         query = query.filter(match__game_creation__gt=start)
     query = query[:max_entries]
 
-    max_spell = Participant.objects.all().order_by('-spell_1_id')[0].spell_1_id
-    max_champ = Participant.objects.all().order_by('-champion_id')[0].champion_id
-
-    x_input = [x.as_data_row(max_spell=max_spell, max_champ=max_champ) for x in query]
+    x_input = [x.as_data_row() for x in query]
     y_output = [y.role_label for y in query]
 
     clf = svm.SVC(decision_function_shape='ovr')

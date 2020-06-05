@@ -195,8 +195,7 @@ class Participant(models.Model):
             url = spell.image_url()
         return url
 
-    def as_data_row(self, max_spell=None, max_champ=None):
-        pad = 10
+    def as_data_row(self, max_spell=70, max_champ=1000):
         convert_lane = {
             'NONE': 0,
             'TOP': 1,
@@ -207,15 +206,11 @@ class Participant(models.Model):
         lane = [0] * 5
         lane[convert_lane[self.lane]] = 1
 
-        if not max_spell:
-            max_spell = Participant.objects.all().order_by('-spell_1_id')[0].spell_1_id
-        spells = [0] * (max_spell + pad)
+        spells = [0] * max_spell
         spells[self.spell_1_id] = 1
         spells[self.spell_2_id] = 1
 
-        if not max_champ:
-            max_champ = Participant.objects.all().order_by('-champion_id')[0].champion_id
-        champions = [0] * (max_champ + pad)
+        champions = [0] * max_champ
         champions[self.champion_id] = 1
 
         data = lane + spells + champions
