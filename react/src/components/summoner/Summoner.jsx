@@ -240,6 +240,7 @@ class Summoner extends Component {
         this.setState({
             match_ids: new Set(),
             next_page: 2,
+            page: 1,
             is_reloading_matches: true,
         }, () => {
             this.getSummonerPage(() => {
