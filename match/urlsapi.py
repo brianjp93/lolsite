@@ -8,6 +8,8 @@ urlpatterns = [
     path('get-spectate/', match_api.get_spectate),
     path('check-for-live-game/', match_api.check_for_live_game),
     path('get/', match_api.get_match),
+    path('participant/set-role/', match_api.set_role_label),
+    path('get-latest-unlabeled/', match_api.get_latest_unlabeled_match),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

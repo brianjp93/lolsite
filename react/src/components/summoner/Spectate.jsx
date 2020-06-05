@@ -92,6 +92,7 @@ class Spectate extends Component {
                                 }
                                 {this.props.summoner_id !== part.summonerId &&
                                     <Link
+                                        target='_blank'
                                         style={{verticalAlign: 'top'}}
                                         className={`${this.props.theme}`}
                                         to={`/${this.props.region}/${part.summonerName}/`}>

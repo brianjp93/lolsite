@@ -5,7 +5,7 @@ from lolsite.tasks import get_riot_api
 from match import tasks as mt
 from player import tasks as pt
 
-from .models import Match
+from .models import Match, Participant
 from .models import AdvancedTimeline, Frame, ParticipantFrame
 from .models import Event, AssistingParticipants
 
@@ -388,3 +388,51 @@ def check_for_live_game(request, format=None):
         status_code = r.status_code
 
     return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def set_role_label(request, format=None):
+    """
+
+    Parameters
+    ----------
+    participant_id : int
+    role : int
+        0=top, 1=jg, 2=mid, 3=adc, 4=sup
+    
+    Returns
+    -------
+    None
+
+    """
+    data = {}
+    status_code = 200
+    if request.method == 'POST':
+        if request.user.is_superuser:
+            role = request.data['role']
+            participant_id = request.data['participant_id']
+            p = Participant.objects.get(id=participant_id)
+            p.role_label = role
+            p.save()
+            data = {'message': f'set participant {p.summoner_name} to role {p.role_label}'}
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_latest_unlabeled_match(request, format=None):
+    """Retrieve newest game without role labels.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    Match JSON
+
+    """
+    p = Participant.objects.filter(role_label=None, match__queue_id=420).order_by('-match__game_creation').first()
+    match = p.match
+    serializer = MatchSerializer(match)
+    data = {'data': serializer.data}
+    return Response(data)

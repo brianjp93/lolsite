@@ -11,6 +11,7 @@ import SignUp from './components/account/SignUp'
 import LogIn from './components/account/LogIn'
 import VerifyEmail from './components/account/VerifyEmail'
 import Account from './components/account/Account'
+import SetRoles from './components/summoner/SetRoles'
 
 import api from './api/api'
 
@@ -203,6 +204,7 @@ function Routes(props) {
                     <Route path='/account/' render={(rest) => <Account route={rest} store={props.store} />} />
 
                     <Route exact path='/themes/' render={() => <Themes store={props.store}/>}/>
+                    <Route exact path='/set-roles/' render={() => <SetRoles store={props.store}/>}/>
                 </Switch>
             </main>
         )

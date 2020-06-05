@@ -30,10 +30,22 @@ function getMatch(data) {
     return axios.post(url, data)
 }
 
+function setRole(data) {
+    var url = `/api/${version}/match/participant/set-role/`
+    return axios.post(url, data)
+}
+
+function getLatestUnlabeled(data) {
+    var url = `/api/${version}/match/get-latest-unlabeled/`
+    return axios.post(url, data)
+}
+
 export default {
     timeline,
     participants,
     getSpectate,
     checkForLiveGame,
     getMatch,
+    setRole,
+    getLatestUnlabeled,
 }

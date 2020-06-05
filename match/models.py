@@ -160,6 +160,9 @@ class Participant(models.Model):
     # custom added fields.
     rank = models.CharField(max_length=32, default='', blank=True, null=True)
     tier = models.CharField(max_length=32, default='', blank=True, null=True)
+    # label for ML training
+    # 0=top, 1=jg, 2=mid, 3=adc, 4=sup
+    role_label = models.IntegerField(default=None, null=True)
 
     class Meta:
         unique_together = ('match', '_id')
@@ -190,6 +193,31 @@ class Participant(models.Model):
             spell = query.first()
             url = spell.image_url()
         return url
+
+    def as_data_row(self, max_spell=None, max_champ=None):
+        convert_lane = {
+            'NONE': 0,
+            'TOP': 1,
+            'JUNGLE': 2,
+            'MIDDLE': 3,
+            'BOTTOM': 4,
+        }
+        lane = [0] * 5
+        lane[convert_lane[self.lane]] = 1
+
+        if not max_spell:
+            max_spell = Participant.objects.all().order_by('-spell_1_id')[0].spell_1_id
+        spells = [0] * max_spell
+        spells[self.spell_1_id] = 1
+        spells[self.spell_2_id] = 1
+
+        if not max_champ:
+            max_champ = Participant.objects.all().order_by('-champion_id')[0].champion_id
+        champions = [0] * max_champ
+        champions[self.champion_id] = 1
+
+        data = lane + spells + champions
+        return data
 
 
 class Stats(models.Model):
