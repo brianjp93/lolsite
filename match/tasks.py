@@ -21,6 +21,7 @@ from lolsite.tasks import get_riot_api
 
 from player.models import Summoner
 from player import tasks as pt
+from player.constants import CLF
 
 from celery import task
 import logging
@@ -97,7 +98,6 @@ def import_summoner_from_participant(part, region):
             except IntegrityError as error:
                 # probably already saved it in a separate thread
                 pass
-
 
 
 def import_match_from_data(data, refresh=False, region=''):
@@ -976,29 +976,22 @@ def create_role_model_fit(recent_days=None, max_entries=10_000):
     clf.fit(x_input, y_output)
     joblib.dump(clf, 'role_predict.svc')
 
-def predict_role(participant, clf=None, classifier_file='role_predict.svc', number=False):
+def predict_role(participant, classifier_file='role_predict.svc', number=False):
     """
 
     Parameters
     ----------
     participant : Participant Model
-    clf : svm.SVC instance
     classifier_file : str
         file of saved classifier instance using joblib
     """
     convert = ['top', 'jg', 'mid', 'adc', 'sup']
-    if clf is None:
-        clf = joblib.load(classifier_file)
-    guess = clf.predict([participant.as_data_row()])[0]
+    guess = CLF.predict([participant.as_data_row()])[0]
     if number:
         out = guess
     else:
         out = convert[guess]
     return out
-
-def load_clf(classifier_file='role_predict.svc'):
-    clf = joblib.load(classifier_file)
-    return clf
 
 def guess_roles():
     query = Participant.objects.filter(lane='NONE', role_label__isnull=True, match__queue_id=420)
@@ -1014,14 +1007,13 @@ def get_sorted_participants(match):
     """Use ML classifier to guess lane/role
     """
     ordered = []
-    clf = load_clf()
 
     for team_id in [100, 200]:
         allowed = set(list(range(5)))
         team = [''] * 5
         unknown = []
         for p in match.participants.filter(team_id=team_id):
-            role = predict_role(p, clf=clf, number=True)
+            role = predict_role(p, number=True)
             if role in allowed:
                 team[role] = p
                 allowed.remove(role)

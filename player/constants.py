@@ -1,3 +1,5 @@
+import joblib
+
 PROS = {
     'doublelift': [
         ('doublelift', 'na'),
@@ -9,3 +11,5 @@ PROS = {
         ('from iron', 'na'),
     ],
 }
+
+CLF = joblib.load('role_predict.svc')
