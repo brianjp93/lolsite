@@ -67,7 +67,7 @@ class Summoner extends Component {
             icon: {},
             matches: [],
             match_ids: new Set(),
-            count: 20,
+            count: 10,
             page: 1,
             next_page: 2,
             last_refresh: null,
@@ -104,6 +104,7 @@ class Summoner extends Component {
         this.isTriggerImport = this.isTriggerImport.bind(this)
         this.pagination = this.pagination.bind(this)
         this.getPage = this.getPage.bind(this)
+        this.closeModal = this.closeModal.bind(this)
     }
     componentDidMount() {
         ReactGA.event({
@@ -310,9 +311,14 @@ class Summoner extends Component {
     }
     pagination() {
         const theme = this.props.store.state.theme
+        let disabled = {disabled: false}
+        if (this.state.is_requesting_next_page) {
+            disabled.disabled = true
+        }
         return (
             <div>
                 <button
+                    {...disabled}
                     onClick={() => {
                         let page = this.state.page
                         page = page - 1
@@ -324,6 +330,7 @@ class Summoner extends Component {
                     <i className="material-icons">chevron_left</i>
                 </button>
                 <button
+                    {...disabled}
                     style={{marginLeft: 8}}
                     onClick={() => {
                         let page = this.state.page
@@ -388,6 +395,12 @@ class Summoner extends Component {
         }
         this.setState({queues: qdict})
     }
+    closeModal() {
+        let href = this.props.route.location.pathname
+        href = href.split('/')
+        href = href.slice(0, href.length - 3).join('/') + '/'
+        this.props.route.history.push(href)
+    }
     render() {
         const custom_max_width = 'col l10 offset-l1 m12 s12'
         const store = this.props.store
@@ -425,18 +438,14 @@ class Summoner extends Component {
                             {this.state.matches.length > 0 &&
                                 <Modal
                                     isOpen={is_match_modal_open}
-                                    onRequestClose={() => {
-                                        let href = this.props.route.location.pathname
-                                        href = href.split('/')
-                                        href = href.slice(0, href.length - 3).join('/') + '/'
-                                        this.props.route.history.push(href)
-                                    }}
+                                    onRequestClose={this.closeModal}
                                     style={MODALSTYLE} >
-                                        <MatchCardModal
-                                            pageStore={this}
-                                            summoner={this.state.summoner}
-                                            region={this.props.region}
-                                            store={store} route={this.props.route} />
+                                    <MatchCardModal
+                                        closeModal={this.closeModal}
+                                        pageStore={this}
+                                        summoner={this.state.summoner}
+                                        region={this.props.region}
+                                        store={store} route={this.props.route} />
                                 </Modal>
                             }
                             <div className="row" style={{marginBottom: 0}}>
@@ -496,7 +505,15 @@ class Summoner extends Component {
                             <div className="row" style={{visibility: 'visibile'}}>
                                 <div className='col l10 offset-l1 m12 s12'>
                                     {this.pagination()}
-                                    {this.state.matches.map((match, key) => {
+                                    {this.state.is_requesting_next_page &&
+                                        <div>
+                                            <AtomSpinner
+                                                color='#ffffff'
+                                                size={200}
+                                                style={{marginLeft: 200}} />
+                                        </div>
+                                    }
+                                    {!this.state.is_requesting_next_page && this.state.matches.map((match, key) => {
                                         return (
                                             <MatchCard
                                                 key={`${key}-${match._id}`}
@@ -1019,7 +1036,7 @@ class RecentlyPlayedWith extends Component {
                 }}
                 className={`card-panel ${this.props.store.state.theme}`}>
                 <div style={{textDecoration:'underline', display:'inline-block'}}>
-                    Recent Players
+                    Players In These Games
                 </div>{' '}
                 <small>{this.props.matches.length} games</small>
                 <br/>

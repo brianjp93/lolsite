@@ -249,6 +249,19 @@ function MatchCardModal(props) {
     }
     return (
         <div style={{marginBottom: 300}}>
+            <div
+                style={{
+                    display: 'inline-block',
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                }}>
+                <button
+                    onClick={props.closeModal}
+                    className={`btn-floating btn-large red`}>
+                    <i className="material-icons">close</i>
+                </button>
+            </div>
             <div>
                 <h4
                     style={{

@@ -206,7 +206,9 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
                 participant_data = {
                     '_id': participant._id,
                     'summoner_name': participant.summoner_name,
-                    'account_id': participant.current_account_id,
+                    'current_account_id': participant.current_account_id,
+                    'account_id': participant.account_id,
+                    'summoner_id': participant.summoner_id,
                     'lane': participant.lane,
                     'role': participant.role,
                     'team_id': participant.team_id,
