@@ -252,9 +252,9 @@ function MatchCardModal(props) {
             <div
                 style={{
                     display: 'inline-block',
-                    position: 'absolute',
-                    top: 10,
-                    right: 10,
+                    position: 'fixed',
+                    top: 60,
+                    right: 60,
                 }}>
                 <button
                     onClick={props.closeModal}

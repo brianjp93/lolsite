@@ -893,6 +893,7 @@ def import_summoners_from_spectate(data, region):
     dict
         A mapping from the encrypted summoner ID to the internal ID
         {summoner._id: summoner.id}
+
     """
     summoners = {}
     for part in data['participants']:
