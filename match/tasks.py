@@ -979,15 +979,6 @@ def create_role_model_fit(recent_days=None, max_entries=10_000):
     clf.fit(x_input, y_output)
     joblib.dump(clf, 'role_predict.svc')
 
-    # query = Participant.objects.filter(lane='NONE', role_label__isnull=True, match__queue_id=420)
-    # for p in query[:50]:
-    #     guess = clf.predict([p.as_data_row()])[0]
-    #     champ = Champion.objects.filter(key=p.champion_id).first()
-    #     spell1 = SummonerSpell.objects.filter(key=p.spell_1_id).first()
-    #     spell2 = SummonerSpell.objects.filter(key=p.spell_2_id).first()
-    #     lane = roles[guess]
-    #     print(f'Guessing {champ.name:15} {p.lane:10} {spell1.name:10} + {spell2.name:10} == {lane.upper():5}')
-
 def predict_role(participant, clf=None, classifier_file='role_predict.svc', number=False):
     """
 
