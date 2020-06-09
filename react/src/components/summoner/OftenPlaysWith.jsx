@@ -9,6 +9,7 @@ export function OftenPlaysWith(props) {
     const [queue_id, setQueueId] = useState(null)
     const [season_id, setSeasonId] = useState(null)
     const [recent, setRecent] = useState(null)
+    const [recent_days, setRecentDays] = useState(90)
     const [start, setStart] = useState(0)
     const [end, setEnd] = useState(10)
     const [players, setPlayers] = useState([])
@@ -23,6 +24,7 @@ export function OftenPlaysWith(props) {
             queue_id,
             season_id,
             recent,
+            recent_days,
             start,
             end,
             summoner_id,
@@ -71,6 +73,7 @@ export function OftenPlaysWith(props) {
 
     return (
         <div>
+            <small>Over the past {recent_days} days.</small>
             <table className='table'>
                 <thead>
                     <tr>

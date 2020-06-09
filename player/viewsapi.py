@@ -1259,6 +1259,8 @@ def get_top_played_with(request, format=None):
     group_by : ['summoner_name', 'account_id']
     season_id : int
     queue_id : int
+    recent : int
+    recent_days : int
     start : int
     end : int
 
@@ -1278,6 +1280,7 @@ def get_top_played_with(request, format=None):
         season_id = request.data.get('season_id', None)
         queue_id = request.data.get('queue_id', None)
         recent = request.data.get('recent', None)
+        recent_days = request.data.get('recent_days', None)
         start = int(request.data.get('start', 0))
         end = int(request.data.get('end', 20))
 
@@ -1294,7 +1297,7 @@ def get_top_played_with(request, format=None):
             status_code = 400
 
         if summoner_id:
-            cache_key = f'{summoner_id}/{group_by}/{season_id}/{queue_id}/{recent}/{start}/{end}/'
+            cache_key = f'{summoner_id}/{group_by}/{season_id}/{queue_id}/{recent}/{start}/{end}/{recent_days}'
             cached = cache.get(cache_key)
 
             if cached:
@@ -1305,6 +1308,7 @@ def get_top_played_with(request, format=None):
                     season_id=season_id,
                     queue_id=queue_id,
                     recent=recent,
+                    recent_days=recent_days,
                     group_by=group_by,
                 )
                 query = query[start: end]

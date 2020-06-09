@@ -536,7 +536,7 @@ class Summoner extends Component {
                                                 verticalAlign: 'top',
                                                 marginLeft: 8,
                                             }}>
-                                            <h5>Often Plays With</h5>
+                                            <h5 style={{marginBottom: 3}}>Often Plays With</h5>
                                             <OftenPlaysWith
                                                 region={this.props.region}
                                                 store={this.props.store}

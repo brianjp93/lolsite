@@ -694,7 +694,7 @@ def get_total_matches(account_id, region, **kwargs):
     return total
 
 
-def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, recent=None, group_by='summoner_name'):
+def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, recent=None, recent_days=None, group_by='summoner_name'):
     """Find the summoner names that you have played with the most.
 
     Parameters
@@ -707,6 +707,7 @@ def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, r
     queue_id : int
     recent : int
         count of most recent games to check
+    recent_days : int
 
     Returns
     -------
@@ -731,6 +732,11 @@ def get_top_played_with(summoner_id, team=True, season_id=None, queue_id=None, r
         m_id_list = [x.id for x in m[:recent]]
 
         p = p.filter(match__id__in=m_id_list)
+    elif recent_days is not None:
+        now = timezone.now()
+        start_time = now - timezone.timedelta(days=recent_days)
+        start_time = int(start_time.timestamp() * 1000)
+        p = p.filter(match__game_creation__gt=start_time)
 
     # get all participants that were in a match with the given summoner
     p = p.filter(match__participants__current_account_id=summoner.account_id)
