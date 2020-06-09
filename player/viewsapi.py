@@ -1269,6 +1269,7 @@ def get_top_played_with(request, format=None):
     """
     data = {}
     status_code = 200
+    cache_seconds = 60 * 60 * 12
 
     if request.method == 'POST':
         _id = request.data.get('summoner_id', None)
@@ -1293,17 +1294,24 @@ def get_top_played_with(request, format=None):
             status_code = 400
 
         if summoner_id:
-            print(summoner_id, season_id, queue_id, recent, group_by)
-            query = mt.get_top_played_with(
-                summoner_id,
-                season_id=season_id,
-                queue_id=queue_id,
-                recent=recent,
-                group_by=group_by,
-            )
-            query = query[start: end]
-            query = list(query.values(group_by, 'wins', 'count'))
-            data = {'data': query}
+            cache_key = f'{summoner_id}/{group_by}/{season_id}/{queue_id}/{recent}/{start}/{end}/'
+            cached = cache.get(cache_key)
+
+            if cached:
+                data = cached
+            else:
+                query = mt.get_top_played_with(
+                    summoner_id,
+                    season_id=season_id,
+                    queue_id=queue_id,
+                    recent=recent,
+                    group_by=group_by,
+                )
+                query = query[start: end]
+                query = list(query.values(group_by, 'wins', 'count'))
+                data = {'data': query}
+                cache.set(cache_key, data, cache_seconds)
+
     else:
         data = {'message': 'Only post allowed.', 'status': 'INVALID_REQUEST'}
     return Response(data, status=status_code)
