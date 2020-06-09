@@ -475,6 +475,9 @@ function MatchCard(props) {
                     paddingTop: TOPPAD,
                 }}>
                 <div style={{fontSize: 'small'}}>
+                    {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
+                </div>
+                <div style={{fontSize: 'small'}}>
                     {kda} KDA
                 </div>
                 <div style={{fontSize: 'small'}}>

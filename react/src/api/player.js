@@ -11,6 +11,11 @@ function getSummoner(data) {
     return axios.post(url, data)
 }
 
+function getSummoners(data) {
+    let url = `/api/${version}/player/summoners/`
+    return axios.post(url, data)
+}
+
 function getSummonerPage(data) {
     let url = `/api/${version}/player/summoner-page/`
     return axios.post(url, data)
@@ -86,8 +91,14 @@ function changePassword(data) {
     return axios.post(url, data)
 }
 
+function getTopPlayedWith(data) {
+    let url = `/api/${version}/player/get-top-played-with/`
+    return axios.post(url, data)
+}
+
 export default {
     getSummoner,
+    getSummoners,
     getSummonerPage,
     getPositions,
     signUp,
@@ -103,4 +114,5 @@ export default {
     connectAccount,
     getConnectedAccounts,
     changePassword,
+    getTopPlayedWith,
 }

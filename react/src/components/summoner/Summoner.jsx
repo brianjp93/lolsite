@@ -18,6 +18,7 @@ import api from '../../api/api'
 import Footer from '../general/Footer'
 import Modal from 'react-modal'
 import MatchCardModal from './MatchCardModal'
+import { OftenPlaysWith } from './OftenPlaysWith'
 
 
 function convertVerticalScroll(event)  {
@@ -505,26 +506,43 @@ class Summoner extends Component {
 
                             <div className="row" style={{visibility: 'visibile'}}>
                                 <div className='col l10 offset-l1 m12 s12'>
-                                    {this.pagination()}
-                                    {this.state.is_requesting_next_page &&
-                                        <div>
-                                            <AtomSpinner
-                                                color='#ffffff'
-                                                size={200}
-                                                style={{marginLeft: 200}} />
+                                    <div style={{display: 'inline-block'}}>
+                                        {this.pagination()}
+                                        {this.state.is_requesting_next_page &&
+                                            <div>
+                                                <AtomSpinner
+                                                    color='#ffffff'
+                                                    size={200}
+                                                    style={{marginLeft: 200}} />
+                                            </div>
+                                        }
+                                        {!this.state.is_requesting_next_page && this.state.matches.map((match, key) => {
+                                            return (
+                                                <MatchCard
+                                                    key={`${key}-${match._id}`}
+                                                    index={key}
+                                                    store={this.props.store}
+                                                    pageStore={this}
+                                                    match={match} />
+                                            )
+                                        })}
+                                        {this.pagination()}
+                                    </div>
+
+                                    {this.state.summoner &&
+                                        <div
+                                            style={{
+                                                display: 'inline-block',
+                                                verticalAlign: 'top',
+                                                marginLeft: 8,
+                                            }}>
+                                            <h5>Often Plays With</h5>
+                                            <OftenPlaysWith
+                                                region={this.props.region}
+                                                store={this.props.store}
+                                                summoner_id={this.state.summoner.id} />
                                         </div>
                                     }
-                                    {!this.state.is_requesting_next_page && this.state.matches.map((match, key) => {
-                                        return (
-                                            <MatchCard
-                                                key={`${key}-${match._id}`}
-                                                index={key}
-                                                store={this.props.store}
-                                                pageStore={this}
-                                                match={match} />
-                                        )
-                                    })}
-                                    {this.pagination()}
                                 </div>
                             </div>
                         </div>

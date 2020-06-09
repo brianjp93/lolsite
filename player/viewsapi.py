@@ -34,6 +34,7 @@ from .serializers import RankPositionSerializer
 from .serializers import FavoriteSerializer
 
 import time
+import json
 
 
 @api_view(['POST'])
@@ -74,6 +75,32 @@ def get_summoner(request, format=None):
         else:
             data['error'] = 'No summoner found'
             status_code = 400
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_summoners(request, format=None):
+    """
+
+    Parameters
+    ----------
+    account_ids : [ID]
+    region : str
+
+    Returns
+    -------
+    Summoner List
+
+    """
+    data = {}
+    status_code = 200
+    if request.method == 'POST':
+        account_ids = request.data['account_ids']
+        account_ids = account_ids[:100]
+        region = request.data['region']
+        query = Summoner.objects.filter(account_id__in=account_ids, region=region)
+        serializer = SummonerSerializer(query, many=True)
+        data = {'data': serializer.data}
     return Response(data, status=status_code)
 
 
@@ -1217,4 +1244,66 @@ def change_password(request, format=None):
         else:
             data = {'data': False, 'message': 'Must be logged in to use this function.'}
             status_code = 400
+    return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def get_top_played_with(request, format=None):
+    """
+
+    Parameters
+    ----------
+    summoner_id : internal ID for Summoner
+    account_id : RIOT account ID
+        If `id` is not provided
+    group_by : ['summoner_name', 'account_id']
+    season_id : int
+    queue_id : int
+    start : int
+    end : int
+
+    Returns
+    -------
+    list of players
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == 'POST':
+        _id = request.data.get('summoner_id', None)
+        account_id = request.data.get('account_id', None)
+        group_by = request.data.get('group_by', None)
+        season_id = request.data.get('season_id', None)
+        queue_id = request.data.get('queue_id', None)
+        recent = request.data.get('recent', None)
+        start = int(request.data.get('start', 0))
+        end = int(request.data.get('end', 20))
+
+        if end - start > 100:
+            end = start + 100
+
+        summoner_id = None
+        if _id is not None:
+            summoner_id = _id
+        elif account_id is not None:
+            summoner_id = Summoner.objects.get(account_id=account_id).id
+        else:
+            data = {'message': 'Must provide id or account_id.'}
+            status_code = 400
+
+        if summoner_id:
+            print(summoner_id, season_id, queue_id, recent, group_by)
+            query = mt.get_top_played_with(
+                summoner_id,
+                season_id=season_id,
+                queue_id=queue_id,
+                recent=recent,
+                group_by=group_by,
+            )
+            query = query[start: end]
+            query = list(query.values(group_by, 'wins', 'count'))
+            data = {'data': query}
+    else:
+        data = {'message': 'Only post allowed.', 'status': 'INVALID_REQUEST'}
     return Response(data, status=status_code)
