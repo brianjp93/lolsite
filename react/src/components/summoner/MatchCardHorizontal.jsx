@@ -7,6 +7,8 @@ import numeral from 'numeral'
 import moment from 'moment'
 import Item from '../data/Item'
 import ReactTooltip from 'react-tooltip'
+import { rankParticipants } from './rankparticipants'
+import { useEffect } from 'react'
 
 
 function formatDatetime(epoch) {
@@ -57,6 +59,7 @@ function matchHighlightColor(queue_id) {
 
 
 function MatchCard(props) {
+    const [participants, setParticipants] = useState([])
     const theme = props.store.state.theme
     const match = props.match
     const store = props.store
@@ -76,12 +79,22 @@ function MatchCard(props) {
     const getMyPart = () => {
         // get my participant
         let account_id = props.pageStore.state.summoner.account_id
-        for (let part of match.participants) {
+        let parts = match.participants
+        if (participants.length > 0) {
+            parts = participants
+        }
+        for (let part of parts) {
             if (part.account_id === account_id) {
                 return part
             }
         }
     }
+
+    function getParticipantRanks() {
+        let participants = rankParticipants(match.participants)
+        setParticipants(participants)
+    }
+
     const mypart = getMyPart()
     const game_time = match.game_duration / 60
     const dpm = mypart.stats.total_damage_dealt_to_champions / (match.game_duration / 60)
@@ -274,7 +287,7 @@ function MatchCard(props) {
         return perc
     }
     const getTeam = (team_id) => {
-        let team = match.participants.filter((participant) => participant.team_id === team_id)
+        let team = participants.filter((participant) => participant.team_id === team_id)
         return (
             <div>
                 {team.map(part => {
@@ -292,6 +305,7 @@ function MatchCard(props) {
                         wid = 0
                     }
                     let is_me = part.account_id === mypart.account_id
+
                     return (
                         <div key={`${match.id}-${part._id}`} style={{position: 'relative'}}>
 
@@ -373,6 +387,11 @@ function MatchCard(props) {
             </div>
         )
     }
+
+    useEffect(() => {
+        getParticipantRanks()
+    }, [match])
+
     const TEAMSWIDTH = 120
     const TOPPAD = 20
     const CARDHEIGHT = 130
@@ -472,8 +491,24 @@ function MatchCard(props) {
                     width: 100,
                     textAlign: 'center',
                     verticalAlign: 'top',
-                    paddingTop: TOPPAD,
+                    paddingTop: 0,
                 }}>
+                {mypart.impact_rank === 1 &&
+                    <div style={{fontSize: 'small'}}>
+                        <div
+                            style={{
+                                display: 'inline-block',
+                                borderRadius: 4,
+                                background: 'linear-gradient(90deg, rgba(66,66,93,1) 0%, rgba(133,74,128,1) 100%)',
+                                padding: '0px 5px',
+                            }}>
+                            MVP
+                        </div>
+                    </div>
+                }
+                {mypart.impact_rank !== 1 &&
+                    <div style={{height: 19}}></div>
+                }
                 <div style={{fontSize: 'small'}}>
                     {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
                 </div>

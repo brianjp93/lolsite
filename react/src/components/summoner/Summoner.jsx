@@ -12,6 +12,7 @@ import ReactTooltip from 'react-tooltip'
 // import PlayerChampionSummary from './PlayerChampionSummary'
 import OverviewSelection from './OverviewSelection'
 import numeral from 'numeral'
+import { rankParticipants } from './rankparticipants'
 
 import MatchFilter from './MatchFilter'
 import api from '../../api/api'

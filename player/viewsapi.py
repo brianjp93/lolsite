@@ -400,6 +400,8 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
                             'damage_dealt_to_turrets': stats.damage_dealt_to_turrets,
                             'total_minions_killed': stats.total_minions_killed,
                             'neutral_minions_killed': stats.neutral_minions_killed,
+                            'total_heal': stats.total_heal,
+                            'time_ccing_others': stats.time_ccing_others,
                         }
                         participant_data['stats'] = stats_data
                 else:
@@ -420,6 +422,8 @@ def serialize_matches(match_query, account_id): # pylint: disable=too-many-state
                             'damage_dealt_to_objectives': stats.damage_dealt_to_objectives,
                             'damage_dealt_to_turrets': stats.damage_dealt_to_turrets,
                             'gold_earned': stats.gold_earned,
+                            'total_heal': stats.total_heal,
+                            'time_ccing_others': stats.time_ccing_others,
                         }
                         participant_data['stats'] = stats_data
                 participants.append(participant_data)

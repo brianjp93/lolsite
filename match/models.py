@@ -470,7 +470,6 @@ class Team(models.Model):
     win = models.BooleanField(default=False, blank=True)
     win_str = models.CharField(default='', blank=True, max_length=128)
 
-
     def __str__(self):
         return f'Team(match={self.match._id}, _id={self._id})'
 

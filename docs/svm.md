@@ -15,7 +15,7 @@ So far I have been quite pleased with the assignments it has come up with. I hav
 
 ```python
 >>> from match import tasks
->>> mt.create_role_model_fit()
+>>> tasks.create_role_model_fit()
 ```
 
 This will create a file called `role_predict.svc` which will be loaded up when predicting roles in future games.

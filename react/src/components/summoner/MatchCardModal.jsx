@@ -16,6 +16,7 @@ import {
     convertTier,
     convertRank,
 } from '../../constants/general'
+import { rankParticipants } from './rankparticipants'
 
 
 function MatchCardModal(props) {
@@ -47,7 +48,8 @@ function MatchCardModal(props) {
         }
         api.match.participants(data)
             .then(response => {
-                setParticipants(response.data.data)
+                let parts = rankParticipants(response.data.data)
+                setParticipants(parts)
             })
     }
 
@@ -200,6 +202,23 @@ function MatchCardModal(props) {
                             {convertTier(part.tier)}{convertRank(part.rank)}
                         </div>
                     }
+                    {part.impact_rank === 1 &&
+                        <div
+                            style={{
+                                display: 'inline-block',
+                                borderRadius: 4,
+                                background: 'linear-gradient(90deg, rgba(66,66,93,1) 0%, rgba(133,74,128,1) 100%)',
+                                padding: '0px 10px',
+                            }}>
+                            MVP
+                        </div>
+                    }
+                    <div>
+                        rank: {part.impact_rank}
+                    </div>
+                    <div title='Impact Score'>
+                        I.S. {numeral(part.impact).format('0.00')}
+                    </div>
                 </div>
 
             </div>
