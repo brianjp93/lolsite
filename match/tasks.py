@@ -974,6 +974,7 @@ def create_role_model_fit(recent_days=None, max_entries=10_000):
         start = start.timestamp() * 1000
         start = int(start)
         query = query.filter(match__game_creation__gt=start)
+        query = query.order_by('-match__game_creation')
     query = query[:max_entries]
 
     x_input = [x.as_data_row() for x in query]

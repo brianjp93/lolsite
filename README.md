@@ -5,6 +5,8 @@
 * [Installation](/docs/installation.md)
 * [Deployment](/docs/deployment.md)
 
+* [Using an SVM to predict role assignment](/docs/svm.md)
+
 
 # LoL Site
 
