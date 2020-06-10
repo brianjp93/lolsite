@@ -84,17 +84,22 @@ export function OftenPlaysWith(props) {
                 </thead>
                 <tbody>
                     {player_names.map(player => {
-                        let win_perc = (player.wins / player.count) * 100
-                        win_perc = numeral(win_perc).format('0.0')
-                        return (
-                            <tr key={player.account_id}>
-                                <td> {player.name} </td>
-                                <td>
-                                    {player.wins} <small>{win_perc}%</small>
-                                </td>
-                                <td> {player.count} </td>
-                            </tr>
-                        )
+                        if (player.name) {
+                            let win_perc = (player.wins / player.count) * 100
+                            win_perc = numeral(win_perc).format('0.0')
+                            return (
+                                <tr key={player.account_id}>
+                                    <td> {player.name} </td>
+                                    <td>
+                                        {player.wins} <small>{win_perc}%</small>
+                                    </td>
+                                    <td> {player.count} </td>
+                                </tr>
+                            )
+                        }
+                        else {
+                            return null
+                        }
                     })}
                 </tbody>
             </table>
