@@ -8,35 +8,35 @@ export function rankParticipants(participants) {
 
 export function rankTeam(team) {
     let f1 = team.map(p => p.stats.total_damage_dealt_to_champions).reduce((a, b) => a + b)
-    if (f1 === 0) { f1 = 1 }
+    f1 += 1000
     let f1_weight = 1
 
     let f2 = team.map(p => p.stats.damage_dealt_to_objectives).reduce((a, b) => a + b)
-    if (f2 === 0) { f2 = 1 }
-    let f2_weight = .4
+    f2 += 1000
+    let f2_weight = .5
 
     let f3 = team.map(p => p.stats.damage_dealt_to_turrets).reduce((a, b) => a + b)
-    if (f3 === 0) { f3 = 1 }
-    let f3_weight = .7
+    f3 += 1000
+    let f3_weight = .5
 
     let f4 = team.map(p => p.stats.kills).reduce((a, b) => a + b)
-    if (f4 === 0) { f4 = 1 }
-    let f4_weight = .6
+    f4 += 5
+    let f4_weight = .8
 
     let f5 = team.map(p => p.stats.vision_score).reduce((a, b) => a + b)
     if (f5 === 0) { f5 = 1 }
     let f5_weight = 1
 
     let f6 = team.map(p => p.stats.total_heal).reduce((a, b) => a + b)
-    if (f6 === 0) { f6 = 1 }
+    f6 += 1000
     let f6_weight = .4
 
     let f7 = team.map(p => p.stats.time_ccing_others).reduce((a, b) => a + b)
-    if (f7 === 0) { f7 = 1 }
-    let f7_weight = .5
+    f7 += 5
+    let f7_weight = .4
 
     let d1 = team.map(p => p.stats.deaths).reduce((a, b) => a + b)
-    if (d1 === 0) { d1 = 1 }
+    d1 += 3
     let d1_weight = 1
 
     let newteam = []
