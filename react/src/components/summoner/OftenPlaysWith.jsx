@@ -52,8 +52,10 @@ export function OftenPlaysWith(props) {
                 }
                 let new_players = []
                 for (let summoner of players) {
-                    summoner.name = modified[summoner.account_id].name
-                    new_players.push(summoner)
+                    if (modified[summoner.account_id]) {
+                        summoner.name = modified[summoner.account_id].name
+                        new_players.push(summoner)
+                    }
                 }
                 setPlayerNames(new_players)
             })
