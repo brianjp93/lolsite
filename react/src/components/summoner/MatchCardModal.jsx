@@ -6,6 +6,7 @@ import ChampionTimelines from './ChampionTimelines'
 import StatOverview from './StatOverview'
 import BuildOrder from './BuildOrder'
 import RunePage from './RunePage'
+import { MapEvents } from './MapEvents'
 
 import numeral from 'numeral'
 import api from '../../api/api'
@@ -321,6 +322,18 @@ function MatchCardModal(props) {
                                 flexWrap: 'wrap',
                                 justifyContent: 'center'
                             }}>
+                            <div style={comp_style}>
+                                <h5 style={header_style}>
+                                    Game Events
+                                </h5>
+                                <MapEvents
+                                    summoner={props.summoner}
+                                    match={match}
+                                    participants={participants}
+                                    timeline={timeline}
+                                    store={props.store}
+                                    route={props.route} />
+                            </div>
                             <div style={comp_style}>
                                 <h5 style={header_style}>
                                     Game Timeline

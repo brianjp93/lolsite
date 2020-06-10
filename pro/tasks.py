@@ -21,3 +21,4 @@ def import_league(slug):
     """
     r = lolpro.league(slug)
     data = r.json()
+

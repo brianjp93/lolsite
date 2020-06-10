@@ -32,6 +32,8 @@ Another league of legends match history and stats site.
 - [ ] Add task queue and separate server for consuming periodic and delayed tasks
     * this will be a larger addition and will require more money to be spent. I definitely want to do this at some point but not sure when :l
 
+- [ ] 
+
 # Other Technical Information
 
 Take a look at [techspec.md](techspec.md) for more information on how the site is ticking.

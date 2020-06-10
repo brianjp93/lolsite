@@ -1,6 +1,6 @@
 # data constants to add to DB
 
-IS_PRINT_TIMERS = True
+IS_PRINT_TIMERS = False
 MIN_PASSWORD_LENGTH = 7
 
 TRUTHY = ['true', 'True', 'TRUE', True]
