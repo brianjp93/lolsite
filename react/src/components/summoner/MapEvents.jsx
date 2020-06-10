@@ -144,6 +144,10 @@ export function MapEvents(props) {
 
                 {players.length > 0 && players.map(player => {
                     const [x, y] = getPosition(player.pframe.x, player.pframe.y)
+                    let border_color = 'red'
+                    if (player.part.team_id === 100) {
+                        border_color = 'blue'
+                    }
                     return (
                         <div
                             key={player.part._id}
@@ -154,7 +158,10 @@ export function MapEvents(props) {
                                 bottom: y,
                             }}>
                             <img
-                                style={{ width: 25, borderRadius: '50%' }}
+                                style={{
+                                    width: 25, borderRadius: '50%',
+                                    border: `2px solid ${border_color}`
+                                }}
                                 src={player.part.champion.image_url}
                                 alt="participant bubble" />
                         </div>
@@ -203,13 +210,32 @@ function EventBubble(props) {
         display: 'inline-block',
     }
 
+    let bubble_color = 'linear-gradient(60deg, rgb(86, 14, 123) 0%, rgb(230, 147, 22) 100%)'
+    const blue = 'linear-gradient(66deg, rgb(64, 131, 171) 0%, rgb(15, 63, 123) 100%)'
+    if (['CHAMPION_KILL', 'ELITE_MONSTER_KILL'].indexOf(ev._type) >= 0) {
+        if (ev.killer_id) {
+            let part = part_dict[ev.killer_id]
+            if (part.team_id === 100) {
+                bubble_color = blue
+            }
+        }
+        else {
+            bubble_color = 'grey'
+        }
+    }
+    else {
+        if (ev.team_id === 200) {
+            bubble_color = blue
+        }
+    }
+
     return (
         <div
             key={`event-${ev.x}-${ev.y}`}
             onMouseEnter={() => setIsOpen(true)}
             onMouseLeave={() => setIsOpen(false)}
             style={{
-                background: 'linear-gradient(60deg, rgb(86, 14, 123) 0%, rgb(230, 147, 22) 100%)',
+                background: bubble_color,
                 width: size,
                 height: size,
                 left: pos[0],
@@ -234,7 +260,7 @@ function EventBubble(props) {
                         {ev._type === 'CHAMPION_KILL' &&
                             <div
                                 style={div_style}>
-                                {ev.killer_id &&
+                                {ev.killer_id !== 0 &&
                                     <img
                                         style={img_style}
                                         src={part_dict[ev.killer_id].champion.image_url} alt="" />
@@ -249,18 +275,27 @@ function EventBubble(props) {
                         {ev._type === 'ELITE_MONSTER_KILL' &&
                             <div
                                 style={div_style}>
-                                <img
-                                    style={img_style}
-                                    src={part_dict[ev.killer_id].champion.image_url} alt="" />
-                                <div style={{display: 'inline-block', margin: '0px 8px'}}> killed </div>
-                                <span>{ev.monster_type}</span>
+                                {ev.killer_id !== 0 &&
+                                    <React.Fragment>
+                                        <img
+                                            style={img_style}
+                                            src={part_dict[ev.killer_id].champion.image_url} alt="" />
+                                                <div style={{display: 'inline-block', margin: '0px 8px'}}> killed </div>
+                                                <span>{ev.monster_type}</span>
+                                    </React.Fragment>
+                                }
+                                {ev.killer_id === 0 &&
+                                    <div style={{display: 'inline-block'}}>
+                                        {ev.monster_type} executed
+                                    </div>
+                                }
                             </div>
                         }
 
                         {ev._type === 'BUILDING_KILL' &&
                             <div
                                 style={div_style}>
-                                {ev.killer_id &&
+                                {ev.killer_id !== 0 &&
                                     <img
                                         style={img_style}
                                         src={part_dict[ev.killer_id].champion.image_url} alt="" />
