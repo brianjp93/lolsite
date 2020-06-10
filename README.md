@@ -20,13 +20,13 @@ Another league of legends match history and stats site.
     * This will most likely welcome post game toxicity, but I think it will be fun, too.
     * Need to add verified user accounts to allow this to become a reality.
 
-[x] Open summoner page links in a new tab.
-[x] Show winrates with friends
-[x] Show overall played with stats
+- [x] Open summoner page links in a new tab.
+- [x] Show winrates with friends
+- [x] Show overall played with stats
 
-[] Add multisearch functionality
-[x] carry score
-[x] per game rank average
+- [ ] Add multisearch functionality
+- [x] carry score
+- [x] per game rank average
     * apply player ranks to participant data
 
 
