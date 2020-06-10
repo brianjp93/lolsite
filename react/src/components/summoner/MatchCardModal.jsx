@@ -322,18 +322,20 @@ function MatchCardModal(props) {
                                 flexWrap: 'wrap',
                                 justifyContent: 'center'
                             }}>
-                            <div style={comp_style}>
-                                <h5 style={header_style}>
-                                    Game Events
-                                </h5>
-                                <MapEvents
-                                    summoner={props.summoner}
-                                    match={match}
-                                    participants={participants}
-                                    timeline={timeline}
-                                    store={props.store}
-                                    route={props.route} />
-                            </div>
+                            {[1, 2, 11].indexOf(match.map_id) >= 0 &&
+                                <div style={comp_style}>
+                                    <h5 style={header_style}>
+                                        Game Events
+                                    </h5>
+                                    <MapEvents
+                                        summoner={props.summoner}
+                                        match={match}
+                                        participants={participants}
+                                        timeline={timeline}
+                                        store={props.store}
+                                        route={props.route} />
+                                </div>
+                            }
                             <div style={comp_style}>
                                 <h5 style={header_style}>
                                     Game Timeline

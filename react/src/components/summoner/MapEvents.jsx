@@ -4,15 +4,15 @@ import { buildings_default } from '../../constants/buildings'
 
 export function MapEvents(props) {
     const [index, setIndex] = useState(0)
-    const [buildings, setBuildings] = useState(buildings_default)
+    const [buildings, setBuildings] = useState({})
     const [part_dict, setPartDict] = useState({})
     const [players, setPlayers] = useState([])
 
+    const match = props.match
     const store = props.store
     const theme = store.state.theme
     const timeline = props.timeline
     const participants = props.participants
-    const summoner = props.summoner
 
     const image_size = 500
     const max_x = 15300
@@ -37,8 +37,9 @@ export function MapEvents(props) {
                             part_dict={part_dict} ev={ev} pos={pos} />
                     )
                 }
+                return null
             }))
-    }, [events])
+    }, [events, part_dict])
     
     const stepForward = useCallback(() => {
         let newindex = index + 1
@@ -110,6 +111,14 @@ export function MapEvents(props) {
         }
     }, [part_dict, getPlayers])
 
+    useEffect(() => {
+        let new_buildings = {...buildings_default}
+        for (let key in new_buildings) {
+            new_buildings[key].is_alive = true
+        }
+        setBuildings(new_buildings)
+    }, [])
+
     return (
         <div style={{display: 'inline-block'}}>
             <div style={{position: 'relative'}}>
@@ -125,7 +134,7 @@ export function MapEvents(props) {
                     let data = buildings[key]
                     return (
                         <Building
-                            key={key}
+                            key={`${match.id}-${key}`}
                             pos={getPosition(data.x, data.y)}
                             team={data.team}
                             building_type={data.type}
@@ -272,10 +281,7 @@ function EventBubble(props) {
 
 
 function Building(props) {
-    const building_type = props.building_type
-    // tower, inhib
     const is_alive = props.is_alive
-    const team = props.team
     const pos = props.pos
 
     const size = 15
