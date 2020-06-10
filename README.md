@@ -38,4 +38,4 @@ Take a look at [techspec.md](techspec.md) for more information on how the site i
 
 # Copyright
 
-I intend to make the code for this project public. In the case that I do, I am not allowing copying of this code but hope that those interested can learn something from seeing it. I also hope that I might get people to make contributions.  We'll see how it goes. I am intentionally not including a license. I do not wish for other's to copy this work.
+I intend to make the code for this project public. In the case that I do, I am not allowing copying of this code but hope that those interested can learn something from seeing it. I also hope that I might get people to make contributions.  We'll see how it goes. I am intentionally not including a license. I do not wish for others to copy this work.
