@@ -29,7 +29,13 @@ Another league of legends match history and stats site.
 - [x] per game rank average
     * apply player ranks to participant data
 
+- [ ] Add task queue and separate server for consuming periodic and delayed tasks
+    * this will be a larger addition and will require more money to be spent. I definitely want to do this at some point but not sure when :l
 
 # Other Technical Information
 
 Take a look at [techspec.md](techspec.md) for more information on how the site is ticking.
+
+# Copyright
+
+I intend to make the code for this project public. In the case that I do, I am not allowing copying of this code but hope that those interested can learn something from seeing it. I also hope that I might get people to make contributions.  We'll see how it goes. I am intentionally not including a license. I do not wish for other's to copy this work.
