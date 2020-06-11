@@ -17,11 +17,11 @@ export function rankTeam(team) {
 
     let f3 = team.map(p => p.stats.damage_dealt_to_turrets).reduce((a, b) => a + b)
     f3 += 1000
-    let f3_weight = .5
+    let f3_weight = .7
 
     let f4 = team.map(p => p.stats.kills).reduce((a, b) => a + b)
     f4 += 5
-    let f4_weight = 1
+    let f4_weight = 2.5
 
     let f5 = team.map(p => p.stats.vision_score).reduce((a, b) => a + b)
     if (f5 === 0) { f5 = 1 }
@@ -29,25 +29,30 @@ export function rankTeam(team) {
 
     let f6 = team.map(p => p.stats.total_heal).reduce((a, b) => a + b)
     f6 += 1000
-    let f6_weight = .4
+    let f6_weight = .3
 
     let f7 = team.map(p => p.stats.time_ccing_others).reduce((a, b) => a + b)
     f7 += 5
-    let f7_weight = .4
+    let f7_weight = .2
+
+    // assists
+    let f8_weight = f4_weight * .3
 
     let d1 = team.map(p => p.stats.deaths).reduce((a, b) => a + b)
     d1 += 3
     let d1_weight = 1.6
+
 
     let newteam = []
     for (let p of team) {
         let f1_impact = p.stats.total_damage_dealt_to_champions / f1 * f1_weight
         let f2_impact = p.stats.damage_dealt_to_objectives / f2 * f2_weight
         let f3_impact = p.stats.damage_dealt_to_turrets / f3 * f3_weight
-        let f4_impact = (p.stats.kills + p.stats.assists) / f4 * f4_weight
+        let f4_impact = p.stats.kills / f4 * f4_weight
         let f5_impact = p.stats.vision_score / f5 * f5_weight
         let f6_impact = p.stats.total_heal / f6 * f6_weight
         let f7_impact = p.stats.time_ccing_others / f7 * f7_weight
+        let f8_impact = p.stats.assists / f4 * f8_weight
 
         let d1_impact = p.stats.deaths / d1 * d1_weight
 
@@ -59,6 +64,7 @@ export function rankTeam(team) {
             f5_impact,
             f6_impact,
             f7_impact,
+            f8_impact,
         ].reduce((a, b) => a+b)
 
         let detriment = [
