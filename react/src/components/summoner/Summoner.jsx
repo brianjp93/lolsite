@@ -121,7 +121,7 @@ class Summoner extends Component {
         })
         this.setQueueDict()
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         // new summoner
         if (
             this.props.route.match.params.summoner_name !== prevProps.route.match.params.summoner_name ||

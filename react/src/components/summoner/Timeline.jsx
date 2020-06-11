@@ -255,7 +255,7 @@ function Timeline(props) {
                     
                     <Tooltip
                         offset={70}
-                        formatter={(value, name, props) => {
+                        formatter={(value, name) => {
                             if (name.indexOf('perc') >= 0) {
                                 value = numeral(value).format('0')
                                 return [`${value}%`, '% Gold Adv.']
