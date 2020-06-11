@@ -2,6 +2,9 @@ __pycache__/*
 *.pyc
 
 react/node_modules
+react/start.bat
+
+tags
 
 /static/
 
