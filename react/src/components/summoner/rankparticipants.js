@@ -21,11 +21,11 @@ export function rankTeam(team) {
 
     let f4 = team.map(p => p.stats.kills).reduce((a, b) => a + b)
     f4 += 5
-    let f4_weight = .8
+    let f4_weight = 1
 
     let f5 = team.map(p => p.stats.vision_score).reduce((a, b) => a + b)
     if (f5 === 0) { f5 = 1 }
-    let f5_weight = 1
+    let f5_weight = .7
 
     let f6 = team.map(p => p.stats.total_heal).reduce((a, b) => a + b)
     f6 += 1000
@@ -37,7 +37,7 @@ export function rankTeam(team) {
 
     let d1 = team.map(p => p.stats.deaths).reduce((a, b) => a + b)
     d1 += 3
-    let d1_weight = 1
+    let d1_weight = 1.6
 
     let newteam = []
     for (let p of team) {
