@@ -27,6 +27,7 @@ function MatchCardModal(props) {
     const [match, setMatch] = useState({})
     const [participants, setParticipants] = useState([])
     const [timeline, setTimeline] = useState([])
+    const [timeline_index, setTimelineIndex] = useState(null)
 
     const team_100 = getTeam(100, participants)
     const team_200 = getTeam(200, participants)
@@ -331,6 +332,7 @@ function MatchCardModal(props) {
                                         match={match}
                                         participants={participants}
                                         timeline={timeline}
+                                        setOuterTimelineIndex={setTimelineIndex}
                                         store={props.store}
                                         route={props.route} />
                                 </div>
@@ -343,6 +345,7 @@ function MatchCardModal(props) {
                                     summoner={props.summoner}
                                     match={match}
                                     participants={participants}
+                                    timeline_index={timeline_index}
                                     timeline={timeline}
                                     store={props.store}
                                     route={props.route} />

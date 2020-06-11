@@ -13,6 +13,7 @@ export function MapEvents(props) {
     const theme = store.state.theme
     const timeline = props.timeline
     const participants = props.participants
+    const setOuterTimelineIndex = props.setOuterTimelineIndex
 
     const image_size = 500
     const max_x = 15300
@@ -40,11 +41,14 @@ export function MapEvents(props) {
                 return null
             }))
     }, [events, part_dict])
-    
+
     const stepForward = useCallback(() => {
         let newindex = index + 1
         if (newindex < timeline.length) {
             setIndex(newindex)
+            if (setOuterTimelineIndex !== undefined) {
+                setOuterTimelineIndex(newindex)
+            }
             let new_buildings = {...buildings}
             let events = timeline[newindex].events
             for (let ev of events) {
@@ -61,12 +65,15 @@ export function MapEvents(props) {
             }
             setBuildings(new_buildings)
         }
-    }, [index, timeline, buildings])
+    }, [index, timeline, buildings, setOuterTimelineIndex])
 
     const stepBackward = useCallback(() => {
         let newindex = index - 1
         if (newindex >= 0) {
             setIndex(newindex)
+            if (setOuterTimelineIndex !== undefined) {
+                setOuterTimelineIndex(newindex)
+            }
             let new_buildings = {...buildings}
             let events = timeline[newindex+1].events
             for (let ev of events) {
@@ -76,7 +83,6 @@ export function MapEvents(props) {
                         team = 'RED'
                     }
                     let key = `${team}-${ev.building_type}-${ev.lane_type}-${ev.tower_type}`
-                    console.log(key)
                     if (new_buildings[key] !== undefined) {
                         new_buildings[key].is_alive = true
                     }
@@ -84,7 +90,7 @@ export function MapEvents(props) {
             }
             setBuildings(new_buildings)
         }
-    }, [index, timeline, buildings])
+    }, [index, timeline, buildings, setOuterTimelineIndex])
 
     const getPlayers = useCallback(function() {
         let new_players = []

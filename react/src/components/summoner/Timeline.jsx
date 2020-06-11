@@ -16,6 +16,7 @@ function Timeline(props) {
 
     const [timeline_index, setTimelineIndex] = useState(null)
     const [mypart, setMypart] = useState({})
+    const [is_show_reference, setIsShowReference] = useState(false)
 
     let big_events = getBigEvents(timeline_index)
 
@@ -204,6 +205,13 @@ function Timeline(props) {
         }
     }, [props.summoner])
 
+    useEffect(() => {
+        if (props.timeline_index) {
+            setTimelineIndex(props.timeline_index)
+            setIsShowReference(true)
+        }
+    }, [props.timeline_index])
+
     let div_width = 600
     return (
         <div>
@@ -219,6 +227,9 @@ function Timeline(props) {
                         if (props.activeTooltipIndex !== undefined) {
                             let new_timeline_index = props.activeTooltipIndex
                             setTimelineIndex(new_timeline_index)
+                            if (is_show_reference) {
+                                setIsShowReference(false)
+                            }
                         }
                     }}
                     onMouseOut={() => setTimelineIndex(null)} >
@@ -294,22 +305,13 @@ function Timeline(props) {
                         )
                     })}
 
-                    {/* secondary chart */}
-                    {/*
-                        <YAxis
-                            domain={this.getDomain('perc')}
-                            tickFormatter={(tick) => {
-                                let perc = numeral(tick).format('0')
-                                return `${perc}%`
-                            }}
-                            yAxisId="right" orientation='right' tickLine={false} axisLine={false}/>
-                        <Area
-                            opacity='0.3'
-                            yAxisId='right'
-                            type="monotone"
-                            dataKey={this.getMyTeamDataKey('perc')}
-                            stroke="#777" fill={`#fff`} />
-                    */}
+                    {is_show_reference && props.timeline_index &&
+                        <ReferenceLine
+                            yAxisId='left'
+                            x={timeline[props.timeline_index].timestamp}
+                            stroke='white'
+                            strokeWidth={2} />
+                    }
 
                 </ComposedChart>
             </div>
