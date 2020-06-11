@@ -1,7 +1,7 @@
 """match/tasks.py
 """
 from django.db.utils import IntegrityError
-from django.db.models import Count, Subquery, OuterRef, F
+from django.db.models import Count, Subquery, OuterRef
 from django.db.models import Case, When, Sum
 from django.db.models import IntegerField
 from django.db import connection
@@ -11,12 +11,12 @@ from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
 
 from .models import AdvancedTimeline, Frame, ParticipantFrame
-from .models import Event, AssistingParticipants
+from .models import Event
 
 from .models import Spectate
 
 from data.constants import IS_PRINT_TIMERS
-from data.models import Rito, Champion, SummonerSpell
+from data.models import Champion, SummonerSpell
 from lolsite.tasks import get_riot_api
 
 from player.models import Summoner
@@ -34,8 +34,10 @@ import joblib
 ROLES = ['top', 'jg', 'mid', 'adc', 'sup']
 logger = logging.getLogger(__name__)
 
+
 class RateLimitError(Exception):
     pass
+
 
 def import_match(match_id, region, refresh=False, close=False):
     """Import a match by its ID.
@@ -64,7 +66,7 @@ def import_match(match_id, region, refresh=False, close=False):
             return 'throttled'
         if r.status_code == 404:
             return 'not found'
-        
+
         import_match_from_data(match, refresh=refresh, region=region)
     if close:
         connection.close()

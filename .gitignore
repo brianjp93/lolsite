@@ -9,6 +9,7 @@ react/node_modules
 .ipynb_checkpoints/*
 *.ipynb
 .vscode/
+.vim/
 
 .coverage
 htmlcov/
