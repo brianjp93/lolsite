@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import {BarChart, Bar, XAxis, YAxis, Tooltip, Cell} from 'recharts'
-import api from '../../api/api'
 import numeral from 'numeral'
 import ReactTooltip from 'react-tooltip'
 
@@ -164,7 +163,7 @@ class StatOverview extends Component {
         )
     }
     render() {
-        let summary_width = 500
+        // let summary_width = 500
         let match = this.props.match
         let team100 = this.getTeam(100)
         let team200 = this.getTeam(200)

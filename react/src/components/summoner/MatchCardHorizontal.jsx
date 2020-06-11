@@ -1,12 +1,11 @@
-import React, {Fragment, useState}  from 'react'
+import React, {Fragment, useState, useCallback}  from 'react'
 import { Link } from 'react-router-dom'
-import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
 import PropTypes from 'prop-types'
 import api from '../../api/api'
 import numeral from 'numeral'
 import moment from 'moment'
 import Item from '../data/Item'
-import ReactTooltip from 'react-tooltip'
+// import ReactTooltip from 'react-tooltip'
 import { rankParticipants } from './rankparticipants'
 import { useEffect } from 'react'
 
@@ -90,17 +89,17 @@ function MatchCard(props) {
         }
     }
 
-    function getParticipantRanks() {
+    const getParticipantRanks = useCallback(() => {
         let participants = rankParticipants(match.participants)
         setParticipants(participants)
-    }
+    }, [match])
 
     const mypart = getMyPart()
     const game_time = match.game_duration / 60
     const dpm = mypart.stats.total_damage_dealt_to_champions / (match.game_duration / 60)
     const vision_score_per_minute = mypart.stats.vision_score / game_time
-    const damage_taken_per_minute = mypart.stats.total_damage_taken / game_time
-    const csm = (mypart.stats.total_minions_killed + mypart.stats.neutral_minions_killed) / game_time
+    // const damage_taken_per_minute = mypart.stats.total_damage_taken / game_time
+    // const csm = (mypart.stats.total_minions_killed + mypart.stats.neutral_minions_killed) / game_time
     const getItem = (item_id, major, minor) => {
         // request item info if it isn't in the store
         let version = `${major}.${minor}`
@@ -390,7 +389,7 @@ function MatchCard(props) {
 
     useEffect(() => {
         getParticipantRanks()
-    }, [match])
+    }, [match, getParticipantRanks])
 
     const TEAMSWIDTH = 120
     const TOPPAD = 20

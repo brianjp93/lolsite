@@ -22,7 +22,6 @@ import { rankParticipants } from './rankparticipants'
 
 function MatchCardModal(props) {
     let store = props.store
-    let route = props.route
     let match_id = props.route.match.params.match_id
     
     const [match, setMatch] = useState({})

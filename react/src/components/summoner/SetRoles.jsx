@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
-import { useEffect } from 'react'
-import numeral from 'numeral'
+import { useEffect, useCallback } from 'react'
 
 import { participantItems } from '../../constants/general'
 
@@ -31,7 +30,7 @@ function SetRoles(props) {
             })
     }
 
-    function getParticipants() {
+    const getParticipants = useCallback(() => {
         let data = {match_id: match.id}
         api.match.participants(data)
             .then(response => {
@@ -40,7 +39,7 @@ function SetRoles(props) {
             .catch(error => {
                 console.error('Error while retrieving participants.')
             })
-    }
+    }, [match])
 
     function showParticipants() {
         let div_style = {
@@ -79,18 +78,6 @@ function SetRoles(props) {
     }
 
     function participantLine(part, key) {
-        const stat_style = {
-            borderRadius: 4,
-            padding: '0px 4px',
-            marginBottom: 3,
-        }
-        const gametime = match.game_duration / 60
-        let dpm = part.stats.total_damage_dealt_to_champions / gametime
-        dpm = numeral(dpm).format('0,0')
-        let vspm = part.stats.vision_score / gametime
-        vspm = numeral(vspm).format('0.0')
-        let cspm = (part.stats.neutral_minions_killed + part.stats.total_minions_killed) / gametime
-        cspm = numeral(cspm).format('0.0')
         return (
             <div style={{height: 120}}>
                 <div style={{marginBottom: 3}}>
@@ -219,7 +206,7 @@ function SetRoles(props) {
         if (match.id) {
             getParticipants()
         }
-    }, [match])
+    }, [match, getParticipants])
 
     return (
         <Skeleton store={props.store}>
