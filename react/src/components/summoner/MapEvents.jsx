@@ -229,6 +229,12 @@ function EventBubble(props) {
         }
     }
 
+    const sword_style = {
+        margin: '5px 10px',
+        height: 20,
+        transform: 'scaleX(-1)'
+    }
+
     return (
         <div
             key={`event-${ev.x}-${ev.y}`}
@@ -265,7 +271,17 @@ function EventBubble(props) {
                                         style={img_style}
                                         src={part_dict[ev.killer_id].champion.image_url} alt="" />
                                 }
-                                <div style={{display: 'inline-block', margin: '0px 8px'}}> killed </div>
+                                <div
+                                    style={{
+                                        display: 'inline-block',
+                                        background: 'white',
+                                        borderRadius: 8,
+                                        margin: '0px 5px',
+                                    }}>
+                                    <img
+                                        style={sword_style}
+                                        src='https://image.flaticon.com/icons/svg/65/65741.svg' alt="" />
+                                </div>
                                 <img
                                     style={img_style}
                                     src={part_dict[ev.victim_id].champion.image_url} alt="" />
@@ -303,7 +319,17 @@ function EventBubble(props) {
                                 {!ev.killer_id &&
                                     <div style={{display: 'inline-block'}}>minions</div>
                                 }
-                                <div style={{display: 'inline-block', margin: '0px 8px'}}> killed </div>
+                                <div
+                                    style={{
+                                        display: 'inline-block',
+                                        background: 'white',
+                                        borderRadius: 8,
+                                        margin: '0px 5px',
+                                    }}>
+                                    <img
+                                        style={sword_style}
+                                        src='https://image.flaticon.com/icons/svg/65/65741.svg' alt="" />
+                                </div>
                                 <span>structure</span>
                             </div>
                         }
