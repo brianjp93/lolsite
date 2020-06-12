@@ -1,9 +1,5 @@
 celeryconf="[program:celeryd-worker]
 
-celeryenv=`cat /opt/python/current/env | tr '\n' ',' | sed 's/export //g' | sed 's/$PYTHONPATH//g' | sed 's/$LD_LIBRARY_PATH//g'` 
-; celeryenv=${celeryenv%?}
-
-
 ; Set full path to celery program if using virtualenv
 command=/opt/python/run/venv/bin/celery worker -A lolsite --loglevel=INFO -n \"worker-$HOSTNAME\"
 
@@ -47,7 +43,7 @@ killasgroup=true
 ; so it starts first
 priority=998
 
-environment=$celeryenv"
+environment=`cat /opt/python/current/env | tr '\n' ',' | sed 's/export //g' | sed 's/$PYTHONPATH//g' | sed 's/$LD_LIBRARY_PATH//g'`" 
 
 # Create the celery supervisord conf script
 echo "$celeryconf" | tee /opt/python/etc/celery_worker.conf
