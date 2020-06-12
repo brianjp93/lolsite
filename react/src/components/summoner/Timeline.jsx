@@ -5,6 +5,7 @@ import {
 import { useState } from 'react'
 import numeral from 'numeral'
 import { useEffect } from 'react'
+import { getMyPart } from '../../constants/general'
 
 
 function Timeline(props) {
@@ -20,15 +21,6 @@ function Timeline(props) {
 
     let big_events = getBigEvents(timeline_index)
 
-    function getMyPart() {
-        // get my participant
-        let account_id = summoner.account_id
-        for (let part of participants) {
-            if (part.account_id === account_id) {
-                return part
-            }
-        }
-    }
 
     function getEvents(index) {
         let events = []
@@ -201,7 +193,7 @@ function Timeline(props) {
 
     useEffect(() => {
         if (props.summoner !== undefined) {
-            setMypart(getMyPart())
+            setMypart(getMyPart(participants, props.summoner.account_id))
         }
     }, [props.summoner])
 

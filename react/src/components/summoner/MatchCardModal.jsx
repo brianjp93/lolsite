@@ -7,6 +7,7 @@ import StatOverview from './StatOverview'
 import BuildOrder from './BuildOrder'
 import RunePage from './RunePage'
 import { MapEvents } from './MapEvents'
+import { getMyPart } from '../../constants/general'
 
 import numeral from 'numeral'
 import api from '../../api/api'
@@ -23,6 +24,7 @@ import { rankParticipants } from './rankparticipants'
 function MatchCardModal(props) {
     let store = props.store
     let match_id = props.route.match.params.match_id
+    let account_id = props.summoner.account_id
     
     const [match, setMatch] = useState({})
     const [participants, setParticipants] = useState([])
@@ -226,15 +228,6 @@ function MatchCardModal(props) {
         )
     }
 
-    function getMyPart() {
-        // get my participant
-        let account_id = props.summoner.account_id
-        for (let part of participants) {
-            if (part.account_id === account_id) {
-                return part
-            }
-        }
-    }
 
     function isDataAcquired() {
         let out = true
@@ -258,7 +251,7 @@ function MatchCardModal(props) {
         }
     }, [match_id])
 
-    const mypart = getMyPart()
+    const mypart = getMyPart(participants, account_id)
     const header_style = {
         textAlign: 'center',
         textDecoration: 'underline',

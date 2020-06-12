@@ -150,3 +150,13 @@ export function participantItems(part, match, store) {
         </div>
     )
 }
+
+export function getMyPart(participants, account_id) {
+    for (let part of participants) {
+        if (part.current_account_id === account_id || part.account_id === account_id) {
+            return part
+        }
+    }
+    return undefined
+}
+

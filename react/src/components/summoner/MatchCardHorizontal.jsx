@@ -8,6 +8,7 @@ import Item from '../data/Item'
 // import ReactTooltip from 'react-tooltip'
 import { rankParticipants } from './rankparticipants'
 import { useEffect } from 'react'
+import { getMyPart } from '../../constants/general'
 
 
 function formatDatetime(epoch) {
@@ -63,6 +64,7 @@ function MatchCard(props) {
     const match = props.match
     const store = props.store
     const pageStore = props.pageStore
+    const account_id = props.pageStore.state.summoner.account_id
     const retrieveItem = (item_id, major, minor) => {
         // get item from store
         let version = `${major}.${minor}`
@@ -75,26 +77,17 @@ function MatchCard(props) {
         }
         return item
     }
-    const getMyPart = () => {
-        // get my participant
-        let account_id = props.pageStore.state.summoner.account_id
-        let parts = match.participants
-        if (participants.length > 0) {
-            parts = participants
-        }
-        for (let part of parts) {
-            if (part.account_id === account_id) {
-                return part
-            }
-        }
-    }
 
     const getParticipantRanks = useCallback(() => {
         let participants = rankParticipants(match.participants)
         setParticipants(participants)
     }, [match])
 
-    const mypart = getMyPart()
+    let _parts = match.participants
+    if (participants.length > 0) {
+        _parts = participants
+    }
+    const mypart = getMyPart(_parts, account_id)
     const game_time = match.game_duration / 60
     const dpm = mypart.stats.total_damage_dealt_to_champions / (match.game_duration / 60)
     const vision_score_per_minute = mypart.stats.vision_score / game_time
@@ -205,15 +198,18 @@ function MatchCard(props) {
         }
     }
     const getKDA = part => {
-        let k = part.stats.kills
-        let a = part.stats.assists
-        let d = part.stats.deaths
-        if (d < 1) {
-            d = 1
+        if (part !== undefined) {
+            let k = part.stats.kills
+            let a = part.stats.assists
+            let d = part.stats.deaths
+            if (d < 1) {
+                d = 1
+            }
+            let kda = (k + a) / d
+            kda = Math.round(kda * 100) / 100
+            return kda
         }
-        let kda = (k + a) / d
-        kda = Math.round(kda * 100) / 100
-        return kda
+        return 0
     }
     const kda = getKDA(mypart)
     const convertQueue = queue => {
@@ -394,200 +390,207 @@ function MatchCard(props) {
     const TEAMSWIDTH = 120
     const TOPPAD = 20
     const CARDHEIGHT = 130
-    return (
-        <div
-            style = {{
-                    width: 600,
-                    height: CARDHEIGHT,
-                    paddingTop: 15,
-                    paddingBottom: 10,
-                    position: 'relative',
-                }}
-            className={`card-panel ${theme}`}>
 
+    if (mypart !== undefined) {
+        return (
             <div
-                style={{
-                    display: 'inline-block',
-                    width: 8,
-                    height: 100,
-                    background: `${topBarColor()}`,
-                    borderRadius: 2,
-                    marginLeft: -15,
-                    marginRight: 8,
-                }} >
-            </div>
-            <div
-                style={{
-                    display: 'inline-block',
-                    paddingRight:5,
-                    verticalAlign: 'top',
-                    paddingTop: TOPPAD,
-            }}>
-                <div>
-                    <img
-                        style={{height: 40, display:'inline'}}
-                        src={mypart.champion.image_url}
-                        alt=""/>
-                    <div style={{display:'inline-block', paddingLeft:4}}>
-                        <img
-                            style={{height:20, display:'block'}}
-                            src={mypart.spell_1_image_url} alt="" />
-                        <img
-                            style={{height:20, display:'block'}}
-                            src={mypart.spell_2_image_url} alt="" />
-                    </div>
-                </div>
-                <img
-                    style={{height: 20, verticalAlign: 'top'}}
-                    src={mypart.stats.perk_0_image_url}
-                    alt=""/>
-                <img
-                    style={{height: 20, verticalAlign: 'top'}}
-                    src={mypart.stats.perk_sub_style_image_url}
-                    alt=""/>
-                <img
-                    style={{
-                        height: 20,
-                        verticalAlign: 'top',
-                        marginLeft: 4,
-                        borderRadius: 5,
-                    }}
-                    src={mypart.stats.item_6_image_url} alt=""/>
-            </div>
-
-            <span
                 style = {{
-                    display: 'inline-block',
-                    verticalAlign: 'top',
-                    paddingTop: TOPPAD
-                }}>
-                <div style={{width:100}}>
-                    <span>
-                        {item(mypart.stats.item_0, mypart.stats.item_0_image_url)}
-                    </span>
-                    <span>
-                        {item(mypart.stats.item_1, mypart.stats.item_1_image_url)}
-                    </span>
-                    <span>
-                        {item(mypart.stats.item_2, mypart.stats.item_2_image_url)}
-                    </span>
-                </div>
-                <div style={{width:100}}>
-                    <span>
-                        {item(mypart.stats.item_3, mypart.stats.item_3_image_url)}
-                    </span>
-                    <span>
-                        {item(mypart.stats.item_4, mypart.stats.item_4_image_url)}
-                    </span>
-                    <span>
-                        {item(mypart.stats.item_5, mypart.stats.item_5_image_url)}
-                    </span>
-                </div>
-            </span>
+                        width: 600,
+                        height: CARDHEIGHT,
+                        paddingTop: 15,
+                        paddingBottom: 10,
+                        position: 'relative',
+                    }}
+                className={`card-panel ${theme}`}>
 
-            <div style={{
-                    display: 'inline-block',
-                    width: 100,
-                    textAlign: 'center',
-                    verticalAlign: 'top',
-                    paddingTop: 0,
+                <div
+                    style={{
+                        display: 'inline-block',
+                        width: 8,
+                        height: 100,
+                        background: `${topBarColor()}`,
+                        borderRadius: 2,
+                        marginLeft: -15,
+                        marginRight: 8,
+                    }} >
+                </div>
+                <div
+                    style={{
+                        display: 'inline-block',
+                        paddingRight:5,
+                        verticalAlign: 'top',
+                        paddingTop: TOPPAD,
                 }}>
-                {mypart.impact_rank === 1 &&
-                    <div style={{fontSize: 'small'}}>
-                        <div
-                            style={{
-                                display: 'inline-block',
-                                borderRadius: 4,
-                                background: 'linear-gradient(90deg, rgba(66,66,93,1) 0%, rgba(133,74,128,1) 100%)',
-                                padding: '0px 5px',
-                            }}>
-                            MVP
+                    <div>
+                        <img
+                            style={{height: 40, display:'inline'}}
+                            src={mypart.champion.image_url}
+                            alt=""/>
+                        <div style={{display:'inline-block', paddingLeft:4}}>
+                            <img
+                                style={{height:20, display:'block'}}
+                                src={mypart.spell_1_image_url} alt="" />
+                            <img
+                                style={{height:20, display:'block'}}
+                                src={mypart.spell_2_image_url} alt="" />
                         </div>
                     </div>
-                }
-                {mypart.impact_rank !== 1 &&
-                    <div style={{height: 19}}></div>
-                }
-                <div style={{fontSize: 'small'}}>
-                    {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
+                    <img
+                        style={{height: 20, verticalAlign: 'top'}}
+                        src={mypart.stats.perk_0_image_url}
+                        alt=""/>
+                    <img
+                        style={{height: 20, verticalAlign: 'top'}}
+                        src={mypart.stats.perk_sub_style_image_url}
+                        alt=""/>
+                    <img
+                        style={{
+                            height: 20,
+                            verticalAlign: 'top',
+                            marginLeft: 4,
+                            borderRadius: 5,
+                        }}
+                        src={mypart.stats.item_6_image_url} alt=""/>
                 </div>
-                <div style={{fontSize: 'small'}}>
-                    {kda} KDA
-                </div>
-                <div style={{fontSize: 'small'}}>
-                    {numeral(dpm).format('0,0')} DPM
-                </div>
-                <div style={{fontSize: 'small'}}>
-                    {numeral(vision_score_per_minute).format('0,0.00')} VS/M
-                </div>
-            </div>
 
-            <div
-                style={{
-                    display: 'inline-block',
-                    width: TEAMSWIDTH,
-                }}>
-                {getTeam(100)}
-            </div>
-            <div style={{display: 'inline-block', width: 8}}>
-            </div>
-            <div
-                style={{
-                    display: 'inline-block',
-                    width: TEAMSWIDTH,
-                }}>
-                {getTeam(200)}
-            </div>
+                <span
+                    style = {{
+                        display: 'inline-block',
+                        verticalAlign: 'top',
+                        paddingTop: TOPPAD
+                    }}>
+                    <div style={{width:100}}>
+                        <span>
+                            {item(mypart.stats.item_0, mypart.stats.item_0_image_url)}
+                        </span>
+                        <span>
+                            {item(mypart.stats.item_1, mypart.stats.item_1_image_url)}
+                        </span>
+                        <span>
+                            {item(mypart.stats.item_2, mypart.stats.item_2_image_url)}
+                        </span>
+                    </div>
+                    <div style={{width:100}}>
+                        <span>
+                            {item(mypart.stats.item_3, mypart.stats.item_3_image_url)}
+                        </span>
+                        <span>
+                            {item(mypart.stats.item_4, mypart.stats.item_4_image_url)}
+                        </span>
+                        <span>
+                            {item(mypart.stats.item_5, mypart.stats.item_5_image_url)}
+                        </span>
+                    </div>
+                </span>
 
-            <div
-                style={{
-                    position: 'absolute',
-                    top: 10,
-                    left: 26
-                }} >
-                <small title={formatDatetimeFull(match.game_creation)} style={{lineHeight:1, display: 'inline-block'}}>
-                    {formatDatetime(match.game_creation)}
-                </small>
-                <small style={{lineHeight:1, display:'inline-block', paddingLeft: 10}}>
-                    {`${Math.floor(match.game_duration / 60)}:${numeral(match.game_duration % 60).format('00')}`}
-                </small>
-            </div>
-
-            <div
-                style={{display: 'block', position: 'absolute', bottom: 3, left: 26}}>
-                <small className={`${store.state.theme} ${matchHighlightColor(match.queue_id)}`}>
-                    {pageStore.state.queues[match.queue_id] &&
-                        <Fragment>
-                            {convertQueue(pageStore.state.queues[match.queue_id].description)}
-                        </Fragment>
+                <div style={{
+                        display: 'inline-block',
+                        width: 100,
+                        textAlign: 'center',
+                        verticalAlign: 'top',
+                        paddingTop: 0,
+                    }}>
+                    {mypart.impact_rank === 1 &&
+                        <div style={{fontSize: 'small'}}>
+                            <div
+                                style={{
+                                    display: 'inline-block',
+                                    borderRadius: 4,
+                                    background: 'linear-gradient(90deg, rgba(66,66,93,1) 0%, rgba(133,74,128,1) 100%)',
+                                    padding: '0px 5px',
+                                }}>
+                                MVP
+                            </div>
+                        </div>
                     }
-                    {pageStore.state.queues[match.queue_id] === undefined &&
-                        <Fragment>
-                            {match.queue_id}
-                        </Fragment>
+                    {mypart.impact_rank !== 1 &&
+                        <div style={{height: 19}}></div>
                     }
-                </small>
-            </div>
+                    <div style={{fontSize: 'small'}}>
+                        {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
+                    </div>
+                    <div style={{fontSize: 'small'}}>
+                        {kda} KDA
+                    </div>
+                    <div style={{fontSize: 'small'}}>
+                        {numeral(dpm).format('0,0')} DPM
+                    </div>
+                    <div style={{fontSize: 'small'}}>
+                        {numeral(vision_score_per_minute).format('0,0.00')} VS/M
+                    </div>
+                </div>
 
-            <Link
-                to={`match/${match._id}/`}
-                style = {{
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    backgroundColor: '#ffffff20',
-                    width: 40,
-                    height: CARDHEIGHT,
-                    textAlign: 'center'
-                }} >
-                <i
-                    className='material-icons'
-                    style={{position: 'absolute', bottom: 5, right: 8}}>
-                    arrow_downward
-                </i>
-            </Link>
-        </div>
-    )
+                <div
+                    style={{
+                        display: 'inline-block',
+                        width: TEAMSWIDTH,
+                    }}>
+                    {getTeam(100)}
+                </div>
+                <div style={{display: 'inline-block', width: 8}}>
+                </div>
+                <div
+                    style={{
+                        display: 'inline-block',
+                        width: TEAMSWIDTH,
+                    }}>
+                    {getTeam(200)}
+                </div>
+
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 10,
+                        left: 26
+                    }} >
+                    <small title={formatDatetimeFull(match.game_creation)} style={{lineHeight:1, display: 'inline-block'}}>
+                        {formatDatetime(match.game_creation)}
+                    </small>
+                    <small style={{lineHeight:1, display:'inline-block', paddingLeft: 10}}>
+                        {`${Math.floor(match.game_duration / 60)}:${numeral(match.game_duration % 60).format('00')}`}
+                    </small>
+                </div>
+
+                <div
+                    style={{display: 'block', position: 'absolute', bottom: 3, left: 26}}>
+                    <small className={`${store.state.theme} ${matchHighlightColor(match.queue_id)}`}>
+                        {pageStore.state.queues[match.queue_id] &&
+                            <Fragment>
+                                {convertQueue(pageStore.state.queues[match.queue_id].description)}
+                            </Fragment>
+                        }
+                        {pageStore.state.queues[match.queue_id] === undefined &&
+                            <Fragment>
+                                {match.queue_id}
+                            </Fragment>
+                        }
+                    </small>
+                </div>
+
+                <Link
+                    to={`match/${match._id}/`}
+                    style = {{
+                        position: 'absolute',
+                        right: 0,
+                        top: 0,
+                        backgroundColor: '#ffffff20',
+                        width: 40,
+                        height: CARDHEIGHT,
+                        textAlign: 'center'
+                    }} >
+                    <i
+                        className='material-icons'
+                        style={{position: 'absolute', bottom: 5, right: 8}}>
+                        arrow_downward
+                    </i>
+                </Link>
+            </div>
+        )
+    }
+
+    else {
+        return <div></div>
+    }
 }
 MatchCard.propTypes = {
     match: PropTypes.object,
