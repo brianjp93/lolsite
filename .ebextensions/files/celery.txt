@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-; the name of your supervisord program
-[program:celeryd-worker]
+
+celeryconf="[program:celeryd-worker]
 
 celeryenv=`cat /opt/python/current/env | tr '\n' ',' | sed 's/export //g' | sed 's/$PYTHONPATH//g' | sed 's/$LD_LIBRARY_PATH//g'` 
 celeryenv=${celeryenv%?}
@@ -51,3 +51,12 @@ priority=998
 
 environment=$celeryenv"
 
+# Create the celery supervisord conf script
+echo "$celeryconf" | tee /opt/python/etc/celery_worker.conf
+
+# Add configuration script to supervisord conf (if not there already)
+if ! grep -Fxq "files: celery_worker.conf" /opt/python/etc/supervisord.conf  
+  then
+  echo "[include]" | tee -a /opt/python/etc/supervisord.conf
+  echo "files: celery_worker.conf" | tee -a /opt/python/etc/supervisord.conf
+fi
