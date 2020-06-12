@@ -2,10 +2,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from .models import ProfileIcon, ReforgedRune, ReforgedTree
-from .models import Champion, ChampionSpell
+from .models import Champion
 
-from match.models import Match, Participant, Stats
-from match.models import Timeline, Team, Ban, Item
+from match.models import Match, Item
 
 from .serializers import ProfileIconSerializer, ItemSerializer
 from .serializers import ItemGoldSerializer, ItemStatSerializer
@@ -49,7 +48,7 @@ def get_profile_icon(request, format=None):
     status_code = 200
 
     profile_icon_id = request.data.get('profile_icon_id', None)
-    language = request.data.get('language', None)
+    # language = request.data.get('language', None)
 
     if request.method == 'POST':
         query = ProfileIcon.objects.filter(_id=profile_icon_id)
@@ -88,6 +87,7 @@ def serialize_item(item):
     except:
         pass
     return item_data
+
 
 @api_view(['POST'])
 def get_item(request, format=None):
@@ -328,7 +328,7 @@ def get_champion_spells(request, format=None):
     champion_id : int
     major : int
     minor : int
-    
+
     Returns
     -------
     JSON Response
@@ -352,3 +352,4 @@ def get_champion_spells(request, format=None):
     else:
         data = {'message': 'Must use POST.'}
     return Response(data, status=status_code)
+
