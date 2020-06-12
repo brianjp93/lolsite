@@ -21,6 +21,8 @@
 Celery 4.0+ does not officially support windows but we can work around
 it by installing `gevent`
 
+[stackoverflow: running celery on windows](https://stackoverflow.com/a/47331438/4340591)
+
 ```
 > pip install gevent
 ```
