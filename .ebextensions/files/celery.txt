@@ -1,7 +1,7 @@
 celeryconf="[program:celeryd-worker]
 
 celeryenv=`cat /opt/python/current/env | tr '\n' ',' | sed 's/export //g' | sed 's/$PYTHONPATH//g' | sed 's/$LD_LIBRARY_PATH//g'` 
-celeryenv=${celeryenv%?}
+; celeryenv=${celeryenv%?}
 
 
 ; Set full path to celery program if using virtualenv
