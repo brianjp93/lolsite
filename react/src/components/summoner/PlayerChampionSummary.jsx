@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import moment from 'moment'
 import numeral from 'numeral'
 import ReactTooltip from 'react-tooltip'
-import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
+import Orbit from '../general/spinners/orbit'
 import StatBar from '../general/StatBar'
 
 import api from '../../api/api'
@@ -455,10 +455,7 @@ class PlayerChampionSummary extends Component {
                                         key={`${data.champion_id}-${key}`}>
                                         {this.state.is_loading &&
                                             <div style={{textAlign: 'center'}}>
-                                                <AtomSpinner
-                                                    color='#ffffff'
-                                                    size={80}
-                                                    style={{margin: 'auto'}} />
+                                                <Orbit size={80} style={{margin: 'auto'}} />
                                             </div>
                                         }
                                         {!this.state.is_loading &&

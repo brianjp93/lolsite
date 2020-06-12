@@ -1,11 +1,12 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {BrowserRouter} from 'react-router-dom';
-import * as serviceWorker from "./serviceWorker";
-import './index.css';
-import './theme/dark.css';
-import './theme/light.css';
-import App from './App';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import {BrowserRouter} from 'react-router-dom'
+import * as serviceWorker from "./serviceWorker"
+import './index.css'
+import './spinners.css'
+import './theme/dark.css'
+import './theme/light.css'
+import App from './App'
 
 const APPS = {
     'App': App,

@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import ReactGA from 'react-ga'
-import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
+import Orbit from '../general/spinners/orbit'
 import PropTypes from 'prop-types'
 import NavBar from '../general/NavBar'
 // import MatchCard from './MatchCard'
@@ -423,10 +423,7 @@ class Summoner extends Component {
                                     textAlign: 'center',
                                     marginTop: 100,
                                 }} >
-                                <AtomSpinner
-                                    color='#ffffff'
-                                    size={200}
-                                    style={{margin: 'auto'}} />
+                                <Orbit size={300} style={{margin: 'auto'}} />
                             </div>
                         </div>
                     }
@@ -509,11 +506,8 @@ class Summoner extends Component {
                                     <div style={{display: 'inline-block'}}>
                                         {this.pagination()}
                                         {this.state.is_requesting_next_page &&
-                                            <div>
-                                                <AtomSpinner
-                                                    color='#ffffff'
-                                                    size={200}
-                                                    style={{marginLeft: 200}} />
+                                            <div style={{width: 600}}>
+                                                <Orbit size={200} style={{margin: 'auto'}} />
                                             </div>
                                         }
                                         {!this.state.is_requesting_next_page && this.state.matches.map((match, key) => {

@@ -12,7 +12,7 @@ function Timeline(props) {
     const [timeline, setTimeline] = useState([])
     const participants = props.participants
     const match = props.match
-    const summoner = props.summoner
+    // const summoner = props.summoner
     const theme = props.store.state.theme
 
     const [timeline_index, setTimelineIndex] = useState(null)

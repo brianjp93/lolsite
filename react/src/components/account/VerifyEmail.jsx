@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import queryString from 'query-string'
-import AtomSpinner from '@bit/bondz.react-epic-spinners.atom-spinner'
+import Orbit from '../general/spinners/orbit'
 
 import api from '../../api/api'
 import NavBar from '../general/NavBar'
@@ -65,13 +65,9 @@ class VerifyEmail extends Component {
                             <div>
                                 Attempting to verify email...
                                 <span>{' '}
-                                    <AtomSpinner
-                                        color='#ffffff'
+                                    <Orbit
                                         size={50}
-                                        style={{
-                                            display: 'inline-block',
-                                            verticalAlign: 'middle',
-                                        }} />
+                                        style={{display: 'inline-block', verticalAlign: 'middle'}}/>
                                 </span>
                             </div>
                         }
