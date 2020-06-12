@@ -72,13 +72,18 @@ class Home extends Component {
                     <NavBar
                         store={store}
                         ignore_hotkeys={['s', '/']} />
-                    <div style={{height:100}}></div>
+                    <div style={{height:50}}></div>
                     <div className="row">
-                        <div style={{height:150}} className="col m3 offset-m4">
-                            <span>
+                        <div style={{display: 'flex'}}>
+                            <img
+                                style={{maxWidth: 400, margin: 'auto'}}
+                                src={`${store.state.static}general/hardstuck-by-hand_2.png`} alt="" />
+                        </div>
+                        <div style={{height: 100, display: 'flex'}} className="col m3 offset-m4">
+                            <span style={{marginTop: 'auto', marginBottom: 'auto'}}>
                                 <blockquote
                                     title={this.state.message.hidden_message ? this.state.message.hidden_message : ''}
-                                    style={{display:'none'}}
+                                    style={{display:'none', marginTop: 0, marginBottom: 0}}
                                     ref={(elt) => {this.quote = elt}}
                                     className={`${store.state.theme}`}>
                                     <span>
