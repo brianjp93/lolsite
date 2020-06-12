@@ -6,6 +6,7 @@
 * [Deployment](/docs/deployment.md)
 * [Using an SVM to predict role assignment](/docs/svm.md)
 * [Ranking players by their impact](/docs/impact-scores.md)
+* [Celery and Async tasks](/docs/celery.md)
 
 
 # LoL Site
