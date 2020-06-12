@@ -243,7 +243,7 @@ if 'RDS_DB_NAME' in os.environ or ENVNAME in ['lolsite', 'lolsite-beat']:
     BROKER_TRANSPORT_OPTIONS = {
         'region': 'us-west-2'
     }
-    BROKER_URL = 'sqs://{}:{}@'.format(urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''), urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe=''))
+    CELERY_BROKER_URL = 'sqs://{}:{}@'.format(urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''), urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe=''))
 else:
     CELERY_BROKER_URL = 'redis://localhost'
 
