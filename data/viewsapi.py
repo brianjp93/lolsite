@@ -128,8 +128,9 @@ def get_item(request, format=None):
             item_data = serialize_item(item)
             data['data'] = item_data
         else:
-            status_code = 404
-            data = {'message': 'Item not found.'}
+            item = Item.objects.filter(_id=item_id).order_by('-major', '-minor').first()
+            item_data = serialize_item(item)
+            data['data'] = item_data
     elif item_list:
         query = Item.objects.filter(_id__in=item_list, version=version)
         serialized_items = []
@@ -235,7 +236,7 @@ def get_reforged_runes(request, format=None):
                     version = tree.version
                     runes = ReforgedRune.objects.filter(reforgedtree__version=version)
             runes_data = ReforgedRuneSerializer(runes, many=True)
-            data = {'data': runes_data.data, 'status': status_code}
+            data = {'data': runes_data.data, 'version': version}
 
             # only cache if we actually have data
             if data and SET_CACHE:
