@@ -127,7 +127,7 @@ class App extends Component {
         api.data.getRunes(data)
             .then(response => {
                 var data = response.data.data
-                var version = response.data.version
+                // var version = response.data.version
                 var new_runes = this.formatRunes(data, version)
                 this.setState({runes: new_runes})
                 if (Object.keys(data).length === 0) {

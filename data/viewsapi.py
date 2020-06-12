@@ -225,9 +225,17 @@ def get_reforged_runes(request, format=None):
                 # get newest version of runes
                 tree = ReforgedTree.objects.all().order_by('-version').first()
                 version = tree.version
-            runes = ReforgedRune.objects.filter(reforgedtree__version=version)
-            runes_data = ReforgedRuneSerializer(runes, many=True).data
-            data = {'data': runes_data, 'version': version}
+                runes = ReforgedRune.objects.filter(reforgedtree__version=version)
+            else:
+                runes = ReforgedRune.objects.filter(reforgedtree__version=version)
+                if not runes.exists():
+                    SET_CACHE = False
+                    # get newest version of runes
+                    tree = ReforgedTree.objects.all().order_by('-version').first()
+                    version = tree.version
+                    runes = ReforgedRune.objects.filter(reforgedtree__version=version)
+            runes_data = ReforgedRuneSerializer(runes, many=True)
+            data = {'data': runes_data.data, 'status': status_code}
 
             # only cache if we actually have data
             if data and SET_CACHE:
