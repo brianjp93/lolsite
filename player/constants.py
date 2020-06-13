@@ -1,4 +1,7 @@
 import joblib
+from django.conf import settings
+import pathlib
+
 
 PROS = {
     'doublelift': [
@@ -12,4 +15,6 @@ PROS = {
     ],
 }
 
-CLF = joblib.load('role_predict.svc')
+clf_path = pathlib.PurePath(settings.BASE_DIR, 'role_predict.svc')
+CLF = joblib.load(clf_path)
+

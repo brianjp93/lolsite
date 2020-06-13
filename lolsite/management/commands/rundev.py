@@ -10,8 +10,8 @@ import os
 from django.contrib.staticfiles.management.commands.runserver import Command as BaseRunserverCommand
 from django.conf import settings
 
-class Command(BaseRunserverCommand):
 
+class Command(BaseRunserverCommand):
     def inner_run(self, *args, **options):
         settings.REACT_DEV = True
         print('RUNNING PRE-RUNSERVER SCRIPT FOR DEV MODE')
