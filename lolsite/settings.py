@@ -31,7 +31,8 @@ try:
             value = ''.join(line.split('=')[1:]).strip('"')
             os.environ[key] = value
 except:
-    print('Unable to set environment variables through env bash script')
+    # print('Unable to set environment variables through env bash script')
+    pass
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -296,10 +297,12 @@ def before_breadcrumb(crumb, hint):
         return None
     return crumb
 
+
 def before_send(event, hint):
     if event.get('logger', None) == 'django.security.DisallowedHost':
         return None
     return event
+
 
 if not DEV:
     sentry_sdk.init(
