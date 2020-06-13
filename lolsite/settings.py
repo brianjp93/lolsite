@@ -306,3 +306,4 @@ if not DEV:
         before_breadcrumb=before_breadcrumb,
         before_send=before_send,
     )
+
