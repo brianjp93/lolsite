@@ -137,7 +137,7 @@ class Match(models.Model):
 
 class Participant(models.Model):
     match = models.ForeignKey('Match', on_delete=models.CASCADE, related_name='participants')
-    _id = models.IntegerField(db_index=True) # participantID
+    _id = models.IntegerField(db_index=True)  # participantID
 
     account_id = models.CharField(max_length=128, default='', blank=True, db_index=True)
     current_account_id = models.CharField(max_length=128, default='', blank=True, db_index=True)
