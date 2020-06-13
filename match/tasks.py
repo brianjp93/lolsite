@@ -600,6 +600,7 @@ def ranked_import(name=None, account_id=None, region=None, **kwargs):
             summoner.save()
 
 
+@task(name='match.tasks.import_recent_matches')
 def import_recent_matches(start, end, account_id, region, **kwargs):
     """Import recent matches for an account_id.
 

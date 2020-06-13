@@ -607,6 +607,10 @@ def get_summoner_page(request, format=None):
                     summoner.account_id, region,
                     **kwargs
                 )
+                mt.import_recent_matches.delay(
+                    0, 100, summoner.account_id,
+                    region,
+                )
                 if IS_PRINT_TIMERS:
                     print(f'mt.import_recent_matches() took {time.time() - timer_matches_import}.')
 

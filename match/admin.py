@@ -16,7 +16,7 @@ class MatchAdmin(admin.ModelAdmin):
 class ParticipantAdmin(admin.ModelAdmin):
     list_display = ('_id', 'summoner_name_simplified', 'champion_id', 'team_id')
     raw_id_fields = ('match',)
-    search_fields = ('summoner_name', 'match___id')
+    search_fields = ('summoner_name_simplified', 'match___id')
 
 
 class StatsAdmin(admin.ModelAdmin):
