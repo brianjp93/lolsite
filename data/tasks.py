@@ -66,6 +66,7 @@ def import_missing(max_versions=10, until_found=True, language='en_US', last_imp
                     return
 
 
+@task(name='data.tasks.import_all')
 def import_all(version, language='en_US', overwrite=False):
     """Import all constants data from constants.py and riot api.
 
