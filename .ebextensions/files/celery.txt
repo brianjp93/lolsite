@@ -4,7 +4,7 @@ celeryenv=${celeryenv%?}
 celeryconf="[program:celeryd-worker]
 
 ; Set full path to celery program if using virtualenv
-command=source /opt/python/current/env && /opt/python/run/venv/bin/celery worker -A lolsite --loglevel=INFO -n \"worker-$HOSTNAME\"
+command=source /opt/python/run/venv/bin/activate && source /opt/python/current/env && /opt/python/run/venv/bin/celery worker -A lolsite --loglevel=INFO -n \"worker-$HOSTNAME\"
 
 ; The directory to your Django project
 directory=/opt/python/current/app  
