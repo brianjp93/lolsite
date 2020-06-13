@@ -1,3 +1,6 @@
+celeryenv=`cat /opt/python/current/env | tr '\n' ',' | sed 's/export //g' | sed 's/$PYTHONPATH//g' | sed 's/$LD_LIBRARY_PATH//g'`
+celeryenv=${celeryenv%?}
+
 celeryconf="[program:celeryd-worker]
 
 ; Set full path to celery program if using virtualenv
@@ -43,7 +46,7 @@ killasgroup=true
 ; so it starts first
 priority=998
 
-environment=`cat /opt/python/current/env | tr '\n' ',' | sed 's/export //g' | sed 's/$PYTHONPATH//g' | sed 's/$LD_LIBRARY_PATH//g'`" 
+environment=$celeryenv" 
 
 # Create the celery supervisord conf script
 echo "$celeryconf" | tee /opt/python/etc/celery_worker.conf
