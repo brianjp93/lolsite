@@ -660,7 +660,7 @@ def import_all_champion_advanced(version, language='en_US', overwrite=False):
             if champion.lore:
                 has_lore = True
             if not has_lore or overwrite:
-                print(f'Importing data for {champion._id}.')
+                # print(f'Importing data for {champion._id}.')
                 pool.apply_async(import_champion_advanced, (champion.id, overwrite))
 
 
@@ -750,3 +750,4 @@ def import_summoner_spells(version='', language='en_US', overwrite=False):
                 }
                 var_model = SummonerSpellVar(**var_model_data)
                 var_model.save()
+

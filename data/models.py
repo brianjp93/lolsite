@@ -168,6 +168,7 @@ class Item(models.Model):
             pass
         return url
 
+
 class ItemEffect(models.Model):
     item = models.ForeignKey('Item', on_delete=models.CASCADE, related_name='effects')
     key = models.CharField(max_length=256, default='')
