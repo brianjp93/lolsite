@@ -5,6 +5,7 @@ from django.utils import timezone
 
 class Rito(models.Model):
     token = models.CharField(max_length=256, default='', blank=True)
+    last_data_import = models.DateTimeField(null=True)
 
     def __str__(self):
         return f'Rito(token="{self.token}")'

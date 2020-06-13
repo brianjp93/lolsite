@@ -2,6 +2,7 @@
 """
 from multiprocessing.dummy import Pool as ThreadPool
 
+from .models import Rito
 from .models import Season, Map, Queue
 from .models import GameMode, GameType
 from .models import ReforgedTree, ReforgedRune
@@ -22,12 +23,47 @@ from .models import SummonerSpellMode, SummonerSpellEffectBurn
 from .models import SummonerSpellVar
 
 from django.db.utils import IntegrityError
+from django.utils import timezone
 
 from . import constants
-from player import constants as player_constants
 from celery import task
 from lolsite.tasks import get_riot_api
-import time
+
+
+@task(name='data.tasks.import_missing')
+def import_missing(max_versions=10, until_found=True, language='en_US', last_import_hours=1):
+    """
+
+    Parameters
+    ----------
+    max_versions: int
+        The max number of data versions to import
+    until_found: bool
+        Once a version that exists in the DB is found, stop
+    last_import_hours: int
+        only run import if the last import was done more than
+        <last_import_hours> hours ago.
+
+    Returns
+    -------
+    None
+
+    """
+    rito = Rito.objects.first()
+    thresh = timezone.now() - timezone.timedelta(hours=last_import_hours)
+    if rito.last_data_import is None or rito.last_data_import < thresh:
+        rito.last_data_import = timezone.now()
+        rito.save()
+        api = get_riot_api()
+        r = api.lolstaticdata.versions()
+        for version in r.json()[:max_versions]:
+            query = Champion.objects.filter(version=version, language=language)
+            if not query.exists():
+                print(f'Importing data for version {version}')
+                import_all(version, language=language)
+            else:
+                if until_found:
+                    return
 
 
 def import_all(version, language='en_US', overwrite=False):
@@ -57,7 +93,7 @@ def import_all(version, language='en_US', overwrite=False):
     import_profile_icons(version=version, language=language, overwrite=overwrite)
     import_champions(version=version, language=language, overwrite=overwrite)
     import_all_champion_advanced(version, language=language, overwrite=overwrite)
-    import_summoner_spells(version=version, language=language, overwrite=overwrite)
+    import_summoner_spells(version=version, language=language)
     import_reforgedrunes(version=version, language=language, overwrite=overwrite)
 
 
@@ -335,6 +371,7 @@ def import_items(version='', language='en_US', overwrite=False):
                     )
                 rune_model.save()
 
+
 def import_profile_icons(version='', language='en_US', overwrite=False):
     """Import profile icon data from datadragon.
 
@@ -380,7 +417,7 @@ def import_profile_icons(version='', language='en_US', overwrite=False):
                     else:
                         raise Exception(f'Could not find ProfileIcon(version={version}, language={language}, _id={profile_data["id"]})')
                 else:
-                    raise error
+                    continue
 
 
 def import_champions(version='', language='en_US', overwrite=False):
@@ -664,7 +701,7 @@ def import_all_champion_advanced(version, language='en_US', overwrite=False):
                 pool.apply_async(import_champion_advanced, (champion.id, overwrite))
 
 
-def import_summoner_spells(version='', language='en_US', overwrite=False):
+def import_summoner_spells(version='', language='en_US'):
     """Import summoner spells from datadragon.
     """
     api = get_riot_api()
@@ -692,15 +729,10 @@ def import_summoner_spells(version='', language='en_US', overwrite=False):
             try:
                 spell_model.save()
             except IntegrityError as error:
-                if overwrite:
-                    query = SummonerSpell.objects.filter(version=version, language=language, key=_spell['key'])
-                    if query.exists():
-                        query.first().delete()
-                        spell_model.save()
-                    else:
-                        raise Exception("Couldn't find the correct model to overwrite")
-                else:
-                    raise error
+                query = SummonerSpell.objects.filter(version=version, language=language, key=_spell['key'])
+                if query.exists():
+                    query.first().delete()
+                    spell_model.save()
 
             for i, effect_burn_data in enumerate(_spell['effectBurn']):
                 effect_burn_model_data = {

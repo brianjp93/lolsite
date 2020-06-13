@@ -109,6 +109,7 @@ class ItemRuneAdmin(admin.ModelAdmin):
 
 class ProfileIconAdmin(admin.ModelAdmin):
     list_display = ('_id', 'full', 'sprite')
+    list_filter = ('version', 'language')
 
 
 class ChampionAdmin(admin.ModelAdmin):
@@ -243,3 +244,4 @@ admin.site.register(SummonerSpellImage, SummonerSpellImageAdmin)
 admin.site.register(SummonerSpellMode, SummonerSpellModeAdmin)
 admin.site.register(SummonerSpellEffectBurn, SummonerSpellEffectBurnAdmin)
 admin.site.register(SummonerSpellVar, SummonerSpellVarAdmin)
+

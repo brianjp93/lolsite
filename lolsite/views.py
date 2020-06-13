@@ -4,6 +4,8 @@ from django.template.response import TemplateResponse
 
 from player.serializers import FavoriteSerializer
 
+from data import tasks as dt
+
 from data import constants
 import json
 
@@ -11,9 +13,11 @@ import json
 def home(request, path=''):
     """Return basic home address and let react render the rest.
     """
+    dt.import_missing.delay()
     user = request.user
     data = get_base_react_context(request, user=user)
     return TemplateResponse(request, 'layout/home.html', data)
+
 
 def get_base_react_context(request, user=None):
     """Get the react context data.
