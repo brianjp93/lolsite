@@ -14,6 +14,7 @@ import os
 import urllib.parse
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
+from tasks import get_ec2_instance_ip
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -59,7 +60,8 @@ if DEV:
     ALLOWED_HOSTS = ['localhost', '192.168.0.24']
     BASE_URL = 'http://localhost:8000'
 else:
-    ALLOWED_HOSTS = ['.elasticbeanstalk.com', '.hardstuck.club']
+    ec2_ip = get_ec2_instance_ip()
+    ALLOWED_HOSTS = ['.elasticbeanstalk.com', '.hardstuck.club', ec2_ip]
     # BASE_URL = 'http://lolsite.us-west-2.elasticbeanstalk.com'
     BASE_URL = 'https://hardstuck.club'
 

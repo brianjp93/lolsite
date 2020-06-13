@@ -2,6 +2,7 @@
 """
 from data.models import Rito
 
+import requests
 from lol.riot import Riot as RiotAPI
 
 
@@ -22,3 +23,4 @@ def get_riot_api():
         if rito.token:
             api = RiotAPI(rito.token)
     return api
+
