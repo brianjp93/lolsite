@@ -14,7 +14,7 @@ tags
 .vscode/
 .vim/
 .git/
-.circleci
+.circleci/
 
 # backup files made by vim
 **/*~
