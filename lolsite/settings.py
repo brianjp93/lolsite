@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import urllib.parse
 import pathlib
+from decouple import config
 
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -40,18 +41,16 @@ except:
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
+SECRET_KEY = config(
     'LOLSITE_SECRET_KEY',
     '6cs%&oj!lvxpvj44r63-#ie=-%er1hs@%sbt1k9=lf7-b_mlxv'
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-env = os.environ
-
-ENVNAME = os.environ.get('ENVNAME', None)
+ENVNAME = config('ENVNAME', None)
 
 REACT_DEV = False
-if env.get('LOLSITE_HOST', None) == 'dev':
+if config('LOLSITE_HOST', None) == 'dev':
     DEV = True
     DEBUG = True
 else:
@@ -142,11 +141,11 @@ if DEV:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': env.get('LOLSITE_DB_NAME'),
-            'USER': env.get('LOLSITE_DB_USER'),
-            'HOST': env.get('LOLSITE_DB_HOST'),
-            'PORT': env.get('LOLSITE_DB_PORT'),
-            'PASSWORD': env.get('LOLSITE_DB_PASS'),
+            'NAME': config('LOLSITE_DB_NAME'),
+            'USER': config('LOLSITE_DB_USER'),
+            'HOST': config('LOLSITE_DB_HOST'),
+            'PORT': config('LOLSITE_DB_PORT'),
+            'PASSWORD': config('LOLSITE_DB_PASS'),
         }
     }
 else:
@@ -154,11 +153,11 @@ else:
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-                'NAME': os.environ['RDS_DB_NAME'],
-                'USER': os.environ['RDS_USERNAME'],
-                'PASSWORD': os.environ['RDS_PASSWORD'],
-                'HOST': os.environ['RDS_HOSTNAME'],
-                'PORT': os.environ['RDS_PORT'],
+                'NAME': config('RDS_DB_NAME'),
+                'USER': config('RDS_USERNAME'),
+                'PASSWORD': config('RDS_PASSWORD'),
+                'HOST': config('RDS_HOSTNAME'),
+                'PORT': config('RDS_PORT'),
             }
         }
     else:
@@ -209,8 +208,8 @@ USE_TZ = True
 
 # aws access keys
 if ENVNAME in ['lolsite', 'lolsite-beat']:
-    AWS_ACCESS_KEY_ID = os.environ['AWS_KEY']
-    AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET']
+    AWS_ACCESS_KEY_ID = config('AWS_KEY')
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET')
 else:
     AWS_ACCESS_KEY_ID = ''
     AWS_SECRET_ACCESS_KEY = ''
@@ -312,7 +311,7 @@ def before_send(event, hint):
 
 if not DEV:
     sentry_sdk.init(
-        dsn=env.get('SENTRY_DSN', ''),
+        dsn=config('SENTRY_DSN', ''),
         integrations=[DjangoIntegration()],
         before_breadcrumb=before_breadcrumb,
         before_send=before_send,
