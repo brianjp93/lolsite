@@ -1,10 +1,10 @@
 """lolsite/settingsenv/aws_settings.py
 """
-from decouple import config
 import os
-import urllib.parse
 
-from lolsite.tasks import get_ec2_instance_ip
+import requests
+from decouple import config
+import urllib.parse
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -26,6 +26,19 @@ except:
 REACT_DEV = False
 DEV = False
 DEBUG = False
+
+
+def get_ec2_instance_ip():
+    """Try to obtain the IP address of the current EC2 instance in AWS
+    """
+    try:
+        ip = requests.get(
+            'http://169.254.169.254/latest/meta-data/local-ipv4',
+            timeout=0.01
+        ).text
+    except requests.exceptions.ConnectionError:
+        ip = None
+    return ip
 
 
 ec2_ip = get_ec2_instance_ip()
