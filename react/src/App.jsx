@@ -27,8 +27,6 @@ window.$(document).ready(function() {
 })
 
 
-// import { Cookies } from 'react-cookie';
-
 class App extends Component {
     constructor(props) {
         super(props);
@@ -103,7 +101,7 @@ class App extends Component {
         this.setState({favorites: JSON.parse(favorite_elt.innerHTML)})
 
         let build_elt = document.getElementById('build-data')
-        this.setState({build: JSON.parse(build_elt.innerHTML)})
+        this.setState({build: build_elt.innerHTML.trim()})
 
         Modal.setAppElement('#app-wrap')
     }

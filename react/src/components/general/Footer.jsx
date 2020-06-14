@@ -12,7 +12,7 @@ function footer(props) {
                             or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are
                             trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
                         </div>
-                        <div>
+                        <div style={{marginTop: 15}}>
                             Build : {props.store.state.build}
                         </div>
                     </div>
