@@ -13,6 +13,8 @@ tags
 *.ipynb
 .vscode/
 .vim/
+.git/
+.circleci
 
 # backup files made by vim
 **/*~
