@@ -3,6 +3,7 @@ __pycache__/*
 
 react/node_modules
 react/start.bat
+react/build/*
 
 tags
 
