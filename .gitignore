@@ -6,6 +6,7 @@ react/start.bat
 react/build/*
 
 tags
+gitbuild
 
 /static/
 
