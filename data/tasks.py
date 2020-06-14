@@ -59,11 +59,19 @@ def import_missing(max_versions=10, until_found=True, language='en_US', last_imp
         for version in r.json()[:max_versions]:
             query = Champion.objects.filter(version=version, language=language)
             if not query.exists():
-                print(f'Importing data for version {version}')
                 import_all(version, language=language)
             else:
                 if until_found:
                     return
+
+
+def import_last_versions(start, end, language='en_US', overwrite=True):
+    """Import data for the last <n> versions.
+    """
+    api = get_riot_api()
+    r = api.lolstaticdata.versions()
+    for version in r.json()[start: end]:
+        import_all(version, language=language, overwrite=overwrite)
 
 
 @task(name='data.tasks.import_all')
@@ -83,6 +91,7 @@ def import_all(version, language='en_US', overwrite=False):
 
     """
     # import from data.constants.py
+    print(f'Importing data for version {version}')
     import_seasons()
     import_maps()
     import_queues()
@@ -605,7 +614,6 @@ def import_champion_advanced(champion_id, overwrite=False):
                     else:
                         raise error
 
-
             for spell_data in data['spells']:
                 spell_model_data = {
                     'champion': champion_model,
@@ -692,14 +700,13 @@ def import_all_champion_advanced(version, language='en_US', overwrite=False):
     query = Champion.objects.filter(version=version)
     if language:
         query = query.filter(language=language)
-    with ThreadPool(10) as pool:
-        for champion in query:
-            has_lore = False
-            if champion.lore:
-                has_lore = True
-            if not has_lore or overwrite:
-                # print(f'Importing data for {champion._id}.')
-                pool.apply_async(import_champion_advanced, (champion.id, overwrite))
+    for champion in query:
+        has_lore = False
+        if champion.lore:
+            has_lore = True
+        if not has_lore or overwrite:
+            # print(f'Importing data for {champion._id}.')
+            import_champion_advanced(champion.id, overwrite)
 
 
 def import_summoner_spells(version='', language='en_US'):

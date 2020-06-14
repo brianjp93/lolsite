@@ -169,6 +169,41 @@ class Item(models.Model):
             pass
         return url
 
+    def is_diff(self, other):
+        """Find differences between two items.
+
+        Parameters
+        ----------
+        other: Item
+
+        Returns
+        -------
+        dict
+
+        """
+        stat_diffs = {}
+        all_stats = set(x.key for x in self.stats.all()) | set(x.key for x in other.stats.all())
+        all_stats = sorted(list(all_stats))
+        for key in all_stats:
+            query0 = self.stats.filter(key=key)
+            query1 = other.stats.filter(key=key)
+            if query0.exists() and query1.exists():
+                selfstat = query0.first()
+                otherstat = query1.first()
+                stat_diffs[key] = selfstat.value == otherstat.value
+            else:
+                stat_diffs[key] = False
+        diffs = {
+            'description': self.description == other.description,
+            'gold__total': self.gold.total == other.gold.total,
+            'gold__sell': self.gold.total == other.gold.total,
+        }
+        if all(diffs.values()) and all(stat_diffs.values()):
+            out = False
+        else:
+            out = {'general': diffs, 'stats': stat_diffs}
+        return out
+
 
 class ItemEffect(models.Model):
     item = models.ForeignKey('Item', on_delete=models.CASCADE, related_name='effects')

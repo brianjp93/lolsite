@@ -18,8 +18,6 @@ import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 SECRET_KEY = config(
     'LOLSITE_SECRET_KEY',
     '6cs%&oj!lvxpvj44r63-#ie=-%er1hs@%sbt1k9=lf7-b_mlxv'
@@ -128,8 +126,8 @@ USE_TZ = True
 
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "lolsite/static"),
-    os.path.join(BASE_DIR, 'react/build/static'),
+    os.path.join(BASE_DIR, "lolsite", "static"),
+    os.path.join(BASE_DIR, 'react', 'build', 'static'),
 ]
 
 
