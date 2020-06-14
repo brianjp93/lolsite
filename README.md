@@ -31,6 +31,9 @@ Another league of legends match history and stats site.
     * apply player ranks to participant data
 
 - [ ] Add task queue and separate server for consuming periodic and delayed tasks
+    * [x] Add task queue
+    * [x] Add workers
+    * [ ] Add beat
     * this will be a larger addition and will require more money to be spent. I definitely want to do this at some point but not sure when :l
 
 - [ ] Show changes of items and champions over patches.  Diff their data to check for changes.
