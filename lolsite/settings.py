@@ -312,7 +312,7 @@ def before_send(event, hint):
 
 if not DEV:
     sentry_sdk.init(
-        dsn="https://667badfd0a4143d8a497da7cc7e78ab3@sentry.io/1482754",
+        dsn=env.get('SENTRY_DSN', ''),
         integrations=[DjangoIntegration()],
         before_breadcrumb=before_breadcrumb,
         before_send=before_send,
