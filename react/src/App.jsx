@@ -36,6 +36,7 @@ class App extends Component {
         this.state = {
             theme: 'dark',
             language: 'en_US',
+            build: '',
             user: {},
 
             project_title: 'HardStuck',
@@ -100,6 +101,9 @@ class App extends Component {
 
         let favorite_elt = document.getElementById('favorite-data')
         this.setState({favorites: JSON.parse(favorite_elt.innerHTML)})
+
+        let build_elt = document.getElementById('build-data')
+        this.setState({build: JSON.parse(build_elt.innerHTML)})
 
         Modal.setAppElement('#app-wrap')
     }

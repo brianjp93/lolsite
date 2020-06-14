@@ -8,11 +8,13 @@ import requests
 
 BASE_DIR = settings.BASE_DIR
 
+
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     ip = s.getsockname()[0]
     return ip
+
 
 def get_paths():
     base = os.path.join(BASE_DIR, 'react', 'build', 'static')
@@ -25,6 +27,7 @@ def get_paths():
         if f.endswith('.css'):
             css_path = os.path.join('css', f)
     return js_path, css_path
+
 
 def react_data_processor(request):
     if settings.REACT_DEV:
@@ -74,5 +77,7 @@ def react_data_processor(request):
             print(e)
     return react_data
 
+
 def version_processor(request):
     return {'app_version': settings.VERSION_STRING}
+
