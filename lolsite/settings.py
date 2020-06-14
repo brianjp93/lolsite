@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 import urllib.parse
+import pathlib
+
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from tasks import get_ec2_instance_ip
