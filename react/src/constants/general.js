@@ -12,6 +12,10 @@ export function formatDatetimeFull(epoch) {
     return moment(epoch).format('MMM D, YYYY h:mm a')
 }
 
+export function formatDatetimeTime(epoch) {
+    return moment(epoch).format('h:mm a')
+}
+
 export function getTeam(num, participants) {
     return participants.filter(item => item.team_id === num)
 }

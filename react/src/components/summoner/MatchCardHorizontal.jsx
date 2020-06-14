@@ -8,16 +8,8 @@ import Item from '../data/Item'
 // import ReactTooltip from 'react-tooltip'
 import { rankParticipants } from './rankparticipants'
 import { useEffect } from 'react'
-import { getMyPart } from '../../constants/general'
+import { getMyPart, formatDatetime, formatDatetimeFull } from '../../constants/general'
 
-
-function formatDatetime(epoch) {
-    return moment(epoch).format('MMM D, h:mm a')
-}
-
-function formatDatetimeFull(epoch) {
-    return moment(epoch).format('MMM D, YYYY h:mm a')
-}
 
 function formatName(name) {
     if (name.length > 9) {

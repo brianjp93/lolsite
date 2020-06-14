@@ -3,13 +3,9 @@ import { Link } from 'react-router-dom'
 import Modal from 'react-responsive-modal'
 import moment from 'moment'
 import numeral from 'numeral'
+import { formatDatetimeTime } from '../../constants/general'
 
 import api from '../../api/api'
-
-
-function formatDatetime(epoch) {
-    return moment(epoch).format('h:mm a')
-}
 
 
 class Spectate extends Component {
@@ -33,7 +29,9 @@ class Spectate extends Component {
         })
 
         this.gametime_interval = window.setInterval(() => {
-            this.matchtime.innerHTML = this.getGameTime()
+            if (this.matchtime !== undefined) {
+                this.matchtime.innerHTML = this.getGameTime()
+            }
         }, 1000)
     }
     componentWillUnmount() {
@@ -129,12 +127,17 @@ class Spectate extends Component {
         return top
     }
     getGameTime() {
-        var now = new Date().getTime()
-        var ms = now - this.state.spectate_data.gameStartTime
-        var total_seconds = Math.round(ms / 1000)
-        var minutes = Math.floor(total_seconds / 60)
-        var seconds = total_seconds % 60
-        return `${numeral(minutes).format('0')}:${numeral(seconds).format('00')}`
+        if (this.state.spectate_data !== null) {
+            var now = new Date().getTime()
+            var ms = now - this.state.spectate_data.gameStartTime
+            var total_seconds = Math.round(ms / 1000)
+            var minutes = Math.floor(total_seconds / 60)
+            var seconds = total_seconds % 60
+            return `${numeral(minutes).format('0')}:${numeral(seconds).format('00')}`
+        }
+        else {
+            return ''
+        }
     }
     render() {
         let width = 700
@@ -152,7 +155,7 @@ class Spectate extends Component {
                         <h5 style={{margin:0, display: 'inline-block'}}>{this.getQueue()}</h5>{' '}
 
                         <span style={{float: 'right', paddingRight:40}}>
-                            Match started at {formatDatetime(this.state.spectate_data.gameStartTime)}{' '}
+                            Match started at {formatDatetimeTime(this.state.spectate_data.gameStartTime)}{' '}
                             | <span style={{width: 50, display: 'inline-block'}} ref={(elt) => {this.matchtime = elt}}></span>
                         </span>
 

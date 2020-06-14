@@ -15,6 +15,9 @@ tags
 .vscode/
 .vim/
 
+# backup files made by vim
+**/*~
+
 .coverage
 htmlcov/
 wily-report.html

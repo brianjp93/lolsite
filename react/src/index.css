@@ -52,6 +52,30 @@ hr {
     border-radius: 10px;
     background-color: #F5F5F500;
 }
+.quiet-scroll {
+    scrollbar-color: #222 #575757;
+    scrollbar-width: thin;
+}
+
+
+.ReactModal__Content--after-open {
+    scrollbar-color: #222 #575757;
+    scrollbar-width: thin;
+}
+.ReactModal__Content--after-open::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: #F5F5F500;
+}
+.ReactModal__Content--after-open::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: #2525257d;
+}
+.ReactModal__Content--after-open::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background-color: #F5F5F500;
+}
+
 
 [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
     position: relative;
