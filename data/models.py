@@ -341,6 +341,34 @@ class Champion(models.Model):
             pass
         return url
 
+    def is_diff(self, other):
+        """Check to see if a champion has differences with another.
+        """
+        stat_diffs = {
+            'armor': self.stats.armor == other.stats.armor,
+            'armor_per_level': self.stats.armor_per_level == other.stats.armor_per_level,
+            'attack_damage': self.stats.attack_damage == other.stats.attack_damage,
+            'attack_damage_per_level': self.stats.attack_damage_per_level == other.stats.attack_damage_per_level,
+            'attack_range': self.stats.attack_range == other.stats.attack_range,
+            'attack_speed': self.stats.attack_speed == other.stats.attack_speed,
+            'attack_speed_per_level': self.stats.attack_speed_per_level == other.stats.attack_speed_per_level,
+            'crit': self.stats.crit == other.stats.crit,
+            'crit_per_level': self.stats.crit_per_level == other.stats.crit_per_level,
+            'hp': self.stats.hp == other.stats.hp,
+            'hp_per_level': self.stats.hp_per_level == other.stats.hp_per_level,
+            'hp_regen': self.stats.hp_regen == other.stats.hp_regen,
+            'hp_regen_per_level': self.stats.hp_regen_per_level == other.stats.hp_regen_per_level,
+            'move_speed': self.stats.move_speed == other.stats.move_speed,
+            'mp': self.stats.mp == other.stats.mp,
+            'mp_per_level': self.stats.mp_per_level == other.stats.mp_per_level,
+            'mp_regen': self.stats.mp_regen == other.stats.mp_regen,
+            'mp_regen_per_level': self.stats.mp_regen_per_level == other.stats.mp_regen_per_level,
+            'spell_block': self.stats.spell_block == other.stats.spell_block,
+            'spell_block_per_level': self.stats.spell_block_per_level == other.stats.spell_block_per_level,
+        }
+        spell_diffs = {
+        }
+        return
 
 class ChampionImage(models.Model):
     champion = models.OneToOneField('Champion', on_delete=models.CASCADE, related_name='image')
@@ -485,7 +513,6 @@ class ChampionSpell(models.Model):
     range_burn = models.CharField(max_length=128, default='', blank=True)
     resource = models.CharField(max_length=128, default='', blank=True)
     tooltip = models.CharField(max_length=2048, default='', blank=True)
-
 
     class Meta:
         unique_together = ('champion', '_id')
