@@ -72,9 +72,13 @@ try:
         line = [line for line in git_log][-1]
         GIT_BUILD = line.split()[1][:7]
 except:
-    pass
+    try:
+        with open(pathlib.PurePath(BASE_DIR, 'gitbuild')) as git_log:
+            GIT_BUILD = git_log.read().strip()
+    except:
+        pass
 
-VERSION = [0, 0, 1, GIT_BUILD]
+VERSION = [0, 1, GIT_BUILD]
 VERSION_STRING = '.'.join(list(map(str, VERSION)))
 
 # Application definition
