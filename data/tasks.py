@@ -74,6 +74,18 @@ def import_last_versions(start, end, language='en_US', overwrite=True):
         import_all(version, language=language, overwrite=overwrite)
 
 
+def import_missing_advanced_data(n=None):
+    """
+    """
+    query = Champion.objects.all().exclude(lore='')
+    if n:
+        query = query[:n]
+    for champion in query:
+        if champion.spells.all().count() == 0:
+            print(f'Importing advanced data for {champion._id}, version {champion.version}')
+            import_champion_advanced(champion.id, overwrite=True)
+
+
 @task(name='data.tasks.import_all')
 def import_all(version, language='en_US', overwrite=False):
     """Import all constants data from constants.py and riot api.
