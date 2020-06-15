@@ -47,29 +47,16 @@ ALLOWED_HOSTS = ['.elasticbeanstalk.com', '.hardstuck.club', ec2_ip]
 BASE_URL = 'https://hardstuck.club'
 
 ENVNAME = config('ENVNAME', None)
-if ENVNAME in ['lolsite']:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': config('RDS_DB_NAME'),
-            'USER': config('RDS_USERNAME'),
-            'PASSWORD': config('RDS_PASSWORD'),
-            'HOST': config('RDS_HOSTNAME'),
-            'PORT': config('RDS_PORT'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': config('RDS_DB_NAME'),
+        'USER': config('RDS_USERNAME'),
+        'PASSWORD': config('RDS_PASSWORD'),
+        'HOST': config('RDS_HOSTNAME'),
+        'PORT': config('RDS_PORT'),
     }
-else:
-    # circle ci
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'cirecle_test',
-            'USER': 'postgres',
-            'PASSWORD': '',
-            'HOST': '127.0.0.1',
-            'PORT': '5432',
-        }
-    }
+}
 
 AWS_ACCESS_KEY_ID = config('AWS_KEY')
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET')
