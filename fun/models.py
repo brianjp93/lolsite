@@ -9,3 +9,4 @@ class InspirationalMessage(models.Model):
 
     author = models.CharField(max_length=128, default='', blank=True)
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
+

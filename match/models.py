@@ -1,8 +1,5 @@
 """match.models
 """
-# pylint: disable=C0111, bare-except, invalid-name, W0212
-# pylint: disable=R0903
-
 import pytz
 
 from django.db import models
@@ -39,7 +36,7 @@ def tier_sort(position):
         'challenger', 'grandmaster', 'master',
         'diamond', 'platinum', 'gold', 'silver',
         'bronze', 'iron',
-        ]
+    ]
     try:
         index = tier_order.index(position['tier'].lower())
     except:
@@ -518,8 +515,8 @@ class ParticipantFrame(models.Model):
 
     def __str__(self):
         return (
-            f'ParticipantFrame(match={self.frame.timeline.match._id},' +
-            ' frame={self.frame.id}, participant_id={self.participant_id})'
+            f'ParticipantFrame(match={self.frame.timeline.match._id},'
+            + ' frame={self.frame.id}, participant_id={self.participant_id})'
         )
 
 
@@ -577,6 +574,7 @@ class AssistingParticipants(models.Model):
         return f'AssistingParticipants(participant_id={self.participant_id})'
 
 # END ADVANCED TIMELINE MODELS
+
 
 class Spectate(models.Model):
     game_id = models.CharField(max_length=128, default='', blank=True)

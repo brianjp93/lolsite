@@ -1,6 +1,5 @@
 """lolsite/management/commands/rundev.py
 """
-
 from __future__ import absolute_import
 import subprocess
 import requests

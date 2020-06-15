@@ -12,6 +12,7 @@ import LogIn from './components/account/LogIn'
 import VerifyEmail from './components/account/VerifyEmail'
 import Account from './components/account/Account'
 import SetRoles from './components/summoner/SetRoles'
+import { ItemChangesPage } from './components/item/itemchanges'
 
 import api from './api/api'
 
@@ -204,6 +205,7 @@ function Routes(props) {
                     <Route exact path='/login/' render={(rest) => <LogIn route={rest} store={props.store} />} />
                     <Route path='/verify/' render={(rest) => <VerifyEmail route={rest} store={props.store} />} />
                     <Route path='/account/' render={(rest) => <Account route={rest} store={props.store} />} />
+                    <Route exact path='/item/changes/' render={(rest) => <ItemChangesPage route={rest} store={props.store}/>}/>
 
                     <Route exact path='/themes/' render={() => <Themes store={props.store}/>}/>
                     <Route exact path='/set-roles/' render={() => <SetRoles store={props.store}/>}/>
