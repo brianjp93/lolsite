@@ -5,6 +5,7 @@ from django.utils import timezone
 
 class Rito(models.Model):
     token = models.CharField(max_length=256, default='', blank=True)
+    versions = models.CharField(max_length=10000, default='[]', blank=True)
     last_data_import = models.DateTimeField(null=True)
 
     def __str__(self):
@@ -145,6 +146,7 @@ class Item(models.Model):
     consume_on_full = models.BooleanField(default=False)
     special_recipe = models.IntegerField(null=True, blank=True)
     stacks = models.IntegerField(null=True, blank=True)
+    last_changed = models.CharField(max_length=16, default=None, null=True, blank=True)
 
     class Meta:
         unique_together = ('_id', 'version', 'language')
@@ -315,6 +317,7 @@ class Champion(models.Model):
     partype = models.CharField(max_length=128, default='', blank=True)
     title = models.CharField(max_length=128, default='', blank=True)
     lore = models.CharField(max_length=2048, default='', blank=True)
+    last_changed = models.CharField(max_length=16, default=None, null=True, blank=True)
 
     created_date = models.DateTimeField(default=timezone.now)
 
@@ -344,6 +347,13 @@ class Champion(models.Model):
     def is_diff(self, other):
         """Check to see if a champion has differences with another.
         """
+        spell_attrs = [
+            'cooldown_burn', 'cost_burn',
+            'cost_type', 'description',
+            'max_ammo', 'max_rank',
+            'range_burn', 'resource',
+            'tooltip'
+        ]
         stat_diffs = {
             'armor': self.stats.armor == other.stats.armor,
             'armor_per_level': self.stats.armor_per_level == other.stats.armor_per_level,
@@ -366,9 +376,26 @@ class Champion(models.Model):
             'spell_block': self.stats.spell_block == other.stats.spell_block,
             'spell_block_per_level': self.stats.spell_block_per_level == other.stats.spell_block_per_level,
         }
-        spell_diffs = {
-        }
-        return
+        selfspells = self.spells.all()
+        otherspells = other.spells.all()
+        all_names = set(x.name for x in selfspells) | set(x.name for x in otherspells)
+        all_names = sorted(list(all_names))
+        spell_diffs = {}
+        for name in all_names:
+            query0 = selfspells.filter(name=name)
+            query1 = otherspells.filter(name=name)
+            if query0.exists() and query1.exists():
+                spell0 = query0.first()
+                spell1 = query1.first()
+                spell_diffs[name] = all(getattr(spell0, attr) == getattr(spell1, attr) for attr in spell_attrs)
+            else:
+                spell_diffs[name] = False
+        if all(stat_diffs.values()) and all(spell_diffs.values()):
+            out = False
+        else:
+            out = {'general': stat_diffs, 'spells': spell_diffs}
+        return out
+
 
 class ChampionImage(models.Model):
     champion = models.OneToOneField('Champion', on_delete=models.CASCADE, related_name='image')

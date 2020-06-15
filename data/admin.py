@@ -57,7 +57,7 @@ class ReforgedRuneAdmin(admin.ModelAdmin):
 
 
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'version', 'language')
+    list_display = ('name', 'version',  'last_changed', 'language')
     list_filter = ('version', 'language')
 
 
@@ -113,7 +113,7 @@ class ProfileIconAdmin(admin.ModelAdmin):
 
 
 class ChampionAdmin(admin.ModelAdmin):
-    list_display = ('_id', 'key', 'version', 'language')
+    list_display = ('_id', 'key', 'version', 'last_changed', 'language')
     list_filter = ('version', 'language')
 
 

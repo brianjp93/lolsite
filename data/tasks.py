@@ -1,7 +1,5 @@
 """data/tasks.py
 """
-from multiprocessing.dummy import Pool as ThreadPool
-
 from .models import Rito
 from .models import Season, Map, Queue
 from .models import GameMode, GameType
@@ -28,6 +26,7 @@ from django.utils import timezone
 from . import constants
 from celery import task
 from lolsite.tasks import get_riot_api
+import json
 
 
 @task(name='data.tasks.import_missing')
@@ -54,9 +53,9 @@ def import_missing(max_versions=10, until_found=True, language='en_US', last_imp
     if rito.last_data_import is None or rito.last_data_import < thresh:
         rito.last_data_import = timezone.now()
         rito.save()
-        api = get_riot_api()
-        r = api.lolstaticdata.versions()
-        for version in r.json()[:max_versions]:
+        import_versions()
+        rito.refresh_from_db()
+        for version in json.loads(rito.versions):
             query = Champion.objects.filter(version=version, language=language)
             if not query.exists():
                 import_all(version, language=language)
@@ -74,20 +73,8 @@ def import_last_versions(start, end, language='en_US', overwrite=True):
         import_all(version, language=language, overwrite=overwrite)
 
 
-def import_missing_advanced_data(n=None):
-    """
-    """
-    query = Champion.objects.all().exclude(lore='')
-    if n:
-        query = query[:n]
-    for champion in query:
-        if champion.spells.all().count() == 0:
-            print(f'Importing advanced data for {champion._id}, version {champion.version}')
-            import_champion_advanced(champion.id, overwrite=True)
-
-
 @task(name='data.tasks.import_all')
-def import_all(version, language='en_US', overwrite=False):
+def import_all(version, language='en_US', overwrite=False, api_only=False):
     """Import all constants data from constants.py and riot api.
 
     Adds data to database
@@ -104,11 +91,12 @@ def import_all(version, language='en_US', overwrite=False):
     """
     # import from data.constants.py
     print(f'Importing data for version {version}')
-    import_seasons()
-    import_maps()
-    import_queues()
-    import_gamemodes()
-    import_gametypes()
+    if not api_only:
+        import_seasons()
+        import_maps()
+        import_queues()
+        import_gamemodes()
+        import_gametypes()
 
     # require api connection
     import_items(version=version, language=language, overwrite=overwrite)
@@ -802,4 +790,61 @@ def import_summoner_spells(version='', language='en_US'):
                 }
                 var_model = SummonerSpellVar(**var_model_data)
                 var_model.save()
+
+
+def import_versions():
+    api = get_riot_api()
+    r = api.lolstaticdata.versions()
+    if r.status_code == 200:
+        rito = Rito.objects.first()
+        rito.versions = r.text
+        rito.save()
+
+
+def compute_champion_last_change(start_patch, language='en_US'):
+    """Compute and save the last time a champion was changed.
+    """
+    rito = Rito.objects.first()
+    versions = json.loads(rito.versions)
+    index = versions.index(start_patch)
+    versions = list(reversed(versions[:index]))
+    for i, version in enumerate(versions[1:], 1):
+        prev_version = versions[i - 1]
+        champions = Champion.objects.filter(language=language, version=version)
+        prev_champions = Champion.objects.filter(language=language, version=prev_version)
+        for champion in champions:
+            query = prev_champions.filter(_id=champion._id)
+            if query.exists():
+                prev_champion = query.first()
+                if champion.is_diff(prev_champion):
+                    champion.last_changed = champion.version
+                else:
+                    champion.last_changed = prev_champion.last_changed
+            else:
+                champion.last_changed = champion.version
+            champion.save()
+
+
+def compute_item_last_change(start_patch, language='en_US'):
+    """Compute and save the last time a champion was changed.
+    """
+    rito = Rito.objects.first()
+    versions = json.loads(rito.versions)
+    index = versions.index(start_patch)
+    versions = list(reversed(versions[:index]))
+    for i, version in enumerate(versions[1:], 1):
+        prev_version = versions[i - 1]
+        items = Item.objects.filter(language=language, version=version)
+        prev_items = Item.objects.filter(language=language, version=prev_version)
+        for item in items:
+            query = prev_items.filter(_id=item._id)
+            if query.exists():
+                prev_item = query.first()
+                if item.is_diff(prev_item):
+                    item.last_changed = item.version
+                else:
+                    item.last_changed = prev_item.last_changed
+            else:
+                item.last_changed = item.version
+            item.save()
 
