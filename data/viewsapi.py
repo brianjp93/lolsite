@@ -9,7 +9,7 @@ from match.models import Match, Item
 from .serializers import ProfileIconSerializer, ItemSerializer
 from .serializers import ItemGoldSerializer, ItemStatSerializer
 from .serializers import ReforgedRuneSerializer, ChampionSerializer
-from .serializers import ChampionSpellSerializer
+from .serializers import ChampionSpellSerializer, ItemMapSerializer
 
 from django.core.cache import cache
 
@@ -86,6 +86,7 @@ def serialize_item(item):
         item_data['gold'] = item_gold_data
     except:
         pass
+    item_data['maps'] = {x.key: x.value for x in item.maps.all()}
     return item_data
 
 
@@ -154,6 +155,8 @@ def all_items(request, format=None):
         Version - major
     minor : int
         Version - minor
+    patch : str
+        Version - exact patch string
 
     Returns
     -------
@@ -167,12 +170,17 @@ def all_items(request, format=None):
 
     major = request.data.get('major', None)
     minor = request.data.get('minor', None)
+    patch = request.data.get('patch', None)
 
-    if None in [major, minor]:
+    if patch is not None:
+        version = patch
+    elif None in [major, minor]:
         item = Item.objects.all().order_by('-major', '-minor').first()
         major = item.major
         minor = item.minor
-    version = f'{major}.{minor}.1'
+        version = f'{major}.{minor}.1'
+    else:
+        version = f'{major}.{minor}.1'
 
     cache_key = f'items/{version}'
     cache_data = cache.get(cache_key)

@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import ProfileIcon, Item, ItemGold, ItemStat
 from .models import ReforgedRune, Champion, ChampionSpell
+from .models import ItemMap
+
 
 class DynamicSerializer(serializers.ModelSerializer):
     """
@@ -18,6 +20,7 @@ class DynamicSerializer(serializers.ModelSerializer):
             existing = set(self.fields.keys())
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
+
 
 class ProfileIconSerializer(serializers.ModelSerializer):
     image_url = serializers.CharField()
@@ -40,6 +43,13 @@ class ItemGoldSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemGold
         fields = '__all__'
+
+
+class ItemMapSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ItemMap
+        fields = ['key', 'value']
 
 
 class ItemStatSerializer(serializers.ModelSerializer):
@@ -71,3 +81,4 @@ class ChampionSpellSerializer(DynamicSerializer):
     class Meta:
         model = ChampionSpell
         fields = '__all__'
+
