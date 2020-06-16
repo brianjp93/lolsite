@@ -164,3 +164,29 @@ export function getMyPart(participants, account_id) {
     return undefined
 }
 
+export function getStatCosts() {
+    let stats_costs = {
+        PercentAttackSpeedMod: 300 / .12,
+        FlatMPPoolMod: 350 / 250,
+        FlatHPPoolMod: 400 / 150,
+        PercentMovementSpeedMod: 3950,
+        FlatPhysicalDamageMod: 350 / 10,
+        FlatMagicDamageMod: 435 / 20,
+        FlatArmorMod: 300 / 15,
+        FlatSpellBlockMod: 450 / 25,
+        PercentLifeStealMod: 375 / .1,
+        FlatCritChanceMod: 800 / .2,
+        FlatHPRegenMod: 36,
+        FlatMovementSpeedMod: 300 / 25,
+
+        BaseManaRegen: 150 / 50,
+        Lethality: 5,
+        MagicPen: 31.11,
+        CooldownReduction: 26.67,
+        HealAndShieldPower: 56.67,
+        Heal: .3333,
+        PercentBaseHPRegen: 3,
+    }
+    return stats_costs
+}
+

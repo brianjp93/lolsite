@@ -365,6 +365,11 @@ class NavBar extends Component {
                                     }
                                 </div>
                             </form>
+                            <div style={{display: 'inline-block', marginLeft: 15}}>
+                                <Link to='/item/'>
+                                    Items
+                                </Link>
+                            </div>
                             {this.isLoggedIn() &&
                                 <span
                                     style={{display: 'inline-block', marginRight: 15, position: 'relative'}}

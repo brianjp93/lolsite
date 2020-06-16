@@ -76,10 +76,7 @@ def serialize_item(item):
 
     """
     item_data = ItemSerializer(item).data
-    item_data['stats'] = []
-    for stat in item.stats.all():
-        stat_data = ItemStatSerializer(stat).data
-        item_data['stats'].append(stat_data)
+    item_data['stats'] = {x.key: x.value for x in item.stats.all()}
     item_data['gold'] = {}
     try:
         item_gold_data = ItemGoldSerializer(item.gold).data
