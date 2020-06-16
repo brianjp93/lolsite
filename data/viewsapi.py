@@ -190,8 +190,8 @@ def all_items(request, format=None):
             for item in query:
                 item_data = serialize_item(item)
                 items.append(item_data)
-            cache.set(cache_key, items, cache_seconds)
             data = {'data': items, 'version': version}
+            cache.set(cache_key, data, cache_seconds)
         else:
             status_code = 404
             data = {'message': 'No items found for the version given.'}
