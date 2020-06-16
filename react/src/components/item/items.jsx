@@ -180,6 +180,11 @@ function processItem(item, stat_costs) {
         item.stats.PercentBaseHPRegen = parseFloat(x[1])
     }
 
+    x = description.match(/\+([0-9]+)% Life Steal/)
+    if (x !== null) {
+        item.stats.PercentLifeStealMod = parseFloat(x[1]) / 100
+    }
+
     for (let stat_name in item.stats) {
         let value = item.stats[stat_name]
         item.stats[stat_name] = {
