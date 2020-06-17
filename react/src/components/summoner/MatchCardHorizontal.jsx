@@ -1,4 +1,4 @@
-import React, {Fragment, useState, useCallback}  from 'react'
+import React, { Fragment, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import api from '../../api/api'
@@ -9,7 +9,6 @@ import Item from '../data/Item'
 import { rankParticipants } from './rankparticipants'
 import { useEffect } from 'react'
 import { getMyPart, formatDatetime, formatDatetimeFull } from '../../constants/general'
-
 
 function formatName(name) {
     if (name.length > 9) {
@@ -35,20 +34,17 @@ function matchHighlightColor(queue_id) {
     // aram
     else if ([100, 450].indexOf(queue_id >= 0)) {
         out = 'highlight3'
-    }
-    else if ([900, 1010].indexOf(queue_id >= 0)) {
+    } else if ([900, 1010].indexOf(queue_id >= 0)) {
         out = 'highlight4'
     }
     // 3v3 ranked
     else if ([470].indexOf(queue_id >= 0)) {
         out = 'highlight5'
-    }
-    else if ([850].indexOf(queue_id >= 0)) {
+    } else if ([850].indexOf(queue_id >= 0)) {
         out = 'highlight6'
     }
     return out
 }
-
 
 function MatchCard(props) {
     const [participants, setParticipants] = useState([])
@@ -105,14 +101,13 @@ function MatchCard(props) {
                 major,
                 minor,
             }
-            api.data.getItem(data)
-                .then(response => {
-                    if (items[version] === undefined) {
-                        items[version] = {}
-                    }
-                    items[version][item_id] = response.data.data
-                    store.setState({items: items})
-                })
+            api.data.getItem(data).then(response => {
+                if (items[version] === undefined) {
+                    items[version] = {}
+                }
+                items[version][item_id] = response.data.data
+                store.setState({ items: items })
+            })
         }
         return item
     }
@@ -122,26 +117,34 @@ function MatchCard(props) {
             <Item.ItemPopover
                 style={{
                     display: 'inline-block',
-                    height:28, width:28,
-                    margin:'0px 2px',
+                    height: 28,
+                    width: 28,
+                    margin: '0px 2px',
                 }}
                 item={item_data}
                 tooltip_style={store.state.tooltip_style}
                 getItem={getItem}
                 item_id={id}
                 major={match.major}
-                minor={match.minor}>
-                <div style={{
-                    display: 'inline-block',
-                    height:28, width:28,
-                    borderRadius:10,
-                    margin:'0px 2px',
-                    borderStyle:'solid',
-                    borderColor:'#2d2e31',
-                    borderWidth:1}}>
+                minor={match.minor}
+            >
+                <div
+                    style={{
+                        display: 'inline-block',
+                        height: 28,
+                        width: 28,
+                        borderRadius: 10,
+                        margin: '0px 2px',
+                        borderStyle: 'solid',
+                        borderColor: '#2d2e31',
+                        borderWidth: 1,
+                    }}
+                >
                     <img
-                        style={{height:'100%', borderRadius:10, display:'inline-block'}}
-                        src={image_url} alt=""/>
+                        style={{ height: '100%', borderRadius: 10, display: 'inline-block' }}
+                        src={image_url}
+                        alt=""
+                    />
                 </div>
             </Item.ItemPopover>
         )
@@ -181,11 +184,9 @@ function MatchCard(props) {
     const topBarColor = () => {
         if (isVictory(match)) {
             return props.pageStore.state.victory_color
-        }
-        else if (isLoss(match)) {
+        } else if (isLoss(match)) {
             return props.pageStore.state.loss_color
-        }
-        else {
+        } else {
             return props.pageStore.state.neutral_color
         }
     }
@@ -206,7 +207,7 @@ function MatchCard(props) {
     const kda = getKDA(mypart)
     const convertQueue = queue => {
         let convert = {
-            'Co-op vs. AI Intermediate Bot':  'Co-op vs Bots Int'
+            'Co-op vs. AI Intermediate Bot': 'Co-op vs Bots Int',
         }
         if (convert[queue] !== undefined) {
             return convert[queue]
@@ -223,7 +224,7 @@ function MatchCard(props) {
         return max
     }
     const getDamagePercentage = (part, match) => {
-        let perc = part.stats.total_damage_dealt_to_champions / getMaxDamage(match) * 100
+        let perc = (part.stats.total_damage_dealt_to_champions / getMaxDamage(match)) * 100
         perc = Math.round(perc)
         return perc
     }
@@ -233,7 +234,7 @@ function MatchCard(props) {
 
         let kills = {
             100: 0,
-            200: 0
+            200: 0,
         }
         let part
         for (part of team100) {
@@ -270,20 +271,20 @@ function MatchCard(props) {
     const getTeamKpPercentage = (match, part) => {
         let kp = getKp(match, part)
         let max = getTeamMaxKp(match, part.team_id)
-        let perc = kp / max * 100
+        let perc = (kp / max) * 100
         return perc
     }
-    const getTeam = (team_id) => {
-        let team = participants.filter((participant) => participant.team_id === team_id)
+    const getTeam = team_id => {
+        let team = participants.filter(participant => participant.team_id === team_id)
         return (
             <div>
                 {team.map(part => {
                     let dmg_perc = getDamagePercentage(part, match)
-                    let wid = dmg_perc * .90
+                    let wid = dmg_perc * 0.9
 
                     let kp = getKp(match, part)
                     let kp_perc = getTeamKpPercentage(match, part)
-                    let kp_wid = kp_perc * .90
+                    let kp_wid = kp_perc * 0.9
 
                     if (kp_wid < 0) {
                         kp_wid = 0
@@ -294,8 +295,7 @@ function MatchCard(props) {
                     let is_me = part.account_id === mypart.account_id
 
                     return (
-                        <div key={`${match.id}-${part._id}`} style={{position: 'relative'}}>
-
+                        <div key={`${match.id}-${part._id}`} style={{ position: 'relative' }}>
                             {/* KP PERCENTAGE */}
                             <div
                                 title={`${numeral(kp).format('0')}% kp`}
@@ -307,12 +307,15 @@ function MatchCard(props) {
                                     height: 3,
                                     borderRadius: 10,
                                     width: `${kp_wid}%`,
-                                    background: is_me ? '#4b9bcd': '#4b9bcd60'}}>
-                            </div>
+                                    background: is_me ? '#4b9bcd' : '#4b9bcd60',
+                                }}
+                            ></div>
 
                             {/* DAMAGE PERCENTAGE */}
                             <div
-                                title={`${numeral(part.stats.total_damage_dealt_to_champions).format('0,0')} damage to champions`}
+                                title={`${numeral(
+                                    part.stats.total_damage_dealt_to_champions,
+                                ).format('0,0')} damage to champions`}
                                 style={{
                                     position: 'absolute',
                                     left: 17,
@@ -320,11 +323,15 @@ function MatchCard(props) {
                                     height: 3,
                                     borderRadius: 10,
                                     width: `${wid}%`,
-                                    background: is_me ? '#dc5f5f': '#dc5f5f60'}}>
-                            </div>
+                                    background: is_me ? '#dc5f5f' : '#dc5f5f60',
+                                }}
+                            ></div>
 
-                            <img src={part.champion.image_url} alt={part.champion.name}
-                                style={{height: 15, borderRadius: 5, paddingRight: 2}} />
+                            <img
+                                src={part.champion.image_url}
+                                alt={part.champion.name}
+                                style={{ height: 15, borderRadius: 5, paddingRight: 2 }}
+                            />
                             <div
                                 title={part.summoner_name}
                                 style={{
@@ -333,39 +340,41 @@ function MatchCard(props) {
                                     display: 'inline-block',
                                     verticalAlign: 'top',
                                 }}
-                                key={`${match._id}-${part._id}`}>
-
-                                {is_me &&
-                                    <small style={{fontWeight:'bold'}}>
+                                key={`${match._id}-${part._id}`}
+                            >
+                                {is_me && (
+                                    <small style={{ fontWeight: 'bold' }}>
                                         {formatName(part.summoner_name)}
                                     </small>
-                                }
-                                {!is_me &&
+                                )}
+                                {!is_me && (
                                     <small>
-                                        {part.account_id !== '0' &&
+                                        {part.account_id !== '0' && (
                                             <Link
-                                                target='_blank'
+                                                target="_blank"
                                                 title={part.summoner_name}
                                                 className={`${theme} silent`}
-                                                to={`/${pageStore.props.region}/${part.summoner_name}/`}>
+                                                to={`/${pageStore.props.region}/${part.summoner_name}/`}
+                                            >
                                                 {formatName(part.summoner_name)}
                                             </Link>
-                                        }
-                                        {part.account_id === '0' &&
+                                        )}
+                                        {part.account_id === '0' && (
                                             <span title={part.summoner_name}>
                                                 {formatName(part.summoner_name)}
                                             </span>
-                                        }
+                                        )}
                                     </small>
-                                }
+                                )}
                             </div>
                             <small
                                 style={{
                                     position: 'absolute',
                                     right: 0,
                                     top: 2,
-                                    fontSize: 'x-small'
-                                }}>
+                                    fontSize: 'x-small',
+                                }}
+                            >
                                 {part.stats.kills}/{part.stats.deaths}/{part.stats.assists}
                             </small>
                         </div>
@@ -386,15 +395,15 @@ function MatchCard(props) {
     if (mypart !== undefined) {
         return (
             <div
-                style = {{
-                        width: 600,
-                        height: CARDHEIGHT,
-                        paddingTop: 15,
-                        paddingBottom: 10,
-                        position: 'relative',
-                    }}
-                className={`card-panel ${theme}`}>
-
+                style={{
+                    width: 600,
+                    height: CARDHEIGHT,
+                    paddingTop: 15,
+                    paddingBottom: 10,
+                    position: 'relative',
+                }}
+                className={`card-panel ${theme}`}
+            >
                 <div
                     style={{
                         display: 'inline-block',
@@ -404,37 +413,45 @@ function MatchCard(props) {
                         borderRadius: 2,
                         marginLeft: -15,
                         marginRight: 8,
-                    }} >
-                </div>
+                    }}
+                ></div>
                 <div
                     style={{
                         display: 'inline-block',
-                        paddingRight:5,
+                        paddingRight: 5,
                         verticalAlign: 'top',
                         paddingTop: TOPPAD,
-                }}>
+                    }}
+                >
                     <div>
                         <img
-                            style={{height: 40, display:'inline'}}
+                            style={{ height: 40, display: 'inline' }}
                             src={mypart.champion.image_url}
-                            alt=""/>
-                        <div style={{display:'inline-block', paddingLeft:4}}>
+                            alt=""
+                        />
+                        <div style={{ display: 'inline-block', paddingLeft: 4 }}>
                             <img
-                                style={{height:20, display:'block'}}
-                                src={mypart.spell_1_image_url} alt="" />
+                                style={{ height: 20, display: 'block' }}
+                                src={mypart.spell_1_image_url}
+                                alt=""
+                            />
                             <img
-                                style={{height:20, display:'block'}}
-                                src={mypart.spell_2_image_url} alt="" />
+                                style={{ height: 20, display: 'block' }}
+                                src={mypart.spell_2_image_url}
+                                alt=""
+                            />
                         </div>
                     </div>
                     <img
-                        style={{height: 20, verticalAlign: 'top'}}
+                        style={{ height: 20, verticalAlign: 'top' }}
                         src={mypart.stats.perk_0_image_url}
-                        alt=""/>
+                        alt=""
+                    />
                     <img
-                        style={{height: 20, verticalAlign: 'top'}}
+                        style={{ height: 20, verticalAlign: 'top' }}
                         src={mypart.stats.perk_sub_style_image_url}
-                        alt=""/>
+                        alt=""
+                    />
                     <img
                         style={{
                             height: 20,
@@ -442,72 +459,61 @@ function MatchCard(props) {
                             marginLeft: 4,
                             borderRadius: 5,
                         }}
-                        src={mypart.stats.item_6_image_url} alt=""/>
+                        src={mypart.stats.item_6_image_url}
+                        alt=""
+                    />
                 </div>
 
                 <span
-                    style = {{
+                    style={{
                         display: 'inline-block',
                         verticalAlign: 'top',
-                        paddingTop: TOPPAD
-                    }}>
-                    <div style={{width:100}}>
-                        <span>
-                            {item(mypart.stats.item_0, mypart.stats.item_0_image_url)}
-                        </span>
-                        <span>
-                            {item(mypart.stats.item_1, mypart.stats.item_1_image_url)}
-                        </span>
-                        <span>
-                            {item(mypart.stats.item_2, mypart.stats.item_2_image_url)}
-                        </span>
+                        paddingTop: TOPPAD,
+                    }}
+                >
+                    <div style={{ width: 100 }}>
+                        <span>{item(mypart.stats.item_0, mypart.stats.item_0_image_url)}</span>
+                        <span>{item(mypart.stats.item_1, mypart.stats.item_1_image_url)}</span>
+                        <span>{item(mypart.stats.item_2, mypart.stats.item_2_image_url)}</span>
                     </div>
-                    <div style={{width:100}}>
-                        <span>
-                            {item(mypart.stats.item_3, mypart.stats.item_3_image_url)}
-                        </span>
-                        <span>
-                            {item(mypart.stats.item_4, mypart.stats.item_4_image_url)}
-                        </span>
-                        <span>
-                            {item(mypart.stats.item_5, mypart.stats.item_5_image_url)}
-                        </span>
+                    <div style={{ width: 100 }}>
+                        <span>{item(mypart.stats.item_3, mypart.stats.item_3_image_url)}</span>
+                        <span>{item(mypart.stats.item_4, mypart.stats.item_4_image_url)}</span>
+                        <span>{item(mypart.stats.item_5, mypart.stats.item_5_image_url)}</span>
                     </div>
                 </span>
 
-                <div style={{
+                <div
+                    style={{
                         display: 'inline-block',
                         width: 100,
                         textAlign: 'center',
                         verticalAlign: 'top',
                         paddingTop: 0,
-                    }}>
-                    {mypart.impact_rank === 1 &&
-                        <div style={{fontSize: 'small'}}>
+                    }}
+                >
+                    {mypart.impact_rank === 1 && (
+                        <div style={{ fontSize: 'small' }}>
                             <div
                                 style={{
                                     display: 'inline-block',
                                     borderRadius: 4,
-                                    background: 'linear-gradient(90deg, rgba(66,66,93,1) 0%, rgba(133,74,128,1) 100%)',
+                                    background:
+                                        'linear-gradient(90deg, rgba(66,66,93,1) 0%, rgba(133,74,128,1) 100%)',
                                     padding: '0px 5px',
-                                }}>
+                                }}
+                            >
                                 MVP
                             </div>
                         </div>
-                    }
-                    {mypart.impact_rank !== 1 &&
-                        <div style={{height: 19}}></div>
-                    }
-                    <div style={{fontSize: 'small'}}>
+                    )}
+                    {mypart.impact_rank !== 1 && <div style={{ height: 19 }}></div>}
+                    <div style={{ fontSize: 'small' }}>
                         {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
                     </div>
-                    <div style={{fontSize: 'small'}}>
-                        {kda} KDA
-                    </div>
-                    <div style={{fontSize: 'small'}}>
-                        {numeral(dpm).format('0,0')} DPM
-                    </div>
-                    <div style={{fontSize: 'small'}}>
+                    <div style={{ fontSize: 'small' }}>{kda} KDA</div>
+                    <div style={{ fontSize: 'small' }}>{numeral(dpm).format('0,0')} DPM</div>
+                    <div style={{ fontSize: 'small' }}>
                         {numeral(vision_score_per_minute).format('0,0.00')} VS/M
                     </div>
                 </div>
@@ -516,16 +522,17 @@ function MatchCard(props) {
                     style={{
                         display: 'inline-block',
                         width: TEAMSWIDTH,
-                    }}>
+                    }}
+                >
                     {getTeam(100)}
                 </div>
-                <div style={{display: 'inline-block', width: 8}}>
-                </div>
+                <div style={{ display: 'inline-block', width: 8 }}></div>
                 <div
                     style={{
                         display: 'inline-block',
                         width: TEAMSWIDTH,
-                    }}>
+                    }}
+                >
                     {getTeam(200)}
                 </div>
 
@@ -533,54 +540,59 @@ function MatchCard(props) {
                     style={{
                         position: 'absolute',
                         top: 10,
-                        left: 26
-                    }} >
-                    <small title={formatDatetimeFull(match.game_creation)} style={{lineHeight:1, display: 'inline-block'}}>
+                        left: 26,
+                    }}
+                >
+                    <small
+                        title={formatDatetimeFull(match.game_creation)}
+                        style={{ lineHeight: 1, display: 'inline-block' }}
+                    >
                         {formatDatetime(match.game_creation)}
                     </small>
-                    <small style={{lineHeight:1, display:'inline-block', paddingLeft: 10}}>
-                        {`${Math.floor(match.game_duration / 60)}:${numeral(match.game_duration % 60).format('00')}`}
+                    <small style={{ lineHeight: 1, display: 'inline-block', paddingLeft: 10 }}>
+                        {`${Math.floor(match.game_duration / 60)}:${numeral(
+                            match.game_duration % 60,
+                        ).format('00')}`}
                     </small>
                 </div>
 
-                <div
-                    style={{display: 'block', position: 'absolute', bottom: 3, left: 26}}>
-                    <small className={`${store.state.theme} ${matchHighlightColor(match.queue_id)}`}>
-                        {pageStore.state.queues[match.queue_id] &&
+                <div style={{ display: 'block', position: 'absolute', bottom: 3, left: 26 }}>
+                    <small
+                        className={`${store.state.theme} ${matchHighlightColor(match.queue_id)}`}
+                    >
+                        {pageStore.state.queues[match.queue_id] && (
                             <Fragment>
                                 {convertQueue(pageStore.state.queues[match.queue_id].description)}
                             </Fragment>
-                        }
-                        {pageStore.state.queues[match.queue_id] === undefined &&
-                            <Fragment>
-                                {match.queue_id}
-                            </Fragment>
-                        }
+                        )}
+                        {pageStore.state.queues[match.queue_id] === undefined && (
+                            <Fragment>{match.queue_id}</Fragment>
+                        )}
                     </small>
                 </div>
 
                 <Link
                     to={`match/${match._id}/`}
-                    style = {{
+                    style={{
                         position: 'absolute',
                         right: 0,
                         top: 0,
                         backgroundColor: '#ffffff20',
                         width: 40,
                         height: CARDHEIGHT,
-                        textAlign: 'center'
-                    }} >
+                        textAlign: 'center',
+                    }}
+                >
                     <i
-                        className='material-icons'
-                        style={{position: 'absolute', bottom: 5, right: 8}}>
+                        className="material-icons"
+                        style={{ position: 'absolute', bottom: 5, right: 8 }}
+                    >
                         arrow_downward
                     </i>
                 </Link>
             </div>
         )
-    }
-
-    else {
+    } else {
         return <div></div>
     }
 }

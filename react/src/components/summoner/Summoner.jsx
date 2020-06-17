@@ -12,7 +12,6 @@ import ReactTooltip from 'react-tooltip'
 // import PlayerChampionSummary from './PlayerChampionSummary'
 import OverviewSelection from './OverviewSelection'
 import numeral from 'numeral'
-import LazyLoad from 'react-lazyload'
 
 import MatchFilter from './MatchFilter'
 import api from '../../api/api'
@@ -21,26 +20,22 @@ import Modal from 'react-modal'
 import MatchCardModal from './MatchCardModal'
 import { OftenPlaysWith } from './OftenPlaysWith'
 
-
-function convertVerticalScroll(event)  {
+function convertVerticalScroll(event) {
     var elt = event.currentTarget
-    var delta = (Math.abs(event.deltaX) < Math.abs(event.deltaY) ? event.deltaY : event.deltaX)
+    var delta = Math.abs(event.deltaX) < Math.abs(event.deltaY) ? event.deltaY : event.deltaX
 
     if (delta < 0) {
         if (elt.scrollLeft === 0) {
             // comment out to revert to vertical scroll when we hit the left edge
             elt.scrollLeft += delta
-        }
-        else {
+        } else {
             elt.scrollLeft += delta
         }
-    }
-    else {
-        if ((elt.scrollLeft + elt.clientWidth) === elt.scrollWidth) {
+    } else {
+        if (elt.scrollLeft + elt.clientWidth === elt.scrollWidth) {
             // comment out to revert to vertical scroll when we hit the right edge
             elt.scrollLeft += delta
-        }
-        else {
+        } else {
             elt.scrollLeft += delta
         }
     }
@@ -50,14 +45,14 @@ function convertVerticalScroll(event)  {
 const MODALSTYLE = {
     overlay: {
         zIndex: 2,
-        backgroundColor: '#484848b0'
+        backgroundColor: '#484848b0',
     },
-    content : {
+    content: {
         zIndex: 2,
         // backgroundColor: '#292E49',
         backgroundColor: '#2c2d2f',
         border: 'none',
-    }
+    },
 }
 
 class Summoner extends Component {
@@ -85,7 +80,7 @@ class Summoner extends Component {
 
             positions: [],
 
-            last_scroll_time: (new Date()).getTime(),
+            last_scroll_time: new Date().getTime(),
 
             is_spectate_modal_open: false,
             is_live_game: false,
@@ -110,30 +105,31 @@ class Summoner extends Component {
     }
     componentDidMount() {
         ReactGA.event({
-          category: "Summoner Page",
-          action: "Summoner.jsx was mounted.",
-        });
+            category: 'Summoner Page',
+            action: 'Summoner.jsx was mounted.',
+        })
 
         this.getSummonerPage(() => {
             this.getPositions()
             this.checkForLiveGame()
             let now = new Date().getTime()
-            this.setState({last_refresh: now})
+            this.setState({ last_refresh: now })
         })
         this.setQueueDict()
     }
     componentDidUpdate(prevProps) {
         // new summoner
         if (
-            this.props.route.match.params.summoner_name !== prevProps.route.match.params.summoner_name ||
+            this.props.route.match.params.summoner_name !==
+                prevProps.route.match.params.summoner_name ||
             this.props.region !== prevProps.region
         ) {
-            this.setState({match_filters: {}, page: 1}, () => {
+            this.setState({ match_filters: {}, page: 1 }, () => {
                 this.getSummonerPage(() => {
                     this.getPositions()
                     this.checkForLiveGame()
                     let now = new Date().getTime()
-                    this.setState({last_refresh: now})
+                    this.setState({ last_refresh: now })
                 })
             })
         }
@@ -141,16 +137,14 @@ class Summoner extends Component {
     componentWillUnmount() {
         try {
             this.match_list.removeEventListener('wheel', this.handleWheel)
-        }
-        catch(error) {
+        } catch (error) {
             console.log('Attempted to remove event listener but got an error.')
         }
     }
     handleWheel(event) {
         if (!this.props.store.state.ignore_horizontal) {
             return convertVerticalScroll(event)
-        }
-        else {
+        } else {
             return event
         }
     }
@@ -182,12 +176,13 @@ class Summoner extends Component {
         let params = this.props.route.match.params
         let filters = this.state.match_filters
         let data = {
-            summoner_name: params.summoner_name ? params.summoner_name: null,
-            id: params.id ? params.id: null,
+            summoner_name: params.summoner_name ? params.summoner_name : null,
+            id: params.id ? params.id : null,
             region: this.props.region,
             count: this.state.count,
             queue: filters.queue_filter,
-            with_names: filters.summoner_filter !== undefined ? filters.summoner_filter.split(',') : '',
+            with_names:
+                filters.summoner_filter !== undefined ? filters.summoner_filter.split(',') : '',
             champion_key: filters.champion,
         }
         return data
@@ -204,7 +199,7 @@ class Summoner extends Component {
     }
     getSummonerPage(callback) {
         if (!this.state.is_reloading_matches) {
-            this.setState({is_requesting_page: true})
+            this.setState({ is_requesting_page: true })
         }
 
         let data = this.getFilterParams()
@@ -214,53 +209,62 @@ class Summoner extends Component {
             data.trigger_import = true
         }
 
-        api.player.getSummonerPage(data)
-            .then((response) => {
-                this.setState({
-                    summoner: response.data.summoner,
-                    region: this.props.region,
-                    icon: response.data.profile_icon,
-                    matches: response.data.matches,
-                    match_ids: new Set(response.data.matches.map(x => x.id)),
-                    positions: response.data.positions,
-                }, () => {
-                    if (callback !== undefined) {
-                        callback()
-                    }
-                })
+        api.player
+            .getSummonerPage(data)
+            .then(response => {
+                this.setState(
+                    {
+                        summoner: response.data.summoner,
+                        region: this.props.region,
+                        icon: response.data.profile_icon,
+                        matches: response.data.matches,
+                        match_ids: new Set(response.data.matches.map(x => x.id)),
+                        positions: response.data.positions,
+                    },
+                    () => {
+                        if (callback !== undefined) {
+                            callback()
+                        }
+                    },
+                )
             })
-            .catch((error) => {
+            .catch(error => {
                 console.log(error)
                 // window.alert('No summoner with that name was found.')
-                this.setState({summoner: false})
+                this.setState({ summoner: false })
             })
             .then(() => {
-                this.setState({is_requesting_page: false, is_reloading_matches: false})
+                this.setState({
+                    is_requesting_page: false,
+                    is_reloading_matches: false,
+                })
             })
     }
     reloadMatches(callback) {
-        this.setState({
-            match_ids: new Set(),
-            next_page: 2,
-            page: 1,
-            is_reloading_matches: true,
-        }, () => {
-            this.getSummonerPage(() => {
-                this.getPositions()
-                this.setState({last_refresh: new Date().getTime()})
-                if (callback !== undefined) {
-                    try {
-                        callback()
+        this.setState(
+            {
+                match_ids: new Set(),
+                next_page: 2,
+                page: 1,
+                is_reloading_matches: true,
+            },
+            () => {
+                this.getSummonerPage(() => {
+                    this.getPositions()
+                    this.setState({ last_refresh: new Date().getTime() })
+                    if (callback !== undefined) {
+                        try {
+                            callback()
+                        } catch (error) {
+                            console.log('Caught error in reloadMatches method in Summoner.jsx.')
+                        }
                     }
-                    catch(error) {
-                        console.log('Caught error in reloadMatches method in Summoner.jsx.')
-                    }
-                }
-            })
-        })
+                })
+            },
+        )
     }
     getNextPage() {
-        this.setState({is_requesting_next_page: true})
+        this.setState({ is_requesting_next_page: true })
 
         let data = this.getFilterParams()
         data.update = false
@@ -268,38 +272,37 @@ class Summoner extends Component {
         data.after_index = this.state.matches.length
         data.page = this.state.next_page
 
-        api.player.getSummonerPage(data)
-            .then((response) => {
-                var new_matches = []
-                var new_match_ids = this.state.match_ids
-                for (var m of response.data.matches) {
-                    if (new_match_ids.has(m.id)) {
-                        // ignore
-                    }
-                    else {
-                        new_match_ids.add(m.id)
-                        new_matches.push(m)
-                    }
+        api.player.getSummonerPage(data).then(response => {
+            var new_matches = []
+            var new_match_ids = this.state.match_ids
+            for (var m of response.data.matches) {
+                if (new_match_ids.has(m.id)) {
+                    // ignore
+                } else {
+                    new_match_ids.add(m.id)
+                    new_matches.push(m)
                 }
-                this.setState({
-                    summoner: response.data.summoner,
-                    region: this.props.region,
-                    icon: response.data.profile_icon,
-                    matches: [...this.state.matches, ...new_matches],
-                    next_page: this.state.next_page + 1,
-                    is_requesting_next_page: false,
-                })
+            }
+            this.setState({
+                summoner: response.data.summoner,
+                region: this.props.region,
+                icon: response.data.profile_icon,
+                matches: [...this.state.matches, ...new_matches],
+                next_page: this.state.next_page + 1,
+                is_requesting_next_page: false,
             })
+        })
     }
     getPage() {
-        this.setState({is_requesting_next_page: true})
+        this.setState({ is_requesting_next_page: true })
 
         let data = this.getFilterParams()
         data.update = false
         data.trigger_import = true
         data.page = this.state.page
 
-        api.player.getSummonerPage(data)
+        api.player
+            .getSummonerPage(data)
             .then(response => {
                 this.setState({
                     summoner: response.data.summoner,
@@ -309,12 +312,11 @@ class Summoner extends Component {
                     is_requesting_next_page: false,
                 })
             })
-            .catch(error => {
-            })
+            .catch(error => {})
     }
     pagination() {
         const theme = this.props.store.state.theme
-        let disabled = {disabled: false}
+        let disabled = { disabled: false }
         if (this.state.is_requesting_next_page) {
             disabled.disabled = true
         }
@@ -326,26 +328,26 @@ class Summoner extends Component {
                         let page = this.state.page
                         page = page - 1
                         if (page >= 1) {
-                            this.setState({page}, this.getPage)
+                            this.setState({ page }, this.getPage)
                         }
                     }}
-                    className={`${theme} btn-small`}>
+                    className={`${theme} btn-small`}
+                >
                     <i className="material-icons">chevron_left</i>
                 </button>
                 <button
                     {...disabled}
-                    style={{marginLeft: 8}}
+                    style={{ marginLeft: 8 }}
                     onClick={() => {
                         let page = this.state.page
                         page = page + 1
-                        this.setState({page}, this.getPage)
+                        this.setState({ page }, this.getPage)
                     }}
-                    className={`${theme} btn-small`}>
+                    className={`${theme} btn-small`}
+                >
                     <i className="material-icons">chevron_right</i>
                 </button>
-                <div style={{display: 'inline-block', marginLeft: 8}}>
-                    {this.state.page}
-                </div>
+                <div style={{ display: 'inline-block', marginLeft: 8 }}>{this.state.page}</div>
             </div>
         )
     }
@@ -354,9 +356,10 @@ class Summoner extends Component {
             region: this.props.region,
             summoner_id: this.state.summoner._id,
         }
-        api.match.getSpectate(data)
+        api.match
+            .getSpectate(data)
             .then(response => {
-                this.setState({spectate: response.data.data})
+                this.setState({ spectate: response.data.data })
             })
             .catch(error => {
                 console.log(error)
@@ -367,14 +370,15 @@ class Summoner extends Component {
             region: this.props.region,
             summoner_id: this.state.summoner._id,
         }
-        api.match.checkForLiveGame(data)
+        api.match
+            .checkForLiveGame(data)
             .then(response => {
-                this.setState({is_live_game: true})
+                this.setState({ is_live_game: true })
             })
             .catch(error => {
                 if (error.response !== undefined) {
                     if (error.response.status === 404) {
-                        this.setState({is_live_game: false})
+                        this.setState({ is_live_game: false })
                     }
                 }
             })
@@ -384,8 +388,9 @@ class Summoner extends Component {
             summoner_id: this.state.summoner._id,
             region: this.props.region,
         }
-        api.player.getPositions(data)
-            .then(response => this.setState({positions: response.data.data}))
+        api.player
+            .getPositions(data)
+            .then(response => this.setState({ positions: response.data.data }))
             .catch(error => {})
     }
     setQueueDict() {
@@ -396,7 +401,7 @@ class Summoner extends Component {
             q.description = q.description.replace('games', '').trim()
             qdict[q._id] = q
         }
-        this.setState({queues: qdict})
+        this.setState({ queues: qdict })
     }
     closeModal() {
         let href = this.props.route.location.pathname
@@ -415,69 +420,82 @@ class Summoner extends Component {
         }
         return (
             <div>
-                <div style={{minHeight: 1000}}>
+                <div style={{ minHeight: 1000 }}>
                     <NavBar store={this.props.store} region={this.props.region} />
-                    {this.state.is_requesting_page &&
+                    {this.state.is_requesting_page && (
                         <div>
-                            <div 
+                            <div
                                 style={{
                                     textAlign: 'center',
                                     marginTop: 100,
-                                }} >
-                                <Orbit size={300} style={{margin: 'auto'}} />
+                                }}
+                            >
+                                <Orbit size={300} style={{ margin: 'auto' }} />
                             </div>
                         </div>
-                    }
+                    )}
 
-                    {!this.state.is_requesting_page && this.state.summoner === false &&
+                    {!this.state.is_requesting_page && this.state.summoner === false && (
                         <SummonerNotFound store={this.props.store} />
-                    }
+                    )}
 
-                    {!this.state.is_requesting_page && this.state.summoner !== false &&
+                    {!this.state.is_requesting_page && this.state.summoner !== false && (
                         <div>
-                            {this.state.matches.length > 0 &&
+                            {this.state.matches.length > 0 && (
                                 <Modal
                                     isOpen={is_match_modal_open}
                                     onRequestClose={this.closeModal}
-                                    style={MODALSTYLE} >
+                                    style={MODALSTYLE}
+                                >
                                     <MatchCardModal
                                         closeModal={this.closeModal}
                                         pageStore={this}
                                         summoner={this.state.summoner}
                                         region={this.props.region}
-                                        store={store} route={this.props.route} />
+                                        store={store}
+                                        route={this.props.route}
+                                    />
                                 </Modal>
-                            }
-                            <div className="row" style={{marginBottom: 0}}>
+                            )}
+                            <div className="row" style={{ marginBottom: 0 }}>
                                 <div className="col l10 offset-l1">
                                     <div
                                         style={{
-                                            width:400,
-                                            display:'inline-block',
+                                            width: 400,
+                                            display: 'inline-block',
                                             marginRight: 15,
-                                        }}>
-                                        {this.state.summoner.name !== undefined &&
+                                        }}
+                                    >
+                                        {this.state.summoner.name !== undefined && (
                                             <SummonerCard
                                                 last_refresh={this.state.last_refresh}
                                                 positions={this.state.positions}
                                                 icon={this.state.icon}
                                                 summoner={this.state.summoner}
                                                 store={this.props.store}
-                                                pageStore={this} />
-                                        }
+                                                pageStore={this}
+                                            />
+                                        )}
                                     </div>
 
-                                    <div style={{display: 'inline-block', verticalAlign: 'top'}}>
+                                    <div
+                                        style={{
+                                            display: 'inline-block',
+                                            verticalAlign: 'top',
+                                        }}
+                                    >
                                         <div
                                             style={{
                                                 minWidth: 750,
                                                 padding: 15,
                                             }}
-                                            className={`${theme} card-panel`}>
+                                            className={`${theme} card-panel`}
+                                        >
                                             <OverviewSelection
                                                 store={store}
                                                 parent={this}
-                                                summoner={this.state.summoner} />
+                                                summoner={this.state.summoner}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -490,60 +508,73 @@ class Summoner extends Component {
                                             <MatchFilter store={store} parent={this} />
                                         </div>
                                         <div className="col l6 m12">
-                                            <div style={{display:'inline-block', verticalAlign:'top'}}>
+                                            <div
+                                                style={{
+                                                    display: 'inline-block',
+                                                    verticalAlign: 'top',
+                                                }}
+                                            >
                                                 <RecentlyPlayedWith
                                                     matches={this.state.matches}
                                                     store={this.props.store}
                                                     pageStore={this}
-                                                    summoner={this.state.summoner} />
+                                                    summoner={this.state.summoner}
+                                                />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="row" style={{visibility: 'visibile'}}>
-                                <div className='col l10 offset-l1 m12 s12'>
-                                    <div style={{display: 'inline-block'}}>
+                            <div className="row" style={{ visibility: 'visibile' }}>
+                                <div className="col l10 offset-l1 m12 s12">
+                                    <div style={{ display: 'inline-block' }}>
                                         {this.pagination()}
-                                        {this.state.is_requesting_next_page &&
-                                            <div style={{width: 600}}>
-                                                <Orbit size={200} style={{margin: 'auto'}} />
+                                        {this.state.is_requesting_next_page && (
+                                            <div style={{ width: 600 }}>
+                                                <Orbit
+                                                    size={200}
+                                                    style={{
+                                                        margin: 'auto',
+                                                    }}
+                                                />
                                             </div>
-                                        }
-                                        {!this.state.is_requesting_next_page && this.state.matches.map((match, key) => {
-                                            return (
-                                                <LazyLoad height={130}>
+                                        )}
+                                        {!this.state.is_requesting_next_page &&
+                                            this.state.matches.map((match, key) => {
+                                                return (
                                                     <MatchCard
                                                         key={`${key}-${match._id}`}
                                                         index={key}
                                                         store={this.props.store}
                                                         pageStore={this}
-                                                        match={match} />
-                                                </LazyLoad>
-                                            )
-                                        })}
+                                                        match={match}
+                                                    />
+                                                )
+                                            })}
                                         {this.pagination()}
                                     </div>
 
-                                    {this.state.summoner &&
+                                    {this.state.summoner && (
                                         <div
                                             style={{
                                                 display: 'inline-block',
                                                 verticalAlign: 'top',
                                                 marginLeft: 8,
-                                            }}>
-                                            <h5 style={{marginBottom: 3}}>Often Plays With</h5>
+                                            }}
+                                        >
+                                            <h5 style={{ marginBottom: 3 }}>Often Plays With</h5>
                                             <OftenPlaysWith
                                                 region={this.props.region}
                                                 store={this.props.store}
-                                                summoner_id={this.state.summoner.id} />
+                                                summoner_id={this.state.summoner.id}
+                                            />
                                         </div>
-                                    }
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    }
+                    )}
                 </div>
 
                 <Footer store={this.props.store} />
@@ -551,7 +582,6 @@ class Summoner extends Component {
         )
     }
 }
-
 
 class SummonerCard extends Component {
     constructor(props) {
@@ -579,35 +609,34 @@ class SummonerCard extends Component {
     componentDidUpdate(prevProps) {
         if (!this.state.has_been_set) {
             this.setRefreshTime()
-        }
-        else if (this.props.last_refresh !== prevProps.last_refresh) {
+        } else if (this.props.last_refresh !== prevProps.last_refresh) {
             this.setRefreshTime()
         }
     }
     positionalRankImage(position, tier) {
         position = position.toLowerCase()
         tier = tier.toLowerCase()
-        
+
         var pos_convert = {
-            'top': 'Top',
-            'bottom': 'Bot',
-            'middle': 'Mid',
-            'jungle': 'Jungle',
-            'utility': 'Support',
-            'support': 'Support',
+            top: 'Top',
+            bottom: 'Bot',
+            middle: 'Mid',
+            jungle: 'Jungle',
+            utility: 'Support',
+            support: 'Support',
         }
         position = pos_convert[position]
 
         var tier_convert = {
-            'iron': 'Iron',
-            'bronze': 'Bronze',
-            'silver': 'Silver',
-            'gold': 'Gold',
-            'platinum': 'Plat',
-            'diamond': 'Diamond',
-            'master': 'Master',
-            'grandmaster': 'Grandmaster',
-            'challenger': 'Challenger',
+            iron: 'Iron',
+            bronze: 'Bronze',
+            silver: 'Silver',
+            gold: 'Gold',
+            platinum: 'Plat',
+            diamond: 'Diamond',
+            master: 'Master',
+            grandmaster: 'Grandmaster',
+            challenger: 'Challenger',
         }
         tier = tier_convert[tier]
 
@@ -616,15 +645,15 @@ class SummonerCard extends Component {
     generalRankImage(tier) {
         tier = tier.toLowerCase()
         var tier_convert = {
-            'iron': 'Iron',
-            'bronze': 'Bronze',
-            'silver': 'Silver',
-            'gold': 'Gold',
-            'platinum': 'Platinum',
-            'diamond': 'Diamond',
-            'master': 'Master',
-            'grandmaster': 'Grandmaster',
-            'challenger': 'Challenger',
+            iron: 'Iron',
+            bronze: 'Bronze',
+            silver: 'Silver',
+            gold: 'Gold',
+            platinum: 'Platinum',
+            diamond: 'Diamond',
+            master: 'Master',
+            grandmaster: 'Grandmaster',
+            challenger: 'Challenger',
         }
         tier = tier_convert[tier]
 
@@ -648,19 +677,16 @@ class SummonerCard extends Component {
             if (minutes > 0) {
                 if (minutes === 1) {
                     this.refresh_time.innerHTML = `a minute ago`
-                }
-                else if (minutes > 99) {
+                } else if (minutes > 99) {
                     this.refresh_time.innerHTML = 'a long time ago'
-                }
-                else {
+                } else {
                     this.refresh_time.innerHTML = `${minutes} minutes ago`
                 }
-            }
-            else {
+            } else {
                 this.refresh_time.innerHTML = 'a moment ago'
             }
             if (!this.state.has_been_set) {
-                this.setState({has_been_set: true})
+                this.setState({ has_been_set: true })
             }
         }
     }
@@ -669,60 +695,57 @@ class SummonerCard extends Component {
         for (var l of progress) {
             letters.push(l)
         }
-        return (
-            letters.map((letter, key) => {
-                var shared_styles = {
-                    margin:'0 2px',
-                    display: 'inline-block',
-                    height:14, width:14,
-                    borderRadius:7,
-                    borderWidth:1,
-                    borderStyle:'solid',
-                    borderColor:'grey',
-                }
-                if (letter === 'W') {
-                    return (
-                        <div
-                            key={key}
-                            style={{
-                                ...shared_styles,
-                                background: this.props.pageStore.state.victory_color,
-                            }}>
-                        </div>
-                    )
-                }
-                else if (letter === 'L') {
-                    return (
-                        <div
-                            key={key}
-                            style={{
-                                ...shared_styles,
-                                background: this.props.pageStore.state.loss_color,
-                            }}>
-                        </div>
-                    )
-                }
-                else {
-                    return (
-                        <div
-                            key={key}
-                            style={{
-                                ...shared_styles,
-                                background: 'grey',
-                            }}>
-                        </div>
-                    )
-                }
-            })
-        )
+        return letters.map((letter, key) => {
+            var shared_styles = {
+                margin: '0 2px',
+                display: 'inline-block',
+                height: 14,
+                width: 14,
+                borderRadius: 7,
+                borderWidth: 1,
+                borderStyle: 'solid',
+                borderColor: 'grey',
+            }
+            if (letter === 'W') {
+                return (
+                    <div
+                        key={key}
+                        style={{
+                            ...shared_styles,
+                            background: this.props.pageStore.state.victory_color,
+                        }}
+                    ></div>
+                )
+            } else if (letter === 'L') {
+                return (
+                    <div
+                        key={key}
+                        style={{
+                            ...shared_styles,
+                            background: this.props.pageStore.state.loss_color,
+                        }}
+                    ></div>
+                )
+            } else {
+                return (
+                    <div
+                        key={key}
+                        style={{
+                            ...shared_styles,
+                            background: 'grey',
+                        }}
+                    ></div>
+                )
+            }
+        })
     }
     queueName(queue) {
         var out = queue
         var convert = {
-            'RANKED_SOLO_5x5': 'Solo/Duo',
-            'RANKED_FLEX_SR': '5v5 Flex',
-            'RANKED_FLEX_TT': '3v3 Flex',
-            'RANKED_TFT': 'TFT',
+            RANKED_SOLO_5x5: 'Solo/Duo',
+            RANKED_FLEX_SR: '5v5 Flex',
+            RANKED_FLEX_TT: '3v3 Flex',
+            RANKED_TFT: 'TFT',
         }
         if (convert[queue] !== undefined) {
             out = convert[queue]
@@ -735,19 +758,17 @@ class SummonerCard extends Component {
     }
     toggleFavorite() {
         let data = {
-            summoner_id: this.props.summoner.id
+            summoner_id: this.props.summoner.id,
         }
         if (this.isFavorite()) {
             data.verb = 'remove'
-        }
-        else {
+        } else {
             data.verb = 'set'
         }
-        api.player.Favorite(data)
-            .then(response => {
-                // console.log(response)
-                this.props.store.setState({favorites: response.data.data})
-            })
+        api.player.Favorite(data).then(response => {
+            // console.log(response)
+            this.props.store.setState({ favorites: response.data.data })
+        })
     }
     isFavorite() {
         let summoner_id = this.props.summoner.id
@@ -760,31 +781,42 @@ class SummonerCard extends Component {
     }
     render() {
         var reload_attrs = {
-            disabled: this.props.pageStore.state.is_reloading_matches ? true: false,
+            disabled: this.props.pageStore.state.is_reloading_matches ? true : false,
         }
         let pageStore = this.props.pageStore
         return (
             <span>
-                <div style={{position:'relative', padding:18}} className={`card-panel ${this.props.store.state.theme}`}>
-                    {this.props.icon.image_url !== undefined &&
-                        <span style={{position: 'relative', display: 'inline-block'}}>
+                <div
+                    style={{ position: 'relative', padding: 18 }}
+                    className={`card-panel ${this.props.store.state.theme}`}
+                >
+                    {this.props.icon.image_url !== undefined && (
+                        <span
+                            style={{
+                                position: 'relative',
+                                display: 'inline-block',
+                            }}
+                        >
                             <img
                                 style={{
-                                    height:50,
-                                    display:'inline-block',
-                                    verticalAlign:'middle',
-                                    borderRadius:5,
+                                    height: 50,
+                                    display: 'inline-block',
+                                    verticalAlign: 'middle',
+                                    borderRadius: 5,
                                 }}
                                 src={this.props.icon.image_url}
-                                alt={`profile icon ${this.props.icon._id}`} />
-                            <span style={{
-                                display: 'inline-block',
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                fontSize: 'smaller',
-                                width: 50,
-                                }} >
+                                alt={`profile icon ${this.props.icon._id}`}
+                            />
+                            <span
+                                style={{
+                                    display: 'inline-block',
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    fontSize: 'smaller',
+                                    width: 50,
+                                }}
+                            >
                                 <span
                                     style={{
                                         display: 'inline-block',
@@ -792,7 +824,8 @@ class SummonerCard extends Component {
                                         height: 'inherit',
                                         textAlign: 'center',
                                         marginTop: 43,
-                                    }}>
+                                    }}
+                                >
                                     <span
                                         style={{
                                             fontWeght: 'bold',
@@ -801,14 +834,15 @@ class SummonerCard extends Component {
                                             borderRadius: 4,
                                             color: 'black',
                                             background: 'white',
-                                            padding: '0 2px'
-                                        }}>
+                                            padding: '0 2px',
+                                        }}
+                                    >
                                         {this.props.summoner.summoner_level}
                                     </span>
                                 </span>
                             </span>
                         </span>
-                    }
+                    )}
 
                     <div
                         style={{
@@ -818,19 +852,34 @@ class SummonerCard extends Component {
                             textAlign: 'center',
                             verticalAlign: 'middle',
                             height: 25,
-                        }}>
-                        <span style={{textDecoration: 'underline', fontWeight: 'bold',}}>{this.props.summoner.name}</span>
-                        <br/>
-                        <Spectate.SpectateModal queue_convert={this.props.store.state.queue_convert} theme={this.props.store.state.theme} summoner_id={this.props.summoner._id} pageStore={this.props.pageStore}>
+                        }}
+                    >
+                        <span
+                            style={{
+                                textDecoration: 'underline',
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            {this.props.summoner.name}
+                        </span>
+                        <br />
+                        <Spectate.SpectateModal
+                            queue_convert={this.props.store.state.queue_convert}
+                            theme={this.props.store.state.theme}
+                            summoner_id={this.props.summoner._id}
+                            pageStore={this.props.pageStore}
+                        >
                             <small>
-                                {this.props.pageStore.state.is_live_game ? 'Live Game!': 'Check For Game'}
+                                {this.props.pageStore.state.is_live_game
+                                    ? 'Live Game!'
+                                    : 'Check For Game'}
                             </small>
                         </Spectate.SpectateModal>
                     </div>
 
-                    <span style={{position: 'absolute', right: 2, top: 2}}>
+                    <span style={{ position: 'absolute', right: 2, top: 2 }}>
                         <small
-                            className='unselectable'
+                            className="unselectable"
                             style={{
                                 display: 'inline-block',
                                 verticalAlign: 'top',
@@ -842,93 +891,134 @@ class SummonerCard extends Component {
                                 borderColor: '#ffffff40',
                                 color: '#ffffff70',
                                 marginTop: 3,
-                            }}>
-                            {pageStore.last_refresh !== null &&
-                                <span>Last Refresh:{' '}</span>
-                            }
-                            <span ref={(elt) => {this.refresh_time = elt}} style={{fontWeight:'bold'}} >
-                            </span>
+                            }}
+                        >
+                            {pageStore.last_refresh !== null && <span>Last Refresh: </span>}
+                            <span
+                                ref={elt => {
+                                    this.refresh_time = elt
+                                }}
+                                style={{ fontWeight: 'bold' }}
+                            ></span>
                         </small>
-                        <button {...reload_attrs}
+                        <button
+                            {...reload_attrs}
                             className="dark btn-small"
-                            onClick={this.props.pageStore.reloadMatches} >
+                            onClick={this.props.pageStore.reloadMatches}
+                        >
                             <i className="material-icons">autorenew</i>
                         </button>
                     </span>
 
-                    
-                    {this.props.store.state.user.email !== undefined &&
+                    {this.props.store.state.user.email !== undefined && (
                         <Fragment>
-                        <ReactTooltip
-                            effect='solid'
-                            id='favorite-button'>
-                            <span>
-                                {this.isFavorite() ? 'Remove favorite': 'Set favorite'}
+                            <ReactTooltip effect="solid" id="favorite-button">
+                                <span>
+                                    {this.isFavorite() ? 'Remove favorite' : 'Set favorite'}
+                                </span>
+                            </ReactTooltip>
+                            <span
+                                style={{
+                                    position: 'absolute',
+                                    right: 2,
+                                    top: 38,
+                                }}
+                            >
+                                <button
+                                    data-tip
+                                    data-for="favorite-button"
+                                    className="dark btn-small"
+                                    onClick={this.toggleFavorite}
+                                >
+                                    <i className="material-icons">
+                                        {this.isFavorite() ? 'favorite' : 'favorite_border'}
+                                    </i>
+                                </button>
                             </span>
-                        </ReactTooltip>
-                        <span style={{position: 'absolute', right: 2, top: 38}}>
-                            <button
-                                data-tip
-                                data-for='favorite-button'
-                                className="dark btn-small"
-                                onClick={this.toggleFavorite} >
-                                <i className="material-icons">{this.isFavorite() ? 'favorite': 'favorite_border'}</i>
-                            </button>
-                        </span>
                         </Fragment>
-                    }
+                    )}
 
-                    {this.soloPositions().length > 0 &&
-                        <hr/>
-                    }
+                    {this.soloPositions().length > 0 && <hr />}
 
-                    <div style={{paddingTop:10}}>
+                    <div style={{ paddingTop: 10 }}>
                         {this.props.positions.map(pos => {
                             if (pos.queue_type === 'RANKED_SOLO_5x5') {
                                 var gen_positions = ['NONE', 'APEX']
                                 return (
                                     <div key={`${pos.position}-${this.props.summoner._id}`}>
                                         <div>
-                                            <div style={{display: 'inline-block', width:50}}>
-                                                {gen_positions.indexOf(pos.position) === -1 &&
+                                            <div
+                                                style={{
+                                                    display: 'inline-block',
+                                                    width: 50,
+                                                }}
+                                            >
+                                                {gen_positions.indexOf(pos.position) === -1 && (
                                                     <img
-                                                        src={this.positionalRankImage(pos.position, pos.tier)}
-                                                        style={{height:40}}
-                                                        alt=""/>
-                                                }
-                                                {gen_positions.indexOf(pos.position) >= 0 &&
+                                                        src={this.positionalRankImage(
+                                                            pos.position,
+                                                            pos.tier,
+                                                        )}
+                                                        style={{ height: 40 }}
+                                                        alt=""
+                                                    />
+                                                )}
+                                                {gen_positions.indexOf(pos.position) >= 0 && (
                                                     <img
                                                         src={this.generalRankImage(pos.tier)}
-                                                        style={{height:40}}
-                                                        alt=""/>
-                                                }
+                                                        style={{ height: 40 }}
+                                                        alt=""
+                                                    />
+                                                )}
                                             </div>
-                                            <div style={{display: 'inline-block', lineHeight:1, verticalAlign:'super'}}>
+                                            <div
+                                                style={{
+                                                    display: 'inline-block',
+                                                    lineHeight: 1,
+                                                    verticalAlign: 'super',
+                                                }}
+                                            >
                                                 <span>
                                                     {pos.tier} {pos.rank}
                                                 </span>
-                                                <br/>
+                                                <br />
                                                 <small>
-                                                    <span style={{fontWeight: 'bold'}}>{`${numeral(this.getWinRate(pos.wins, pos.losses)).format('0.0')}%`}</span>{' '}-{' '}
-                                                    {pos.wins}W / {pos.losses}L
+                                                    <span
+                                                        style={{
+                                                            fontWeight: 'bold',
+                                                        }}
+                                                    >{`${numeral(
+                                                        this.getWinRate(pos.wins, pos.losses),
+                                                    ).format('0.0')}%`}</span>{' '}
+                                                    - {pos.wins}W / {pos.losses}L
                                                 </small>
                                             </div>
-                                            <div style={{
-                                                display: 'inline-block',
-                                                position:'absolute',
-                                                right:18,
-                                                }}>
-                                                <small className={`${this.props.store.state.theme} pill`}>
+                                            <div
+                                                style={{
+                                                    display: 'inline-block',
+                                                    position: 'absolute',
+                                                    right: 18,
+                                                }}
+                                            >
+                                                <small
+                                                    className={`${this.props.store.state.theme} pill`}
+                                                >
                                                     {this.queueName(pos.queue_type)}
                                                 </small>{' '}
-                                                <span className={`${this.props.store.state.theme} pill`}>
+                                                <span
+                                                    className={`${this.props.store.state.theme} pill`}
+                                                >
                                                     {pos.league_points} LP
                                                 </span>
-                                                {pos.series_progress &&
-                                                    <div style={{textAlign: 'right'}}>
+                                                {pos.series_progress && (
+                                                    <div
+                                                        style={{
+                                                            textAlign: 'right',
+                                                        }}
+                                                    >
                                                         {this.miniSeries(pos.series_progress)}
                                                     </div>
-                                                }
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -939,41 +1029,71 @@ class SummonerCard extends Component {
                         {this.props.positions.map(pos => {
                             if (pos.queue_type !== 'RANKED_SOLO_5x5') {
                                 return (
-                                    <div key={`${pos.position}-${pos.queue_type}-${this.props.summoner._id}`}>
-                                        <hr/>
+                                    <div
+                                        key={`${pos.position}-${pos.queue_type}-${this.props.summoner._id}`}
+                                    >
+                                        <hr />
                                         <div>
-                                            <div style={{display: 'inline-block', width:50}}>
+                                            <div
+                                                style={{
+                                                    display: 'inline-block',
+                                                    width: 50,
+                                                }}
+                                            >
                                                 <img
                                                     src={this.generalRankImage(pos.tier)}
-                                                    style={{height:40}}
-                                                    alt=""/>
+                                                    style={{ height: 40 }}
+                                                    alt=""
+                                                />
                                             </div>
-                                            <div style={{display: 'inline-block', lineHeight:1, verticalAlign:'super'}}>
+                                            <div
+                                                style={{
+                                                    display: 'inline-block',
+                                                    lineHeight: 1,
+                                                    verticalAlign: 'super',
+                                                }}
+                                            >
                                                 <span>
                                                     {pos.tier} {pos.rank}
                                                 </span>
-                                                <br/>
+                                                <br />
                                                 <small>
-                                                    <span style={{fontWeight: 'bold'}}>{`${numeral(this.getWinRate(pos.wins, pos.losses)).format('0.0')}%`}</span>{' '}-{' '}
-                                                    {pos.wins}W / {pos.losses}L
+                                                    <span
+                                                        style={{
+                                                            fontWeight: 'bold',
+                                                        }}
+                                                    >{`${numeral(
+                                                        this.getWinRate(pos.wins, pos.losses),
+                                                    ).format('0.0')}%`}</span>{' '}
+                                                    - {pos.wins}W / {pos.losses}L
                                                 </small>
                                             </div>
-                                            <div style={{
-                                                display: 'inline-block',
-                                                position:'absolute',
-                                                right:18,
-                                                }}>
-                                                <small className={`${this.props.store.state.theme} pill`}>
+                                            <div
+                                                style={{
+                                                    display: 'inline-block',
+                                                    position: 'absolute',
+                                                    right: 18,
+                                                }}
+                                            >
+                                                <small
+                                                    className={`${this.props.store.state.theme} pill`}
+                                                >
                                                     {this.queueName(pos.queue_type)}
                                                 </small>{' '}
-                                                <span className={`${this.props.store.state.theme} pill`}>
+                                                <span
+                                                    className={`${this.props.store.state.theme} pill`}
+                                                >
                                                     {pos.league_points} LP
                                                 </span>
-                                                {pos.series_progress &&
-                                                    <div style={{textAlign: 'right'}}>
+                                                {pos.series_progress && (
+                                                    <div
+                                                        style={{
+                                                            textAlign: 'right',
+                                                        }}
+                                                    >
                                                         {this.miniSeries(pos.series_progress)}
                                                     </div>
-                                                }
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -993,7 +1113,6 @@ SummonerCard.propTypes = {
     last_refresh: PropTypes.any,
 }
 
-
 class RecentlyPlayedWith extends Component {
     constructor(props) {
         super(props)
@@ -1008,15 +1127,12 @@ class RecentlyPlayedWith extends Component {
             for (var p of match.participants) {
                 if (p.account_id === this.props.summoner.account_id) {
                     // ignore self
-                }
-                else if ([0, '0'].indexOf(p.account_id) >= 0) {
+                } else if ([0, '0'].indexOf(p.account_id) >= 0) {
                     // ignore bots
-                }
-                else {
+                } else {
                     if (count[p.summoner_name] === undefined) {
                         count[p.summoner_name] = 1
-                    }
-                    else {
+                    } else {
                         count[p.summoner_name] += 1
                     }
                 }
@@ -1045,29 +1161,39 @@ class RecentlyPlayedWith extends Component {
         return (
             <div
                 style={{
-                    width:270,
-                    height:150,
-                    marginLeft:15,
-                    padding:15,
+                    width: 270,
+                    height: 150,
+                    marginLeft: 15,
+                    padding: 15,
                 }}
-                className={`card-panel ${this.props.store.state.theme}`}>
-                <div style={{textDecoration:'underline', display:'inline-block'}}>
+                className={`card-panel ${this.props.store.state.theme}`}
+            >
+                <div
+                    style={{
+                        textDecoration: 'underline',
+                        display: 'inline-block',
+                    }}
+                >
                     Players In These Games
                 </div>{' '}
                 <small>{this.props.matches.length} games</small>
-                <br/>
-                <div className='quiet-scroll' style={{overflowY: 'scroll', maxHeight:'85%'}}>
+                <br />
+                <div className="quiet-scroll" style={{ overflowY: 'scroll', maxHeight: '85%' }}>
                     <table>
                         {this.sortPlayers().map(data => {
-                            var td_style = {padding: '3px 5px'}
-                            return(
-                                <tbody key={`row-for-${data.summoner_name}`} style={{fontSize:'small'}}>
+                            var td_style = { padding: '3px 5px' }
+                            return (
+                                <tbody
+                                    key={`row-for-${data.summoner_name}`}
+                                    style={{ fontSize: 'small' }}
+                                >
                                     <tr>
                                         <td style={td_style}>
                                             <Link
-                                                target='_blank'
+                                                target="_blank"
                                                 className={`${this.props.store.state.theme}`}
-                                                to={`/${this.props.pageStore.props.region}/${data.summoner_name}/`}>
+                                                to={`/${this.props.pageStore.props.region}/${data.summoner_name}/`}
+                                            >
                                                 {data.summoner_name}
                                             </Link>
                                         </td>
