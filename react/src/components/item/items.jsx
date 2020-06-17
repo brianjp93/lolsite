@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
 import fuzzysearch from 'fuzzysearch'
 import LazyLoad from 'react-lazyload'
 import numeral from 'numeral'
 import { getStatCosts } from '../../constants/general'
+import Orbit from '../general/spinners/orbit'
 
 
 export function ItemsPage(props) {
@@ -21,6 +22,9 @@ function sortItems(items, order_by) {
     items.sort((a, b) => {
         if (order_by === '-gold') {
             return b.gold.total - a.gold.total
+        }
+        else if (order_by === '+gold') {
+            return a.gold.total - b.gold.total
         }
     })
     return items
@@ -72,7 +76,8 @@ const stat_name = {
     FlatMovementSpeedMod: ['Flat MS', 'Flat Movement Speed'],
     BaseManaRegen: ['Mana Regen', 'Base Mana Regen'],
     Lethality: ['Leth', 'Lethality'],
-    MagicPen: ['Magic Pen', 'Magic Penetration'],
+    MagicPen: ['% Pen', 'Percent Magic Penetration'],
+    FlatMagicPen: ['Flat Pen', 'Flat Magic Penetration'],
     CooldownReduction: ['CDR', 'Cooldown Reduction'],
     HealAndShieldPower: ['H+S', 'Heal and Shield Power'],
     PercentBaseHPRegen: ['Base Regen', 'Base Health Regen Percentage']
@@ -93,19 +98,50 @@ export function ItemsGrid(props) {
     const [search, setSearch] = useState('')
     const [is_purchasable, setIsPurchasable] = useState(false)
     const [has_stats, setHasStats] = useState(new Set())
+    const [is_requesting_items, setIsRequesingItems] = useState(false)
 
     const theme = props.store.state.theme
 
     function getItems() {
+        setIsRequesingItems(true)
         api.data.items()
             .then(response => {
                 setItems(response.data.data)
+                setIsRequesingItems(false)
             })
     }
+
+    const statCheckbox = useCallback((stat_name, label) => {
+        return (
+            <p style={{margin: '5px 0px'}}>
+                <label>
+                    <input
+                        checked={has_stats.has(stat_name)}
+                        type="checkbox"
+                        onChange={() => {
+                            let new_set = new Set(has_stats)
+                            if (new_set.has(stat_name)) {
+                                new_set.delete(stat_name)
+                            }
+                            else {
+                                new_set.add(stat_name)
+                            }
+                            setHasStats(new_set)
+                        }}/>
+                    <span>{label}</span>
+                </label>
+            </p>
+        )
+    }, [has_stats])
 
     useEffect(() => {
         getItems()
     }, [])
+
+    useEffect(() => {
+        window.scrollTo(window.scrollX, window.scrollY - 1)
+        window.scrollTo(window.scrollX, window.scrollY + 1)
+    }, [sortedItems])
 
     useEffect(() => {
         if (items !== undefined && items.length > 0) {
@@ -116,62 +152,97 @@ export function ItemsGrid(props) {
             // new_items = new_items.filter(item => item.gold.purchasable)
             // general filter
             new_items = generalFilter(new_items)
-            new_items = filterStats(items, has_stats)
+            new_items = filterStats(new_items, has_stats)
             setSortedItems(new_items)
         }
     }, [items, order_by, map_id, has_stats])
 
+    const checkbox_style = {
+        display: 'inline-block',
+        verticalAlign: 'top',
+    }
+
     return (
         <div>
-            <p>
-                <label>
-                    <input
-                        checked={has_stats.has('FlatPhysicalDamageMod')}
-                        type="checkbox"
-                        onChange={(event) => {
-                            let new_set = new Set(has_stats)
-                            if (new_set.has('FlatPhysicalDamageMod')) {
-                                new_set.delete('FlatPhysicalDamageMod')
-                            }
-                            else {
-                                new_set.add('FlatPhysicalDamageMod')
-                            }
-                            setHasStats(new_set)
-                        }}/>
-                    <span>AD</span>
-                </label>
-            </p>
-            <p>
-                <label>
-                    <input
-                        checked={has_stats.has('FlatMagicDamageMod')}
-                        type="checkbox"
-                        onChange={(event) => {
-                            let new_set = new Set(has_stats)
-                            if (new_set.has('FlatMagicDamageMod')) {
-                                new_set.delete('FlatMagicDamageMod')
-                            }
-                            else {
-                                new_set.add('FlatMagicDamageMod')
-                            }
-                            setHasStats(new_set)
-                        }}/>
-                    <span>AP</span>
-                </label>
-            </p>
-            <div className="input-field">
-                <input
-                    id='item-search-field'
-                    className={theme}
-                    type="text"
-                    value={search}
-                    onChange={event => setSearch(event.target.value)} />
-                <label htmlFor='item-search-field'>Item Filter</label>
+            <div style={checkbox_style}>
+                {statCheckbox('FlatPhysicalDamageMod', 'Attack Damage')}
+                {statCheckbox('PercentAttackSpeedMod', 'Attack Speed')}
+                {statCheckbox('FlatCritChanceMod', 'Crit Chance')}
+                {statCheckbox('PercentLifeStealMod', 'Life Steal')}
+                {statCheckbox('Lethality', 'Lethality')}
             </div>
-            <ItemsGridDisplay
-                search={search}
-                theme={theme}
-                items={sortedItems} />
+
+            <div style={checkbox_style}>
+                {statCheckbox('FlatMagicDamageMod', 'Ability Power')}
+                {statCheckbox('MagicPen', '% Magic Pen')}
+                {statCheckbox('FlatMagicPen', 'Flat Magic Pen')}
+                {statCheckbox('FlatMPPoolMod', 'Mana')}
+                {statCheckbox('CooldownReduction', 'Cooldown Reduction')}
+            </div>
+
+            <div style={checkbox_style}>
+                {statCheckbox('FlatHPPoolMod', 'Health')}
+                {statCheckbox('FlatHPRegenMod', 'Flat HP Regen')}
+                {statCheckbox('PercentBaseHPRegen', '% Base HP Regen')}
+                {statCheckbox('BaseManaRegen', 'Base Mana Regen')}
+            </div>
+
+            <div style={checkbox_style}>
+                {statCheckbox('FlatArmorMod', 'Armor')}
+                {statCheckbox('FlatSpellBlockMod', 'Magic Resist')}
+
+                {statCheckbox('HealAndShieldPower', 'Heal and Shield Power')}
+                {statCheckbox('FlatMovementSpeedMod', 'Flat Movement Speed')}
+                {statCheckbox('PercentMovementSpeedMod', '% Movement Speed')}
+            </div>
+
+
+            <div className="row">
+                <div className="col s8">
+                    <div className="input-field">
+                        <input
+                            id='item-search-field'
+                            className={theme}
+                            type="text"
+                            value={search}
+                            onChange={event => setSearch(event.target.value)} />
+                        <label htmlFor='item-search-field'>Item Filter</label>
+                    </div>
+                </div>
+
+                <div className="col s4">
+                    <div class={`input-field ${theme}`}>
+                        <select
+                            ref={(elt) => window.$(elt).formSelect()}
+                            onChange={(event) => setOrderBy(event.target.value)}>
+                            {['-gold', '+gold'].map(elt => {
+                                return (
+                                    <option
+                                        key={elt}
+                                        value={elt}>
+                                        {elt}
+                                    </option>
+                                )
+                            })}
+                        </select>
+                        <label>Sort By</label>
+                    </div>
+                </div>
+            </div>
+
+            {is_requesting_items &&
+                <div>
+                    <Orbit
+                        style={{margin: 'auto'}}
+                        size={300} />
+                </div>
+            }
+            {!is_requesting_items &&
+                <ItemsGridDisplay
+                    search={search}
+                    theme={theme}
+                    items={sortedItems} />
+            }
         </div>
     )
 }
@@ -205,6 +276,7 @@ function stripHtml(html) {
 
 function processItem(item, stat_costs) {
     item = {...item}
+    item.notes = []
     let x
 
     let description = stripHtml(item.description)
@@ -222,6 +294,12 @@ function processItem(item, stat_costs) {
     x = description.match(/\+([0-9]+)% Magic Penetration/)
     if (x !== null) {
         item.stats.MagicPen = parseFloat(x[1])
+        item.notes.push('The value of % Magic Pen is highly dependent on the amount of Magic Resist the enemy team has.')
+    }
+
+    x = description.match(/\+([0-9]+) Magic Penetration/)
+    if (x !== null) {
+        item.stats.FlatMagicPen = parseFloat(x[1])
     }
 
     x = description.match(/\+([0-9]+)% Cooldown Reduction/)
@@ -262,9 +340,11 @@ export function Item(props) {
 
     let stat_cost = null
     let stat_efficiency = null
+    let sell_efficiency = null
     if (item.stats !== undefined && Object.keys(item.stats).length > 0) {
         stat_cost = Object.keys(item.stats).reduce((total, x) => total + item.stats[x].gold_value, 0)
         stat_efficiency = item.gold.total === 0 ? 0: stat_cost / item.gold.total
+        sell_efficiency = item.gold.total === 0 ? 0: item.gold.sell / item.gold.total
     }
 
     useEffect(() => {
@@ -276,7 +356,9 @@ export function Item(props) {
     const label_style = {borderRadius: 4, padding: '0px 4px', display: 'inline-block'}
     const card_height = 300
     return (
-        <LazyLoad height={card_height}>
+        <LazyLoad
+            offset={200}
+            height={card_height}>
             <div
                 style={{
                     height: card_height,
@@ -325,16 +407,47 @@ export function Item(props) {
                                 <div style={{color: '#f5e15e'}}>
                                     {item.gold.total}g
                                 </div>
-                                <div style={{...label_style, background: '#471d4e'}}>
-                                    {numeral(stat_cost).format('0,0')} 
+
+                                <div>
+                                    <div style={{...label_style, background: '#471d4e'}}>
+                                        {numeral(stat_cost).format('0,0')} 
+                                    </div>
+                                    <span> gold value at </span>
+                                    <div style={{...label_style, background: '#437396', color: 'white'}}>
+                                        {numeral(stat_efficiency * 100).format('0')}%
+                                    </div>
+                                    <span> efficiency</span>
                                 </div>
-                                <span> gold value at </span>
-                                <div style={{...label_style, background: '#437396', color: 'white'}}>
-                                    {numeral(stat_efficiency * 100).format('0')}%
+                                <div style={{marginTop: 3}}>
+                                    <div style={{...label_style, background: '#471d4e'}}>
+                                        {numeral(item.gold.sell).format('0,0')} 
+                                    </div>
+                                    <span> sell value at </span>
+                                    <div style={{...label_style, background: '#437396', color: 'white'}}>
+                                        {numeral(sell_efficiency * 100).format('0')}%
+                                    </div>
+                                    <span> efficiency</span>
                                 </div>
-                                <span> efficiency</span>
                             </small>
                         </div>
+
+
+                        {item.notes.length > 0 &&
+                            <div 
+                                style={{
+                                    background: '#375451', 
+                                    padding: 5, 
+                                    borderRadius: 5,
+                                    marginTop: 5,
+                                }}>
+                                <small>
+                                        {item.notes.map(note => {
+                                            return <span key={item._id}>{note}</span>
+                                        })}
+                                </small>
+                            </div>
+                        }
+
                         <hr style={{marginBottom: 0}} />
                         <div
                             style={{marginBottom: 0}}

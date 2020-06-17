@@ -181,11 +181,12 @@ export function getStatCosts() {
 
         BaseManaRegen: 150 / 50,
         Lethality: 5,
-        MagicPen: 31.11,
+        MagicPen: 16,
         CooldownReduction: 26.67,
         HealAndShieldPower: 56.67,
         Heal: .3333,
         PercentBaseHPRegen: 3,
+        FlatMagicPen: 31.11,
     }
     return stats_costs
 }
