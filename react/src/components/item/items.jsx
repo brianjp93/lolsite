@@ -7,7 +7,6 @@ import numeral from 'numeral'
 import { getStatCosts } from '../../constants/general'
 import Orbit from '../general/spinners/orbit'
 
-
 export function ItemsPage(props) {
     return (
         <Skeleton store={props.store} route={props.route}>
@@ -22,8 +21,7 @@ function sortItems(items, order_by) {
     items.sort((a, b) => {
         if (order_by === '-gold') {
             return b.gold.total - a.gold.total
-        }
-        else if (order_by === '+gold') {
+        } else if (order_by === '+gold') {
             return a.gold.total - b.gold.total
         }
     })
@@ -35,11 +33,9 @@ function generalFilter(items) {
         let champions = ['Sylas', 'Kalista', 'Gangplank', 'FiddleSticks']
         if (champions.indexOf(item.required_champion) >= 0) {
             return false
-        }
-        else if (item.name.indexOf('Quick Charge') >= 0) {
+        } else if (item.name.indexOf('Quick Charge') >= 0) {
             return false
-        }
-        else if (item.name.indexOf('Enchantment:') >= 0) {
+        } else if (item.name.indexOf('Enchantment:') >= 0) {
             if (item.gold.total < 2000) {
                 return false
             }
@@ -60,7 +56,6 @@ function filterStats(items, stat_set) {
     })
 }
 
-
 const stat_name = {
     PercentAttackSpeedMod: ['AS', 'Attack Speed'],
     FlatMPPoolMod: ['Mana', 'Mana'],
@@ -80,7 +75,7 @@ const stat_name = {
     FlatMagicPen: ['Flat Pen', 'Flat Magic Penetration'],
     CooldownReduction: ['CDR', 'Cooldown Reduction'],
     HealAndShieldPower: ['H+S', 'Heal and Shield Power'],
-    PercentBaseHPRegen: ['Base Regen', 'Base Health Regen Percentage']
+    PercentBaseHPRegen: ['Base Regen', 'Base Health Regen Percentage'],
 }
 function convertStatName(name) {
     if (stat_name[name] !== undefined) {
@@ -88,7 +83,6 @@ function convertStatName(name) {
     }
     return [name, name]
 }
-
 
 export function ItemsGrid(props) {
     const [items, setItems] = useState([])
@@ -104,35 +98,37 @@ export function ItemsGrid(props) {
 
     function getItems() {
         setIsRequesingItems(true)
-        api.data.items()
-            .then(response => {
-                setItems(response.data.data)
-                setIsRequesingItems(false)
-            })
+        api.data.items().then(response => {
+            setItems(response.data.data)
+            setIsRequesingItems(false)
+        })
     }
 
-    const statCheckbox = useCallback((stat_name, label) => {
-        return (
-            <p style={{margin: '5px 0px'}}>
-                <label>
-                    <input
-                        checked={has_stats.has(stat_name)}
-                        type="checkbox"
-                        onChange={() => {
-                            let new_set = new Set(has_stats)
-                            if (new_set.has(stat_name)) {
-                                new_set.delete(stat_name)
-                            }
-                            else {
-                                new_set.add(stat_name)
-                            }
-                            setHasStats(new_set)
-                        }}/>
-                    <span>{label}</span>
-                </label>
-            </p>
-        )
-    }, [has_stats])
+    const statCheckbox = useCallback(
+        (stat_name, label) => {
+            return (
+                <p style={{ margin: '5px 0px' }}>
+                    <label>
+                        <input
+                            checked={has_stats.has(stat_name)}
+                            type="checkbox"
+                            onChange={() => {
+                                let new_set = new Set(has_stats)
+                                if (new_set.has(stat_name)) {
+                                    new_set.delete(stat_name)
+                                } else {
+                                    new_set.add(stat_name)
+                                }
+                                setHasStats(new_set)
+                            }}
+                        />
+                        <span>{label}</span>
+                    </label>
+                </p>
+            )
+        },
+        [has_stats],
+    )
 
     useEffect(() => {
         getItems()
@@ -146,7 +142,7 @@ export function ItemsGrid(props) {
     useEffect(() => {
         if (items !== undefined && items.length > 0) {
             let new_items = sortItems(items, order_by)
-            // filter map 
+            // filter map
             new_items = new_items.filter(item => item.maps[map_id] && item.gold.purchasable)
             // filter purchasable
             // new_items = new_items.filter(item => item.gold.purchasable)
@@ -196,30 +192,29 @@ export function ItemsGrid(props) {
                 {statCheckbox('PercentMovementSpeedMod', '% Movement Speed')}
             </div>
 
-
             <div className="row">
                 <div className="col s8">
                     <div className="input-field">
                         <input
-                            id='item-search-field'
+                            id="item-search-field"
                             className={theme}
                             type="text"
                             value={search}
-                            onChange={event => setSearch(event.target.value)} />
-                        <label htmlFor='item-search-field'>Item Filter</label>
+                            onChange={event => setSearch(event.target.value)}
+                        />
+                        <label htmlFor="item-search-field">Item Filter</label>
                     </div>
                 </div>
 
                 <div className="col s4">
                     <div class={`input-field ${theme}`}>
                         <select
-                            ref={(elt) => window.$(elt).formSelect()}
-                            onChange={(event) => setOrderBy(event.target.value)}>
+                            ref={elt => window.$(elt).formSelect()}
+                            onChange={event => setOrderBy(event.target.value)}
+                        >
                             {['-gold', '+gold'].map(elt => {
                                 return (
-                                    <option
-                                        key={elt}
-                                        value={elt}>
+                                    <option key={elt} value={elt}>
                                         {elt}
                                     </option>
                                 )
@@ -230,19 +225,14 @@ export function ItemsGrid(props) {
                 </div>
             </div>
 
-            {is_requesting_items &&
+            {is_requesting_items && (
                 <div>
-                    <Orbit
-                        style={{margin: 'auto'}}
-                        size={300} />
+                    <Orbit style={{ margin: 'auto' }} size={300} />
                 </div>
-            }
-            {!is_requesting_items &&
-                <ItemsGridDisplay
-                    search={search}
-                    theme={theme}
-                    items={sortedItems} />
-            }
+            )}
+            {!is_requesting_items && (
+                <ItemsGridDisplay search={search} theme={theme} items={sortedItems} />
+            )}
         </div>
     )
 }
@@ -251,20 +241,23 @@ function ItemsGridDisplay(props) {
     const items = props.items
     const theme = props.theme
     const search = props.search
+
+    useEffect(() => {
+        window.scrollTo(window.scrollX, window.scrollY - 1)
+        window.scrollTo(window.scrollX, window.scrollY + 1)
+    }, [props.search])
     return (
         <div>
             <div className="row">
-                {items.filter(item => fuzzysearch(search, item.name.toLowerCase())).map(item => {
-                    return (
-                        <div
-                            key={`${item._id}-${item.version}`}
-                            className="col m3">
-                            <Item
-                                theme={theme}
-                                item={item} />
-                        </div>
-                    )
-                })}
+                {items
+                    .filter(item => fuzzysearch(search, item.name.toLowerCase()))
+                    .map(item => {
+                        return (
+                            <div key={`${item._id}-${item.version}`} className="col m3">
+                                <Item theme={theme} item={item} />
+                            </div>
+                        )
+                    })}
             </div>
         </div>
     )
@@ -275,7 +268,7 @@ function stripHtml(html) {
 }
 
 function processItem(item, stat_costs) {
-    item = {...item}
+    item = { ...item }
     item.notes = []
     let x
 
@@ -294,7 +287,9 @@ function processItem(item, stat_costs) {
     x = description.match(/\+([0-9]+)% Magic Penetration/)
     if (x !== null) {
         item.stats.MagicPen = parseFloat(x[1])
-        item.notes.push('The value of % Magic Pen is highly dependent on the amount of Magic Resist the enemy team has.')
+        item.notes.push(
+            'The value of % Magic Pen is highly dependent on the amount of Magic Resist the enemy team has.',
+        )
     }
 
     x = description.match(/\+([0-9]+) Magic Penetration/)
@@ -324,7 +319,7 @@ function processItem(item, stat_costs) {
 
     for (let stat_name in item.stats) {
         let value = item.stats[stat_name]
-        item.stats = {...item.stats}
+        item.stats = { ...item.stats }
         item.stats[stat_name] = {
             value,
             gold_value: stat_costs[stat_name] * value,
@@ -342,9 +337,12 @@ export function Item(props) {
     let stat_efficiency = null
     let sell_efficiency = null
     if (item.stats !== undefined && Object.keys(item.stats).length > 0) {
-        stat_cost = Object.keys(item.stats).reduce((total, x) => total + item.stats[x].gold_value, 0)
-        stat_efficiency = item.gold.total === 0 ? 0: stat_cost / item.gold.total
-        sell_efficiency = item.gold.total === 0 ? 0: item.gold.sell / item.gold.total
+        stat_cost = Object.keys(item.stats).reduce(
+            (total, x) => total + item.stats[x].gold_value,
+            0,
+        )
+        stat_efficiency = item.gold.total === 0 ? 0 : stat_cost / item.gold.total
+        sell_efficiency = item.gold.total === 0 ? 0 : item.gold.sell / item.gold.total
     }
 
     useEffect(() => {
@@ -353,12 +351,10 @@ export function Item(props) {
         }
     }, [props.item])
 
-    const label_style = {borderRadius: 4, padding: '0px 4px', display: 'inline-block'}
+    const label_style = { borderRadius: 4, padding: '0px 4px', display: 'inline-block' }
     const card_height = 300
     return (
-        <LazyLoad
-            offset={200}
-            height={card_height}>
+        <LazyLoad offset={200} height={card_height}>
             <div
                 style={{
                     height: card_height,
@@ -369,14 +365,16 @@ export function Item(props) {
                     paddingLeft: sidepad,
                     position: 'relative',
                 }}
-                className={`quiet-scroll card-panel ${theme}`}>
-                {Object.keys(item).length > 0 &&
+                className={`quiet-scroll card-panel ${theme}`}
+            >
+                {Object.keys(item).length > 0 && (
                     <React.Fragment>
                         <h6
                             style={{
                                 marginBottom: 0,
                                 fontWeight: 'bold',
-                            }}>
+                            }}
+                        >
                             <img
                                 style={{
                                     marginRight: 7,
@@ -386,44 +384,58 @@ export function Item(props) {
                                     right: 0,
                                     top: 8,
                                 }}
-                                src={item.image_url} alt="" />
+                                src={item.image_url}
+                                alt=""
+                            />
                             <div
                                 style={{
                                     width: '70%',
-                                    display: 'inline-block'
-                                }}>
+                                    display: 'inline-block',
+                                }}
+                            >
                                 {item.name}
                             </div>
                         </h6>
-                        <div 
+                        <div
                             style={{
-                                fontWeight: 'bold', 
-                                background: '#28314a', 
-                                padding: 5, 
+                                fontWeight: 'bold',
+                                background: '#28314a',
+                                padding: 5,
                                 borderRadius: 5,
                                 marginTop: 5,
-                            }}>
+                            }}
+                        >
                             <small>
-                                <div style={{color: '#f5e15e'}}>
-                                    {item.gold.total}g
-                                </div>
+                                <div style={{ color: '#f5e15e' }}>{item.gold.total}g</div>
 
                                 <div>
-                                    <div style={{...label_style, background: '#471d4e'}}>
-                                        {numeral(stat_cost).format('0,0')} 
+                                    <div style={{ ...label_style, background: '#471d4e' }}>
+                                        {numeral(stat_cost).format('0,0')}
                                     </div>
                                     <span> gold value at </span>
-                                    <div style={{...label_style, background: '#437396', color: 'white'}}>
+                                    <div
+                                        style={{
+                                            ...label_style,
+                                            background: '#437396',
+                                            color: 'white',
+                                        }}
+                                    >
                                         {numeral(stat_efficiency * 100).format('0')}%
                                     </div>
                                     <span> efficiency</span>
                                 </div>
-                                <div style={{marginTop: 3}}>
-                                    <div style={{...label_style, background: '#471d4e'}}>
-                                        {numeral(item.gold.sell).format('0,0')} 
+                                <div style={{ marginTop: 3 }}>
+                                    <div style={{ ...label_style, background: '#471d4e' }}>
+                                        {numeral(item.gold.sell).format('0,0')}
                                     </div>
                                     <span> sell value at </span>
-                                    <div style={{...label_style, background: '#437396', color: 'white'}}>
+                                    <div
+                                        style={{
+                                            ...label_style,
+                                            background: '#437396',
+                                            color: 'white',
+                                        }}
+                                    >
                                         {numeral(sell_efficiency * 100).format('0')}%
                                     </div>
                                     <span> efficiency</span>
@@ -431,37 +443,36 @@ export function Item(props) {
                             </small>
                         </div>
 
-
-                        {item.notes.length > 0 &&
-                            <div 
+                        {item.notes.length > 0 && (
+                            <div
                                 style={{
-                                    background: '#375451', 
-                                    padding: 5, 
+                                    background: '#375451',
+                                    padding: 5,
                                     borderRadius: 5,
                                     marginTop: 5,
-                                }}>
+                                }}
+                            >
                                 <small>
-                                        {item.notes.map(note => {
-                                            return <span key={item._id}>{note}</span>
-                                        })}
+                                    {item.notes.map(note => {
+                                        return <span key={item._id}>{note}</span>
+                                    })}
                                 </small>
                             </div>
-                        }
+                        )}
 
-                        <hr style={{marginBottom: 0}} />
-                        <div
-                            style={{marginBottom: 0}}
-                            className="row">
+                        <hr style={{ marginBottom: 0 }} />
+                        <div style={{ marginBottom: 0 }} className="row">
                             {Object.keys(item.stats).map(key => {
                                 let stat = item.stats[key]
                                 let value = stat.value
                                 return (
                                     <div
                                         key={`${item.name}-${key}-${item.version}`}
-                                        className='col s6'>
+                                        className="col s6"
+                                    >
                                         {convertStatName(key)[0]}: {value}
-                                        <div style={{display: 'inline-block', marginLeft: 8}}>
-                                            <small style={{color: 'gold'}}>
+                                        <div style={{ display: 'inline-block', marginLeft: 8 }}>
+                                            <small style={{ color: 'gold' }}>
                                                 {numeral(stat.gold_value).format('0,0')}g
                                             </small>
                                         </div>
@@ -469,13 +480,13 @@ export function Item(props) {
                                 )
                             })}
                         </div>
-                            <hr style={{marginTop: 0}} />
-                            <div dangerouslySetInnerHTML={{__html: stripHtml(item.description)}}>
-                        </div>
+                        <hr style={{ marginTop: 0 }} />
+                        <div
+                            dangerouslySetInnerHTML={{ __html: stripHtml(item.description) }}
+                        ></div>
                     </React.Fragment>
-                }
+                )}
             </div>
         </LazyLoad>
     )
 }
-
