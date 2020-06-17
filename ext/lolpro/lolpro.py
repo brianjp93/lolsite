@@ -53,7 +53,7 @@ def match(game_realm, game_id, game_hash):
 
     """
     url = f"https://acs.leagueoflegends.com/v1/stats/game/{game_realm}/{game_id}?gameHash={game_hash}"
-    return reqeusts.get(url)
+    return requests.get(url)
 
 
 def timeline(game_realm, game_id, game_hash):
@@ -71,4 +71,4 @@ def timeline(game_realm, game_id, game_hash):
 
     """
     url = f"https://acs.leagueoflegends.com/v1/stats/game/{game_realm}/{game_id}/timeline?gameHash={game_hash}"
-    return reqeusts.get(url)
+    return requests.get(url)
