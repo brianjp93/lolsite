@@ -68,7 +68,6 @@ python-decouple==3.3
 python-http-client==3.1.0
 python-memcached==1.59
 pytz==2018.9
-pywin32==224
 PyYAML==5.3.1
 redis==3.1.0
 regex==2020.6.8
