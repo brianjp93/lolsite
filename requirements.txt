@@ -1,9 +1,12 @@
 amqp==2.4.1
 aniso8601==3.0.2
+appdirs==1.4.4
+attrs==19.3.0
 awsebcli==3.18.1
 bcrypt==3.1.7
 beautifulsoup4==4.7.1
 billiard==3.5.0.5
+black==19.10b0
 blessed==1.15.0
 boto3==1.9.169
 botocore==1.15.49
@@ -13,11 +16,11 @@ cement==2.8.2
 certifi==2019.3.9
 cffi==1.14.0
 chardet==3.0.4
+click==7.1.2
 colorama==0.4.3
 coverage==4.5.3
 cryptography==2.8
 Django==2.2.2
-django-background-tasks==1.2.5
 django-compat==1.0.15
 django-elasticache==1.0.3
 django-elastipymemcache==1.2.1
@@ -65,8 +68,10 @@ python-decouple==3.3
 python-http-client==3.1.0
 python-memcached==1.59
 pytz==2018.9
+pywin32==224
 PyYAML==5.3.1
 redis==3.1.0
+regex==2020.6.8
 requests==2.20.1
 Rx==1.6.1
 s3transfer==0.2.1
@@ -81,6 +86,8 @@ sqlparse==0.3.0
 termcolor==1.1.0
 texttable==0.9.1
 threadpoolctl==2.1.0
+toml==0.10.1
+typed-ast==1.4.1
 urllib3==1.24.1
 vine==1.2.0
 wcwidth==0.1.7
