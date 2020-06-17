@@ -11,7 +11,7 @@ class DynamicSerializer(serializers.ModelSerializer):
     """
 
     def __init__(self, *args, **kwargs):
-        fields = kwargs.pop('fields', None)
+        fields = kwargs.pop("fields", None)
         # Instantiate the superclass normally
         super(DynamicSerializer, self).__init__(*args, **kwargs)
         if fields:
@@ -27,7 +27,7 @@ class ProfileIconSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProfileIcon
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -35,28 +35,25 @@ class ItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ItemGoldSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ItemGold
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ItemMapSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ItemMap
-        fields = ['key', 'value']
+        fields = ["key", "value"]
 
 
 class ItemStatSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ItemStat
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ReforgedRuneSerializer(serializers.ModelSerializer):
@@ -64,7 +61,7 @@ class ReforgedRuneSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReforgedRune
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ChampionSerializer(DynamicSerializer):
@@ -72,7 +69,7 @@ class ChampionSerializer(DynamicSerializer):
 
     class Meta:
         model = Champion
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ChampionSpellSerializer(DynamicSerializer):
@@ -80,5 +77,4 @@ class ChampionSpellSerializer(DynamicSerializer):
 
     class Meta:
         model = ChampionSpell
-        fields = '__all__'
-
+        fields = "__all__"

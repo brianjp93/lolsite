@@ -7,9 +7,9 @@ from match import urlsapi as match_urls
 from . import viewsapi as lolsite_views
 
 urlpatterns = [
-    path('fun/', include(fun_urls)),
-    path('player/', include(player_urls)),
-    path('data/', include(data_urls)),
-    path('match/', include(match_urls)),
-    path('general/demo-login/', lolsite_views.demo_login),
+    path("fun/", include(fun_urls)),
+    path("player/", include(player_urls)),
+    path("data/", include(data_urls)),
+    path("match/", include(match_urls)),
+    path("general/demo-login/", lolsite_views.demo_login),
 ]

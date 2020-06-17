@@ -21,4 +21,3 @@ def get_riot_api():
         if rito.token:
             api = RiotAPI(rito.token)
     return api
-

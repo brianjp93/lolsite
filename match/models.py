@@ -33,12 +33,18 @@ def tier_sort(position):
 
     """
     tier_order = [
-        'challenger', 'grandmaster', 'master',
-        'diamond', 'platinum', 'gold', 'silver',
-        'bronze', 'iron',
+        "challenger",
+        "grandmaster",
+        "master",
+        "diamond",
+        "platinum",
+        "gold",
+        "silver",
+        "bronze",
+        "iron",
     ]
     try:
-        index = tier_order.index(position['tier'].lower())
+        index = tier_order.index(position["tier"].lower())
     except:
         index = 100
     return index
@@ -56,9 +62,9 @@ def rank_sort(position):
     int
 
     """
-    division_order = ['i', 'ii', 'iii', 'iv', 'v']
+    division_order = ["i", "ii", "iii", "iv", "v"]
     try:
-        index = division_order.index(position['rank'].lower())
+        index = division_order.index(position["rank"].lower())
     except:
         index = 100
     return index
@@ -78,7 +84,7 @@ def lp_sort(position):
     """
     lp = 0
     try:
-        lp = -position.get('league_points', position['leaguePoints'])
+        lp = -position.get("league_points", position["leaguePoints"])
     except:
         pass
     return lp
@@ -88,21 +94,21 @@ class Match(models.Model):
     _id = models.BigIntegerField(unique=True, db_index=True)
     game_creation = models.BigIntegerField(db_index=True)
     game_duration = models.IntegerField()
-    game_mode = models.CharField(max_length=32, default='', blank=True)
-    game_type = models.CharField(max_length=32, default='', blank=True)
+    game_mode = models.CharField(max_length=32, default="", blank=True)
+    game_type = models.CharField(max_length=32, default="", blank=True)
     map_id = models.IntegerField()
-    platform_id = models.CharField(max_length=16, default='', blank=True)
+    platform_id = models.CharField(max_length=16, default="", blank=True)
     queue_id = models.IntegerField(db_index=True)
     season_id = models.IntegerField()
 
-    game_version = models.CharField(max_length=32, default='', blank=True)
+    game_version = models.CharField(max_length=32, default="", blank=True)
     major = models.IntegerField(db_index=True)
     minor = models.IntegerField(db_index=True)
     patch = models.IntegerField()
     build = models.IntegerField()
 
     def __str__(self):
-        return f'Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})'
+        return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
 
     def get_creation(self):
         """Get creation as datetime
@@ -115,9 +121,9 @@ class Match(models.Model):
         """
         major = self.major
         try:
-            tiers = getattr(DATA_CONSTANTS, f'TIERS_{major}')
+            tiers = getattr(DATA_CONSTANTS, f"TIERS_{major}")
         except:
-            output = ''
+            output = ""
         else:
             all_tiers = []
             for part in self.participants.all():
@@ -128,54 +134,68 @@ class Match(models.Model):
                 output_index = int(sum(all_tiers) / len(all_tiers))
                 output = tiers[output_index]
             else:
-                output = ''
+                output = ""
         return output.title()
 
 
 class Participant(models.Model):
-    match = models.ForeignKey('Match', on_delete=models.CASCADE, related_name='participants')
+    match = models.ForeignKey(
+        "Match", on_delete=models.CASCADE, related_name="participants"
+    )
     _id = models.IntegerField(db_index=True)  # participantID
 
-    account_id = models.CharField(max_length=128, default='', blank=True, db_index=True)
-    current_account_id = models.CharField(max_length=128, default='', blank=True, db_index=True)
-    current_platform_id = models.CharField(max_length=16, default='', blank=True, db_index=True)
-    platform_id = models.CharField(max_length=16, default='', blank=True)
-    match_history_uri = models.CharField(max_length=128, default='', blank=True)
-    summoner_id = models.CharField(max_length=128, default='', blank=True, null=True, db_index=True)
-    summoner_name = models.CharField(max_length=256, default='', blank=True)
-    summoner_name_simplified = models.CharField(max_length=128, default='', blank=True, db_index=True)
+    account_id = models.CharField(max_length=128, default="", blank=True, db_index=True)
+    current_account_id = models.CharField(
+        max_length=128, default="", blank=True, db_index=True
+    )
+    current_platform_id = models.CharField(
+        max_length=16, default="", blank=True, db_index=True
+    )
+    platform_id = models.CharField(max_length=16, default="", blank=True)
+    match_history_uri = models.CharField(max_length=128, default="", blank=True)
+    summoner_id = models.CharField(
+        max_length=128, default="", blank=True, null=True, db_index=True
+    )
+    summoner_name = models.CharField(max_length=256, default="", blank=True)
+    summoner_name_simplified = models.CharField(
+        max_length=128, default="", blank=True, db_index=True
+    )
 
     champion_id = models.IntegerField(db_index=True)
-    highest_achieved_season_tier = models.CharField(max_length=64, default='', blank=True)
+    highest_achieved_season_tier = models.CharField(
+        max_length=64, default="", blank=True
+    )
     spell_1_id = models.IntegerField()
     spell_2_id = models.IntegerField()
     team_id = models.IntegerField()
 
     # from timeline
-    lane = models.CharField(max_length=64, default='', blank=True)
-    role = models.CharField(max_length=64, default='', blank=True)
+    lane = models.CharField(max_length=64, default="", blank=True)
+    role = models.CharField(max_length=64, default="", blank=True)
 
     # custom added fields.
-    rank = models.CharField(max_length=32, default='', blank=True, null=True)
-    tier = models.CharField(max_length=32, default='', blank=True, null=True)
+    rank = models.CharField(max_length=32, default="", blank=True, null=True)
+    tier = models.CharField(max_length=32, default="", blank=True, null=True)
     # label for ML training
     # 0=top, 1=jg, 2=mid, 3=adc, 4=sup
     role_label = models.IntegerField(default=None, null=True)
 
     class Meta:
-        unique_together = ('match', '_id')
+        unique_together = ("match", "_id")
 
     def save(self, *args, **kwargs):
         self.summoner_name_simplified = simplify(self.summoner_name)
         super(Participant, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f'Participant(summoner_name={self.summoner_name}, match={self.match._id})'
+        return (
+            f"Participant(summoner_name={self.summoner_name}, match={self.match._id})"
+        )
 
     def spell_1_image_url(self):
         """Get spell 1 image URL.
         """
-        url = ''
+        url = ""
         query = SummonerSpell.objects.filter(key=self.spell_1_id)
         if query.exists():
             spell = query.first()
@@ -185,7 +205,7 @@ class Participant(models.Model):
     def spell_2_image_url(self):
         """Get spell 2 image URL.
         """
-        url = ''
+        url = ""
         query = SummonerSpell.objects.filter(key=self.spell_2_id)
         if query.exists():
             spell = query.first()
@@ -194,11 +214,11 @@ class Participant(models.Model):
 
     def as_data_row(self, max_spell=70, max_champ=1000):
         convert_lane = {
-            'NONE': 0,
-            'TOP': 1,
-            'JUNGLE': 2,
-            'MIDDLE': 3,
-            'BOTTOM': 4,
+            "NONE": 0,
+            "TOP": 1,
+            "JUNGLE": 2,
+            "MIDDLE": 3,
+            "BOTTOM": 4,
         }
         lane = [0] * 5
         lane[convert_lane[self.lane]] = 1
@@ -211,15 +231,19 @@ class Participant(models.Model):
         champions[self.champion_id] = 1
 
         vs = self.stats.vision_score
-        max_vs = self.match.participants.filter(team_id=self.team_id).order_by('-stats__vision_score')[0].stats.vision_score
-        is_max_vs = int(vs==max_vs)
+        max_vs = (
+            self.match.participants.filter(team_id=self.team_id)
+            .order_by("-stats__vision_score")[0]
+            .stats.vision_score
+        )
+        is_max_vs = int(vs == max_vs)
 
         data = lane + spells + champions + [is_max_vs]
         return data
 
 
 class Stats(models.Model):
-    participant = models.OneToOneField('Participant', on_delete=models.CASCADE)
+    participant = models.OneToOneField("Participant", on_delete=models.CASCADE)
 
     assists = models.IntegerField(default=0, blank=True)
     champ_level = models.IntegerField(default=0, null=True, blank=True)
@@ -337,13 +361,15 @@ class Stats(models.Model):
     win = models.BooleanField(default=False, blank=True)
 
     def __str__(self):
-        return f'Stats(participant={self.participant.summoner_name})'
+        return f"Stats(participant={self.participant.summoner_name})"
 
     def perk_primary_style_image_url(self):
         """Get primary perk style image URL.
         """
-        url = ''
-        query = ReforgedTree.objects.filter(_id=self.perk_primary_style).order_by('-version')
+        url = ""
+        query = ReforgedTree.objects.filter(_id=self.perk_primary_style).order_by(
+            "-version"
+        )
         if query.exists():
             perk = query.first()
             url = perk.image_url()
@@ -352,8 +378,10 @@ class Stats(models.Model):
     def perk_sub_style_image_url(self):
         """Get perk sub style image URL.
         """
-        url = ''
-        query = ReforgedTree.objects.filter(_id=self.perk_sub_style).order_by('-version')
+        url = ""
+        query = ReforgedTree.objects.filter(_id=self.perk_sub_style).order_by(
+            "-version"
+        )
         if query.exists():
             perk = query.first()
             url = perk.image_url()
@@ -362,13 +390,15 @@ class Stats(models.Model):
     def get_perk_image(self, number):
         """Get perk image URL.
         """
-        url = ''
+        url = ""
         try:
-            value = getattr(self, f'perk_{number}')
+            value = getattr(self, f"perk_{number}")
         except:
             pass
         else:
-            query = ReforgedRune.objects.filter(_id=value).order_by('-reforgedtree__version')
+            query = ReforgedRune.objects.filter(_id=value).order_by(
+                "-reforgedtree__version"
+            )
             if query.exists():
                 perk = query.first()
                 url = perk.image_url()
@@ -395,13 +425,13 @@ class Stats(models.Model):
     def get_item_image_url(self, number, version=None):
         """Get item image URL.
         """
-        url = ''
+        url = ""
         try:
-            item_id = getattr(self, f'item_{number}')
+            item_id = getattr(self, f"item_{number}")
         except:
             pass
         else:
-            query = Item.objects.filter(_id=item_id).order_by('-version')
+            query = Item.objects.filter(_id=item_id).order_by("-version")
             version_query = query.filter(version=version)
             if version and version_query.exists():
                 item = version_query.first()
@@ -435,19 +465,19 @@ class Stats(models.Model):
 
 class Timeline(models.Model):
     participant = models.ForeignKey(
-        'Participant', on_delete=models.CASCADE, related_name='timelines'
+        "Participant", on_delete=models.CASCADE, related_name="timelines"
     )
-    key = models.CharField(max_length=256, default='', blank=True)
+    key = models.CharField(max_length=256, default="", blank=True)
     value = models.FloatField(default=0, blank=True)
     start = models.IntegerField()
     end = models.IntegerField()
 
     class Meta:
-        unique_together = ('participant', 'key', 'start')
+        unique_together = ("participant", "key", "start")
 
 
 class Team(models.Model):
-    match = models.ForeignKey('Match', on_delete=models.CASCADE, related_name='teams')
+    match = models.ForeignKey("Match", on_delete=models.CASCADE, related_name="teams")
     _id = models.IntegerField()
 
     baron_kills = models.IntegerField(default=0, blank=True)
@@ -465,42 +495,45 @@ class Team(models.Model):
     vilemaw_kills = models.IntegerField(default=0, blank=True)
     # this is a string field in the api but it should be a boolean?
     win = models.BooleanField(default=False, blank=True)
-    win_str = models.CharField(default='', blank=True, max_length=128)
+    win_str = models.CharField(default="", blank=True, max_length=128)
 
     def __str__(self):
-        return f'Team(match={self.match._id}, _id={self._id})'
+        return f"Team(match={self.match._id}, _id={self._id})"
 
 
 class Ban(models.Model):
-    team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='bans')
+    team = models.ForeignKey("Team", on_delete=models.CASCADE, related_name="bans")
     champion_id = models.IntegerField()
     pick_turn = models.IntegerField()
 
     def __str__(self):
-        return f'Ban(team={self.team._id}, match={self.team.match._id})'
+        return f"Ban(team={self.team._id}, match={self.team.match._id})"
 
 
 # ADVANCED TIMELINE MODELS
 class AdvancedTimeline(models.Model):
     # interval in milliseconds
-    match = models.OneToOneField('Match', on_delete=models.CASCADE)
+    match = models.OneToOneField("Match", on_delete=models.CASCADE)
     frame_interval = models.IntegerField(default=60000, blank=True)
 
     def __str__(self):
-        return f'AdvancedTimeline(match={self.match._id})'
+        return f"AdvancedTimeline(match={self.match._id})"
+
 
 class Frame(models.Model):
     timeline = models.ForeignKey(
-        'AdvancedTimeline', on_delete=models.CASCADE, related_name='frames'
+        "AdvancedTimeline", on_delete=models.CASCADE, related_name="frames"
     )
     timestamp = models.IntegerField(null=True, blank=True, db_index=True)
 
     def __str__(self):
-        return f'Frame(match={self.timeline.match._id}, timestamp={self.timestamp})'
+        return f"Frame(match={self.timeline.match._id}, timestamp={self.timestamp})"
 
 
 class ParticipantFrame(models.Model):
-    frame = models.ForeignKey('Frame', on_delete=models.CASCADE, related_name='participantframes')
+    frame = models.ForeignKey(
+        "Frame", on_delete=models.CASCADE, related_name="participantframes"
+    )
     participant_id = models.IntegerField(default=0, blank=True)
     current_gold = models.IntegerField(default=0, blank=True)
     dominion_score = models.IntegerField(null=True, blank=True)
@@ -515,14 +548,14 @@ class ParticipantFrame(models.Model):
 
     def __str__(self):
         return (
-            f'ParticipantFrame(match={self.frame.timeline.match._id},'
-            + ' frame={self.frame.id}, participant_id={self.participant_id})'
+            f"ParticipantFrame(match={self.frame.timeline.match._id},"
+            + " frame={self.frame.id}, participant_id={self.participant_id})"
         )
 
 
 class Event(models.Model):
-    frame = models.ForeignKey('Frame', related_name='events', on_delete=models.CASCADE)
-    _type = models.CharField(max_length=128, default='', blank=True)
+    frame = models.ForeignKey("Frame", related_name="events", on_delete=models.CASCADE)
+    _type = models.CharField(max_length=128, default="", blank=True)
     participant_id = models.IntegerField(null=True, blank=True)
     timestamp = models.IntegerField(default=0, blank=True)
 
@@ -558,29 +591,30 @@ class Event(models.Model):
 
     def __str__(self):
         return (
-            f'Event(_type={self._type}, ' +
-            'participant_id={self.participant_id},' +
-            ' timestamp={self.timestamp})'
+            f"Event(_type={self._type}, "
+            + "participant_id={self.participant_id},"
+            + " timestamp={self.timestamp})"
         )
 
 
 class AssistingParticipants(models.Model):
     event = models.ForeignKey(
-        'Event', on_delete=models.CASCADE, related_name='assistingparticipants'
+        "Event", on_delete=models.CASCADE, related_name="assistingparticipants"
     )
     participant_id = models.IntegerField(default=0, blank=True)
 
     def __str__(self):
-        return f'AssistingParticipants(participant_id={self.participant_id})'
+        return f"AssistingParticipants(participant_id={self.participant_id})"
+
 
 # END ADVANCED TIMELINE MODELS
 
 
 class Spectate(models.Model):
-    game_id = models.CharField(max_length=128, default='', blank=True)
-    encryption_key = models.CharField(max_length=256, default='', blank=True)
-    platform_id = models.CharField(max_length=32, default='', blank=True)
-    region = models.CharField(max_length=32, default='', blank=True)
+    game_id = models.CharField(max_length=128, default="", blank=True)
+    encryption_key = models.CharField(max_length=256, default="", blank=True)
+    platform_id = models.CharField(max_length=32, default="", blank=True)
+    region = models.CharField(max_length=32, default="", blank=True)
 
     class Meta:
-        unique_together = ('game_id', 'region')
+        unique_together = ("game_id", "region")

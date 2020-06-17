@@ -39,9 +39,9 @@ def import_pros(overwrite=False):
             if not summoner.pro == pro:
                 summoner.pro = pro
                 summoner.save()
-        
 
-@task(name='player.tasks.import_summoner')
+
+@task(name="player.tasks.import_summoner")
 def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=None):
     """Import a summoner by one a several identifiers.
 
@@ -62,32 +62,32 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
     if api:
         kwargs = {}
         if account_id is not None:
-            kwargs['encrypted_account_id'] = account_id
+            kwargs["encrypted_account_id"] = account_id
         elif name is not None:
-            kwargs['name'] = name
+            kwargs["name"] = name
         elif summoner_id is not None:
-            kwargs['encrypted_summoner_id'] = summoner_id
+            kwargs["encrypted_summoner_id"] = summoner_id
         elif puuid is not None:
-            kwargs['encrypted_puuid'] = puuid
+            kwargs["encrypted_puuid"] = puuid
         r = api.summoner.get(region=region, **kwargs)
 
         if r.status_code >= 400 and r.status_code < 500:
-            raise Exception(f'The request returned a {r.status_code} status.')
+            raise Exception(f"The request returned a {r.status_code} status.")
 
         data = r.json()
         # print(data)
 
         model_data = {
-            '_id': data['id'],
-            'region': region.lower(),
-            'account_id': data['accountId'],
-            'name': data['name'],
-            'profile_icon_id': data['profileIconId'],
-            'puuid': data['puuid'],
-            'revision_date': data['revisionDate'],
-            'summoner_level': data['summonerLevel'],
+            "_id": data["id"],
+            "region": region.lower(),
+            "account_id": data["accountId"],
+            "name": data["name"],
+            "profile_icon_id": data["profileIconId"],
+            "puuid": data["puuid"],
+            "revision_date": data["revisionDate"],
+            "summoner_level": data["summonerLevel"],
         }
-        query = Summoner.objects.filter(region=region.lower(), _id=data['id'])
+        query = Summoner.objects.filter(region=region.lower(), _id=data["id"])
         if query.exists():
             summoner_model = query.first()
             # print(summoner_model)
@@ -136,18 +136,20 @@ def import_positions(summoner_id, threshold_days=None, close=False):
             for pos in positions:
                 try:
                     attrs = {
-                        'league_points': pos['leaguePoints'],
-                        'wins': pos['wins'],
-                        'losses': pos['losses'],
-                        'queue_type': pos['queueType'],
-                        'rank': pos['rank'],
-                        'tier': pos['tier'],
-                        'series_progress': pos.get('miniSeries', {}).get('progress', None),
+                        "league_points": pos["leaguePoints"],
+                        "wins": pos["wins"],
+                        "losses": pos["losses"],
+                        "queue_type": pos["queueType"],
+                        "rank": pos["rank"],
+                        "tier": pos["tier"],
+                        "series_progress": pos.get("miniSeries", {}).get(
+                            "progress", None
+                        ),
                     }
                     query = rankcheckpoint.positions.get(**attrs)
-                    print('Nothing has changed, not creating a new checkpoint')
+                    print("Nothing has changed, not creating a new checkpoint")
                 except:
-                    print('Change detected.')
+                    print("Change detected.")
                     create_new = True
         else:
             create_new = True
@@ -157,18 +159,18 @@ def import_positions(summoner_id, threshold_days=None, close=False):
             rankcheckpoint.save()
             for pos in positions:
                 attrs = {
-                    'checkpoint': rankcheckpoint,
-                    'league_points': pos['leaguePoints'],
-                    'wins': pos['wins'],
-                    'losses': pos['losses'],
-                    'queue_type': pos['queueType'],
-                    'rank': pos['rank'],
-                    'tier': pos['tier'],
-                    'hot_streak': pos['hotStreak'],
-                    'fresh_blood': pos['freshBlood'],
-                    'inactive': pos['inactive'],
-                    'veteran': pos['veteran'],
-                    'series_progress': pos.get('miniSeries', {}).get('progress', None),
+                    "checkpoint": rankcheckpoint,
+                    "league_points": pos["leaguePoints"],
+                    "wins": pos["wins"],
+                    "losses": pos["losses"],
+                    "queue_type": pos["queueType"],
+                    "rank": pos["rank"],
+                    "tier": pos["tier"],
+                    "hot_streak": pos["hotStreak"],
+                    "fresh_blood": pos["freshBlood"],
+                    "inactive": pos["inactive"],
+                    "veteran": pos["veteran"],
+                    "series_progress": pos.get("miniSeries", {}).get("progress", None),
                 }
                 rankposition = RankPosition(**attrs)
                 rankposition.save()

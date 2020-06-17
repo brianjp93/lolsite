@@ -11,32 +11,27 @@ DEV = False
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['localhost', '192.168.0.24']
-BASE_URL = 'http://localhost:8000'
+ALLOWED_HOSTS = ["localhost", "192.168.0.24"]
+BASE_URL = "http://localhost:8000"
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('LOLSITE_DB_NAME'),
-        'USER': config('LOLSITE_DB_USER'),
-        'HOST': config('LOLSITE_DB_HOST'),
-        'PORT': config('LOLSITE_DB_PORT'),
-        'PASSWORD': config('LOLSITE_DB_PASS'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("LOLSITE_DB_NAME"),
+        "USER": config("LOLSITE_DB_USER"),
+        "HOST": config("LOLSITE_DB_HOST"),
+        "PORT": config("LOLSITE_DB_PORT"),
+        "PASSWORD": config("LOLSITE_DB_PASS"),
     }
 }
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-CELERY_BROKER_URL = 'redis://localhost'
+CELERY_BROKER_URL = "redis://localhost"
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-    }
-}
-
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache",}}

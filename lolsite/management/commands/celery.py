@@ -13,25 +13,23 @@ from django.utils import autoreload
 def restart_celery():
     # cmd = 'pkill -f "celery worker"'
     platform = sys.platform
-    if platform in ['win32']:
-        win_cmd = 'taskkill /IM celery.exe /F'
+    if platform in ["win32"]:
+        win_cmd = "taskkill /IM celery.exe /F"
         subprocess.call(win_cmd)
-        win_cmd = 'celery worker -A lolsite -l info -P gevent'
+        win_cmd = "celery worker -A lolsite -l info -P gevent"
         subprocess.call(win_cmd, shell=True)
-    elif platform in ['darwin']:
-        cmd = 'pkill -9 celery'
+    elif platform in ["darwin"]:
+        cmd = "pkill -9 celery"
         subprocess.call(shlex.split(cmd))
-        cmd = 'celery worker -A lolsite -l info'
+        cmd = "celery worker -A lolsite -l info"
         subprocess.call(shlex.split(cmd))
     else:
-        print(f'Autoreloading celery for platform {platform} not yet configured.')
+        print(f"Autoreloading celery for platform {platform} not yet configured.")
 
 
 class Command(BaseCommand):
-
     def handle(self, *args, **options):
-        print('Starting celery worker with autoreload...')
+        print("Starting celery worker with autoreload...")
 
         # For Django>=2.2
         autoreload.run_with_reloader(restart_celery)
-

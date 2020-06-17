@@ -4,17 +4,10 @@ import pathlib
 
 
 PROS = {
-    'doublelift': [
-        ('doublelift', 'na'),
-    ],
-    'bjergsen': [
-        ('tsm bjergsen', 'na'),
-    ],
-    'corejj': [
-        ('from iron', 'na'),
-    ],
+    "doublelift": [("doublelift", "na"),],
+    "bjergsen": [("tsm bjergsen", "na"),],
+    "corejj": [("from iron", "na"),],
 }
 
-clf_path = pathlib.PurePath(settings.BASE_DIR, 'role_predict.svc')
+clf_path = pathlib.PurePath(settings.BASE_DIR, "role_predict.svc")
 CLF = joblib.load(clf_path)
-

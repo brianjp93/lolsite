@@ -17,15 +17,15 @@ def get_ip():
 
 
 def get_paths():
-    base = os.path.join(BASE_DIR, 'react', 'build', 'static')
-    js_dir = os.path.join(base, 'js')
-    css_dir = os.path.join(base, 'css')
+    base = os.path.join(BASE_DIR, "react", "build", "static")
+    js_dir = os.path.join(base, "js")
+    css_dir = os.path.join(base, "css")
     for f in os.listdir(js_dir):
-        if f.endswith('.js'):
-            js_path = os.path.join('js', f)
+        if f.endswith(".js"):
+            js_path = os.path.join("js", f)
     for f in os.listdir(css_dir):
-        if f.endswith('.css'):
-            css_path = os.path.join('css', f)
+        if f.endswith(".css"):
+            css_path = os.path.join("css", f)
     return js_path, css_path
 
 
@@ -34,50 +34,52 @@ def react_data_processor(request):
         try:
             ip = get_ip()
         except:
-            print('Could not find your ip address.  React components will only work on the local machine.')
-            ip = 'localhost'
+            print(
+                "Could not find your ip address.  React components will only work on the local machine."
+            )
+            ip = "localhost"
 
         # get all the scripts from the react-dev server and load them into our base.html page
-        r = requests.get(f'http://{ip}:3000')
+        r = requests.get(f"http://{ip}:3000")
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(r.content, features='html.parser')
+
+        soup = BeautifulSoup(r.content, features="html.parser")
         scripts = []
-        for sc in soup.find_all('script'):
-            sc['src'] = f'http://{ip}:3000{sc["src"]}'
+        for sc in soup.find_all("script"):
+            sc["src"] = f'http://{ip}:3000{sc["src"]}'
             scripts.append(str(sc))
-        scripts = ''.join(scripts)
+        scripts = "".join(scripts)
 
         react_data = {
-            'react_dev': {
-                'scripts': scripts,
-                'css': f'http://{ip}:3000/static/css/bundle.css',
+            "react_dev": {
+                "scripts": scripts,
+                "css": f"http://{ip}:3000/static/css/bundle.css",
             }
         }
     else:
-        react_data = {'react_data': {'js': '', 'css': ''}}
+        react_data = {"react_data": {"js": "", "css": ""}}
         try:
-            base = os.path.join(BASE_DIR, 'react', 'build', 'static')
-            js_dir = os.path.join(base, 'js')
-            css_dir = os.path.join(base, 'css')
+            base = os.path.join(BASE_DIR, "react", "build", "static")
+            js_dir = os.path.join(base, "js")
+            css_dir = os.path.join(base, "css")
             for f in os.listdir(js_dir):
-                if 'runtime' in f and f.endswith('.js'):
-                    runtime_path = os.path.join('js', f)
-                    react_data['react_data']['runtime'] = runtime_path
-                elif 'main' in f and 'chunk' in f and f.endswith('.js'):
-                    chunk_path = os.path.join('js', f)
-                    react_data['react_data']['chunk'] = chunk_path
-                elif f.endswith('.js'):
-                    js_path = os.path.join('js', f)
-                    react_data['react_data']['js'] = js_path
+                if "runtime" in f and f.endswith(".js"):
+                    runtime_path = os.path.join("js", f)
+                    react_data["react_data"]["runtime"] = runtime_path
+                elif "main" in f and "chunk" in f and f.endswith(".js"):
+                    chunk_path = os.path.join("js", f)
+                    react_data["react_data"]["chunk"] = chunk_path
+                elif f.endswith(".js"):
+                    js_path = os.path.join("js", f)
+                    react_data["react_data"]["js"] = js_path
             for f in os.listdir(css_dir):
-                if f.endswith('.css'):
-                    css_path = os.path.join('css', f)
-                    react_data['react_data']['css'] = css_path
+                if f.endswith(".css"):
+                    css_path = os.path.join("css", f)
+                    react_data["react_data"]["css"] = css_path
         except Exception as e:
             print(e)
     return react_data
 
 
 def version_processor(request):
-    return {'app_version': settings.VERSION_STRING}
-
+    return {"app_version": settings.VERSION_STRING}

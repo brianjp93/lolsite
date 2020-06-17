@@ -23,16 +23,16 @@ def login_action(request):
     JSON
 
     """
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
         user = authenticate(request, username=email, password=password)
         if user is not None:
             if user.custom.is_email_verified:
                 login(request, user)
-                view_name = 'home'
+                view_name = "home"
             else:
-                view_name = '/login?error=verification'
+                view_name = "/login?error=verification"
                 thresh = timezone.now() - timezone.timedelta(minutes=10)
                 query = user.emailverification_set.filter(created_date__gt=thresh)
                 if query.exists():
@@ -43,15 +43,16 @@ def login_action(request):
                     # Create new email verification model.
                     EmailVerification(user=user).save()
         else:
-            view_name = '/login?error=true'
+            view_name = "/login?error=true"
     else:
-        view_name = '/login'
+        view_name = "/login"
 
     return redirect(view_name)
+
 
 def logout_action(request):
     """Log user out of session.
     """
     user = request.user
     logout(request)
-    return redirect('home')
+    return redirect("home")

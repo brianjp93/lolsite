@@ -6,4 +6,4 @@ from .models import InspirationalMessage
 class InspirationalMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = InspirationalMessage
-        fields = '__all__'
+        fields = "__all__"

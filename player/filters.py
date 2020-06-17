@@ -14,16 +14,16 @@ from django.utils.dateparse import parse_datetime
 
 
 def get_summoner_champions_overview(
-        summoner_id=None,
-        major_version=None,
-        minor_version=None,
-        queue_in=None,
-        season=None,
-        champion_in=None,
-        start_datetime=None,
-        end_datetime=None,
-        fields=[],
-    ):
+    summoner_id=None,
+    major_version=None,
+    minor_version=None,
+    queue_in=None,
+    season=None,
+    champion_in=None,
+    start_datetime=None,
+    end_datetime=None,
+    fields=[],
+):
     """Get QuerySet of Champion Stats for a summoner.
 
     Parameters
@@ -46,9 +46,7 @@ def get_summoner_champions_overview(
     """
     all_fields = True if not fields else False
     min_game_time = 60 * 5
-    query = Stats.objects.filter(
-        participant__match__game_duration__gt=min_game_time
-    )
+    query = Stats.objects.filter(participant__match__game_duration__gt=min_game_time)
 
     if summoner_id is not None:
         summoner = Summoner.objects.get(id=summoner_id)
@@ -71,125 +69,148 @@ def get_summoner_champions_overview(
         query = query.filter(participant__match__game_creation__gt=end_timestamp)
     if season is not None:
         season = int(season)
-        season_start = dc.SEASON_PATCHES[season]['season']['start']
-        season_end = dc.SEASON_PATCHES[season]['season']['end']
-        q = Q(participant__match__major=season_start[0], participant__match__minor__gte=season_start[1])
-        q |= (Q(participant__match__major=season_end[0], participant__match__minor__lte=season_end[1]))
+        season_start = dc.SEASON_PATCHES[season]["season"]["start"]
+        season_end = dc.SEASON_PATCHES[season]["season"]["end"]
+        q = Q(
+            participant__match__major=season_start[0],
+            participant__match__minor__gte=season_start[1],
+        )
+        q |= Q(
+            participant__match__major=season_end[0],
+            participant__match__minor__lte=season_end[1],
+        )
         query = query.filter(q)
 
     query = query.annotate(
-        champion_id=F('participant__champion_id'),
+        champion_id=F("participant__champion_id"),
         win_true=Case(
-            When(win=True, then=Value(1)),
-            default=Value(0),
-            output_field=IntegerField()
+            When(win=True, then=Value(1)), default=Value(0), output_field=IntegerField()
         ),
         loss_true=Case(
             When(win=False, then=Value(1)),
             default=Value(0),
             output_field=IntegerField(),
+        ),
+    )
+    query = query.values("champion_id")
+    query = query.annotate(count=Count("champion_id"))
+
+    annotation_kwargs = {}
+    if all_fields or any(field in fields for field in ["kda", "kills_sum"]):
+        annotation_kwargs["kills_sum"] = Sum("kills")
+    if all_fields or any(field in fields for field in ["kda", "deaths_sum", "dtpd"]):
+        annotation_kwargs["deaths_sum"] = Sum("deaths")
+    if all_fields or any(field in fields for field in ["kda", "assists_sum"]):
+        annotation_kwargs["assists_sum"] = Sum("assists")
+    if all_fields or any(
+        field in fields for field in ["damage_dealt_to_turrets_sum", "turret_dpm"]
+    ):
+        annotation_kwargs["damage_dealt_to_turrets_sum"] = Sum(
+            "damage_dealt_to_turrets"
+        )
+    if all_fields or any(
+        field in fields for field in ["damage_dealt_to_objectives_sum", "objective_dpm"]
+    ):
+        annotation_kwargs["damage_dealt_to_objectives_sum"] = Sum(
+            "damage_dealt_to_objectives"
+        )
+    if all_fields or any(
+        field in fields for field in ["total_damage_dealt_to_champions_sum", "dpm"]
+    ):
+        annotation_kwargs["total_damage_dealt_to_champions_sum"] = Sum(
+            "total_damage_dealt_to_champions"
+        )
+    if all_fields or any(
+        field in fields for field in ["total_damage_taken_sum", "dtpm", "dtpd"]
+    ):
+        annotation_kwargs["total_damage_taken_sum"] = Sum("total_damage_taken")
+    if all_fields or any(field in fields for field in ["gold_earned_sum", "gpm"]):
+        annotation_kwargs["gold_earned_sum"] = Sum("gold_earned")
+    if all_fields or any(field in fields for field in ["wins"]):
+        annotation_kwargs["wins"] = Sum("win_true")
+    if all_fields or any(field in fields for field in ["losses"]):
+        annotation_kwargs["losses"] = Sum("loss_true")
+    if all_fields or any(
+        field in fields
+        for field in [
+            "minutes",
+            "gpm",
+            "dpm",
+            "dtpm",
+            "turret_dpm",
+            "objective_dpm",
+            "vspm",
+            "cspm",
+        ]
+    ):
+        annotation_kwargs["minutes"] = ExpressionWrapper(
+            Sum("participant__match__game_duration") / 60.0, output_field=FloatField()
+        )
+    if annotation_kwargs:
+        query = query.annotate(**annotation_kwargs)
+
+    annotation_kwargs = {}
+    if all_fields or "kda" in fields:
+        annotation_kwargs["kda"] = ExpressionWrapper(
+            ExpressionWrapper(
+                F("kills_sum") + F("assists_sum"), output_field=FloatField()
+            )
+            / Case(When(deaths_sum=0, then=Value(1.0)), default=F("deaths_sum")),
+            output_field=FloatField(),
+        )
+    if all_fields or "cspm" in fields:
+        annotation_kwargs["cspm"] = ExpressionWrapper(
+            (Sum("total_minions_killed") + Sum("neutral_minions_killed"))
+            / F("minutes"),
+            output_field=FloatField(),
+        )
+    if all_fields or "vspm" in fields:
+        annotation_kwargs["vspm"] = ExpressionWrapper(
+            Sum("vision_score") / F("minutes"), output_field=FloatField()
+        )
+    if all_fields or "dpm" in fields:
+        annotation_kwargs["dpm"] = ExpressionWrapper(
+            F("total_damage_dealt_to_champions_sum") / F("minutes"),
+            output_field=FloatField(),
+        )
+    if all_fields or "objective_dpm" in fields:
+        annotation_kwargs["objective_dpm"] = ExpressionWrapper(
+            F("damage_dealt_to_objectives_sum") / F("minutes"),
+            output_field=FloatField(),
+        )
+    if all_fields or "turret_dpm" in fields:
+        annotation_kwargs["turret_dpm"] = ExpressionWrapper(
+            F("damage_dealt_to_turrets_sum") / F("minutes"), output_field=FloatField()
+        )
+    if all_fields or "dtpm" in fields:
+        annotation_kwargs["dtpm"] = ExpressionWrapper(
+            F("total_damage_taken_sum") / F("minutes"), output_field=FloatField()
+        )
+    if all_fields or "dtpd" in fields:
+        annotation_kwargs["dtpd"] = ExpressionWrapper(
+            F("total_damage_taken_sum")
+            / Case(When(deaths_sum=0, then=Value(1.0)), default=F("deaths_sum")),
+            output_field=FloatField(),
+        )
+    if all_fields or "gpm" in fields:
+        annotation_kwargs["gpm"] = ExpressionWrapper(
+            F("gold_earned_sum") / F("minutes"), output_field=FloatField()
+        )
+    if annotation_kwargs:
+        query = query.annotate(**annotation_kwargs)
+
+    query = query.annotate(
+        champion=Subquery(
+            Champion.objects.filter(key=OuterRef("champion_id")).values("name")[:1]
         )
     )
-    query = query.values('champion_id')
-    query = query.annotate(count=Count('champion_id'))
-
-    annotation_kwargs = {}
-    if all_fields or any(field in fields for field in ['kda', 'kills_sum']):
-        annotation_kwargs['kills_sum'] = Sum('kills')
-    if all_fields or any(field in fields for field in ['kda', 'deaths_sum', 'dtpd']):
-        annotation_kwargs['deaths_sum'] = Sum('deaths')
-    if all_fields or any(field in fields for field in ['kda', 'assists_sum']):
-        annotation_kwargs['assists_sum'] = Sum('assists')
-    if all_fields or any(field in fields for field in ['damage_dealt_to_turrets_sum', 'turret_dpm']):
-        annotation_kwargs['damage_dealt_to_turrets_sum'] = Sum('damage_dealt_to_turrets')
-    if all_fields or any(field in fields for field in ['damage_dealt_to_objectives_sum', 'objective_dpm']):
-        annotation_kwargs['damage_dealt_to_objectives_sum'] = Sum('damage_dealt_to_objectives')
-    if all_fields or any(field in fields for field in ['total_damage_dealt_to_champions_sum', 'dpm']):
-        annotation_kwargs['total_damage_dealt_to_champions_sum'] = Sum('total_damage_dealt_to_champions')
-    if all_fields or any(field in fields for field in ['total_damage_taken_sum', 'dtpm', 'dtpd']):
-        annotation_kwargs['total_damage_taken_sum'] = Sum('total_damage_taken')
-    if all_fields or any(field in fields for field in ['gold_earned_sum', 'gpm']):
-        annotation_kwargs['gold_earned_sum'] = Sum('gold_earned')
-    if all_fields or any(field in fields for field in ['wins']):
-        annotation_kwargs['wins'] = Sum('win_true')
-    if all_fields or any(field in fields for field in ['losses']):
-        annotation_kwargs['losses'] = Sum('loss_true')
-    if all_fields or any(field in fields for field in ['minutes', 'gpm', 'dpm', 'dtpm', 'turret_dpm', 'objective_dpm', 'vspm', 'cspm']):
-        annotation_kwargs['minutes'] = ExpressionWrapper(Sum('participant__match__game_duration') / 60.0, output_field=FloatField())
-    if annotation_kwargs:
-        query = query.annotate(**annotation_kwargs)
-
-    annotation_kwargs = {}
-    if all_fields or 'kda' in fields:
-        annotation_kwargs['kda'] = ExpressionWrapper(
-            ExpressionWrapper(
-                F('kills_sum') + F('assists_sum'),
-                output_field=FloatField()
-            ) / Case(
-                When(deaths_sum=0, then=Value(1.0)),
-                default=F('deaths_sum')
-            ),
-            output_field=FloatField()
-        )
-    if all_fields or 'cspm' in fields:
-        annotation_kwargs['cspm'] = ExpressionWrapper(
-            (Sum('total_minions_killed') + Sum('neutral_minions_killed')) / F('minutes'),
-            output_field=FloatField()
-        )
-    if all_fields or 'vspm' in fields:
-        annotation_kwargs['vspm'] = ExpressionWrapper(
-            Sum('vision_score') / F('minutes'),
-            output_field=FloatField()
-        )
-    if all_fields or 'dpm' in fields:
-        annotation_kwargs['dpm'] = ExpressionWrapper(
-            F('total_damage_dealt_to_champions_sum') / F('minutes'),
-            output_field=FloatField()
-        )
-    if all_fields or 'objective_dpm' in fields:
-        annotation_kwargs['objective_dpm'] = ExpressionWrapper(
-            F('damage_dealt_to_objectives_sum') / F('minutes'),
-            output_field=FloatField()
-        )
-    if all_fields or 'turret_dpm' in fields:
-        annotation_kwargs['turret_dpm'] = ExpressionWrapper(
-            F('damage_dealt_to_turrets_sum') / F('minutes'),
-            output_field=FloatField()
-        )
-    if all_fields or 'dtpm' in fields:
-        annotation_kwargs['dtpm'] = ExpressionWrapper(
-            F('total_damage_taken_sum') / F('minutes'),
-            output_field=FloatField()
-        )
-    if all_fields or 'dtpd' in fields:
-        annotation_kwargs['dtpd'] = ExpressionWrapper(
-            F('total_damage_taken_sum') / Case(
-                When(deaths_sum=0, then=Value(1.0)),
-                default=F('deaths_sum')
-            ),
-            output_field=FloatField()
-        )
-    if all_fields or 'gpm' in fields:
-        annotation_kwargs['gpm'] = ExpressionWrapper(
-            F('gold_earned_sum') / F('minutes'),
-            output_field=FloatField()
-        )
-    if annotation_kwargs:
-        query = query.annotate(**annotation_kwargs)
-
-    query = query.annotate(champion=Subquery(
-        Champion.objects.filter(key=OuterRef('champion_id')).values('name')[:1]
-    ))
 
     return query
 
 
 def summoner_search(
-        simple_name__icontains=None,
-        simple_name=None,
-        region=None,
-        order_by=None,
-    ):
+    simple_name__icontains=None, simple_name=None, region=None, order_by=None,
+):
     """filter for summoners.
 
     Parameters

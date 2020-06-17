@@ -14,7 +14,7 @@ def league(slug):
     JSON data
 
     """
-    url = f'https://api.lolesports.com/api/v1/leagues?slug={slug}'
+    url = f"https://api.lolesports.com/api/v1/leagues?slug={slug}"
     return requests.get(url)
 
 
@@ -31,7 +31,7 @@ def highlander_match(tournament_id, match_id):
     JSON Data
 
     """
-    url = f'https://api.lolesports.com/api/v2/highlanderMatchDetails?tournamentId={tournament_id}&matchId={match_id}'
+    url = f"https://api.lolesports.com/api/v2/highlanderMatchDetails?tournamentId={tournament_id}&matchId={match_id}"
     return requests.get(url)
 
 
@@ -52,7 +52,7 @@ def match(game_realm, game_id, game_hash):
     JSON Data
 
     """
-    url = f'https://acs.leagueoflegends.com/v1/stats/game/{game_realm}/{game_id}?gameHash={game_hash}'
+    url = f"https://acs.leagueoflegends.com/v1/stats/game/{game_realm}/{game_id}?gameHash={game_hash}"
     return reqeusts.get(url)
 
 
@@ -70,5 +70,5 @@ def timeline(game_realm, game_id, game_hash):
     JSON Data
 
     """
-    url = f'https://acs.leagueoflegends.com/v1/stats/game/{game_realm}/{game_id}/timeline?gameHash={game_hash}'
+    url = f"https://acs.leagueoflegends.com/v1/stats/game/{game_realm}/{game_id}/timeline?gameHash={game_hash}"
     return reqeusts.get(url)

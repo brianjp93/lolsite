@@ -11,18 +11,19 @@ from .models import Favorite
 class SummonerSerializer(DynamicSerializer):
     class Meta:
         model = Summoner
-        fields = '__all__'
+        fields = "__all__"
+
 
 class RankPositionSerializer(DynamicSerializer):
     class Meta:
         model = RankPosition
-        fields = '__all__'
+        fields = "__all__"
 
 
 class CustomSerializer(DynamicSerializer):
     class Meta:
         model = Custom
-        fields = '__all__'
+        fields = "__all__"
 
 
 class FavoriteSerializer(DynamicSerializer):
@@ -31,4 +32,4 @@ class FavoriteSerializer(DynamicSerializer):
 
     class Meta:
         model = Favorite
-        fields = '__all__'
+        fields = "__all__"
