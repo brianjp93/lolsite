@@ -146,6 +146,7 @@ function stripHtml(html) {
 }
 
 function processItem(item, stat_costs) {
+    item = {...item}
     let x
 
     let description = stripHtml(item.description)
@@ -187,9 +188,10 @@ function processItem(item, stat_costs) {
 
     for (let stat_name in item.stats) {
         let value = item.stats[stat_name]
+        item.stats = {...item.stats}
         item.stats[stat_name] = {
             value,
-            gold_value: stat_costs[stat_name] * item.stats[stat_name],
+            gold_value: stat_costs[stat_name] * value,
         }
     }
     return item
