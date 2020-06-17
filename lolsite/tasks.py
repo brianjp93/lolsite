@@ -1,8 +1,6 @@
 """lolsite/tasks.py
 """
 from data.models import Rito
-
-import requests
 from lol.riot import Riot as RiotAPI
 
 

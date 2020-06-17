@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
 import fuzzysearch from 'fuzzysearch'
+import LazyLoad from 'react-lazyload'
 import numeral from 'numeral'
 import { getStatCosts } from '../../constants/general'
 
@@ -31,9 +32,28 @@ function generalFilter(items) {
         if (champions.indexOf(item.required_champion) >= 0) {
             return false
         }
+        else if (item.name.indexOf('Quick Charge') >= 0) {
+            return false
+        }
+        else if (item.name.indexOf('Enchantment:') >= 0) {
+            if (item.gold.total < 2000) {
+                return false
+            }
+        }
         return true
     })
     return items
+}
+
+function filterStats(items, stat_set) {
+    return items.filter(item => {
+        for (let stat of stat_set) {
+            if (item.stats[stat] === undefined) {
+                return false
+            }
+        }
+        return true
+    })
 }
 
 
@@ -72,6 +92,7 @@ export function ItemsGrid(props) {
     const [order_by, setOrderBy] = useState('-gold')
     const [search, setSearch] = useState('')
     const [is_purchasable, setIsPurchasable] = useState(false)
+    const [has_stats, setHasStats] = useState(new Set())
 
     const theme = props.store.state.theme
 
@@ -90,17 +111,54 @@ export function ItemsGrid(props) {
         if (items !== undefined && items.length > 0) {
             let new_items = sortItems(items, order_by)
             // filter map 
-            new_items = new_items.filter(item => item.maps[map_id])
+            new_items = new_items.filter(item => item.maps[map_id] && item.gold.purchasable)
             // filter purchasable
-            new_items = new_items.filter(item => item.gold.purchasable)
+            // new_items = new_items.filter(item => item.gold.purchasable)
             // general filter
             new_items = generalFilter(new_items)
+            new_items = filterStats(items, has_stats)
             setSortedItems(new_items)
         }
-    }, [items, order_by, map_id])
+    }, [items, order_by, map_id, has_stats])
 
     return (
         <div>
+            <p>
+                <label>
+                    <input
+                        checked={has_stats.has('FlatPhysicalDamageMod')}
+                        type="checkbox"
+                        onChange={(event) => {
+                            let new_set = new Set(has_stats)
+                            if (new_set.has('FlatPhysicalDamageMod')) {
+                                new_set.delete('FlatPhysicalDamageMod')
+                            }
+                            else {
+                                new_set.add('FlatPhysicalDamageMod')
+                            }
+                            setHasStats(new_set)
+                        }}/>
+                    <span>AD</span>
+                </label>
+            </p>
+            <p>
+                <label>
+                    <input
+                        checked={has_stats.has('FlatMagicDamageMod')}
+                        type="checkbox"
+                        onChange={(event) => {
+                            let new_set = new Set(has_stats)
+                            if (new_set.has('FlatMagicDamageMod')) {
+                                new_set.delete('FlatMagicDamageMod')
+                            }
+                            else {
+                                new_set.add('FlatMagicDamageMod')
+                            }
+                            setHasStats(new_set)
+                        }}/>
+                    <span>AP</span>
+                </label>
+            </p>
             <div className="input-field">
                 <input
                     id='item-search-field'
@@ -216,92 +274,95 @@ export function Item(props) {
     }, [props.item])
 
     const label_style = {borderRadius: 4, padding: '0px 4px', display: 'inline-block'}
+    const card_height = 300
     return (
-        <div
-            style={{
-                height: 300,
-                overflowY: 'scroll',
-                overflowX: 'hidden',
-                paddingTop: 0,
-                paddingRight: sidepad,
-                paddingLeft: sidepad,
-                position: 'relative',
-            }}
-            className={`quiet-scroll card-panel ${theme}`}>
-            {Object.keys(item).length > 0 &&
-                <React.Fragment>
-                    <h6
-                        style={{
-                            marginBottom: 0,
-                            fontWeight: 'bold',
-                        }}>
-                        <img
+        <LazyLoad height={card_height}>
+            <div
+                style={{
+                    height: card_height,
+                    overflowY: 'scroll',
+                    overflowX: 'hidden',
+                    paddingTop: 0,
+                    paddingRight: sidepad,
+                    paddingLeft: sidepad,
+                    position: 'relative',
+                }}
+                className={`quiet-scroll card-panel ${theme}`}>
+                {Object.keys(item).length > 0 &&
+                    <React.Fragment>
+                        <h6
                             style={{
-                                marginRight: 7,
-                                height: 40,
-                                borderRadius: 8,
-                                position: 'absolute',
-                                right: 0,
-                                top: 8,
-                            }}
-                            src={item.image_url} alt="" />
-                        <div
-                            style={{
-                                width: '70%',
-                                display: 'inline-block'
+                                marginBottom: 0,
+                                fontWeight: 'bold',
                             }}>
-                            {item.name}
-                        </div>
-                    </h6>
-                    <div 
-                        style={{
-                            fontWeight: 'bold', 
-                            background: '#28314a', 
-                            padding: 5, 
-                            borderRadius: 5,
-                            marginTop: 5,
-                        }}>
-                        <small>
-                            <div style={{color: '#f5e15e'}}>
-                                {item.gold.total}g
+                            <img
+                                style={{
+                                    marginRight: 7,
+                                    height: 40,
+                                    borderRadius: 8,
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: 8,
+                                }}
+                                src={item.image_url} alt="" />
+                            <div
+                                style={{
+                                    width: '70%',
+                                    display: 'inline-block'
+                                }}>
+                                {item.name}
                             </div>
-                            <div style={{...label_style, background: '#471d4e'}}>
-                                {numeral(stat_cost).format('0,0')} 
-                            </div>
-                            <span> gold value at </span>
-                            <div style={{...label_style, background: '#437396', color: 'white'}}>
-                                {numeral(stat_efficiency * 100).format('0')}%
-                            </div>
-                            <span> efficiency</span>
-                        </small>
-                    </div>
-                    <hr style={{marginBottom: 0}} />
-                    <div
-                        style={{marginBottom: 0}}
-                        className="row">
-                        {Object.keys(item.stats).map(key => {
-                            let stat = item.stats[key]
-                            let value = stat.value
-                            return (
-                                <div
-                                    key={`${item.name}-${key}-${item.version}`}
-                                    className='col s6'>
-                                    {convertStatName(key)[0]}: {value}
-                                    <div style={{display: 'inline-block', marginLeft: 8}}>
-                                        <small style={{color: 'gold'}}>
-                                            {numeral(stat.gold_value).format('0,0')}g
-                                        </small>
-                                    </div>
+                        </h6>
+                        <div 
+                            style={{
+                                fontWeight: 'bold', 
+                                background: '#28314a', 
+                                padding: 5, 
+                                borderRadius: 5,
+                                marginTop: 5,
+                            }}>
+                            <small>
+                                <div style={{color: '#f5e15e'}}>
+                                    {item.gold.total}g
                                 </div>
-                            )
-                        })}
-                    </div>
-                        <hr style={{marginTop: 0}} />
-                        <div dangerouslySetInnerHTML={{__html: stripHtml(item.description)}}>
-                    </div>
-                </React.Fragment>
-            }
-        </div>
+                                <div style={{...label_style, background: '#471d4e'}}>
+                                    {numeral(stat_cost).format('0,0')} 
+                                </div>
+                                <span> gold value at </span>
+                                <div style={{...label_style, background: '#437396', color: 'white'}}>
+                                    {numeral(stat_efficiency * 100).format('0')}%
+                                </div>
+                                <span> efficiency</span>
+                            </small>
+                        </div>
+                        <hr style={{marginBottom: 0}} />
+                        <div
+                            style={{marginBottom: 0}}
+                            className="row">
+                            {Object.keys(item.stats).map(key => {
+                                let stat = item.stats[key]
+                                let value = stat.value
+                                return (
+                                    <div
+                                        key={`${item.name}-${key}-${item.version}`}
+                                        className='col s6'>
+                                        {convertStatName(key)[0]}: {value}
+                                        <div style={{display: 'inline-block', marginLeft: 8}}>
+                                            <small style={{color: 'gold'}}>
+                                                {numeral(stat.gold_value).format('0,0')}g
+                                            </small>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                            <hr style={{marginTop: 0}} />
+                            <div dangerouslySetInnerHTML={{__html: stripHtml(item.description)}}>
+                        </div>
+                    </React.Fragment>
+                }
+            </div>
+        </LazyLoad>
     )
 }
 

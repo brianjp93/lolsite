@@ -7,7 +7,7 @@ Tests for player models.
 from unittest.mock import Mock
 
 # 3RD PARTY
-from model_mommy import mommy 
+from model_mommy import mommy
 
 # STANDARD DJANGO
 from django.test import TestCase
@@ -48,7 +48,7 @@ class SummonerTest(TestCase):
         )
         self.assertEqual(
             summoner.__str__(),
-            f'Summoner(name="hello world", region=na)'
+            'Summoner(name="hello world", region=na)'
         )
 
     def test_name_change_creation_on_save(self):
@@ -98,7 +98,7 @@ class NameChangeTest(TestCase):
         )
         self.assertEqual(
             namechange.__str__(),
-            f'NameChange(old_name="oldboy", new_name="newboy")'
+            'NameChange(old_name="oldboy", new_name="newboy")'
         )
 
 
@@ -110,3 +110,4 @@ class CustomTest(TestCase):
         after = timezone.now()
         self.assertGreater(custom.modified_date, before)
         self.assertGreater(after, custom.modified_date)
+

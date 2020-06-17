@@ -12,6 +12,7 @@ import ReactTooltip from 'react-tooltip'
 // import PlayerChampionSummary from './PlayerChampionSummary'
 import OverviewSelection from './OverviewSelection'
 import numeral from 'numeral'
+import LazyLoad from 'react-lazyload'
 
 import MatchFilter from './MatchFilter'
 import api from '../../api/api'
@@ -512,12 +513,14 @@ class Summoner extends Component {
                                         }
                                         {!this.state.is_requesting_next_page && this.state.matches.map((match, key) => {
                                             return (
-                                                <MatchCard
-                                                    key={`${key}-${match._id}`}
-                                                    index={key}
-                                                    store={this.props.store}
-                                                    pageStore={this}
-                                                    match={match} />
+                                                <LazyLoad height={130}>
+                                                    <MatchCard
+                                                        key={`${key}-${match._id}`}
+                                                        index={key}
+                                                        store={this.props.store}
+                                                        pageStore={this}
+                                                        match={match} />
+                                                </LazyLoad>
                                             )
                                         })}
                                         {this.pagination()}
