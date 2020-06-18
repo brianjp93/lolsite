@@ -71,6 +71,7 @@ const stat_name = {
     FlatMovementSpeedMod: ['Flat MS', 'Flat Movement Speed'],
     BaseManaRegen: ['Mana Regen', 'Base Mana Regen'],
     Lethality: ['Leth', 'Lethality'],
+    ArmorPen: ['Armor Pen', '% Armor Penetration'],
     MagicPen: ['% Pen', 'Percent Magic Penetration'],
     FlatMagicPen: ['Flat Pen', 'Flat Magic Penetration'],
     CooldownReduction: ['CDR', 'Cooldown Reduction'],
@@ -166,6 +167,7 @@ export function ItemsGrid(props) {
                 {statCheckbox('FlatCritChanceMod', 'Crit Chance')}
                 {statCheckbox('PercentLifeStealMod', 'Life Steal')}
                 {statCheckbox('Lethality', 'Lethality')}
+                {statCheckbox('ArmorPen', 'Armor Penetration %')}
             </div>
 
             <div style={checkbox_style}>
@@ -292,6 +294,16 @@ function processItem(item, stat_costs) {
         )
     }
 
+    if (item.name.indexOf("Rabadon's") >= 0) {
+        x = item.description.match(/Increases Ability Power by ([0-9]+)%/)
+        let mult = parseInt(x[1]) / 100 + 1
+        let ap = item.stats.FlatMagicDamageMod
+        let total = numeral(mult * ap).format('0')
+        item.notes.push(
+            `This item technically gives ${ap} x ${mult} = ${total} AP.  Making it worth considerably more.`,
+        )
+    }
+
     x = description.match(/\+([0-9]+) Magic Penetration/)
     if (x !== null) {
         item.stats.FlatMagicPen = parseFloat(x[1])
@@ -315,6 +327,12 @@ function processItem(item, stat_costs) {
     x = description.match(/\+([0-9]+)% Life Steal/)
     if (x !== null) {
         item.stats.PercentLifeStealMod = parseFloat(x[1]) / 100
+    }
+
+    x = description.match(/\+([0-9]+)% Armor Penetration/)
+    if (x !== null) {
+        item.stats.ArmorPen = parseFloat(x[1]) / 100
+        item.notes.push('Armor Pen efficiency is calculated against an enemy with 100 armor.  Champion BASE armor starts at ~25 armor at level one and increases to ~100 armor at level 18.')
     }
 
     for (let stat_name in item.stats) {
@@ -454,7 +472,14 @@ export function Item(props) {
                             >
                                 <small>
                                     {item.notes.map(note => {
-                                        return <span key={item._id}>{note}</span>
+                                        return (
+                                            <div
+                                                style={{ lineHeight: 1.3, display: 'inline-block' }}
+                                                key={item._id}
+                                            >
+                                                {note}
+                                            </div>
+                                        )
                                     })}
                                 </small>
                             </div>
@@ -465,8 +490,14 @@ export function Item(props) {
                             {Object.keys(item.stats).map(key => {
                                 let stat = item.stats[key]
                                 let value = stat.value
+                                let title = `${value} ${
+                                    convertStatName(key)[0]
+                                } is worth approximately ${numeral(stat.gold_value).format(
+                                    '0,0',
+                                )} gold`
                                 return (
                                     <div
+                                        title={title}
                                         key={`${item.name}-${key}-${item.version}`}
                                         className="col s6"
                                     >

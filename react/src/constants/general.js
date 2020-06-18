@@ -3,7 +3,6 @@ import moment from 'moment'
 import Item from '../components/data/Item'
 import api from '../api/api'
 
-
 export function formatDatetime(epoch) {
     return moment(epoch).format('MMM D h:mm a')
 }
@@ -24,8 +23,7 @@ export function convertTier(tier) {
     let out = ''
     if (tier.toLowerCase() === 'grandmaster') {
         out = 'GM'
-    }
-    else {
+    } else {
         out = tier[0]
     }
     return out
@@ -34,11 +32,11 @@ export function convertTier(tier) {
 export function convertRank(rank) {
     let out = rank
     let dict = {
-        'I': '1',
-        'II': '2',
-        'III': '3',
-        'IV': '4',
-        'V': '5',
+        I: '1',
+        II: '2',
+        III: '3',
+        IV: '4',
+        V: '5',
     }
     if (dict[rank] !== undefined) {
         out = dict[rank]
@@ -65,19 +63,18 @@ function getItem(item_id, major, minor, store) {
             major,
             minor,
         }
-        api.data.getItem(data)
-            .then(response => {
-                if (items[version] === undefined) {
-                    items[version] = {}
-                }
-                items[version][item_id] = response.data.data
-                store.setState({items: items})
-            })
+        api.data.getItem(data).then(response => {
+            if (items[version] === undefined) {
+                items[version] = {}
+            }
+            items[version][item_id] = response.data.data
+            store.setState({ items: items })
+        })
     }
     return item
 }
 
-function retrieveItem (item_id, major, minor, store) {
+function retrieveItem(item_id, major, minor, store) {
     // get item from store
     let version = `${major}.${minor}`
     let item = null
@@ -96,8 +93,9 @@ function item(id, image_url, match, store) {
         <Item.ItemPopover
             style={{
                 display: 'inline-block',
-                height:28, width:28,
-                margin:'0px 2px',
+                height: 28,
+                width: 28,
+                margin: '0px 2px',
             }}
             item={item_data}
             tooltip_style={store.state.tooltip_style}
@@ -105,18 +103,25 @@ function item(id, image_url, match, store) {
             store={store}
             item_id={id}
             major={match.major}
-            minor={match.minor}>
-            <div style={{
-                display: 'inline-block',
-                height:28, width:28,
-                borderRadius:10,
-                margin:'0px 2px',
-                borderStyle:'solid',
-                borderColor:'#2d2e31',
-                borderWidth:1}}>
+            minor={match.minor}
+        >
+            <div
+                style={{
+                    display: 'inline-block',
+                    height: 28,
+                    width: 28,
+                    borderRadius: 10,
+                    margin: '0px 2px',
+                    borderStyle: 'solid',
+                    borderColor: '#2d2e31',
+                    borderWidth: 1,
+                }}
+            >
                 <img
-                    style={{height:'100%', borderRadius:10, display:'inline-block'}}
-                    src={image_url} alt=""/>
+                    style={{ height: '100%', borderRadius: 10, display: 'inline-block' }}
+                    src={image_url}
+                    alt=""
+                />
             </div>
         </Item.ItemPopover>
     )
@@ -125,31 +130,20 @@ function item(id, image_url, match, store) {
 export function participantItems(part, match, store) {
     return (
         <div
-            style = {{
+            style={{
                 display: 'inline-block',
                 verticalAlign: 'top',
-            }}>
-            <div style={{width:100}}>
-                <span>
-                    {item(part.stats.item_0, part.stats.item_0_image_url, match, store)}
-                </span>
-                <span>
-                    {item(part.stats.item_1, part.stats.item_1_image_url, match, store)}
-                </span>
-                <span>
-                    {item(part.stats.item_2, part.stats.item_2_image_url, match, store)}
-                </span>
+            }}
+        >
+            <div style={{ width: 100 }}>
+                <span>{item(part.stats.item_0, part.stats.item_0_image_url, match, store)}</span>
+                <span>{item(part.stats.item_1, part.stats.item_1_image_url, match, store)}</span>
+                <span>{item(part.stats.item_2, part.stats.item_2_image_url, match, store)}</span>
             </div>
-            <div style={{width:100}}>
-                <span>
-                    {item(part.stats.item_3, part.stats.item_3_image_url, match, store)}
-                </span>
-                <span>
-                    {item(part.stats.item_4, part.stats.item_4_image_url, match, store)}
-                </span>
-                <span>
-                    {item(part.stats.item_5, part.stats.item_5_image_url, match, store)}
-                </span>
+            <div style={{ width: 100 }}>
+                <span>{item(part.stats.item_3, part.stats.item_3_image_url, match, store)}</span>
+                <span>{item(part.stats.item_4, part.stats.item_4_image_url, match, store)}</span>
+                <span>{item(part.stats.item_5, part.stats.item_5_image_url, match, store)}</span>
             </div>
         </div>
     )
@@ -166,7 +160,7 @@ export function getMyPart(participants, account_id) {
 
 export function getStatCosts() {
     let stats_costs = {
-        PercentAttackSpeedMod: 300 / .12,
+        PercentAttackSpeedMod: 300 / 0.12,
         FlatMPPoolMod: 350 / 250,
         FlatHPPoolMod: 400 / 150,
         PercentMovementSpeedMod: 3950,
@@ -174,8 +168,8 @@ export function getStatCosts() {
         FlatMagicDamageMod: 435 / 20,
         FlatArmorMod: 300 / 15,
         FlatSpellBlockMod: 450 / 25,
-        PercentLifeStealMod: 375 / .1,
-        FlatCritChanceMod: 800 / .2,
+        PercentLifeStealMod: 375 / 0.1,
+        FlatCritChanceMod: 800 / 0.2,
         FlatHPRegenMod: 36,
         FlatMovementSpeedMod: 300 / 25,
 
@@ -184,10 +178,12 @@ export function getStatCosts() {
         MagicPen: 16,
         CooldownReduction: 26.67,
         HealAndShieldPower: 56.67,
-        Heal: .3333,
+        Heal: 0.3333,
         PercentBaseHPRegen: 3,
         FlatMagicPen: 31.11,
     }
+    // calculating value of armor pen against
+    // an enemy with 100 armor
+    stats_costs.ArmorPen = stats_costs.FlatArmorMod * 100
     return stats_costs
 }
-
