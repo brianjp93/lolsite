@@ -6,6 +6,15 @@ import Slider from 'rc-slider'
 import numeral from 'numeral'
 import { ArmorPenComparison } from './stats/armorpencomparison'
 
+
+const axis_label = {
+    fontSize: 'small',
+    fontWeight: 'bold',
+    position: 'absolute',
+    color: '#a0a2b3',
+    textDecoration: 'underline',
+}
+
 export function ItemStatPage(props) {
     const theme = props.store.state.theme
 
@@ -29,13 +38,16 @@ export function ItemStatPage(props) {
 export function ArmorMagicResistEffectiveHealthCard(props) {
     const style = props.style === undefined ? {} : props.style
     const graph_width = 500
-    const graph_height = 300
+    const graph_height = 200
 
     return (
         <div style={{ ...style }}>
             <h5 style={{ marginTop: 0 }}>Effective Health</h5>
             <ArmorMagicResistEffectiveHealth height={graph_height} width={graph_width} />
-            <div>
+            <div style={{marginLeft: 80, marginTop: -20, color: '#8a8a8a'}}>
+                <small>*Assuming a champion with 1000hp</small>
+            </div>
+            <div style={{marginTop: 10}}>
                 Armor and MR increase effective health by the formula.
                 <Latex displayMode>
                     {`$$\\rm Effective\\ health = \\left(1 + \\frac{Armor | MR}{100} \\right)\\times \\rm health$$`}
@@ -68,11 +80,6 @@ export function ArmorMagicResistEffectiveHealth(props) {
         setData(createData())
     }, [createData])
 
-    const axis_label = {
-        fontSize: 'small',
-        fontWeight: 'bold',
-        position: 'absolute',
-    }
 
     return (
         <>
@@ -142,14 +149,36 @@ export function ArmorCutting(props) {
     return (
         <>
             {data.length > 0 && (
-                <div className="unselectable">
+                <div
+                    style={{position: 'relative'}}
+                    className="unselectable">
                     <AreaChart height={height} width={width} data={data}>
                         <XAxis dataKey="enemyArmor" />
-                        <YAxis />
+                        <YAxis domain={['dataMin', 130]} />
                         <Area fill={armor_pen_color} type="monotone" dataKey="armorCutPen" />
                         <Area fill={lethality_color} type="monotone" dataKey="armorCutLethality" />
                         <Tooltip />
                     </AreaChart>
+                    <div
+                        style={{
+                            bottom: 40,
+                            right: 120,
+                            ...axis_label,
+                        }}
+                    >
+                        Enemy Armor
+                    </div>
+                    <div
+                        style={{
+                            top: height / 1.9,
+                            left: 10,
+                            transform: 'rotate(-90deg)',
+                            transformOrigin: 'top left',
+                            ...axis_label,
+                        }}
+                    >
+                        Armor Negated
+                    </div>
                 </div>
             )}
         </>
@@ -172,7 +201,7 @@ export function ArmorCuttingCard(props) {
         <div style={{ ...style }}>
             <h5 style={{ marginTop: 0 }}>Armor Cutting</h5>
             <ArmorCutting
-                height={graph_height}
+                height={200}
                 width={graph_width}
                 lethality={lethality}
                 armor_pen={armor_pen}
