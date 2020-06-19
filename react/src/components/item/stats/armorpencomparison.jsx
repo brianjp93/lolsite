@@ -85,7 +85,7 @@ export function ArmorPenComparison(props) {
                         {items.map((item, key) => {
                             return (
                                 <Line
-                                    legendType={is_item_visible[item.name] ? 'line': 'triangle'}
+                                    legendType={is_item_visible[item.name] ? 'square': 'plainline'}
                                     strokeWidth={2}
                                     key={item._id}
                                     dot={false}
