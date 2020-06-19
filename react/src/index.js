@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import {BrowserRouter} from 'react-router-dom'
 import * as serviceWorker from "./serviceWorker"
+import 'rc-slider/assets/index.css'
 import './index.css'
 import './spinners.css'
 import './theme/dark.css'

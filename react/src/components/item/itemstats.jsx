@@ -5,7 +5,6 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
 import Slider from 'rc-slider'
 import numeral from 'numeral'
 import { ArmorPenComparison } from './stats/armorpencomparison'
-import 'rc-slider/assets/index.css'
 
 export function ItemStatPage(props) {
     const theme = props.store.state.theme
