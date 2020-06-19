@@ -9,18 +9,13 @@ import { ArmorPenComparison } from './stats/armorpencomparison'
 export function ItemStatPage(props) {
     const theme = props.store.state.theme
 
-    const card_styles = {margin: '0px 10px', verticalAlign: 'top', width: 550}
+    const card_styles = { margin: '0px 10px', verticalAlign: 'top', width: 550 }
     return (
         <Skeleton {...props}>
             <div className="row" style={{ marginBottom: 0 }}>
                 <div className="col l10 offset-l1">
-                    <ArmorMagicResistEffectiveHealthCard
-                        style={card_styles}
-                        theme={theme}
-                    />
-                    <ArmorCuttingCard
-                        style={card_styles}
-                        theme={theme} />
+                    <ArmorMagicResistEffectiveHealthCard style={card_styles} theme={theme} />
+                    <ArmorCuttingCard style={card_styles} theme={theme} />
                 </div>
             </div>
         </Skeleton>
@@ -30,11 +25,45 @@ export function ItemStatPage(props) {
 export function ArmorMagicResistEffectiveHealthCard(props) {
     const theme = props.theme
     const style = props.style === undefined ? {} : props.style
+    const graph_width = 500
+    const graph_height = 300
+    const axis_label = {
+        fontSize: 'small',
+        fontWeight: 'bold',
+        position: 'absolute',
+    }
 
     return (
-        <div style={{ display: 'inline-block', ...style }} className={`${theme} card-panel`}>
-            <h5 style={{marginTop: 0}}>Effective Health</h5>
-            <ArmorMagicResistEffectiveHealth height={300} width={500} />
+        <div
+            style={{
+                display: 'inline-block',
+                position: 'relative',
+                ...style,
+            }}
+            className={`${theme} card-panel`}
+        >
+            <h5 style={{ marginTop: 0 }}>Effective Health</h5>
+            <ArmorMagicResistEffectiveHealth height={graph_height} width={graph_width} />
+            <div
+                style={{
+                    top: graph_height,
+                    right: 50,
+                    ...axis_label,
+                }}
+            >
+                Armor | MR
+            </div>
+            <div
+                style={{
+                    top: graph_height / 1.5,
+                    left: 20,
+                    transform: 'rotate(-90deg)',
+                    transformOrigin: 'top left',
+                    ...axis_label,
+                }}
+            >
+                Effective Health
+            </div>
             <div>
                 Armor and MR increase effective health by the formula.
                 <Latex displayMode>
@@ -54,7 +83,7 @@ export function ArmorMagicResistEffectiveHealth(props) {
 
     const createData = useCallback(() => {
         let new_data = []
-        for (let x = 10; x < 501; x += 4) {
+        for (let x = 10; x < 301; x += 4) {
             let elt = {
                 armor: x,
                 effectiveHealth: (1 + x / 100) * health,
@@ -71,11 +100,13 @@ export function ArmorMagicResistEffectiveHealth(props) {
     return (
         <>
             {data.length > 0 && (
-                <AreaChart height={height} width={width} data={data}>
-                    <XAxis dataKey="armor" />
-                    <YAxis dataKey="effectiveHealth" />
-                    <Area type="monotone" dataKey="effectiveHealth" />
-                </AreaChart>
+                <div className='unselectable'>
+                    <AreaChart height={height} width={width} data={data}>
+                        <XAxis dataKey="armor" />
+                        <YAxis dataKey="effectiveHealth" />
+                        <Area type="monotone" dataKey="effectiveHealth" />
+                    </AreaChart>
+                </div>
             )}
         </>
     )
@@ -96,7 +127,7 @@ export function ArmorCutting(props) {
     const createData = useCallback(() => {
         let new_data = []
         let lethCut = lethality * (0.6 + (0.4 * level) / 18)
-        for (let x = 0; x < 501; x += 4) {
+        for (let x = 0; x < 301; x += 4) {
             let elt = {
                 enemyArmor: x,
                 armorCutPen: x * armor_pen,
@@ -114,13 +145,15 @@ export function ArmorCutting(props) {
     return (
         <>
             {data.length > 0 && (
-                <AreaChart height={height} width={width} data={data}>
-                    <XAxis dataKey="enemyArmor" />
-                    <YAxis />
-                    <Area fill={armor_pen_color} type="monotone" dataKey="armorCutPen" />
-                    <Area fill={lethality_color} type="monotone" dataKey="armorCutLethality" />
-                    <Tooltip />
-                </AreaChart>
+                <div className='unselectable'>
+                    <AreaChart height={height} width={width} data={data}>
+                        <XAxis dataKey="enemyArmor" />
+                        <YAxis />
+                        <Area fill={armor_pen_color} type="monotone" dataKey="armorCutPen" />
+                        <Area fill={lethality_color} type="monotone" dataKey="armorCutLethality" />
+                        <Tooltip />
+                    </AreaChart>
+                </div>
             )}
         </>
     )
@@ -139,7 +172,7 @@ export function ArmorCuttingCard(props) {
 
     return (
         <div style={{ display: 'inline-block', ...style }} className={`${theme} card-panel`}>
-            <h5 style={{marginTop: 0}}>Armor Cutting</h5>
+            <h5 style={{ marginTop: 0 }}>Armor Cutting</h5>
             <ArmorCutting
                 height={300}
                 width={500}
@@ -155,7 +188,7 @@ export function ArmorCuttingCard(props) {
                         <Slider
                             value={lethality}
                             onChange={setLethality}
-                            trackStyle={{backgroundColor: lethality_color}}
+                            trackStyle={{ backgroundColor: lethality_color }}
                             min={0}
                             max={60}
                             step={1}
@@ -168,7 +201,7 @@ export function ArmorCuttingCard(props) {
                         <Slider
                             value={armor_pen}
                             onChange={setArmorPen}
-                            trackStyle={{backgroundColor: armor_pen_color}}
+                            trackStyle={{ backgroundColor: armor_pen_color }}
                             min={0}
                             max={0.35}
                             step={0.01}
@@ -192,9 +225,7 @@ export function ArmorCuttingCard(props) {
                     </Latex>
                 </div>
                 <div>
-                    <div>
-                        Armor negated by % armor pen is more simply given by
-                    </div>
+                    <div>Armor negated by % armor pen is more simply given by</div>
                     <Latex displayMode={true}>
                         {`$$Armor\\ Negated = Armor\\ Pen \\times Enemy\\ Armor$$`}
                     </Latex>
@@ -203,20 +234,21 @@ export function ArmorCuttingCard(props) {
 
             <hr />
             <h6>% DMG Increase VS Enemy Armor</h6>
-            <ArmorPenComparison height={300} width={500} level={level}/>
+            <ArmorPenComparison height={300} width={500} level={level} />
             <div style={{ marginTop: 10 }}>
-                    <div style={slider_div}>
-                        <Slider value={level} onChange={setLevel} min={1} max={18} step={1} />
-                    </div>
-                    <div style={label_style}>Level {level}</div>
+                <div style={slider_div}>
+                    <Slider value={level} onChange={setLevel} min={1} max={18} step={1} />
                 </div>
+                <div style={label_style}>Level {level}</div>
+            </div>
             <div
                 style={{
                     display: 'inline-block',
                     marginTop: 15,
-                }}>
-                The graph above shows the % Damage increase (y-axis) you get
-                from each item, depening on the enemy's armor (x-axis).
+                }}
+            >
+                The graph above shows the % Damage increase (y-axis) you get from each item,
+                depening on the enemy's armor (x-axis).
             </div>
         </div>
     )
