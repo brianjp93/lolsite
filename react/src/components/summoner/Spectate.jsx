@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import Modal from 'react-responsive-modal'
-import moment from 'moment'
 import numeral from 'numeral'
 import { formatDatetimeTime } from '../../constants/general'
 

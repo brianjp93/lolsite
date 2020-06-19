@@ -24,6 +24,7 @@ function sortItems(items, order_by) {
         } else if (order_by === '+gold') {
             return a.gold.total - b.gold.total
         }
+        return null
     })
     return items
 }
