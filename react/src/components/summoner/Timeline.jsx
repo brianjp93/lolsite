@@ -236,7 +236,7 @@ function Timeline(props) {
                             return `${m}m`
                         }}
                         dataKey="timestamp" />
-                    
+
                     <YAxis
                         // domain={this.getDomain()}
                         yAxisId='left'

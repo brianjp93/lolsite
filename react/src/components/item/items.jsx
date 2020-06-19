@@ -269,7 +269,7 @@ function stripHtml(html) {
     return html.replace(/<(?!br\s*\/?)[^>]+>/g, '')
 }
 
-function processItem(item, stat_costs) {
+export function processItem(item, stat_costs) {
     item = { ...item }
     item.notes = []
     let x
@@ -306,7 +306,7 @@ function processItem(item, stat_costs) {
 
     x = description.match(/\+([0-9]+) Magic Penetration/)
     if (x !== null) {
-        item.stats.FlatMagicPen = parseFloat(x[1])
+        item.stats.FlatMagicPen = parseFloat(x[1]) / 100
     }
 
     x = description.match(/\+([0-9]+)% Cooldown Reduction/)
@@ -332,7 +332,9 @@ function processItem(item, stat_costs) {
     x = description.match(/\+([0-9]+)% Armor Penetration/)
     if (x !== null) {
         item.stats.ArmorPen = parseFloat(x[1]) / 100
-        item.notes.push('Armor Pen efficiency is calculated against an enemy with 100 armor.  Champion BASE armor starts at ~25 armor at level one and increases to ~100 armor at level 18.')
+        item.notes.push(
+            'Armor Pen efficiency is calculated against an enemy with 100 armor.  Champion BASE armor starts at ~25 armor at level one and increases to ~100 armor at level 18.',
+        )
     }
 
     for (let stat_name in item.stats) {

@@ -175,7 +175,7 @@ export function getStatCosts() {
 
         BaseManaRegen: 150 / 50,
         Lethality: 5,
-        MagicPen: 16,
+        // MagicPen: 16 * 100,
         CooldownReduction: 26.67,
         HealAndShieldPower: 56.67,
         Heal: 0.3333,
@@ -185,5 +185,7 @@ export function getStatCosts() {
     // calculating value of armor pen against
     // an enemy with 100 armor
     stats_costs.ArmorPen = stats_costs.FlatArmorMod * 100
+    stats_costs.MagicPen = stats_costs.FlatSpellBlockMod * 100
+
     return stats_costs
 }
