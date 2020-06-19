@@ -76,6 +76,13 @@ Allows us to run `python manage.py rundev` in our project folder
 Sets `REACT_DEV = TRUE` in our **Django** settings.  This is how **Django** knows
 whether or not to serve our **React** Build or Development files.
 
+* There is another custuom django command for starting the celery worker.
+    * `python manage.py celery`
+
+This command is nice because it is hooked into django's reload detection.
+If any of the python codebase changes, celery will restart if run through
+this command.
+
 ### 2. Custom Context Processor
 
 path : `lolsite/context_processors.py`
@@ -130,7 +137,7 @@ Different things will happen based on some conditions.
 * django makes an API call to Riot for data on the summoner
 * Summoner model is updated or created
 * A multithreaded pool requests the most recent 10 games
-* Every participant is imported as a Summoner if their summoner_id is not already
+* Every participant is imported as a Summoner if their summoner\_id is not already
 in one of the Summoner models
 * All match data is imported into their respective models.
 * The searched summoner's rank positions are queried and saved to a RankCheckpoint model
