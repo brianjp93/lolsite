@@ -25,12 +25,14 @@
         {{ react_dev.scripts|safe }}
         {# <link rel='stylesheet' href='{{ react_dev.css }}' > #}
     {% else %}
-
-        <script src="{% static react_data.js %}"></script>
-        <script src="{% static react_data.chunk %}"></script>
-        <script src="{% static react_data.runtime %}"></script>
-        <link rel='stylesheet' href='{% static react_data.css %}' >
+        {% for file in react_data.js %}
+            <script src="{% static file %}"></script>
+        {% endfor %}
+        {% for file in react_data.css %}
+            <link rel='stylesheet' href='{% static file %}' >
+        {% endfor %}
     {% endif %}
+
     <title>{% block title %}{% endblock title %}</title>
 
     <!-- <link rel="shortcut icon" type="image/png" href="{% static 'favicon-suitesale.ico' %}"> -->

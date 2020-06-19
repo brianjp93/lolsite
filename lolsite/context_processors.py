@@ -57,25 +57,19 @@ def react_data_processor(request):
             }
         }
     else:
-        react_data = {"react_data": {"js": "", "css": ""}}
+        react_data = {"react_data": {"js": [], "css": []}}
         try:
             base = os.path.join(BASE_DIR, "react", "build", "static")
             js_dir = os.path.join(base, "js")
             css_dir = os.path.join(base, "css")
             for f in os.listdir(js_dir):
-                if "runtime" in f and f.endswith(".js"):
-                    runtime_path = os.path.join("js", f)
-                    react_data["react_data"]["runtime"] = runtime_path
-                elif "main" in f and "chunk" in f and f.endswith(".js"):
-                    chunk_path = os.path.join("js", f)
-                    react_data["react_data"]["chunk"] = chunk_path
-                elif f.endswith(".js"):
+                if f.endswith(".js"):
                     js_path = os.path.join("js", f)
-                    react_data["react_data"]["js"] = js_path
+                    react_data["react_data"]["js"].append(js_path)
             for f in os.listdir(css_dir):
                 if f.endswith(".css"):
                     css_path = os.path.join("css", f)
-                    react_data["react_data"]["css"] = css_path
+                    react_data["react_data"]["css"].append(css_path)
         except Exception as e:
             print(e)
     return react_data
