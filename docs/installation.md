@@ -5,12 +5,12 @@
 1. Download [Postgres](https://www.postgresql.org/).
 2. Create a Database in PGAdmin4
 3. Add credentials to your environment variables or a `.env` file in the project root
-    - LOLSITE_NAME
-    - LOLSITE_USER
-    - LOLSITE_PASS
-    - LOLSITE_HOST
-    - LOLSITE_PORT
-    - LOLSITE_EMAIL_HOST_PASSWORD (this is your sendgrid api key)
+    - LOLSITE\_NAME
+    - LOLSITE\_USER
+    - LOLSITE\_PASS
+    - LOLSITE\_HOST
+    - LOLSITE\_PORT
+    - LOLSITE\_EMAIL\_HOST\_PASSWORD (this is your sendgrid api key)
 4. Create a virtual env and install python packages via requirements.txt
     - create virtual env and activate it
     - `pip install -r requirements`
