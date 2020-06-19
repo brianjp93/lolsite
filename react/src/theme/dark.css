@@ -2,7 +2,7 @@
 
 .dark {
     --c1: #c9d9f7;
-    --gradient-main: linear-gradient(to bottom, #292E49, #536976);
+    --gradient-main: linear-gradient(to bottom, #292e49, #536976);
     --gradient-nav: linear-gradient(to right, #212e3e 0%, #373e52 100%);
     --card-background1: #43434e;
     --card-color1: #cecece;
@@ -71,7 +71,7 @@ input.dark {
     color: var(--c1);
 }
 
-div.input-field.dark>div>input.select-dropdown {
+div.input-field.dark > div > input.select-dropdown {
     color: var(--c1);
 }
 
@@ -83,7 +83,7 @@ ul.sidenav.dark {
     background: var(--gradient-main);
 }
 
-.sidenav.dark li>a {
+.sidenav.dark li > a {
     color: var(--sidenav-color1);
 }
 
@@ -118,7 +118,9 @@ ul.sidenav.dark {
     color: white;
 }
 
-.dark.btn-small, .dark.btn, .dark.btn-large {
+.dark.btn-small,
+.dark.btn,
+.dark.btn-large {
     background-color: var(--button-color1);
 }
 
@@ -132,11 +134,15 @@ ul.sidenav.dark {
     color: var(--link-color);
 }
 
-.dark.btn-small:hover, .dark.btn:hover, .dark.btn-large:hover {
+.dark.btn-small:hover,
+.dark.btn:hover,
+.dark.btn-large:hover {
     background-color: var(--button-color1-hover);
 }
 
-.dark.btn-small.selected, .dark.btn.selected, .dark.btn-large.selected {
+.dark.btn-small.selected,
+.dark.btn.selected,
+.dark.btn-large.selected {
     background-color: var(--selected);
 }
 
@@ -166,7 +172,7 @@ ul.sidenav.dark {
     border-radius: 5px;
 }
 
-div.dark>div>ul.dropdown-content {
+div.dark > div > ul.dropdown-content {
     background-color: #2b2b2b;
 }
 
