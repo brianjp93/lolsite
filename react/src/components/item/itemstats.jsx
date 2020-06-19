@@ -9,11 +9,15 @@ import { ArmorPenComparison } from './stats/armorpencomparison'
 export function ItemStatPage(props) {
     const theme = props.store.state.theme
 
-    const card_styles = { margin: '0px 10px', verticalAlign: 'top', width: 550 }
+    const card_styles = {
+        width: 600,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+    }
     return (
         <Skeleton {...props}>
             <div className="row" style={{ marginBottom: 0 }}>
-                <div className="col l10 offset-l1">
+                <div style={{ display: 'flex', flexWrap: 'wrap' }} className="col l10 offset-l1">
                     <ArmorMagicResistEffectiveHealthCard style={card_styles} theme={theme} />
                     <ArmorCuttingCard style={card_styles} theme={theme} />
                 </div>
@@ -23,47 +27,14 @@ export function ItemStatPage(props) {
 }
 
 export function ArmorMagicResistEffectiveHealthCard(props) {
-    const theme = props.theme
     const style = props.style === undefined ? {} : props.style
     const graph_width = 500
     const graph_height = 300
-    const axis_label = {
-        fontSize: 'small',
-        fontWeight: 'bold',
-        position: 'absolute',
-    }
 
     return (
-        <div
-            style={{
-                display: 'inline-block',
-                position: 'relative',
-                ...style,
-            }}
-            className={`${theme} card-panel`}
-        >
+        <div style={{ ...style }}>
             <h5 style={{ marginTop: 0 }}>Effective Health</h5>
             <ArmorMagicResistEffectiveHealth height={graph_height} width={graph_width} />
-            <div
-                style={{
-                    top: graph_height,
-                    right: 50,
-                    ...axis_label,
-                }}
-            >
-                Armor | MR
-            </div>
-            <div
-                style={{
-                    top: graph_height / 1.5,
-                    left: 20,
-                    transform: 'rotate(-90deg)',
-                    transformOrigin: 'top left',
-                    ...axis_label,
-                }}
-            >
-                Effective Health
-            </div>
             <div>
                 Armor and MR increase effective health by the formula.
                 <Latex displayMode>
@@ -97,15 +68,41 @@ export function ArmorMagicResistEffectiveHealth(props) {
         setData(createData())
     }, [createData])
 
+    const axis_label = {
+        fontSize: 'small',
+        fontWeight: 'bold',
+        position: 'absolute',
+    }
+
     return (
         <>
             {data.length > 0 && (
-                <div className='unselectable'>
+                <div style={{ position: 'relative' }} className="unselectable">
                     <AreaChart height={height} width={width} data={data}>
                         <XAxis dataKey="armor" />
                         <YAxis dataKey="effectiveHealth" />
                         <Area type="monotone" dataKey="effectiveHealth" />
                     </AreaChart>
+                    <div
+                        style={{
+                            bottom: 40,
+                            right: 120,
+                            ...axis_label,
+                        }}
+                    >
+                        Armor | MR
+                    </div>
+                    <div
+                        style={{
+                            top: height / 1.9,
+                            left: 0,
+                            transform: 'rotate(-90deg)',
+                            transformOrigin: 'top left',
+                            ...axis_label,
+                        }}
+                    >
+                        Effective Health
+                    </div>
                 </div>
             )}
         </>
@@ -145,7 +142,7 @@ export function ArmorCutting(props) {
     return (
         <>
             {data.length > 0 && (
-                <div className='unselectable'>
+                <div className="unselectable">
                     <AreaChart height={height} width={width} data={data}>
                         <XAxis dataKey="enemyArmor" />
                         <YAxis />
@@ -159,7 +156,6 @@ export function ArmorCutting(props) {
     )
 }
 export function ArmorCuttingCard(props) {
-    const theme = props.theme
     const style = props.style === undefined ? {} : props.style
     const [lethality, setLethality] = useState(30)
     const [armor_pen, setArmorPen] = useState(0.25)
@@ -169,13 +165,15 @@ export function ArmorCuttingCard(props) {
     const label_style = { display: 'inline-block', width: '30%', textAlign: 'right' }
     const lethality_color = 'red'
     const armor_pen_color = 'purple'
+    const graph_height = 300
+    const graph_width = 500
 
     return (
-        <div style={{ display: 'inline-block', ...style }} className={`${theme} card-panel`}>
+        <div style={{ ...style }}>
             <h5 style={{ marginTop: 0 }}>Armor Cutting</h5>
             <ArmorCutting
-                height={300}
-                width={500}
+                height={graph_height}
+                width={graph_width}
                 lethality={lethality}
                 armor_pen={armor_pen}
                 level={level}
