@@ -37,7 +37,7 @@ export function ArmorMagicResistEffectiveHealthCard(props) {
             <ArmorMagicResistEffectiveHealth height={300} width={500} />
             <div>
                 Armor and MR increase effective health by the formula.
-                <Latex displayMode={true}>
+                <Latex displayMode>
                     {`$$\\rm Effective\\ health = \\left(1 + \\frac{Armor | MR}{100} \\right)\\times \\rm health$$`}
                 </Latex>
             </div>
