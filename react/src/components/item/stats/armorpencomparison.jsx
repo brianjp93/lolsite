@@ -8,6 +8,7 @@ const stat_cost = getStatCosts()
 
 export function ArmorPenComparison(props) {
     const [items, setItems] = useState([])
+    const [is_item_visible, setIsItemVisible] = useState({})
 
     const level = props.level === undefined ? 11: props.level
     const height = props.height
@@ -39,46 +40,63 @@ export function ArmorPenComparison(props) {
         for (let armor = 0; armor < 300; armor += 4) {
             let elt = { armor }
             for (let item of items) {
-                lethality = item.stats.Lethality === undefined ? 0 : item.stats.Lethality.value
-                armorpen = item.stats.ArmorPen === undefined ? 0 : item.stats.ArmorPen.value
-                elt[item.name] = computeArmorNegated(armor, lethality, armorpen, level)
+                if (is_item_visible[item.name]) {
+                    lethality = item.stats.Lethality === undefined ? 0 : item.stats.Lethality.value
+                    armorpen = item.stats.ArmorPen === undefined ? 0 : item.stats.ArmorPen.value
+                    elt[item.name] = computeArmorNegated(armor, lethality, armorpen, level)
+                }
+                else {
+                    elt[item.name] = null
+                }
             }
             new_data.push(elt)
         }
         return new_data
-    }, [items, level])
+    }, [items, level, is_item_visible])
+
+    const handleLegendClick = (event) => {
+        let new_is_visible = {...is_item_visible}
+        new_is_visible[event.dataKey] = !new_is_visible[event.dataKey]
+        setIsItemVisible(new_is_visible)
+    }
 
     useEffect(() => {
         getItems().then(response => {
             let new_items = []
-            for (let elt of response.data.data) {
-                new_items.push(processItem(elt, stat_cost))
+            let is_visible = {}
+            for (let item of response.data.data) {
+                new_items.push(processItem(item, stat_cost))
+                is_visible[item.name] = true
             }
             setItems(new_items)
+            setIsItemVisible(is_visible)
         })
     }, [getItems])
 
     return (
         <>
             {data.length > 0 && (
-                <LineChart height={height} width={width} data={data}>
-                    <XAxis dataKey="armor" />
-                    <YAxis />
-                    <Legend />
-                    <CartesianGrid strokeDasharray="5 5" strokeOpacity={0.3} />
-                    {items.map((item, key) => {
-                        return (
-                            <Line
-                                strokeWidth={2}
-                                key={item._id}
-                                dot={false}
-                                stroke={colors[key]}
-                                type="monotone"
-                                dataKey={item.name}
-                            />
-                        )
-                    })}
-                </LineChart>
+                <div className='unselectable'>
+                    <LineChart height={height} width={width} data={data}>
+                        <XAxis dataKey="armor" />
+                        <YAxis />
+                        <Legend onClick={handleLegendClick} />
+                        <CartesianGrid strokeDasharray="5 5" strokeOpacity={0.3} />
+                        {items.map((item, key) => {
+                            return (
+                                <Line
+                                    legendType={is_item_visible[item.name] ? 'line': 'triangle'}
+                                    strokeWidth={2}
+                                    key={item._id}
+                                    dot={false}
+                                    stroke={colors[key]}
+                                    type="monotone"
+                                    dataKey={item.name}
+                                />
+                            )
+                        })}
+                    </LineChart>
+                </div>
             )}
         </>
     )
