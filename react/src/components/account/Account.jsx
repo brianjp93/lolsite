@@ -130,7 +130,7 @@ function Account(props) {
                                         <div style={{borderStyle: 'solid', borderWidth: 1, borderRadius: 4, borderColor: 'grey', padding: 7}}>
                                             <div>
                                                 <span>
-                                                    Copy and paste this code into the <span style={{fontWeight: 'bold'}}>ThirdPartyCode</span>
+                                                    Copy and paste this code into the <span style={{fontWeight: 'bold'}}>Verification</span>
                                                     {' '}section of the League of Legends Client settings.
                                                 </span>
                                             </div>
@@ -148,6 +148,8 @@ function Account(props) {
                                     <div>
                                         <div className='input-field'>
                                             <input
+                                                name='summoner-name'
+                                                autoComplete='off'
                                                 id='summoner-name-connect'
                                                 className={theme}
                                                 type="text"
