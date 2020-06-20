@@ -117,6 +117,7 @@ function ChampionTimelines(props) {
                         )
                     })}
                     <Tooltip
+                        itemSorter={item => -item.value}
                         wrapperStyle={{zIndex: 10}}
                         formatter={(value, name, props) => {
                             let output
