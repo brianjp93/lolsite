@@ -129,6 +129,17 @@ export function EffectiveHealth(props) {
                     <small>
                         *Based on stat values from patch {items[0].version}
                     </small>
+                    <br />
+                    <small>
+                        *Effective health is assuming damage taken from the type it is blocking
+                        <ul style={{paddingLeft: 20}}>
+                            <li style={{listStyleType: 'circle'}}>
+                                For example, Spectre's Cowl could give 1.8 effective health / gold
+                                against AP, but would be less gold efficient against AD
+                                as it does not give armor.
+                            </li>
+                        </ul>
+                    </small>
                 </div>
             }
             <div style={{ ...slider_div }}>
