@@ -21,7 +21,7 @@ export function EffectiveHealth(props) {
             item_list: [3075, 3143, 3742, 3068, 3800, 3109, 3001, 3065, 3194, 3211],
         }
         return api.data.getItem(temp)
-    })
+    }, [])
 
     const data = useMemo(() => {
         let new_data = []
@@ -66,7 +66,7 @@ export function EffectiveHealth(props) {
             setIsItemVisible(new_is_item_visible)
             setItems(response.data.data)
         })
-    }, [])
+    }, [getItems])
 
     const slider_div = { display: 'inline-block', width: '70%' }
     const label_style = { display: 'inline-block', width: '30%', textAlign: 'right' }
