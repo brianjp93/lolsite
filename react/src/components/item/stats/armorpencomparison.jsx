@@ -1,10 +1,25 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
-import { LineChart, Line, XAxis, YAxis, Legend, CartesianGrid } from 'recharts'
+import { Tooltip, LineChart, Line, XAxis, YAxis, Legend, CartesianGrid } from 'recharts'
 import api from '../../../api/api'
 import { processItem } from '../items'
 import { getStatCosts } from '../../../constants/general'
+import { axis_label } from '../itemstats'
+import numeral from 'numeral'
 
 const stat_cost = getStatCosts()
+
+export const colors = [
+    '#3251a8',
+    '#3632a8',
+    '#5d32a8',
+    '#8732a8',
+    '#911c49',
+    '#ad2643',
+    '#ad262b',
+    '#a84a32',
+    '#c97340',
+    '#c99940',
+]
 
 export function ArmorPenComparison(props) {
     const [items, setItems] = useState([])
@@ -19,19 +34,6 @@ export function ArmorPenComparison(props) {
         const data = { item_list }
         return api.data.getItem(data)
     }, [])
-
-    const colors = [
-        '#3251a8',
-        '#3632a8',
-        '#5d32a8',
-        '#8732a8',
-        '#911c49',
-        '#ad2643',
-        '#ad262b',
-        '#a84a32',
-        '#c97340',
-        '#c99940',
-    ]
 
     const data = useMemo(() => {
         let new_data = []
@@ -78,9 +80,36 @@ export function ArmorPenComparison(props) {
             {data.length > 0 && (
                 <div className='unselectable legend-click'>
                     <LineChart height={height} width={width} data={data}>
-                        <XAxis dataKey="armor" />
-                        <YAxis />
-                        <Legend onClick={handleLegendClick} />
+                        <XAxis
+                            label={{
+                                value: 'Armor / MR',
+                                position: 'insideBottom',
+                                style: axis_label,
+                                offset: -8,
+                            }}
+                            dataKey="armor" />
+                        <YAxis
+                            label={{
+                                value: '% DMG Increase',
+                                position: 'insideBottomLeft',
+                                angle:-90,
+                                style: axis_label,
+                                offset: 30,
+                            }}
+                            />
+                        <Tooltip
+                            labelFormatter={(label) => {
+                                return `${label} armor`
+                            }}
+                            formatter={(value, name) => {
+                                return [numeral(value).format('0.00'), name]
+                            }}
+                            itemSorter={item => -item.value}
+                            wrapperStyle={{zIndex: 10}}
+                        />
+                        <Legend
+                            wrapperStyle={{paddingTop: 12}}
+                            onClick={handleLegendClick} />
                         <CartesianGrid strokeDasharray="5 5" strokeOpacity={0.3} />
                         {items.map((item, key) => {
                             return (
@@ -96,6 +125,13 @@ export function ArmorPenComparison(props) {
                             )
                         })}
                     </LineChart>
+                    {items.length > 0 &&
+                        <div style={{marginBottom: 10}}>
+                            <small>
+                                *Based on stat values from patch {items[0].version}
+                            </small>
+                        </div>
+                    }
                 </div>
             )}
         </>
