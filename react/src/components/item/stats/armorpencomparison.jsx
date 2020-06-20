@@ -76,7 +76,7 @@ export function ArmorPenComparison(props) {
     return (
         <>
             {data.length > 0 && (
-                <div className='unselectable'>
+                <div className='unselectable legend-click'>
                     <LineChart height={height} width={width} data={data}>
                         <XAxis dataKey="armor" />
                         <YAxis />

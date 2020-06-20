@@ -157,7 +157,18 @@ export function ArmorCutting(props) {
                         <YAxis domain={['dataMin', 130]} />
                         <Area fill={armor_pen_color} type="monotone" dataKey="armorCutPen" />
                         <Area fill={lethality_color} type="monotone" dataKey="armorCutLethality" />
-                        <Tooltip />
+                        <Tooltip
+                            formatter={(value, name) => {
+                                value = numeral(value).format('0,0') 
+                                if (name === 'armorCutPen') {
+                                    name = 'armor cut from lethality'
+                                }
+                                else {
+                                    name = 'armor cut from pen'
+                                }
+                                return [value, name]
+                            }}
+                        />
                     </AreaChart>
                     <div
                         style={{
