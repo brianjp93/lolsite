@@ -102,3 +102,7 @@ hr {
 .ReactModal__Body--open {
   overflow-y: hidden;
 }
+
+.legend-click .recharts-legend-item {
+    cursor: pointer;
+}
