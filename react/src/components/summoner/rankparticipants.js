@@ -1,8 +1,43 @@
+// export function rankParticipants(participants) {
+//     let team100 = participants.filter(item => {return item.team_id === 100})
+//     let team200 = participants.filter(item => {return item.team_id === 200})
+//     team100 = rankTeam(team100)
+//     team200 = rankTeam(team200)
+//     return [...team100, ...team200]
+// }
+
 export function rankParticipants(participants) {
     let team100 = participants.filter(item => {return item.team_id === 100})
     let team200 = participants.filter(item => {return item.team_id === 200})
     team100 = rankTeam(team100)
     team200 = rankTeam(team200)
+
+    let normalize_factor = 2
+    for (let i=0; i<team100.length; i++) {
+        let p1 = team100[i]
+        let p2 = team200[i]
+        let total = p1.impact + p2.impact
+        p1.impact = p1.impact / total * normalize_factor
+        p2.impact = p2.impact / total * normalize_factor
+    }
+    let team_sort_1 = [...team100]
+    let team_sort_2 = [...team200]
+    team_sort_1.sort((a, b) => b.impact - a.impact)
+    team_sort_2.sort((a, b) => b.impact - a.impact)
+    let score_dict = {}
+    for (let i=0; i<team_sort_1.length; i++) {
+        let p1 = team_sort_1[i]
+        let p2 = team_sort_2[i]
+        score_dict[p1._id] = {impact: p1.impact, impact_rank: i+1}
+        score_dict[p2._id] = {impact: p2.impact, impact_rank: i+1}
+    }
+    for (let i=0; i<team100.length; i++) {
+        team100[i].impact = score_dict[team100[i]._id].impact
+        team100[i].impact_rank = score_dict[team100[i]._id].impact_rank
+        team200[i].impact = score_dict[team200[i]._id].impact
+        team200[i].impact_rank = score_dict[team200[i]._id].impact_rank
+    }
+
     return [...team100, ...team200]
 }
 
