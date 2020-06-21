@@ -282,7 +282,7 @@ class EmailVerification(models.Model):
 
     def save(self, *args, **kwargs):
         # send verification email for new EmailVerification models.
-        if self.pk == None:
+        if self.pk is None:
             self.send_verification_email()
         super(EmailVerification, self).save(*args, **kwargs)
 
@@ -292,7 +292,7 @@ class EmailVerification(models.Model):
     def send_verification_email(self):
         subject = "Verify Email"
         message = f"""
-            Hi there, you sign up for an account on our league site.  Please go to the following 
+            Hi there, you sign up for an account on our league site.  Please go to the following
             url to verify your account.
 
             {self.get_verification_url()}
@@ -303,18 +303,16 @@ class EmailVerification(models.Model):
         """
         html_message = f"""
             <div>
-                Hi there, you signed up for an account on our league site at 
-                {self.user.date_joined}.  Please click the link below to verify this email. 
+                Hi there, you signed up for an account on our league site at
+                {self.user.date_joined}.  Please click the link below to verify this email.
             </div>
             <br>
-            
             <div>
                 <a href='{self.get_verification_url()}' >{self.get_verification_url()}</a>
             </div>
             <br>
-
             <div>
-                If you did not sign up for an account, please ignore this email. 
+                If you did not sign up for an account, please ignore this email.
                 If you do not verify your email, your account will be deleted.
             </div>
         """
