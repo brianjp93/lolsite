@@ -22,6 +22,12 @@ class SummonerNotFound extends Component {
                             <em>* spam pings ? *</em>
                         </h3>
                         <div>That summoner couldn't be found for this region.</div>
+                        <div>
+                            There may have been an internal error, or Riot's API may be down.
+                            Please come back later and check 
+                            <a href="https://developer.riotgames.com/api-status/"> here </a>
+                            for Riot's API status.
+                        </div>
 
                         <div style={{marginTop: 50}}>
                             <SummonerSearchField store={this.props.store} />
