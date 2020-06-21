@@ -230,15 +230,25 @@ class Participant(models.Model):
         champions = [0] * max_champ
         champions[self.champion_id] = 1
 
-        vs = self.stats.vision_score
-        max_vs = (
-            self.match.participants.filter(team_id=self.team_id)
-            .order_by("-stats__vision_score")[0]
-            .stats.vision_score
-        )
-        is_max_vs = int(vs == max_vs)
+        max_vs = 1
+        max_dmg = 1
+        max_gold = 1
+        for part in self.match.participants.filter(
+            team_id=self.team_id
+        ).prefetch_related("stats"):
+            if part.stats.vision_score > max_vs:
+                max_vs = part.stats.vision_score
+            if part.stats.total_damage_dealt_to_champions > max_dmg:
+                max_dmg = part.stats.total_damage_dealt_to_champions
+            if part.stats.gold_earned > max_gold:
+                max_gold = part.stats.gold_earned
+        stat_data = [
+            self.stats.vision_score / max_vs,
+            self.stats.total_damage_dealt_to_champions / max_dmg,
+            self.stats.gold_earned / max_gold,
+        ]
 
-        data = lane + spells + champions + [is_max_vs]
+        data = lane + spells + champions + stat_data
         return data
 
 
