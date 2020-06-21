@@ -42,7 +42,7 @@ function convertVerticalScroll(event) {
     event.preventDefault()
 }
 
-const MODALSTYLE = {
+export let MODALSTYLE = {
     overlay: {
         zIndex: 2,
         backgroundColor: '#484848b0',
