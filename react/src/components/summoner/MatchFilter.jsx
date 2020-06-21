@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import Modal from 'react-responsive-modal'
+import Modal from 'react-modal'
 import ReactTooltip from 'react-tooltip'
 import api from '../../api/api'
 import toastr from 'toastr'
+import { MODALSTYLE } from './Summoner'
 
 import queuefilter from '../../constants/queuefilter'
 
@@ -156,7 +157,7 @@ class MatchFilter extends Component {
     }
     openModal() {
         this.setState({is_modal_open: true}, () => {
-            this.summoner_filter_input.focus()
+            // this.summoner_filter_input.focus()
         })
     }
     handleKeyDown(event) {
@@ -339,20 +340,24 @@ class MatchFilter extends Component {
                 </div>
 
                 <Modal
-                    classNames={{modal: `${theme} custom-modal`}}
-                    styles={{
-                        overlay: {
-                            overflowX: 'scroll',
-                        },
-                        modal: {
-                            width: '100%',
-                        }
-                    }}
-                    open={this.state.is_modal_open}
-                    onClose={() => this.setState({is_modal_open: false})}
-                    center>
-                    <div>
-                        <div className="row">
+                    isOpen={this.state.is_modal_open}
+                    onRequestClose={() => this.setState({is_modal_open: false})}
+                    style={MODALSTYLE}
+                >
+                    <div
+                        style={{
+                            display: 'inline-block',
+                            position: 'fixed',
+                            top: 60,
+                            right: 60,
+                        }}
+                    >
+                        <button onClick={() => this.setState({is_modal_open: false})} className={`btn-floating btn-large red`}>
+                            <i className="material-icons">close</i>
+                        </button>
+                    </div>
+                    <div style={{width: '100%'}}>
+                        <div className="row" style={{marginTop: 40}}>
                             <div className="col s12">
                                 <ReactTooltip
                                     id={`summoner-filter-tooltip`}
