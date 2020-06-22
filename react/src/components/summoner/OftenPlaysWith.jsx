@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useState } from 'react'
 import api from '../../api/api'
 import { useEffect } from 'react'
@@ -6,20 +6,20 @@ import { useEffect } from 'react'
 import numeral from 'numeral'
 
 export function OftenPlaysWith(props) {
-    const [queue_id, setQueueId] = useState(null)
-    const [season_id, setSeasonId] = useState(null)
-    const [recent, setRecent] = useState(null)
-    const [recent_days, setRecentDays] = useState(90)
-    const [start, setStart] = useState(0)
-    const [end, setEnd] = useState(10)
     const [players, setPlayers] = useState([])
     const [player_names, setPlayerNames] = useState([])
 
+    const queue_id = null
+    const season_id = null
+    const recent = null
+    const recent_days = 90
+    const start = 0
+    const end = 10
+
     const summoner_id = props.summoner_id
-    const store = props.store
     const region = props.region
 
-    function getTopPlayedWith() {
+    const getTopPlayedWith = useCallback(() => {
         let data = {
             queue_id,
             season_id,
@@ -30,48 +30,41 @@ export function OftenPlaysWith(props) {
             summoner_id,
             group_by: 'account_id',
         }
-        api.player.getTopPlayedWith(data)
-            .then(response => {
-                setPlayers(response.data.data)
-            })
-            .catch(error => {
-                console.log('Error while retrieving players.')
-            })
-    }
-
-    function getPlayerNames() {
-        let data = {
-            account_ids: players.map(item => item.account_id),
-            region: region,
-        }
-        api.player.getSummoners(data)
-            .then(response => {
-                let modified = {}
-                for (let summoner of response.data.data) {
-                    modified[summoner.account_id] = summoner
-                }
-                let new_players = []
-                for (let summoner of players) {
-                    if (modified[summoner.account_id]) {
-                        summoner.name = modified[summoner.account_id].name
-                        new_players.push(summoner)
-                    }
-                }
-                setPlayerNames(new_players)
-            })
-    }
+        return api.player.getTopPlayedWith(data)
+    }, [summoner_id])
 
     useEffect(() => {
         if (summoner_id) {
             getTopPlayedWith()
+                .then(response => {
+                    setPlayers(response.data.data)
+                })
         }
-    }, [summoner_id, queue_id, season_id, recent, start, end])
+    }, [getTopPlayedWith, summoner_id])
 
     useEffect(() => {
         if (players.length > 0) {
-            getPlayerNames()
+            let data = {
+                account_ids: players.map(item => item.account_id),
+                region: region,
+            }
+            api.player.getSummoners(data)
+                .then(response => {
+                    let modified = {}
+                    for (let summoner of response.data.data) {
+                        modified[summoner.account_id] = summoner
+                    }
+                    let new_players = []
+                    for (let summoner of players) {
+                        if (modified[summoner.account_id]) {
+                            summoner.name = modified[summoner.account_id].name
+                            new_players.push(summoner)
+                        }
+                    }
+                    setPlayerNames(new_players)
+                })
         }
-    }, [players])
+    }, [players, region])
 
     return (
         <div>
