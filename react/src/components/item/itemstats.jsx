@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import Latex from 'react-latex'
 import Skeleton from '../general/Skeleton'
 import { AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
@@ -6,6 +6,7 @@ import Slider from 'rc-slider'
 import numeral from 'numeral'
 import { ArmorPenComparison } from './stats/armorpencomparison'
 import { EffectiveHealth } from './stats/effectivehealth'
+import { EffectiveDamage } from './stats/effectivedamage'
 
 export const axis_label = {
     fill: '#a0a2b3',
@@ -27,6 +28,12 @@ export function ItemStatPage(props) {
                 <div style={{ display: 'flex', flexWrap: 'wrap' }} className="col l10 offset-l1">
                     <ArmorMagicResistEffectiveHealthCard style={card_styles} theme={theme} />
                     <ArmorCuttingCard style={card_styles} theme={theme} />
+                    <EffectiveDamage
+                        theme={theme}
+                        style={card_styles}
+                        width={500}
+                        height={500}
+                    />
                 </div>
             </div>
         </Skeleton>
@@ -116,8 +123,6 @@ export function ArmorMagicResistEffectiveHealth(props) {
 }
 
 export function ArmorCutting(props) {
-    const [data, setData] = useState([])
-
     const lethality = props.lethality === undefined ? 30 : props.lethality
     const armor_pen = props.armor_pen === undefined ? 25 : props.armor_pen
     const level = props.level === undefined ? 11 : props.level
@@ -127,10 +132,10 @@ export function ArmorCutting(props) {
     const height = props.height
     const width = props.width
 
-    const createData = useCallback(() => {
+    const data = useMemo(() => {
         let new_data = []
         let lethCut = lethality * (0.6 + (0.4 * level) / 18)
-        for (let x = 0; x < 301; x += 4) {
+        for (let x = 0; x < 300; x += 20) {
             let elt = {
                 enemyArmor: x,
                 armorCutPen: x * armor_pen,
@@ -140,10 +145,6 @@ export function ArmorCutting(props) {
         }
         return new_data
     }, [lethality, armor_pen, level])
-
-    useEffect(() => {
-        setData(createData())
-    }, [createData])
 
     return (
         <>
