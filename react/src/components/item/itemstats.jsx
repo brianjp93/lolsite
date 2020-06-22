@@ -70,7 +70,7 @@ export function ArmorMagicResistEffectiveHealthCard(props) {
 
 export function ArmorMagicResistEffectiveHealth(props) {
     const [data, setData] = useState([])
-    const [health, setHealth] = useState(1000)
+    const health = 1000
 
     const height = props.height
     const width = props.width

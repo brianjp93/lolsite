@@ -89,12 +89,12 @@ function convertStatName(name) {
 export function ItemsGrid(props) {
     const [items, setItems] = useState([])
     const [sortedItems, setSortedItems] = useState([])
-    const [map_id, setMapId] = useState(11)
     const [order_by, setOrderBy] = useState('-gold')
     const [search, setSearch] = useState('')
-    const [is_purchasable, setIsPurchasable] = useState(false)
     const [has_stats, setHasStats] = useState(new Set())
     const [is_requesting_items, setIsRequesingItems] = useState(false)
+
+    const map_id = 11
 
     const theme = props.store.state.theme
 
