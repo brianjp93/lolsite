@@ -14,11 +14,11 @@ export function EffectiveHealth(props) {
     const [with_cinder_hulk, setWithCinderHulk] = useState(false)
 
     const height = props.height === undefined ? 200 : props.height
-    const width = props.width === undefined ? 200 : props.width
+    const width = props.width === undefined ? 500 : props.width
 
     const getItems = useCallback(() => {
         let temp = {
-            item_list: [3075, 3143, 3742, 3068, 3800, 3109, 3001, 3065, 3194, 3211],
+            item_list: [3075, 3143, 3742, 3068, 3800, 3109, 3001, 3065, 3194, 3211, 3022, 3083],
         }
         return api.data.getItem(temp)
     }, [])
@@ -31,7 +31,13 @@ export function EffectiveHealth(props) {
                 if (is_item_visible[item.name]) {
                     let armor = item.stats.FlatArmorMod
                     let mr = item.stats.FlatSpellBlockMod
-                    let defense = armor === undefined ? mr : armor
+                    let defense = 0
+                    if (armor !== undefined) {
+                        defense = armor
+                    }
+                    else if (mr !== undefined) {
+                        defense = mr
+                    }
                     elt[item.name] =
                         1 /
                         computeGoldPerEffectiveHealth(
