@@ -2,7 +2,7 @@
 [![CircleCI](https://circleci.com/gh/brianjp93/lolsite.svg?style=svg&circle-token=3e958dc79cdd1106457fbc9f5f4015662c447e95)](https://circleci.com/gh/brianjp93/lolsite)
 
 ### Some Docs
-* [Installation](/docs/installation.md)
+* [Installation for Local Development](/docs/installation.md)
 * [Deployment](/docs/deployment.md)
 * [Using an SVM to predict role assignment](/docs/svm.md)
 * [Ranking players by their impact](/docs/impact-scores.md)
