@@ -17,6 +17,7 @@ gitbuild
 .vim/
 .env
 settings.ini
+vim-markdown-preview.html
 
 # backup files made by vim
 **/*~
