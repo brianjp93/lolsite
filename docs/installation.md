@@ -3,7 +3,7 @@
 > Instructions for running the django project locally.
 
 1. Download [Postgres](https://www.postgresql.org/).
-2. Create a Database in PGAdmin4
+2. Create a Database for django to access
 3. Add credentials to your environment variables or a `.env` file in the project root
     - LOLSITE\_NAME
     - LOLSITE\_USER
