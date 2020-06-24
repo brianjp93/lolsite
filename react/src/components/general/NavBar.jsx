@@ -375,6 +375,11 @@ class NavBar extends Component {
                                     Stats
                                 </Link>
                             </div>
+                            <div style={{display: 'inline-block', marginLeft: 15}}>
+                                <Link to='/champion/'>
+                                    Champion
+                                </Link>
+                            </div>
                             {this.isLoggedIn() &&
                                 <span
                                     style={{display: 'inline-block', marginRight: 15, position: 'relative'}}

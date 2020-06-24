@@ -7,9 +7,9 @@ from .models import Champion
 from match.models import Match, Item
 
 from .serializers import ProfileIconSerializer, ItemSerializer
-from .serializers import ItemGoldSerializer, ItemStatSerializer
+from .serializers import ItemGoldSerializer
 from .serializers import ReforgedRuneSerializer, ChampionSerializer
-from .serializers import ChampionSpellSerializer, ItemMapSerializer
+from .serializers import ChampionSpellSerializer, ChampionStatsSerializer
 
 from django.core.cache import cache
 
@@ -289,6 +289,8 @@ def get_champions(request, format=None):
     ---------------
     champions : list
         All champions will be serialized if not provided.
+    version : str
+        get extra data - stats
     fields : list
         A list of fields you want returned in the serialized
         champion data.
@@ -301,23 +303,36 @@ def get_champions(request, format=None):
     """
     data = {}
     status_code = 200
+    cache_seconds = 60 * 120
 
     if request.method == "POST":
         champions = request.data.get("champions", [])
         fields = request.data.get("fields", None)
         order_by = request.data.get("order_by", None)
+        version = request.data.get("version", None)
+        if not version:
+            top = Champion.objects.all().order_by("-major", "-minor", "-patch").first()
+            version = top.version
 
-        top = Champion.objects.all().order_by("-major", "-minor", "-patch").first()
-        version = top.version
+        cache_key = None
+        if len(champions) == 0:
+            cache_key = f"{version}/{order_by}/{fields}"
+        cache_data = cache.get(cache_key)
 
-        query = Champion.objects.filter(version=version)
-        if champions:
-            query = query.filter(key__in=champions)
+        # CACHING
+        if cache_key and cache_data:
+            data = cache_data
+        else:
+            query = Champion.objects.filter(version=version)
+            if champions:
+                query = query.filter(key__in=champions)
 
-        if order_by:
-            query = query.order_by(order_by)
-        champion_data = ChampionSerializer(query, many=True, fields=fields).data
-        data = {"data": champion_data}
+            if order_by:
+                query = query.order_by(order_by)
+            champion_data = ChampionSerializer(query, many=True, fields=fields).data
+            data = {"data": champion_data}
+            if len(champion_data) > 0:
+                cache.set(cache_key, data, cache_seconds)
     else:
         data = {"message": "Must use POST."}
 
