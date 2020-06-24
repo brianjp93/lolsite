@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import ProfileIcon, Item, ItemGold, ItemStat
 from .models import ReforgedRune, Champion, ChampionSpell
-from .models import ItemMap
+from .models import ItemMap, ChampionStats, ChampionSpellVar
 
 
 class DynamicSerializer(serializers.ModelSerializer):
@@ -64,17 +64,33 @@ class ReforgedRuneSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ChampionSerializer(DynamicSerializer):
-    image_url = serializers.CharField()
-
+class ChampionStatsSerializer(DynamicSerializer):
     class Meta:
-        model = Champion
+        model = ChampionStats
+        fields = "__all__"
+
+
+class ChampionSpellVarSerializer(DynamicSerializer):
+    class Meta:
+        model = ChampionSpellVar
         fields = "__all__"
 
 
 class ChampionSpellSerializer(DynamicSerializer):
     image_url = serializers.CharField()
+    get_effect = serializers.ListField()
+    vars = ChampionSpellVarSerializer(many=True)
 
     class Meta:
         model = ChampionSpell
+        fields = "__all__"
+
+
+class ChampionSerializer(DynamicSerializer):
+    image_url = serializers.CharField()
+    stats = ChampionStatsSerializer()
+    spells = ChampionSpellSerializer(many=True)
+
+    class Meta:
+        model = Champion
         fields = "__all__"

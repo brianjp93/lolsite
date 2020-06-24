@@ -14,6 +14,7 @@ import SetRoles from './components/summoner/SetRoles'
 import { ItemChangesPage } from './components/item/itemchanges'
 import { ItemsPage } from './components/item/items'
 import { ItemStatPage } from './components/item/itemstats'
+import { ChampionsPage } from './components/champion/champion'
 
 import api from './api/api'
 
@@ -228,6 +229,11 @@ function Routes(props) {
                     exact
                     path="/item/changes/"
                     render={rest => <ItemChangesPage route={rest} store={props.store} />}
+                />
+                <Route
+                    exact
+                    path="/champion/"
+                    render={rest => <ChampionsPage route={rest} store={props.store} />}
                 />
 
                 <Route exact path="/themes/" render={() => <Themes store={props.store} />} />
