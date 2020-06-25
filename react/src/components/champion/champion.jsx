@@ -3,7 +3,7 @@ import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
 import fuzzysearch from 'fuzzysearch'
 import LazyLoad from 'react-lazyload'
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, Tooltip } from 'recharts'
 
 export function ChampionsPage(props) {
     const theme = props.store.state.theme
@@ -28,17 +28,21 @@ export function ChampionGrid(props) {
         return api.data.getChampions(params)
     }, [])
 
-    const max_stat = useMemo(() => {
+    const [max_stat, min_stat] = useMemo(() => {
         let maxes = {}
+        let mins = {}
         for (let champ of processed_champions) {
             for (let name in champ.stats) {
                 let val = champ.stats[name]
                 if (maxes[name] === undefined || val > maxes[name]) {
                     maxes[name] = val
                 }
+                if (mins[name] === undefined || val < mins[name]) {
+                    mins[name] = val
+                }
             }
         }
-        return maxes
+        return [maxes, mins]
     }, [processed_champions])
 
     useEffect(() => {
@@ -49,7 +53,16 @@ export function ChampionGrid(props) {
 
     useEffect(() => {
         if (champions.length > 0) {
-            setProcessedChampions(champions)
+            let new_champions = champions.sort((a, b) => {
+                if (a.name.toLowerCase() < b.name.toLowerCase()) {
+                    return -1
+                }
+                if (a.name.toLowerCase() > b.name.toLowerCase()) {
+                    return 1
+                }
+                return 0
+            })
+            setProcessedChampions(new_champions)
         }
     }, [champions])
 
@@ -73,18 +86,18 @@ export function ChampionGrid(props) {
                     </div>
                 </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div>
                 {processed_champions
                     .filter(champion => fuzzysearch(search, champion.name.toLowerCase()))
                     .map(champion => {
                         return (
-                            <div key={`${champion._id}-${champion.version}`}>
-                                <ChampionCard
-                                    theme={theme}
-                                    champion={champion}
-                                    max_stat={max_stat}
-                                />
-                            </div>
+                            <ChampionCard
+                                key={`${champion._id}-${champion.version}`}
+                                theme={theme}
+                                champion={champion}
+                                max_stat={max_stat}
+                                min_stat={min_stat}
+                            />
                         )
                     })}
             </div>
@@ -128,16 +141,31 @@ export function ChampionCard(props) {
                 name: item.shortname,
                 value: champion.stats[item.key],
                 max: props.max_stat[item.key],
+                min: props.min_stat[item.key],
                 normalized_value: champion.stats[item.key] / props.max_stat[item.key],
             })
         }
         return out
-    }, [champion, stat_list, props.max_stat])
+    }, [champion, stat_list, props.max_stat, props.min_stat])
+
+    const spells = useMemo(() => {
+        if (champion.spells !== undefined) {
+            return (
+                <div>
+                    {champion.spells.map(spell => {
+                        return <div key={`${spell._id}`}>{spell.name}</div>
+                    })}
+                </div>
+            )
+        }
+        return null
+    }, [champion])
 
     return (
-        <LazyLoad offset={200} height={card_height}>
+        <LazyLoad offset={500} height={card_height}>
             <div
                 style={{
+                    // display: 'inline-block',
                     height: card_height,
                     overflowY: 'scroll',
                     overflowX: 'hidden',
@@ -165,7 +193,7 @@ export function ChampionCard(props) {
                                     height: 50,
                                     borderRadius: 8,
                                     position: 'absolute',
-                                    right: 0,
+                                    left: 10,
                                     top: 8,
                                 }}
                                 src={champion.image_url}
@@ -173,20 +201,25 @@ export function ChampionCard(props) {
                             />
                             <div
                                 style={{
-                                    width: '70%',
                                     display: 'inline-block',
+                                    marginLeft: 60,
                                 }}
                             >
                                 {champion.name}
                             </div>
                         </h6>
 
-                        <div style={{ margin: 'auto' }}>
+                        <div style={{ display: 'inline-block' }}>
                             <RadarChart outerRadius={60} width={330} height={220} data={data}>
                                 <PolarGrid />
                                 <PolarAngleAxis dataKey="name" />
-                                <PolarRadiusAxis angle={30} />
+                                <Tooltip
+                                    formatter={(value, name, data) => {
+                                        return [data.payload.value, data.payload.name]
+                                    }}
+                                />
                                 <Radar
+                                    isAnimationActive={false}
                                     dataKey="normalized_value"
                                     stroke="#48bd9c"
                                     fill="#48bd9c"
@@ -194,6 +227,8 @@ export function ChampionCard(props) {
                                 />
                             </RadarChart>
                         </div>
+
+                        <div style={{ display: 'inline-block' }}>{spells}</div>
                     </>
                 )}
             </div>
