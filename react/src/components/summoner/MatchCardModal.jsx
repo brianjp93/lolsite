@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Timeline } from './Timeline'
@@ -33,34 +33,23 @@ function MatchCardModal(props) {
     const team_100 = getTeam(100, participants)
     const team_200 = getTeam(200, participants)
 
-    function getMatch() {
-        let data = {
-            match_id,
-        }
-        api.match.getMatch(data).then(response => {
-            setMatch(response.data.data)
-        })
-    }
+    const getMatch = useCallback(() => {
+        let data = { match_id }
+        return api.match.getMatch(data)
+    }, [match_id])
 
-    function getParticipants() {
+    const getParticipants = useCallback(() => {
         let data = {
             match__id: match_id,
             apply_ranks: true,
         }
-        api.match.participants(data).then(response => {
-            let parts = rankParticipants(response.data.data)
-            setParticipants(parts)
-        })
-    }
+        return api.match.participants(data)
+    }, [match_id])
 
-    function getTimeline() {
-        let data = {
-            match_id,
-        }
-        api.match.timeline(data).then(response => {
-            setTimeline(response.data.data)
-        })
-    }
+    const getTimeline = useCallback(() => {
+        let data = { match_id }
+        return api.match.timeline(data)
+    }, [match_id])
 
     function showParticipants() {
         let div_style = {
@@ -244,10 +233,20 @@ function MatchCardModal(props) {
     useEffect(() => {
         if (match_id !== undefined) {
             getMatch()
+                .then(response => {
+                    setMatch(response.data.data)
+                })
             getParticipants()
+                .then(response => {
+                    let parts = rankParticipants(response.data.data)
+                    setParticipants(parts)
+                })
             getTimeline()
+                .then(response => {
+                    setTimeline(response.data.data)
+                })
         }
-    }, [match_id])
+    }, [match_id, getMatch, getParticipants, getTimeline])
 
     const mypart = getMyPart(participants, account_id)
     const header_style = {
