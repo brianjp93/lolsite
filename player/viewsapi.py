@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 
 from django.utils import timezone
 from django.core.cache import cache
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.db.models.functions import Extract
 from django.db.models import Max, Min
@@ -15,7 +15,7 @@ from lolsite.tasks import get_riot_api
 
 from player import tasks as pt
 from player import filters as player_filters
-from player.models import EmailVerification, RankPosition
+from player.models import RankPosition
 from player.models import Favorite, SummonerLink
 from player.models import decode_int_to_rank, validate_password
 
@@ -34,7 +34,6 @@ from .serializers import RankPositionSerializer
 from .serializers import FavoriteSerializer
 
 import time
-import json
 
 
 @api_view(["POST"])

@@ -307,7 +307,7 @@ def get_champions(request, format=None):
 
     if request.method == "POST":
         champions = request.data.get("champions", [])
-        fields = request.data.get("fields", None)
+        fields = request.data.get("fields", [])
         order_by = request.data.get("order_by", None)
         version = request.data.get("version", None)
         if not version:
@@ -315,9 +315,11 @@ def get_champions(request, format=None):
             version = top.version
 
         cache_key = None
+        cache_data = None
+        fields_string = ",".join(fields)
         if len(champions) == 0:
-            cache_key = f"{version}/{order_by}/{fields}"
-        cache_data = cache.get(cache_key)
+            cache_key = f"{version}/{order_by}/{fields_string}"
+            cache_data = cache.get(cache_key)
 
         # CACHING
         if cache_key and cache_data:
@@ -331,7 +333,7 @@ def get_champions(request, format=None):
                 query = query.order_by(order_by)
             champion_data = ChampionSerializer(query, many=True, fields=fields).data
             data = {"data": champion_data}
-            if len(champion_data) > 0:
+            if len(champion_data) > 0 and cache_key:
                 cache.set(cache_key, data, cache_seconds)
     else:
         data = {"message": "Must use POST."}
