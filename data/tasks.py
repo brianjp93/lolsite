@@ -818,12 +818,13 @@ def import_versions():
         rito.save()
 
 
-def compute_champion_last_change(start_patch, language="en_US"):
+def compute_champion_last_change(index=None, start_patch=None, language="en_US"):
     """Compute and save the last time a champion was changed.
     """
     rito = Rito.objects.first()
     versions = json.loads(rito.versions)
-    index = versions.index(start_patch)
+    if index is None:
+        index = versions.index(start_patch)
     versions = list(reversed(versions[:index]))
     for i, version in enumerate(versions[1:], 1):
         prev_version = versions[i - 1]
@@ -844,12 +845,13 @@ def compute_champion_last_change(start_patch, language="en_US"):
             champion.save()
 
 
-def compute_item_last_change(start_patch, language="en_US"):
+def compute_item_last_change(index=None, start_patch=None, language="en_US"):
     """Compute and save the last time a champion was changed.
     """
     rito = Rito.objects.first()
     versions = json.loads(rito.versions)
-    index = versions.index(start_patch)
+    if index is None:
+        index = versions.index(start_patch)
     versions = list(reversed(versions[:index]))
     for i, version in enumerate(versions[1:], 1):
         prev_version = versions[i - 1]
@@ -866,3 +868,26 @@ def compute_item_last_change(start_patch, language="en_US"):
             else:
                 item.last_changed = item.version
             item.save()
+
+
+@task(name="data.tasks.compute_changes")
+def compute_changes(index, language="en_US"):
+    """Compute item and champion changes over patches
+
+    Parameters
+    ----------
+    index : int
+        how many patches previous to check.
+
+    Returns
+    -------
+    None
+
+    """
+    item = Item.objects.all().order_by("-major", "-minor").first()
+    if item.last_changed is None:
+        compute_item_last_change(index=index, language=language)
+
+    champion = Champion.objects.all().order_by("-major", "-minor").first()
+    if champion.last_changed is None:
+        compute_champion_last_change(index=index, language=language)
