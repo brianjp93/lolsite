@@ -1,8 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
 import fuzzysearch from 'fuzzysearch'
 import LazyLoad from 'react-lazyload'
+import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
 
 export function ChampionsPage(props) {
     const theme = props.store.state.theme
@@ -27,6 +28,19 @@ export function ChampionGrid(props) {
         return api.data.getChampions(params)
     }, [])
 
+    const max_stat = useMemo(() => {
+        let maxes = {}
+        for (let champ of processed_champions) {
+            for (let name in champ.stats) {
+                let val = champ.stats[name]
+                if (maxes[name] === undefined || val > maxes[name]) {
+                    maxes[name] = val
+                }
+            }
+        }
+        return maxes
+    }, [processed_champions])
+
     useEffect(() => {
         getChampions().then(response => {
             setChampions(response.data.data)
@@ -43,7 +57,6 @@ export function ChampionGrid(props) {
         window.scrollTo(window.scrollX, window.scrollY - 1)
         window.scrollTo(window.scrollX, window.scrollY + 1)
     }, [search])
-
     return (
         <>
             <div className="row">
@@ -60,13 +73,17 @@ export function ChampionGrid(props) {
                     </div>
                 </div>
             </div>
-            <div className="row">
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                 {processed_champions
                     .filter(champion => fuzzysearch(search, champion.name.toLowerCase()))
                     .map(champion => {
                         return (
-                            <div key={`${champion._id}-${champion.version}`} className="col m3">
-                                <ChampionCard theme={theme} champion={champion} />
+                            <div key={`${champion._id}-${champion.version}`}>
+                                <ChampionCard
+                                    theme={theme}
+                                    champion={champion}
+                                    max_stat={max_stat}
+                                />
                             </div>
                         )
                     })}
@@ -84,17 +101,38 @@ export function ChampionCard(props) {
 
     const stat_list = [
         { key: 'attack_damage', shortname: 'AD', longname: 'Attack Damage' },
+        { key: 'attack_damage_per_level', shortname: 'AD/lvl', longname: 'Attack Damage / Level' },
         { key: 'attack_speed', shortname: 'AS', longname: 'Attack Speed' },
+        { key: 'attack_speed_per_level', shortname: 'AS/lvl', longname: 'Attack Speed / Level' },
         { key: 'attack_range', shortname: 'range', longname: 'Attack Range' },
         { key: 'hp', shortname: 'HP', longname: 'HP' },
+        { key: 'hp_per_level', shortname: 'HP/lvl', longname: 'HP / Level' },
         { key: 'hp_regen', shortname: 'HP Regen', longname: 'HP Regen' },
-        { key: 'crit', shortname: 'crit', longname: 'Crit Chance' },
+        { key: 'hp_regen_per_level', shortname: 'HP Regen/lvl', longname: 'HP Regen / Level' },
+        // { key: 'crit', shortname: 'crit', longname: 'Crit Chance' },
         { key: 'move_speed', shortname: 'MS', longname: 'Movement Speed' },
         { key: 'mp', shortname: 'Mana', longname: 'Mana' },
+        { key: 'mp_per_level', shortname: 'Mana/lvl', longname: 'Mana / Level' },
         { key: 'mp_regen', shortname: 'mana regen', longname: 'Mana Regen' },
+        { key: 'mp_regen_per_level', shortname: 'mana regen/lvl', longname: 'Mana Regen / Level' },
         { key: 'spell_block', shortname: 'MR', longname: 'Magic Resist' },
+        { key: 'spell_block_per_level', shortname: 'MR/lvl', longname: 'Magic Resist / Level' },
         { key: 'armor', shortname: 'Armor', longname: 'Armor' },
+        { key: 'armor_per_level', shortname: 'Armor/lvl', longname: 'Armor / Level' },
     ]
+
+    const data = useMemo(() => {
+        let out = []
+        for (let item of stat_list) {
+            out.push({
+                name: item.shortname,
+                value: champion.stats[item.key],
+                max: props.max_stat[item.key],
+                normalized_value: champion.stats[item.key] / props.max_stat[item.key],
+            })
+        }
+        return out
+    }, [champion, stat_list, props.max_stat])
 
     return (
         <LazyLoad offset={200} height={card_height}>
@@ -107,6 +145,9 @@ export function ChampionCard(props) {
                     paddingRight: sidepad,
                     paddingLeft: sidepad,
                     position: 'relative',
+                    minWidth: 250,
+                    marginLeft: 10,
+                    marginRight: 10,
                 }}
                 className={`quiet-scroll card-panel ${theme}`}
             >
@@ -140,18 +181,19 @@ export function ChampionCard(props) {
                             </div>
                         </h6>
 
-                        {stat_list.map((elt, key) => {
-                            return (
-                                <div key={key}>
-                                    <span> {elt.shortname} </span>
-                                    <span> : </span>
-                                    <span>{champion.stats[elt.key]}</span>
-                                    <span> + </span>
-                                    <span>{champion.stats[`${elt.key}_per_level`]}</span>
-                                    <span> per level</span>
-                                </div>
-                            )
-                        })}
+                        <div style={{ margin: 'auto' }}>
+                            <RadarChart outerRadius={60} width={330} height={220} data={data}>
+                                <PolarGrid />
+                                <PolarAngleAxis dataKey="name" />
+                                <PolarRadiusAxis angle={30} />
+                                <Radar
+                                    dataKey="normalized_value"
+                                    stroke="#48bd9c"
+                                    fill="#48bd9c"
+                                    fillOpacity={0.8}
+                                />
+                            </RadarChart>
+                        </div>
                     </>
                 )}
             </div>
