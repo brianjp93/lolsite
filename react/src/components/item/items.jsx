@@ -4,7 +4,7 @@ import api from '../../api/api'
 import fuzzysearch from 'fuzzysearch'
 import LazyLoad from 'react-lazyload'
 import numeral from 'numeral'
-import { getStatCosts } from '../../constants/general'
+import { getStatCosts, stripHtml } from '../../constants/general'
 import Orbit from '../general/spinners/orbit'
 
 export function ItemsPage(props) {
@@ -264,10 +264,6 @@ function ItemsGridDisplay(props) {
             </div>
         </div>
     )
-}
-
-function stripHtml(html) {
-    return html.replace(/<(?!br\s*\/?)[^>]+>/g, '')
 }
 
 export function processItem(item, stat_costs) {

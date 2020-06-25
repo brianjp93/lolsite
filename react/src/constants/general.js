@@ -189,3 +189,7 @@ export function getStatCosts() {
 
     return stats_costs
 }
+
+export function stripHtml(html) {
+    return html.replace(/<(?!br\s*\/?)[^>]+>/g, '')
+}
