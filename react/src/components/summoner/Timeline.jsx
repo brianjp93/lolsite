@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import {
     ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
 } from 'recharts'
@@ -124,12 +124,12 @@ function Timeline(props) {
         return null
     }
 
-    function sortTimelineEvents(timeline) {
+    const sortTimelineEvents = useCallback((timeline) => {
         for (let i=0; i<timeline.length; i++) {
             timeline[i].events = timeline[i].events.sort((a, b) => {return a.timestamp - b.timestamp})
         }
         return timeline
-    }
+    }, [])
 
     function combineTimelineCS(timeline) {
         for (let i=0; i<timeline.length; i++) {
@@ -140,7 +140,7 @@ function Timeline(props) {
         return timeline
     }
 
-    function addTeamGoldToTimeline(timeline) {
+    const addTeamGoldToTimeline = useCallback((timeline, participants) => {
         let team100 = []
         let team200 = []
         for (let part of participants) {
@@ -182,20 +182,20 @@ function Timeline(props) {
             }
         }
         return timeline
-    }
+    }, [])
 
     useEffect(() => {
-        let new_timeline = addTeamGoldToTimeline(props.timeline)
+        let new_timeline = addTeamGoldToTimeline(props.timeline, participants)
         new_timeline = sortTimelineEvents(new_timeline)
         new_timeline = combineTimelineCS(new_timeline)
         setTimeline(new_timeline)
-    }, [props.timeline])
+    }, [props.timeline, addTeamGoldToTimeline, participants, sortTimelineEvents])
 
     useEffect(() => {
         if (props.summoner !== undefined) {
             setMypart(getMyPart(participants, props.summoner.account_id))
         }
-    }, [props.summoner])
+    }, [props.summoner, participants])
 
     useEffect(() => {
         if (props.timeline_index) {
