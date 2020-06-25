@@ -4,6 +4,8 @@ import api from '../../api/api'
 import fuzzysearch from 'fuzzysearch'
 import LazyLoad from 'react-lazyload'
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, Tooltip } from 'recharts'
+import numeral from 'numeral'
+import { stripHtml } from '../../constants/general'
 
 export function ChampionsPage(props) {
     const theme = props.store.state.theme
@@ -28,9 +30,10 @@ export function ChampionGrid(props) {
         return api.data.getChampions(params)
     }, [])
 
-    const [max_stat, min_stat] = useMemo(() => {
+    const [max_stat, min_stat, avg_stat] = useMemo(() => {
         let maxes = {}
         let mins = {}
+        let avgs = {}
         for (let champ of processed_champions) {
             for (let name in champ.stats) {
                 let val = champ.stats[name]
@@ -40,9 +43,13 @@ export function ChampionGrid(props) {
                 if (mins[name] === undefined || val < mins[name]) {
                     mins[name] = val
                 }
+                if (avgs[name] === undefined) {
+                    avgs[name] = 0
+                }
+                avgs[name] = (avgs[name] + val) / 2
             }
         }
-        return [maxes, mins]
+        return [maxes, mins, avgs]
     }, [processed_champions])
 
     useEffect(() => {
@@ -97,6 +104,7 @@ export function ChampionGrid(props) {
                                 champion={champion}
                                 max_stat={max_stat}
                                 min_stat={min_stat}
+                                avg_stat={avg_stat}
                             />
                         )
                     })}
@@ -143,23 +151,67 @@ export function ChampionCard(props) {
                 max: props.max_stat[item.key],
                 min: props.min_stat[item.key],
                 normalized_value: champion.stats[item.key] / props.max_stat[item.key],
+                normalized_min: props.min_stat[item.key] / props.max_stat[item.key],
+                avg: props.avg_stat[item.key],
+                normalized_avg: props.avg_stat[item.key] / props.max_stat[item.key],
             })
         }
         return out
-    }, [champion, stat_list, props.max_stat, props.min_stat])
+    }, [champion, stat_list, props.max_stat, props.min_stat, props.avg_stat])
+
+    const ability_letters = 'qwer'
+
+    const spell_elt = useCallback((spell, letter) => {
+        return (
+            <div style={{ maxWidth: 400, marginBottom: 10 }}>
+                <img
+                    style={{
+                        height: 30,
+                        display: 'inline-block',
+                        marginRight: 8,
+                        borderRadius: 6,
+                    }}
+                    src={spell.image_url}
+                    alt=""
+                />
+                <div style={{ display: 'inline-block', verticalAlign: 'top' }}>
+                    <div
+                        style={{
+                            display: 'inline-block',
+                            padding: '0 6px',
+                            borderRadius: 5,
+                            background: '#0d6351',
+                            marginRight: 3,
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        {letter}
+                    </div>
+                    <div style={{textDecoration: 'underline', display: 'inline-block'}}>
+                        {spell.name}
+                    </div>
+                </div>
+                <br />
+                <div
+                    style={{ fontSize: 'small' }}
+                    dangerouslySetInnerHTML={{ __html: stripHtml(spell.description) }}
+                ></div>
+            </div>
+        )
+    }, [])
 
     const spells = useMemo(() => {
         if (champion.spells !== undefined) {
             return (
                 <div>
-                    {champion.spells.map(spell => {
-                        return <div key={`${spell._id}`}>{spell.name}</div>
+                    {champion.spells.reverse().map((spell, key) => {
+                        return <div key={`${spell._id}`}>{spell_elt(spell, ability_letters[key])}</div>
                     })}
                 </div>
             )
         }
         return null
-    }, [champion])
+    }, [champion, spell_elt])
 
     return (
         <LazyLoad offset={500} height={card_height}>
@@ -184,7 +236,7 @@ export function ChampionCard(props) {
                         <h6
                             style={{
                                 fontWeight: 'bold',
-                                marginBottom: 20,
+                                marginBottom: 0,
                             }}
                         >
                             <img
@@ -209,13 +261,19 @@ export function ChampionCard(props) {
                             </div>
                         </h6>
 
-                        <div style={{ display: 'inline-block' }}>
-                            <RadarChart outerRadius={60} width={330} height={220} data={data}>
+                        <div className="unselectable" style={{ display: 'inline-block' }}>
+                            <RadarChart outerRadius={75} width={370} height={220} data={data}>
                                 <PolarGrid />
                                 <PolarAngleAxis dataKey="name" />
                                 <Tooltip
                                     formatter={(value, name, data) => {
-                                        return [data.payload.value, data.payload.name]
+                                        let new_name = data.payload.name
+                                        let new_val = data.payload.value
+                                        if (name === 'normalized_avg') {
+                                            new_name = `avg ${new_name}`
+                                            new_val = numeral(data.payload.avg).format('0,0.0')
+                                        }
+                                        return [new_val, new_name]
                                     }}
                                 />
                                 <Radar
@@ -225,10 +283,20 @@ export function ChampionCard(props) {
                                     fill="#48bd9c"
                                     fillOpacity={0.8}
                                 />
+                                <Radar
+                                    isAnimationActive={false}
+                                    dataKey="normalized_avg"
+                                    stroke="grey"
+                                    strokeOpacity={0.4}
+                                    fill="grey"
+                                    fillOpacity={0.4}
+                                />
                             </RadarChart>
                         </div>
 
-                        <div style={{ display: 'inline-block' }}>{spells}</div>
+                        <div style={{ display: 'inline-block', verticalAlign: 'top' }}>
+                            {spells}
+                        </div>
                     </>
                 )}
             </div>
