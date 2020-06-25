@@ -14,6 +14,7 @@ def home(request, path=""):
     """Return basic home address and let react render the rest.
     """
     dt.import_missing.delay()
+    dt.compute_changes.delay(5)
     user = request.user
     data = get_base_react_context(request, user=user)
     return TemplateResponse(request, "layout/home.html", data)
