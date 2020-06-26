@@ -9,7 +9,7 @@ from match.models import Match, Item
 from .serializers import ProfileIconSerializer, ItemSerializer
 from .serializers import ItemGoldSerializer
 from .serializers import ReforgedRuneSerializer, ChampionSerializer
-from .serializers import ChampionSpellSerializer, ChampionStatsSerializer
+from .serializers import ChampionSpellSerializer
 
 from django.core.cache import cache
 
@@ -163,7 +163,7 @@ def all_items(request, format=None):
     data = {}
     status_code = 200
     # 120 minute cache
-    cache_seconds = 60 * 120
+    cache_seconds = 60 * 60 * 10
 
     major = request.data.get("major", None)
     minor = request.data.get("minor", None)
@@ -303,7 +303,7 @@ def get_champions(request, format=None):
     """
     data = {}
     status_code = 200
-    cache_seconds = 60 * 120
+    cache_seconds = 60 * 60 * 10
 
     if request.method == "POST":
         champions = request.data.get("champions", [])
