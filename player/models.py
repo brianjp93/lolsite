@@ -341,3 +341,21 @@ class SummonerLink(models.Model):
         # Always set modified_date on save().
         self.modified_date = timezone.now()
         super(SummonerLink, self).save(*args, **kwargs)
+
+
+class Comment(models.Model):
+    markdown = models.CharField(max_length=10000, default=None, null=True, blank=True)
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, blank=True)
+    match = models.ForeignKey(
+        "match.Match", on_delete=models.CASCADE, null=True, blank=True
+    )
+    reply_to = models.ForeignKey(
+        "Comment", on_delete=models.CASCADE, null=True, blank=True
+    )
+
+    created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
+    modified_date = models.DateTimeField(default=timezone.now, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.modified_date = timezone.now()
+        super().save(*args, **kwargs)
