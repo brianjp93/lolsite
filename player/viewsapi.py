@@ -1365,3 +1365,25 @@ def get_top_played_with(request, format=None):
     else:
         data = {"message": "Only post allowed.", "status": "INVALID_REQUEST"}
     return Response(data, status=status_code)
+
+
+def comment(request, format=None):
+    """Create, edit, delete, get comments.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    json
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == "GET":
+        pass
+    elif request.method == "POST":
+        pass
+    elif request.method == "PUT":
+        pass
