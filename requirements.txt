@@ -20,7 +20,7 @@ click==7.1.2
 colorama==0.4.3
 coverage==4.5.3
 cryptography==2.8
-Django==2.2.2
+Django==2.2.13
 django-compat==1.0.15
 django-elasticache==1.0.3
 django-elastipymemcache==1.2.1
