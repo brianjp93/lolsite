@@ -1,13 +1,10 @@
 """player/views.py
 """
 from django.shortcuts import redirect
-from django.template.response import TemplateResponse
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 
 from player.models import EmailVerification
-
-from lolsite.views import get_base_react_context
 
 
 def login_action(request):
@@ -53,6 +50,6 @@ def login_action(request):
 def logout_action(request):
     """Log user out of session.
     """
-    user = request.user
+    # user = request.user
     logout(request)
     return redirect("home")

@@ -6,7 +6,6 @@ from rest_framework.decorators import api_view
 
 from django.utils import timezone
 from django.core.cache import cache
-from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.db.models.functions import Extract
 from django.db.models import Max, Min
@@ -15,7 +14,7 @@ from lolsite.tasks import get_riot_api
 
 from player import tasks as pt
 from player import filters as player_filters
-from player.models import RankPosition
+from player.models import RankPosition, Comment
 from player.models import Favorite, SummonerLink
 from player.models import decode_int_to_rank, validate_password
 
@@ -1372,6 +1371,7 @@ def comment(request, format=None):
 
     Parameters
     ----------
+    Refer to get, delete, create_update
 
     Returns
     -------
@@ -1382,8 +1382,74 @@ def comment(request, format=None):
     status_code = 200
 
     if request.method == "GET":
-        pass
+        data, status_code = get_comment(request)
     elif request.method == "POST":
+        data, status_code = create_update_comment(request)
+    elif request.method == "DELETE":
+        data, status_code = delete_comment(request)
+    else:
+        data = {"message": "Invalid request method.", "status": "INVALID_REQUEST"}
+        status_code = 403
+    return Response(data, status=status_code)
+
+
+def get_comment(request):
+    """Get comments by ID or paginated.
+
+    Parameters
+    ----------
+    comment_id : int
+    match_id : int
+    start : int
+    end : int
+
+    Returns
+    -------
+    (dict, int)
+        data, status-code
+
+    """
+    pass
+
+
+def create_update_comment(request):
+    """Create or update comment.
+
+    Parameters
+    ----------
+    action : str
+        enum('create', 'update')
+    match_id : int
+    markdown : str
+    reply_to : int
+        USER_ID
+
+    Returns
+    -------
+    Comment JSON
+
+    """
+    pass
+
+
+def delete_comment(request):
+    """Delete comment
+
+    Parameters
+    ----------
+    comment_id : int
+
+    Returns
+    -------
+    json
+
+    """
+    data = {}
+    status_code = 200
+    comment_id = request.data["comment_id"]
+    query = Comment.objects.filter(id=comment_id, user=request.user)
+    if query.exists():
         pass
-    elif request.method == "PUT":
+    else:
         pass
+    return data, status_code
