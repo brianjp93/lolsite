@@ -345,7 +345,9 @@ class SummonerLink(models.Model):
 
 class Comment(models.Model):
     markdown = models.CharField(max_length=10000, default=None, null=True, blank=True)
-    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, blank=True)
+    summoner = models.ForeignKey(
+        "Summoner", null=True, on_delete=models.SET_NULL, blank=True
+    )
     match = models.ForeignKey(
         "match.Match", on_delete=models.CASCADE, null=True, blank=True
     )

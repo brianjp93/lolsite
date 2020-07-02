@@ -251,6 +251,14 @@ function MatchCardModal(props) {
         }
     }, [match_id, getMatch, getParticipants, getTimeline])
 
+    const getButtonStyle = (name) => {
+        let button_style = {}
+        if (view === name) {
+            button_style.backgroundColor = '#0000'
+        }
+        return button_style
+    }
+
     const mypart = getMyPart(participants, account_id)
     const header_style = {
         textAlign: 'center',
@@ -297,6 +305,21 @@ function MatchCardModal(props) {
                 <div>
                     patch {match.major}.{match.minor}
                 </div>
+            </div>
+
+            <div style={{marginBottom: 10}}>
+                <button
+                    style={getButtonStyle('stats')}
+                    onClick={() => setView('stats')}
+                    className={`${store.state.theme} btn`}>
+                    Game Stats
+                </button>
+                <button
+                    style={getButtonStyle('comments')}
+                    onClick={() => setView('comments')}
+                    className={`${store.state.theme} btn`}>
+                    Comments
+                </button>
             </div>
 
             {view === 'stats' &&

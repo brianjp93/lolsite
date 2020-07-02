@@ -1,12 +1,20 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CreateComment } from './createcomment'
 import { ViewComments } from './viewcomments'
+import api from '../../api/api'
 
 
 export function Comments(props) {
     const [view, setView] = useState('view')
+    const [summoners, setSummoners] = useState([])
     const match = props.match
     const theme = props.theme
+
+    useEffect(() => {
+        const data = {}
+        api.player.mySummoners(data)
+            .then(response => setSummoners(response.data.data))
+    }, [])
 
     return (
         <div>
@@ -18,6 +26,8 @@ export function Comments(props) {
                         New Comment
                     </button>
                     <ViewComments
+                        summoners={summoners}
+                        theme={theme}
                         match={match}
                         setView={setView}
                     />
@@ -25,7 +35,11 @@ export function Comments(props) {
             }
             {view === 'create' &&
                 <CreateComment
+                    summoners={summoners}
+                    theme={theme}
+                    match={match}
                     setView={setView}
+                    reply_to={null}
                 />
             }
         </div>

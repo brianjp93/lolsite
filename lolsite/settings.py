@@ -137,7 +137,7 @@ EMAIL_HOST_PASSWORD = config("LOLSITE_EMAIL_HOST_PASSWORD", "")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-DEFAULT_FROM_EMAIL = "brianjp93@gmail.com"
+DEFAULT_FROM_EMAIL = "brian@hardstuck.club"
 
 
 def before_breadcrumb(crumb, hint):
