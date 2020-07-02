@@ -349,7 +349,11 @@ class Comment(models.Model):
         "Summoner", null=True, on_delete=models.SET_NULL, blank=True
     )
     match = models.ForeignKey(
-        "match.Match", on_delete=models.CASCADE, null=True, blank=True
+        "match.Match",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="comments",
     )
     reply_to = models.ForeignKey(
         "Comment",

@@ -1535,7 +1535,11 @@ def create_update_comment(request, action):
             comment = Comment(match=match, summoner=summoner)
         elif reply_to:
             reply_to_comment = Comment.objects.get(id=reply_to)
-            comment = Comment(reply_to=reply_to_comment, summoner=summoner)
+            comment = Comment(
+                reply_to=reply_to_comment,
+                summoner=summoner,
+                match=reply_to_comment.match,
+            )
     elif action == "update":
         query = Comment.objects.get(comment_id, summoner__user=request.user)
         if query.exists():
