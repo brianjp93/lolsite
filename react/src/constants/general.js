@@ -193,3 +193,9 @@ export function getStatCosts() {
 export function stripHtml(html) {
     return html.replace(/<(?!br\s*\/?)[^>]+>/g, '')
 }
+
+export function stripHtmlFull(html) {
+    let elt = document.createElement('div')
+    elt.innerHTML = html
+    return elt.textContent
+}

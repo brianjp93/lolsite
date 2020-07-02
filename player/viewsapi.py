@@ -31,6 +31,7 @@ from .models import Summoner
 from .serializers import SummonerSerializer
 from .serializers import RankPositionSerializer
 from .serializers import FavoriteSerializer
+from .serializers import CommentSerializer
 
 import time
 
@@ -73,6 +74,25 @@ def get_summoner(request, format=None):
         else:
             data["error"] = "No summoner found"
             status_code = 400
+    return Response(data, status=status_code)
+
+
+@api_view(["GET"])
+def get_my_summoners(request, format=None):
+    """
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    list(Summoner)
+
+    """
+    status_code = 200
+    summoners = request.user.summoners.all()
+    data = {"data": SummonerSerializer(summoners, many=True).data}
     return Response(data, status=status_code)
 
 
@@ -1464,19 +1484,18 @@ def recursively_serialize_comment(comment, nest=0, depth=10, order_by="-created_
 
     """
     if nest < 0:
-        return []
+        out = {}
     else:
-        out = []
+        out = CommentSerializer(comment).data
+        out["replies"] = []
         query = comment.replies.all().order_by(order_by)
         count = query.count()
         query = query[0:depth]
-        for comment in query:
-            data = CommentSerializer(comment).data
-            data["replies"] = recursively_serialize_comment(
-                comment, nest - 1, depth, order_by
+        for reply in query:
+            out["replies"].append(
+                recursively_serialize_comment(comment, nest - 1, depth, order_by)
             )
-            out.append(data)
-        return data
+    return out
 
 
 def create_update_comment(request, action):
@@ -1490,6 +1509,8 @@ def create_update_comment(request, action):
     request Parameters
     ------------------
     match_id : int
+    summoner_id : int
+    comment_id : int
     markdown : str
     reply_to : int
         USER_ID
@@ -1499,7 +1520,38 @@ def create_update_comment(request, action):
     Comment JSON
 
     """
-    pass
+    data = {}
+    status_code = 200
+    match_id = request.data.get("match_id")
+    reply_to = request.data.get("reply_to")
+    summoner_id = request.data.get("summoner_id")
+    comment_id = request.data.get("comment_id")
+    markdown = request.data["markdown"]
+    comment = None
+    if action == "create":
+        summoner = Summoner.objects.get(id=summoner_id)
+        if match_id:
+            match = Match.objects.get(id=match_id)
+            comment = Comment(match=match, summoner=summoner)
+        elif reply_to:
+            reply_to_comment = Comment.objects.get(id=reply_to)
+            comment = Comment(reply_to=reply_to_comment, summoner=summoner)
+    elif action == "update":
+        query = Comment.objects.get(comment_id, summoner__user=request.user)
+        if query.exists():
+            comment = query.first()
+    else:
+        # invalid action
+        pass
+    if comment is not None:
+        # edit comment as needed
+        comment.markdown = markdown
+        comment.save()
+        data = {"data": recursively_serialize_comment(comment, nest=1, depth=2)}
+    else:
+        # could not find comment
+        pass
+    return data, status_code
 
 
 def delete_comment(request):

@@ -4,7 +4,7 @@ import api from '../../api/api'
 export function ViewComments(props) {
     const [comments, setComments] = useState([])
     const [page, setPage] = useState(1)
-    const [limit, setLimit] = useState(10)
+    const limit = 10
     const setView = props.setView
     const match = props.match
 
