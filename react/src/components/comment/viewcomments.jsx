@@ -60,7 +60,9 @@ export function Comment(props) {
                     <div style={{ marginBottom: 8 }}>
                         {comment.summoner.name} - {formatDatetime(comment.created_date)}
                     </div>
-                        <div dangerouslySetInnerHTML={{__html: mdParser.render(comment.markdown)}}></div>
+                    <div
+                        dangerouslySetInnerHTML={{ __html: mdParser.render(comment.markdown) }}
+                    ></div>
                 </div>
             )}
         </div>
