@@ -19,6 +19,7 @@ urlpatterns = [
     path("get-connected-accounts/", player_views.get_connected_accounts),
     path("change-password/", player_views.change_password),
     path("get-top-played-with/", player_views.get_top_played_with),
+    path("comment/", player_views.comment),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

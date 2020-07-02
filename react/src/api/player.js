@@ -96,6 +96,11 @@ function getTopPlayedWith(data) {
     return axios.post(url, data)
 }
 
+function getComments(data) {
+    let url = `/api/${version}/player/comment/`
+    return axios.get(url, {params: data})
+}
+
 export default {
     getSummoner,
     getSummoners,
@@ -115,4 +120,5 @@ export default {
     getConnectedAccounts,
     changePassword,
     getTopPlayedWith,
+    getComments,
 }

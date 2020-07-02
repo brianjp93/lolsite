@@ -5,7 +5,7 @@ from rest_framework import serializers
 from data.serializers import DynamicSerializer
 from .models import Summoner
 from .models import RankPosition, Custom
-from .models import Favorite
+from .models import Favorite, Comment
 
 
 class SummonerSerializer(DynamicSerializer):
@@ -32,4 +32,10 @@ class FavoriteSerializer(DynamicSerializer):
 
     class Meta:
         model = Favorite
+        fields = "__all__"
+
+
+class CommentSerializer(DynamicSerializer):
+    class Meta:
+        model = Comment
         fields = "__all__"

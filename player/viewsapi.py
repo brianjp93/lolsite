@@ -1366,6 +1366,7 @@ def get_top_played_with(request, format=None):
     return Response(data, status=status_code)
 
 
+@api_view(["GET", "POST", "PUT", "DELETE"])
 def comment(request, format=None):
     """Create, edit, delete, get comments.
 
@@ -1384,7 +1385,9 @@ def comment(request, format=None):
     if request.method == "GET":
         data, status_code = get_comment(request)
     elif request.method == "POST":
-        data, status_code = create_update_comment(request)
+        data, status_code = create_update_comment(request, "create")
+    elif request.method == "PUT":
+        data, status_code = create_update_comment(request, "update")
     elif request.method == "DELETE":
         data, status_code = delete_comment(request)
     else:
@@ -1399,9 +1402,16 @@ def get_comment(request):
     Parameters
     ----------
     comment_id : int
+        only supply if you want the replies to a comment
     match_id : int
     start : int
     end : int
+    nest : int
+        reply nest level
+    depth : int
+        comments per nest - every comment can have <depth> replies
+    order_by : str
+        enum('likes', 'created_date')
 
     Returns
     -------
@@ -1409,16 +1419,76 @@ def get_comment(request):
         data, status-code
 
     """
-    pass
+    data = {}
+    status_code = 200
+    comment_id = request.GET.get("comment_id")
+    match_id = request.GET.get("match_id")
+    start = int(request.GET.get("start", 0))
+    end = int(request.GET.get("end", 10))
+    nest = int(request.GET.get("nest", 2))
+    depth = int(request.GET.get("depth", 5))
+    order_by = request.GET.get("order_by", "-created_date")
+    query = None
+    if match_id is not None:
+        query = Comment.objects.filter(match=match_id, reply_to=None)
+    elif comment_id is not None:
+        query = Comment.objects.filter(reply_to=comment_id)
+    else:
+        # must provide match_id or comment_id
+        pass
+    if query is not None:
+        query = query.order_by(order_by)
+        count = query.count()
+        query = query[start:end]
+        comment_data = [
+            recursively_serialize_comment(comment, nest, depth, order_by)
+            for comment in query
+        ]
+        data = {"data": comment_data, "count": count}
+    return data, status_code
 
 
-def create_update_comment(request):
+def recursively_serialize_comment(comment, nest=0, depth=10, order_by="-created_date"):
+    """Serialize comments and their reples.
+
+    Parameters
+    ----------
+    comment : Comment
+    nest : int
+    depth : int
+    order_by : str
+
+    Returns
+    -------
+    list(Comment)
+
+    """
+    if nest < 0:
+        return []
+    else:
+        out = []
+        query = comment.replies.all().order_by(order_by)
+        count = query.count()
+        query = query[0:depth]
+        for comment in query:
+            data = CommentSerializer(comment).data
+            data["replies"] = recursively_serialize_comment(
+                comment, nest - 1, depth, order_by
+            )
+            out.append(data)
+        return data
+
+
+def create_update_comment(request, action):
     """Create or update comment.
 
     Parameters
     ----------
     action : str
         enum('create', 'update')
+
+    request Parameters
+    ------------------
     match_id : int
     markdown : str
     reply_to : int
