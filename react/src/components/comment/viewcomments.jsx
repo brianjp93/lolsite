@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import api from '../../api/api'
+import { mdParser } from '../../constants/mdparser'
+import { formatDatetime } from '../../constants/general'
 
 export function ViewComments(props) {
     const [comments, setComments] = useState([])
@@ -25,7 +27,7 @@ export function ViewComments(props) {
     // get and set comments when necessary
     useEffect(() => {
         if (match !== undefined && match.id !== undefined) {
-            getComments().then((response) => {
+            getComments().then(response => {
                 setComments(response.data.data)
             })
         }
@@ -33,30 +35,34 @@ export function ViewComments(props) {
 
     return (
         <div>
-            {comments.map((comment) => {
-                return (
-                    <Comment key={`${comment.id}`} comment={comment} />
-                )
+            {comments.map(comment => {
+                return <Comment key={`${comment.id}`} comment={comment} />
             })}
         </div>
     )
 }
 
-function Comment(props) {
+export function Comment(props) {
     const [comment, setComment] = useState({})
     const comment_id = props.comment_id
 
     useEffect(() => {
         if (props.comment !== undefined) {
             setComment(props.comment)
-        }
-        else if (comment_id !== undefined) {
+        } else if (comment_id !== undefined) {
             // get comment from api
         }
     }, [props.comment, comment_id])
     return (
         <div>
-            {comment.markdown}
+            {comment.id !== undefined && (
+                <div>
+                    <div style={{ marginBottom: 8 }}>
+                        {comment.summoner.name} - {formatDatetime(comment.created_date)}
+                    </div>
+                        <div dangerouslySetInnerHTML={{__html: mdParser.render(comment.markdown)}}></div>
+                </div>
+            )}
         </div>
     )
 }

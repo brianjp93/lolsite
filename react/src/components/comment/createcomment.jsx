@@ -1,17 +1,17 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import MdEditor from 'react-markdown-editor-lite'
 import 'react-markdown-editor-lite/lib/index.css'
 import { mdParser } from '../../constants/mdparser'
 import api from '../../api/api'
 import { stripHtmlFull } from '../../constants/general'
 import ReactTooltip from 'react-tooltip'
+import { Comment } from './viewcomments'
 
 function hasContent(markdown) {
     let plain = mdParser.render(markdown)
     plain = stripHtmlFull(plain)
     return plain.trim().length > 0
 }
-
 function isValid(markdown, summoner) {
     let new_errors = []
     if (!hasContent(markdown)) {
@@ -26,6 +26,7 @@ function isValid(markdown, summoner) {
 export function CreateComment(props) {
     const [text, setText] = useState('')
     const [summoner, setSummoner] = useState(null)
+    const [posted_comment, setPostedComment] = useState({})
     const setView = props.setView
     const match = props.match
     const theme = props.theme
@@ -35,11 +36,12 @@ export function CreateComment(props) {
             const new_errors = isValid(markdown, summoner)
             if (new_errors.length === 0) {
                 const data = {
+                    summoner_id: summoner,
                     markdown,
                     match_id,
                 }
                 api.player.createComment(data).then(response => {
-                    console.log(response)
+                    setPostedComment(response.data.data)
                 })
             }
         },
@@ -50,65 +52,90 @@ export function CreateComment(props) {
         setText(text)
     }, [])
 
+    useEffect(() => {
+        if (props.summoners && props.summoners.length > 0) {
+            if (summoner !== props.summoners[0].id) {
+                setSummoner(props.summoners[0].id)
+            }
+        }
+    }, [props.summoners, summoner])
+
     const button_disabled = { disabled: isValid(text, summoner).length > 0 }
 
     return (
-        <div>
-            <MdEditor
-                style={{ minHeight: 400, minWidth: '100%', marginBottom: 8, marginTop: 10 }}
-                value={text}
-                renderHTML={text => mdParser.render(text)}
-                onChange={handleChange}
-                placeholder="a comment on the match..."
-                type="text"
-            />
-            {props.summoners.length === 0 && (
+        <>
+            {posted_comment.id !== undefined && (
                 <div>
-                    <div className="card-panel red darken-3">
-                        Connect a league summoner to your account before posting.
+                    <Comment comment={posted_comment} />
+                    <div>
+                        Your comment has been posted.
                     </div>
+                    <button
+                        onClick={() => setView('view')}
+                        className={`${theme} btn`}>
+                        back to comments
+                    </button>
                 </div>
             )}
-            <div>
-                <div style={{ maxWidth: 500, display: 'inline-block' }}>
-                    <ReactTooltip id="post-as-summoner-select" effect="solid">
-                        <span>Which summoner would you like to post as?</span>
-                    </ReactTooltip>
-                    <div
-                        data-tip
-                        data-for="post-as-summoner-select"
-                        className={`input-field ${theme}`}
-                    >
-                        <select
-                            onChange={event => setSummoner(event.target.value)}
-                            value={summoner}
-                            ref={elt => {
-                                window.$(elt).formSelect()
-                            }}
-                        >
-                            {props.summoners.map((obj, key) => {
-                                return (
-                                    <option key={key} value={obj.id}>
-                                        {obj.name}
-                                    </option>
-                                )
-                            })}
-                        </select>
-                        <label>Post as Summoner</label>
+            {posted_comment.id === undefined && (
+                <div>
+                    <MdEditor
+                        style={{ minHeight: 400, minWidth: '100%', marginBottom: 8, marginTop: 10 }}
+                        value={text}
+                        renderHTML={text => mdParser.render(text)}
+                        onChange={handleChange}
+                        placeholder="a comment on the match..."
+                        type="text"
+                    />
+                    {props.summoners.length === 0 && (
+                        <div>
+                            <div className="card-panel red darken-3">
+                                Connect a league summoner to your account before posting.
+                            </div>
+                        </div>
+                    )}
+                    <div>
+                        <div style={{ maxWidth: 500, display: 'inline-block' }}>
+                            <ReactTooltip id="post-as-summoner-select" effect="solid">
+                                <span>Which summoner would you like to post as?</span>
+                            </ReactTooltip>
+                            <div
+                                data-tip
+                                data-for="post-as-summoner-select"
+                                className={`input-field ${theme}`}
+                            >
+                                <select
+                                    onChange={event => setSummoner(event.target.value)}
+                                    value={summoner}
+                                    ref={elt => {
+                                        window.$(elt).formSelect()
+                                    }}
+                                >
+                                    {props.summoners.map((obj, key) => {
+                                        return (
+                                            <option key={key} value={obj.id}>
+                                                {obj.name}
+                                            </option>
+                                        )
+                                    })}
+                                </select>
+                                <label>Post as Summoner</label>
+                            </div>
+                        </div>
                     </div>
+                    <button
+                        {...button_disabled}
+                        style={{ marginRight: 3 }}
+                        onClick={() => createComment(match.id, text)}
+                        className={`${theme} btn-small`}
+                    >
+                        Post Comment
+                    </button>
+                    <button onClick={() => setView('view')} className={`${theme} btn-small`}>
+                        Discard Comment
+                    </button>
                 </div>
-            </div>
-            <button
-                {...button_disabled}
-                style={{ marginRight: 3 }}
-                onClick={() => createComment(match.id, text)}
-                className={`${theme} btn-small`}
-            >
-                Post Comment
-            </button>
-            <button onClick={() => setView('view')} className={`${theme} btn-small`}>
-                Discard Comment
-            </button>
-        </div>
+            )}
+        </>
     )
 }
