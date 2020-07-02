@@ -36,6 +36,8 @@ class FavoriteSerializer(DynamicSerializer):
 
 
 class CommentSerializer(DynamicSerializer):
+    summoner = SummonerSerializer()
+
     class Meta:
         model = Comment
         fields = "__all__"
