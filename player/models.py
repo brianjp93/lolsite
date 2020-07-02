@@ -350,8 +350,14 @@ class Comment(models.Model):
         "match.Match", on_delete=models.CASCADE, null=True, blank=True
     )
     reply_to = models.ForeignKey(
-        "Comment", on_delete=models.CASCADE, null=True, blank=True
+        "Comment",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="replies",
     )
+    likes = models.IntegerField(default=0, db_index=True, blank=True)
+    liked_by = models.ManyToManyField(User, related_name="liked_comments")
 
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
     modified_date = models.DateTimeField(default=timezone.now, blank=True)

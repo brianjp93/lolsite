@@ -19,6 +19,7 @@ import {
     convertRank,
 } from '../../constants/general'
 import { rankParticipants } from './rankparticipants'
+import { Comments } from '../comment/comments'
 
 function MatchCardModal(props) {
     let store = props.store
@@ -29,6 +30,8 @@ function MatchCardModal(props) {
     const [participants, setParticipants] = useState([])
     const [timeline, setTimeline] = useState([])
     const [timeline_index, setTimelineIndex] = useState(null)
+    // stats, comments
+    const [view, setView] = useState('comments')
 
     const team_100 = getTeam(100, participants)
     const team_200 = getTeam(200, participants)
@@ -258,7 +261,7 @@ function MatchCardModal(props) {
         verticalAlign: 'top',
     }
     return (
-        <div style={{ marginBottom: 300 }}>
+        <div style={{ marginBottom: 300, minWidth: '100%'}}>
             <div
                 style={{
                     display: 'inline-block',
@@ -296,95 +299,103 @@ function MatchCardModal(props) {
                 </div>
             </div>
 
-            <div>{showParticipants()}</div>
+            {view === 'stats' &&
+                <div>
+                    <div>{showParticipants()}</div>
+                    <div style={{ marginTop: 20 }}>
+                        {isDataAcquired() && (
+                            <React.Fragment>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    {[1, 2, 11].indexOf(match.map_id) >= 0 && (
+                                        <div style={comp_style}>
+                                            <h5 style={header_style}>Game Events</h5>
+                                            <MapEvents
+                                                summoner={props.summoner}
+                                                match={match}
+                                                participants={participants}
+                                                timeline={timeline}
+                                                setOuterTimelineIndex={setTimelineIndex}
+                                                store={props.store}
+                                                route={props.route}
+                                            />
+                                        </div>
+                                    )}
+                                    <div style={comp_style}>
+                                        <h5 style={header_style}>Game Timeline</h5>
+                                        <Timeline
+                                            summoner={props.summoner}
+                                            match={match}
+                                            participants={participants}
+                                            timeline_index={timeline_index}
+                                            timeline={timeline}
+                                            store={props.store}
+                                            route={props.route}
+                                        />
+                                    </div>
+                                    <div style={comp_style}>
+                                        <div style={{ marginLeft: 30, marginRight: 8 }}>
+                                            <h5 style={header_style}>Champion Timelines</h5>
+                                            <ChampionTimelines
+                                                theme={store.state.theme}
+                                                my_part={mypart}
+                                                summoner={props.summoner}
+                                                participants={participants}
+                                                timeline={timeline}
+                                                expanded_width={500}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div style={comp_style}>
+                                        <h5 style={header_style}>Champion Stats</h5>
+                                        <StatOverview
+                                            participants={participants}
+                                            match={match}
+                                            store={props.store}
+                                            pageStore={props.pageStore}
+                                            mypart={mypart}
+                                            is_expanded={true}
+                                        />
+                                    </div>
+                                    <div style={{ ...comp_style, alignSelf: 'baseline' }}>
+                                        <h5 style={header_style}>Build Order</h5>
+                                        <BuildOrder
+                                            theme={store.state.theme}
+                                            timeline={timeline}
+                                            expanded_width={500}
+                                            participants={participants}
+                                            summoner={props.summoner}
+                                            my_part={mypart}
+                                            match_id={match._id}
+                                        />
+                                    </div>
+                                    <div style={{ ...comp_style, alignSelf: 'baseline' }}>
+                                        <h5 style={header_style}>Runes</h5>
+                                        <RunePage
+                                            mypart={mypart}
+                                            participants={participants}
+                                            match={match}
+                                            store={props.store}
+                                            pageStore={props.pageStore}
+                                        />
+                                    </div>
+                                </div>
+                            </React.Fragment>
+                        )}
+                    </div>
+                </div>
+            }
 
-            <div style={{ marginTop: 20 }}>
-                {isDataAcquired() && (
-                    <React.Fragment>
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                flexWrap: 'wrap',
-                                justifyContent: 'center',
-                            }}
-                        >
-                            {[1, 2, 11].indexOf(match.map_id) >= 0 && (
-                                <div style={comp_style}>
-                                    <h5 style={header_style}>Game Events</h5>
-                                    <MapEvents
-                                        summoner={props.summoner}
-                                        match={match}
-                                        participants={participants}
-                                        timeline={timeline}
-                                        setOuterTimelineIndex={setTimelineIndex}
-                                        store={props.store}
-                                        route={props.route}
-                                    />
-                                </div>
-                            )}
-                            <div style={comp_style}>
-                                <h5 style={header_style}>Game Timeline</h5>
-                                <Timeline
-                                    summoner={props.summoner}
-                                    match={match}
-                                    participants={participants}
-                                    timeline_index={timeline_index}
-                                    timeline={timeline}
-                                    store={props.store}
-                                    route={props.route}
-                                />
-                            </div>
-                            <div style={comp_style}>
-                                <div style={{ marginLeft: 30, marginRight: 8 }}>
-                                    <h5 style={header_style}>Champion Timelines</h5>
-                                    <ChampionTimelines
-                                        theme={store.state.theme}
-                                        my_part={mypart}
-                                        summoner={props.summoner}
-                                        participants={participants}
-                                        timeline={timeline}
-                                        expanded_width={500}
-                                    />
-                                </div>
-                            </div>
-                            <div style={comp_style}>
-                                <h5 style={header_style}>Champion Stats</h5>
-                                <StatOverview
-                                    participants={participants}
-                                    match={match}
-                                    store={props.store}
-                                    pageStore={props.pageStore}
-                                    mypart={mypart}
-                                    is_expanded={true}
-                                />
-                            </div>
-                            <div style={{ ...comp_style, alignSelf: 'baseline' }}>
-                                <h5 style={header_style}>Build Order</h5>
-                                <BuildOrder
-                                    theme={store.state.theme}
-                                    timeline={timeline}
-                                    expanded_width={500}
-                                    participants={participants}
-                                    summoner={props.summoner}
-                                    my_part={mypart}
-                                    match_id={match._id}
-                                />
-                            </div>
-                            <div style={{ ...comp_style, alignSelf: 'baseline' }}>
-                                <h5 style={header_style}>Runes</h5>
-                                <RunePage
-                                    mypart={mypart}
-                                    participants={participants}
-                                    match={match}
-                                    store={props.store}
-                                    pageStore={props.pageStore}
-                                />
-                            </div>
-                        </div>
-                    </React.Fragment>
-                )}
-            </div>
+            {view === 'comments' &&
+                <Comments theme={store.state.theme} match={match} />
+            }
+
         </div>
     )
 }
