@@ -137,6 +137,9 @@ class Match(models.Model):
                 output = ""
         return output.title()
 
+    def get_comment_count(self):
+        return self.comments.all().count()
+
 
 class Participant(models.Model):
     match = models.ForeignKey(

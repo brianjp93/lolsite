@@ -31,7 +31,7 @@ function MatchCardModal(props) {
     const [timeline, setTimeline] = useState([])
     const [timeline_index, setTimelineIndex] = useState(null)
     // stats, comments
-    const [view, setView] = useState('comments')
+    const [view, setView] = useState('stats')
 
     const team_100 = getTeam(100, participants)
     const team_200 = getTeam(200, participants)
