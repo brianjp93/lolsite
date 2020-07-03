@@ -1,10 +1,9 @@
-import axios from 'axios';
+import axios from 'axios'
 
-var version = 'v1';
+var version = 'v1'
 
-axios.defaults.xsrfHeaderName = "X-CSRFToken";
-axios.defaults.xsrfCookieName = "csrftoken";
-
+axios.defaults.xsrfHeaderName = 'X-CSRFToken'
+axios.defaults.xsrfCookieName = 'csrftoken'
 
 function getSummoner(data) {
     let url = `/api/${version}/player/summoner/`
@@ -103,12 +102,22 @@ function getTopPlayedWith(data) {
 
 function getComments(data) {
     let url = `/api/${version}/player/comment/`
-    return axios.get(url, {params: data})
+    return axios.get(url, { params: data })
 }
 
 function createComment(data) {
     let url = `/api/${version}/player/comment/`
     return axios.post(url, data)
+}
+
+function likeComment(data) {
+    let url = `/api/${version}/player/comment/like/`
+    return axios.put(url, data)
+}
+
+function dislikeComment(data) {
+    let url = `/api/${version}/player/comment/dislike/`
+    return axios.put(url, data)
 }
 
 export default {
@@ -132,5 +141,7 @@ export default {
     changePassword,
     getTopPlayedWith,
     getComments,
-    createComment
+    createComment,
+    likeComment,
+    dislikeComment,
 }

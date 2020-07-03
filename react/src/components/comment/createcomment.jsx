@@ -30,22 +30,26 @@ export function CreateComment(props) {
     const setView = props.setView
     const match = props.match
     const theme = props.theme
+    const reply_to = props.reply_to
 
     const createComment = useCallback(
         (match_id, markdown) => {
             const new_errors = isValid(markdown, summoner)
             if (new_errors.length === 0) {
-                const data = {
+                let data = {
                     summoner_id: summoner,
                     markdown,
                     match_id,
+                }
+                if (reply_to.id !== undefined) {
+                    data.reply_to = reply_to.id
                 }
                 api.player.createComment(data).then(response => {
                     setPostedComment(response.data.data)
                 })
             }
         },
-        [summoner],
+        [summoner, reply_to],
     )
 
     const handleChange = useCallback(({ html, text }) => {
@@ -66,19 +70,25 @@ export function CreateComment(props) {
         <>
             {posted_comment.id !== undefined && (
                 <div>
-                    <Comment comment={posted_comment} />
-                    <div>
-                        Your comment has been posted.
-                    </div>
-                    <button
-                        onClick={() => setView('view')}
-                        className={`${theme} btn`}>
+                    <Comment comment={posted_comment} theme={props.theme} hide_action_bar={true} />
+                    <div>Your comment has been posted.</div>
+                    <button onClick={() => setView('view')} className={`${theme} btn`}>
                         back to comments
                     </button>
                 </div>
             )}
             {posted_comment.id === undefined && (
                 <div>
+                    {reply_to.id !== undefined && (
+                        <div style={{ marginBottom: 10 }}>
+                            <Comment
+                                comment={reply_to}
+                                setView={props.setView}
+                                theme={props.theme}
+                                hide_action_bar={true}
+                            />
+                        </div>
+                    )}
                     <MdEditor
                         style={{ minHeight: 400, minWidth: '100%', marginBottom: 8, marginTop: 10 }}
                         value={text}

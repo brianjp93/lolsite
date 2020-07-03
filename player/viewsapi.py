@@ -1461,14 +1461,18 @@ def get_comment(request):
         count = query.count()
         query = query[start:end]
         comment_data = [
-            recursively_serialize_comment(comment, nest, depth, order_by)
+            recursively_serialize_comment(
+                comment, nest, depth, order_by, user=request.user
+            )
             for comment in query
         ]
         data = {"data": comment_data, "count": count}
     return data, status_code
 
 
-def recursively_serialize_comment(comment, nest=0, depth=10, order_by="-created_date"):
+def recursively_serialize_comment(
+    comment, nest=0, depth=10, order_by="-created_date", user=None
+):
     """Serialize comments and their reples.
 
     Parameters
@@ -1488,12 +1492,20 @@ def recursively_serialize_comment(comment, nest=0, depth=10, order_by="-created_
     else:
         out = CommentSerializer(comment).data
         out["replies"] = []
+        out["is_liked"] = False
+        out["is_disliked"] = False
+        if comment.liked_by.filter(id=user.id).exists():
+            out["is_liked"] = True
+        if comment.disliked_by.filter(id=user.id).exists():
+            out["is_disliked"] = True
         query = comment.replies.all().order_by(order_by)
         count = query.count()
         query = query[0:depth]
         for reply in query:
             out["replies"].append(
-                recursively_serialize_comment(comment, nest - 1, depth, order_by)
+                recursively_serialize_comment(
+                    comment, nest - 1, depth, order_by, user=user
+                )
             )
     return out
 
@@ -1530,16 +1542,16 @@ def create_update_comment(request, action):
     comment = None
     if action == "create":
         summoner = Summoner.objects.get(id=summoner_id)
-        if match_id:
-            match = Match.objects.get(id=match_id)
-            comment = Comment(match=match, summoner=summoner)
-        elif reply_to:
+        if reply_to:
             reply_to_comment = Comment.objects.get(id=reply_to)
             comment = Comment(
                 reply_to=reply_to_comment,
                 summoner=summoner,
                 match=reply_to_comment.match,
             )
+        elif match_id:
+            match = Match.objects.get(id=match_id)
+            comment = Comment(match=match, summoner=summoner)
     elif action == "update":
         query = Comment.objects.get(comment_id, summoner__user=request.user)
         if query.exists():
@@ -1551,7 +1563,11 @@ def create_update_comment(request, action):
         # edit comment as needed
         comment.markdown = markdown
         comment.save()
-        data = {"data": recursively_serialize_comment(comment, nest=1, depth=2)}
+        data = {
+            "data": recursively_serialize_comment(
+                comment, nest=1, depth=2, user=request.user
+            )
+        }
     else:
         # could not find comment
         pass
@@ -1579,3 +1595,73 @@ def delete_comment(request):
     else:
         pass
     return data, status_code
+
+
+@api_view(["PUT"])
+def like_comment(request, format=None):
+    """Like or un-like a comment.
+
+    Parameters
+    ----------
+    comment_id : int
+    like : bool
+
+    Returns
+    -------
+    Comment
+
+    """
+    data = {}
+    status_code = 200
+    comment_id = request.data.get("comment_id")
+    nest = request.data.get("nest", 1)
+    depth = request.data.get("depth", 10)
+    like = request.data.get("like", False)
+    comment = Comment.objects.get(id=comment_id)
+    comment.disliked_by.remove(request.user)
+    if like:
+        comment.liked_by.add(request.user)
+    else:
+        comment.liked_by.remove(request.user)
+    comment.refresh_from_db()
+    data = {
+        "data": recursively_serialize_comment(
+            comment, nest=nest, depth=depth, order_by="-likes", user=request.user
+        )
+    }
+    return Response(data, status=status_code)
+
+
+@api_view(["PUT"])
+def dislike_comment(request, format=None):
+    """Like or un-like a comment.
+
+    Parameters
+    ----------
+    comment_id : int
+    like : bool
+
+    Returns
+    -------
+    Comment
+
+    """
+    data = {}
+    status_code = 200
+    comment_id = request.data.get("comment_id")
+    nest = request.data.get("nest", 1)
+    depth = request.data.get("depth", 10)
+    dislike = request.data.get("dislike", False)
+    comment = Comment.objects.get(id=comment_id)
+    comment.liked_by.remove(request.user)
+    if dislike:
+        comment.disliked_by.add(request.user)
+    else:
+        comment.disliked_by.remove(request.user)
+    comment.refresh_from_db()
+    data = {
+        "data": recursively_serialize_comment(
+            comment, nest=nest, depth=depth, order_by="-likes", user=request.user
+        )
+    }
+    return Response(data, status=status_code)
