@@ -1504,7 +1504,7 @@ def recursively_serialize_comment(
         for reply in query:
             out["replies"].append(
                 recursively_serialize_comment(
-                    comment, nest - 1, depth, order_by, user=user
+                    reply, nest - 1, depth, order_by, user=user
                 )
             )
     return out
@@ -1525,7 +1525,7 @@ def create_update_comment(request, action):
     comment_id : int
     markdown : str
     reply_to : int
-        USER_ID
+        comment id 
 
     Returns
     -------
