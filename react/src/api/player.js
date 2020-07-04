@@ -105,6 +105,11 @@ function getComments(data) {
     return axios.get(url, { params: data })
 }
 
+function getReplies(data) {
+    let url = `/api/${version}/player/comment/replies/`
+    return axios.get(url, { params: data })
+}
+
 function createComment(data) {
     let url = `/api/${version}/player/comment/`
     return axios.post(url, data)
@@ -141,6 +146,7 @@ export default {
     changePassword,
     getTopPlayedWith,
     getComments,
+    getReplies,
     createComment,
     likeComment,
     dislikeComment,

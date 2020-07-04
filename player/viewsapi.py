@@ -1470,6 +1470,19 @@ def get_comment(request):
     return data, status_code
 
 
+def serialize_comment(comment, user=None):
+    """Serialize a comment"""
+    out = CommentSerializer(comment).data
+    out["is_liked"] = False
+    out["is_disliked"] = False
+    if user is not None:
+        if comment.liked_by.filter(id=user.id).exists():
+            out["is_liked"] = True
+        if comment.disliked_by.filter(id=user.id).exists():
+            out["is_disliked"] = True
+    return out
+
+
 def recursively_serialize_comment(
     comment, nest=0, depth=10, order_by="-created_date", user=None
 ):
@@ -1487,20 +1500,21 @@ def recursively_serialize_comment(
     list(Comment)
 
     """
-    if nest < 0:
-        out = {}
-    else:
-        out = CommentSerializer(comment).data
-        out["replies"] = []
-        out["is_liked"] = False
-        out["is_disliked"] = False
+    out = CommentSerializer(comment).data
+    out["replies"] = []
+    out["is_liked"] = False
+    out["is_disliked"] = False
+    if user is not None:
         if comment.liked_by.filter(id=user.id).exists():
             out["is_liked"] = True
         if comment.disliked_by.filter(id=user.id).exists():
             out["is_disliked"] = True
-        query = comment.replies.all().order_by(order_by)
-        count = query.count()
-        query = query[0:depth]
+    query = comment.replies.all().order_by(order_by)
+    count = query.count()
+    out["replies_count"] = count
+    has_more = count > depth
+    query = query[0:depth]
+    if nest >= 1:
         for reply in query:
             out["replies"].append(
                 recursively_serialize_comment(
@@ -1597,6 +1611,42 @@ def delete_comment(request):
     return data, status_code
 
 
+@api_view(["GET"])
+def get_replies(request, format=None):
+    """Get comment replies.
+
+    Parameters
+    ----------
+    comment_id : int
+    start : int
+    end : int
+    order_by : str
+        enum('likes', 'created_date', 'popularity')
+    """
+    data = {}
+    status_code = 200
+    comment_id = request.GET.get("comment_id")
+    start = int(request.GET.get("start", 0))
+    end = int(request.GET.get("end", 10))
+    if end - start > 100:
+        end = start + 10
+    order_by = request.GET.get("order_by", "-likes")
+    query = Comment.objects.filter(id=comment_id)
+    if query.exists():
+        comment = query.first()
+        replies = comment.replies.all().order_by(order_by)
+        count = replies.count()
+        replies = replies[start:end]
+        data = {
+            "data": [serialize_comment(reply, user=request.user) for reply in replies],
+            "count": count,
+        }
+    else:
+        data = {"message": "comment not found", "status": "NOT_FOUND"}
+        status_code = 404
+    return Response(data, status=status_code)
+
+
 @api_view(["PUT"])
 def like_comment(request, format=None):
     """Like or un-like a comment.
@@ -1623,6 +1673,9 @@ def like_comment(request, format=None):
         comment.liked_by.add(request.user)
     else:
         comment.liked_by.remove(request.user)
+    comment.likes = comment.liked_by.count()
+    comment.dislikes = comment.disliked_by.count()
+    comment.save()
     comment.refresh_from_db()
     data = {
         "data": recursively_serialize_comment(
@@ -1658,6 +1711,9 @@ def dislike_comment(request, format=None):
         comment.disliked_by.add(request.user)
     else:
         comment.disliked_by.remove(request.user)
+    comment.likes = comment.liked_by.count()
+    comment.dislikes = comment.disliked_by.count()
+    comment.save()
     comment.refresh_from_db()
     data = {
         "data": recursively_serialize_comment(

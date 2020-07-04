@@ -3,11 +3,60 @@ import api from '../../api/api'
 import { mdParser } from '../../constants/mdparser'
 import { formatDatetime } from '../../constants/general'
 
+export function Pagination(props) {
+    const page = props.page
+    const setPage = props.setPage
+    const theme = props.theme
+    const count = props.count
+    const limit = props.limit
+
+    const isButtonDisabled = side => {
+        if (side === 'left') {
+            if (page <= 1) {
+                return true
+            }
+        } else {
+            const end = page * limit
+            if (end >= count) {
+                return true
+            }
+        }
+        return false
+    }
+
+    const btn_style = { display: 'inline-block' }
+    return (
+        <div>
+            <button
+                disabled={isButtonDisabled('left')}
+                onClick={() => {
+                    if (page > 1) {
+                        setPage(page - 1)
+                    }
+                }}
+                style={{ ...btn_style }}
+                className={`${theme} btn-small`}
+            >
+                <i className="material-icons">keyboard_arrow_left</i>
+            </button>
+            <div style={{ display: 'inline-block', width: 8 }}></div>
+            <button
+                disabled={isButtonDisabled('right')}
+                onClick={() => setPage(page + 1)}
+                style={{ ...btn_style }}
+                className={`${theme} btn-small`}
+            >
+                <i className="material-icons">keyboard_arrow_right</i>
+            </button>
+        </div>
+    )
+}
+
 export function ViewComments(props) {
     const [comments, setComments] = useState([])
+    const [comment_count, setCommentCount] = useState(0)
     const [page, setPage] = useState(1)
     const limit = 10
-    const setView = props.setView
     const match = props.match
 
     const getComments = useCallback(() => {
@@ -29,12 +78,20 @@ export function ViewComments(props) {
         if (match !== undefined && match.id !== undefined) {
             getComments().then(response => {
                 setComments(response.data.data)
+                setCommentCount(response.data.count)
             })
         }
     }, [getComments, match])
 
     return (
-        <div>
+        <div style={{ marginBottom: 50, marginTop: 20 }}>
+            <Pagination
+                limit={limit}
+                theme={props.theme}
+                page={page}
+                setPage={setPage}
+                count={comment_count}
+            />
             {comments.map(comment => {
                 return (
                     <Comment
@@ -46,17 +103,44 @@ export function ViewComments(props) {
                     />
                 )
             })}
+            <Pagination
+                limit={limit}
+                theme={props.theme}
+                page={page}
+                setPage={setPage}
+                count={comment_count}
+            />
         </div>
     )
 }
 
 export function Comment(props) {
     const [comment, setComment] = useState({})
+    const [replies, setReplies] = useState([])
+    const [reply_page, setReplyPage] = useState(0)
+    const reply_limit = 10
     const comment_id = props.comment_id
     const tab_size = 15
-    const tab_index = props.tab_index === undefined ? 0 : props.tab_index
-    const full_margin = tab_size * tab_index
     const hide_action_bar = props.hide_action_bar === undefined ? false : props.hide_action_bar
+
+    // get new replies when reply_page is incremented
+    // increment happens when `show more` is clicked
+    useEffect(() => {
+        if (reply_page > 0) {
+            const end = reply_limit * reply_page
+            const start = end - reply_limit
+            let data = {
+                comment_id: comment.id,
+                start,
+                end,
+                order_by: '-likes',
+            }
+            api.player.getReplies(data).then(response => {
+                let new_replies = [...replies, ...response.data.data]
+                setReplies(new_replies)
+            })
+        }
+    }, [reply_page, comment.id])
 
     useEffect(() => {
         if (props.comment !== undefined) {
@@ -65,59 +149,87 @@ export function Comment(props) {
             // get comment from api
         }
     }, [props.comment, comment_id])
+
+    useEffect(() => {
+        if (comment.replies !== undefined) {
+            if (comment.replies.length > replies.length) {
+                setReplies(comment.replies)
+            }
+        }
+    }, [comment, replies.length])
     return (
-        <div
-            style={{
-                marginLeft: full_margin,
-                paddingLeft: 8,
-                borderLeft: '3px solid grey',
-            }}
-        >
-            {comment.id !== undefined && (
-                <div>
+        <>
+            <div
+                className="match-comment"
+                style={{
+                    marginLeft: tab_size,
+                    paddingLeft: 8,
+                    borderLeft: '3px solid grey',
+                }}
+            >
+                {comment.id !== undefined && (
                     <div>
-                        <div
-                            style={{
-                                marginBottom: 8,
-                                marginRight: 3,
-                                display: 'inline-block',
-                            }}
-                        >
-                            {comment.summoner.name} - {formatDatetime(comment.created_date)}
-                        </div>
-                        {!hide_action_bar && (
-                            <div style={{ display: 'inline-block' }}>
-                                <ActionBar
-                                    setView={props.setView}
-                                    comment={comment}
-                                    setComment={setComment}
-                                    setReplyComment={props.setReplyComment}
-                                    theme={props.theme}
-                                />
+                        <div>
+                            <div
+                                style={{
+                                    marginBottom: 8,
+                                    marginRight: 3,
+                                    display: 'inline-block',
+                                    color: '#8badad',
+                                }}
+                            >
+                                <span>{comment.summoner.name}</span> 
+                                <span> - </span>
+                                <small>{formatDatetime(comment.created_date)}</small>
                             </div>
-                        )}
-                    </div>
-                    <div
-                        dangerouslySetInnerHTML={{ __html: mdParser.render(comment.markdown) }}
-                    ></div>
-                    <div>
-                        {comment.replies.map(reply => {
-                            return (
-                                <div key={`comment-reply-${reply.id}`}>
-                                    <Comment
-                                        theme={props.theme}
-                                        setReplyComment={props.setReplyComment}
+                            {!hide_action_bar && (
+                                <div style={{ display: 'inline-block' }}>
+                                    <ActionBar
                                         setView={props.setView}
-                                        comment={reply}
-                                        tab_index={tab_index + 1}
+                                        comment={comment}
+                                        setComment={setComment}
+                                        setReplyComment={props.setReplyComment}
+                                        theme={props.theme}
                                     />
                                 </div>
-                            )
-                        })}
+                            )}
+                        </div>
+                        <div
+                            dangerouslySetInnerHTML={{ __html: mdParser.render(comment.markdown) }}
+                        ></div>
+                        <div>
+                            {replies.map(reply => {
+                                return (
+                                    <div key={`comment-reply-${reply.id}`}>
+                                        <Comment
+                                            theme={props.theme}
+                                            setReplyComment={props.setReplyComment}
+                                            setView={props.setView}
+                                            comment={reply}
+                                        />
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
+            <div>
+                {replies !== undefined &&
+                    replies.length < comment.replies_count &&
+                    !hide_action_bar && (
+                        <div>
+                            <button
+                                onClick={() => setReplyPage(reply_page + 1)}
+                                style={{}}
+                                className={`${props.theme} btn btn-small btn-flat`}
+                            >
+                                show more
+                            </button>
+                        </div>
+                    )}
+            </div>
+        </>
     )
 }
 
@@ -150,9 +262,11 @@ export function ActionBar(props) {
     let down_style = { ...gen_style }
     if (comment.is_liked) {
         up_style.color = 'green'
+        up_style.border = '2px solid green'
     }
     if (comment.is_disliked) {
         down_style.color = 'red'
+        down_style.border = '2px solid red'
     }
     return (
         <div>
