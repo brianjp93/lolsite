@@ -92,6 +92,7 @@ export function ViewComments(props) {
                 setPage={setPage}
                 count={comment_count}
             />
+            <div style={{height: 20}}></div>
             {comments.map(comment => {
                 return (
                     <Comment
@@ -103,6 +104,7 @@ export function ViewComments(props) {
                     />
                 )
             })}
+            <div style={{height: 20}}></div>
             <Pagination
                 limit={limit}
                 theme={props.theme}
@@ -165,10 +167,11 @@ export function Comment(props) {
                     marginLeft: tab_size,
                     paddingLeft: 8,
                     borderLeft: '3px solid grey',
+                    borderBottom: '2px solid grey',
                 }}
             >
                 {comment.id !== undefined && (
-                    <div>
+                    <div style={{marginBottom: 20}}>
                         <div>
                             <div
                                 style={{
@@ -195,6 +198,7 @@ export function Comment(props) {
                             )}
                         </div>
                         <div
+                            style={{marginLeft: 15}}
                             dangerouslySetInnerHTML={{ __html: mdParser.render(comment.markdown) }}
                         ></div>
                         <div>
