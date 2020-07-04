@@ -106,3 +106,18 @@ hr {
 .legend-click .recharts-legend-item {
     cursor: pointer;
 }
+
+.match-comment h1 {
+    font-size: 2.5rem;
+    margin: 1rem 0 1rem 0;
+}
+
+.match-comment h2 {
+    font-size: 2.0rem;
+    margin: 1rem 0 1rem 0;
+}
+
+.match-comment h3 {
+    font-size: 1.5rem;
+    margin: 1rem 0 1rem 0;
+}
