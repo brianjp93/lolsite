@@ -92,7 +92,7 @@ export function ViewComments(props) {
                 setPage={setPage}
                 count={comment_count}
             />
-            <div style={{height: 20}}></div>
+            <div style={{ height: 20 }}></div>
             {comments.map(comment => {
                 return (
                     <Comment
@@ -104,7 +104,7 @@ export function ViewComments(props) {
                     />
                 )
             })}
-            <div style={{height: 20}}></div>
+            <div style={{ height: 20 }}></div>
             <Pagination
                 limit={limit}
                 theme={props.theme}
@@ -171,22 +171,23 @@ export function Comment(props) {
                 }}
             >
                 {comment.id !== undefined && (
-                    <div style={{marginBottom: 20}}>
+                    <div style={{ marginBottom: 20 }}>
                         <div>
                             <div
                                 style={{
+                                    marginTop: 8,
                                     marginBottom: 8,
                                     marginRight: 3,
                                     display: 'inline-block',
                                     color: '#8badad',
                                 }}
                             >
-                                <span>{comment.summoner.name}</span> 
+                                <span>{comment.summoner.name}</span>
                                 <span> - </span>
                                 <small>{formatDatetime(comment.created_date)}</small>
                             </div>
                             {!hide_action_bar && (
-                                <div style={{ display: 'inline-block' }}>
+                                <div style={{ display: 'inline-block', marginLeft: 15 }}>
                                     <ActionBar
                                         setView={props.setView}
                                         comment={comment}
@@ -198,7 +199,7 @@ export function Comment(props) {
                             )}
                         </div>
                         <div
-                            style={{marginLeft: 15}}
+                            style={{ marginLeft: 15 }}
                             dangerouslySetInnerHTML={{ __html: mdParser.render(comment.markdown) }}
                         ></div>
                         <div>
