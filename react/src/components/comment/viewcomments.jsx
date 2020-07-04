@@ -223,7 +223,7 @@ export function Comment(props) {
                 {replies !== undefined &&
                     replies.length < comment.replies_count &&
                     !hide_action_bar && (
-                        <div>
+                        <div style={{borderLeft: '3px dashed grey', marginLeft: tab_size}}>
                             <button
                                 onClick={() => setReplyPage(reply_page + 1)}
                                 style={{}}
