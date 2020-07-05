@@ -40,4 +40,14 @@ class CommentSerializer(DynamicSerializer):
 
     class Meta:
         model = Comment
-        fields = "__all__"
+        fields = [
+            "created_date",
+            "dislikes",
+            "id",
+            "likes",
+            "markdown",
+            "match",
+            "modified_date",
+            "reply_to",
+            "summoner",
+        ]

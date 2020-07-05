@@ -25,3 +25,17 @@ def demo_login(request, format=None):
             status_code = 403
 
     return Response(data, status=status_code)
+
+
+def require_login(func):
+    """A decorator to return an error if the use is not logged in.
+    """
+
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_anonymous:
+            data = {"message": "User must be logged in.", "status": "NOT_LOGGED_IN"}
+            return Response(data, status=403)
+        else:
+            return func(request, *args, **kwargs)
+
+    return wrapper
