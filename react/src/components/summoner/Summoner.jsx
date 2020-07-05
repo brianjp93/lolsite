@@ -63,6 +63,7 @@ class Summoner extends Component {
             summoner: {},
             icon: {},
             matches: [],
+            comment_counts: {},
             match_ids: new Set(),
             count: 10,
             page: 1,
@@ -102,6 +103,7 @@ class Summoner extends Component {
         this.pagination = this.pagination.bind(this)
         this.getPage = this.getPage.bind(this)
         this.closeModal = this.closeModal.bind(this)
+        this.getCommentCount = this.getCommentCount.bind(this)
     }
     componentDidMount() {
         ReactGA.event({
@@ -114,6 +116,7 @@ class Summoner extends Component {
             this.checkForLiveGame()
             let now = new Date().getTime()
             this.setState({ last_refresh: now })
+            this.getCommentCount()
         })
         this.setQueueDict()
     }
@@ -171,6 +174,12 @@ class Summoner extends Component {
                 callback()
             }
         })
+    }
+    getCommentCount() {
+        let data = { match_ids: this.state.matches.map(x => x.id) }
+        api.player
+            .getCommentCount(data)
+            .then(response => this.setState({ comment_counts: response.data.data }))
     }
     getFilterParams() {
         let params = this.props.route.match.params
@@ -304,13 +313,16 @@ class Summoner extends Component {
         api.player
             .getSummonerPage(data)
             .then(response => {
-                this.setState({
-                    summoner: response.data.summoner,
-                    region: this.props.region,
-                    icon: response.data.profile_icon,
-                    matches: response.data.matches,
-                    is_requesting_next_page: false,
-                })
+                this.setState(
+                    {
+                        summoner: response.data.summoner,
+                        region: this.props.region,
+                        icon: response.data.profile_icon,
+                        matches: response.data.matches,
+                        is_requesting_next_page: false,
+                    },
+                    this.getCommentCount,
+                )
             })
             .catch(error => {})
     }
@@ -549,6 +561,9 @@ class Summoner extends Component {
                                                         store={this.props.store}
                                                         pageStore={this}
                                                         match={match}
+                                                        comment_count={
+                                                            this.state.comment_counts[match.id]
+                                                        }
                                                     />
                                                 )
                                             })}

@@ -4,8 +4,8 @@ import PropTypes from 'prop-types'
 import api from '../../api/api'
 import numeral from 'numeral'
 import Item from '../data/Item'
-// import ReactTooltip from 'react-tooltip'
 import { rankParticipants } from './rankparticipants'
+import { Comments } from '../comment/comments'
 import { useEffect } from 'react'
 import { getMyPart, formatDatetime, formatDatetimeFull } from '../../constants/general'
 
@@ -47,6 +47,7 @@ function matchHighlightColor(queue_id) {
 
 function MatchCard(props) {
     const [participants, setParticipants] = useState([])
+    const [show_comments, setShowComments] = useState(false)
     const theme = props.store.state.theme
     const match = props.match
     const store = props.store
@@ -390,206 +391,246 @@ function MatchCard(props) {
     const TEAMSWIDTH = 120
     const TOPPAD = 20
     const CARDHEIGHT = 130
+    const RIGHT_SPLIT = 70
 
     if (mypart !== undefined) {
         return (
-            <div
-                style={{
-                    width: 600,
-                    height: CARDHEIGHT,
-                    paddingTop: 15,
-                    paddingBottom: 10,
-                    position: 'relative',
-                }}
-                className={`card-panel ${theme}`}
-            >
+            <>
                 <div
                     style={{
-                        display: 'inline-block',
-                        width: 8,
-                        height: 100,
-                        background: `${topBarColor()}`,
-                        borderRadius: 2,
-                        marginLeft: -15,
-                        marginRight: 8,
+                        width: 600,
+                        height: CARDHEIGHT,
+                        paddingTop: 15,
+                        paddingBottom: 10,
+                        position: 'relative',
                     }}
-                ></div>
-                <div
-                    style={{
-                        display: 'inline-block',
-                        paddingRight: 5,
-                        verticalAlign: 'top',
-                        paddingTop: TOPPAD,
-                    }}
+                    className={`card-panel ${theme}`}
                 >
-                    <div>
-                        <img
-                            style={{ height: 40, display: 'inline' }}
-                            src={mypart.champion.image_url}
-                            alt=""
-                        />
-                        <div style={{ display: 'inline-block', paddingLeft: 4 }}>
-                            <img
-                                style={{ height: 20, display: 'block' }}
-                                src={mypart.spell_1_image_url}
-                                alt=""
-                            />
-                            <img
-                                style={{ height: 20, display: 'block' }}
-                                src={mypart.spell_2_image_url}
-                                alt=""
-                            />
-                        </div>
-                    </div>
-                    <img
-                        style={{ height: 20, verticalAlign: 'top' }}
-                        src={mypart.stats.perk_0_image_url}
-                        alt=""
-                    />
-                    <img
-                        style={{ height: 20, verticalAlign: 'top' }}
-                        src={mypart.stats.perk_sub_style_image_url}
-                        alt=""
-                    />
-                    <img
+                    <div
                         style={{
-                            height: 20,
-                            verticalAlign: 'top',
-                            marginLeft: 4,
-                            borderRadius: 5,
+                            display: 'inline-block',
+                            width: 8,
+                            height: 100,
+                            background: `${topBarColor()}`,
+                            borderRadius: 2,
+                            marginLeft: -15,
+                            marginRight: 8,
                         }}
-                        src={mypart.stats.item_6_image_url}
-                        alt=""
-                    />
-                </div>
-
-                <span
-                    style={{
-                        display: 'inline-block',
-                        verticalAlign: 'top',
-                        paddingTop: TOPPAD,
-                    }}
-                >
-                    <div style={{ width: 100 }}>
-                        <span>{item(mypart.stats.item_0, mypart.stats.item_0_image_url)}</span>
-                        <span>{item(mypart.stats.item_1, mypart.stats.item_1_image_url)}</span>
-                        <span>{item(mypart.stats.item_2, mypart.stats.item_2_image_url)}</span>
-                    </div>
-                    <div style={{ width: 100 }}>
-                        <span>{item(mypart.stats.item_3, mypart.stats.item_3_image_url)}</span>
-                        <span>{item(mypart.stats.item_4, mypart.stats.item_4_image_url)}</span>
-                        <span>{item(mypart.stats.item_5, mypart.stats.item_5_image_url)}</span>
-                    </div>
-                </span>
-
-                <div
-                    style={{
-                        display: 'inline-block',
-                        width: 100,
-                        textAlign: 'center',
-                        verticalAlign: 'top',
-                        paddingTop: 0,
-                    }}
-                >
-                    {mypart.impact_rank === 1 && (
-                        <div style={{ fontSize: 'small' }}>
-                            <div
-                                style={{
-                                    display: 'inline-block',
-                                    borderRadius: 4,
-                                    background:
-                                        'linear-gradient(90deg, rgba(66,66,93,1) 0%, rgba(133,74,128,1) 100%)',
-                                    padding: '0px 5px',
-                                }}
-                            >
-                                MVP
+                    ></div>
+                    <div
+                        style={{
+                            display: 'inline-block',
+                            paddingRight: 5,
+                            verticalAlign: 'top',
+                            paddingTop: TOPPAD,
+                        }}
+                    >
+                        <div>
+                            <img
+                                style={{ height: 40, display: 'inline' }}
+                                src={mypart.champion.image_url}
+                                alt=""
+                            />
+                            <div style={{ display: 'inline-block', paddingLeft: 4 }}>
+                                <img
+                                    style={{ height: 20, display: 'block' }}
+                                    src={mypart.spell_1_image_url}
+                                    alt=""
+                                />
+                                <img
+                                    style={{ height: 20, display: 'block' }}
+                                    src={mypart.spell_2_image_url}
+                                    alt=""
+                                />
                             </div>
                         </div>
-                    )}
-                    {mypart.impact_rank !== 1 && <div style={{ height: 19 }}></div>}
-                    <div style={{ fontSize: 'small' }}>
-                        {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
+                        <img
+                            style={{ height: 20, verticalAlign: 'top' }}
+                            src={mypart.stats.perk_0_image_url}
+                            alt=""
+                        />
+                        <img
+                            style={{ height: 20, verticalAlign: 'top' }}
+                            src={mypart.stats.perk_sub_style_image_url}
+                            alt=""
+                        />
+                        <img
+                            style={{
+                                height: 20,
+                                verticalAlign: 'top',
+                                marginLeft: 4,
+                                borderRadius: 5,
+                            }}
+                            src={mypart.stats.item_6_image_url}
+                            alt=""
+                        />
                     </div>
-                    <div style={{ fontSize: 'small' }}>{kda} KDA</div>
-                    <div style={{ fontSize: 'small' }}>{numeral(dpm).format('0,0')} DPM</div>
-                    <div style={{ fontSize: 'small' }}>
-                        {numeral(vision_score_per_minute).format('0,0.00')} VS/M
+
+                    <span
+                        style={{
+                            display: 'inline-block',
+                            verticalAlign: 'top',
+                            paddingTop: TOPPAD,
+                        }}
+                    >
+                        <div style={{ width: 100 }}>
+                            <span>{item(mypart.stats.item_0, mypart.stats.item_0_image_url)}</span>
+                            <span>{item(mypart.stats.item_1, mypart.stats.item_1_image_url)}</span>
+                            <span>{item(mypart.stats.item_2, mypart.stats.item_2_image_url)}</span>
+                        </div>
+                        <div style={{ width: 100 }}>
+                            <span>{item(mypart.stats.item_3, mypart.stats.item_3_image_url)}</span>
+                            <span>{item(mypart.stats.item_4, mypart.stats.item_4_image_url)}</span>
+                            <span>{item(mypart.stats.item_5, mypart.stats.item_5_image_url)}</span>
+                        </div>
+                    </span>
+
+                    <div
+                        style={{
+                            display: 'inline-block',
+                            width: 100,
+                            textAlign: 'center',
+                            verticalAlign: 'top',
+                            paddingTop: 0,
+                        }}
+                    >
+                        {mypart.impact_rank === 1 && (
+                            <div style={{ fontSize: 'small' }}>
+                                <div
+                                    style={{
+                                        display: 'inline-block',
+                                        borderRadius: 4,
+                                        background:
+                                            'linear-gradient(90deg, rgba(66,66,93,1) 0%, rgba(133,74,128,1) 100%)',
+                                        padding: '0px 5px',
+                                    }}
+                                >
+                                    MVP
+                                </div>
+                            </div>
+                        )}
+                        {mypart.impact_rank !== 1 && <div style={{ height: 19 }}></div>}
+                        <div style={{ fontSize: 'small' }}>
+                            {mypart.stats.kills} / {mypart.stats.deaths} / {mypart.stats.assists}
+                        </div>
+                        <div style={{ fontSize: 'small' }}>{kda} KDA</div>
+                        <div style={{ fontSize: 'small' }}>{numeral(dpm).format('0,0')} DPM</div>
+                        <div style={{ fontSize: 'small' }}>
+                            {numeral(vision_score_per_minute).format('0,0.00')} VS/M
+                        </div>
                     </div>
-                </div>
 
-                <div
-                    style={{
-                        display: 'inline-block',
-                        width: TEAMSWIDTH,
-                    }}
-                >
-                    {getTeam(100)}
-                </div>
-                <div style={{ display: 'inline-block', width: 8 }}></div>
-                <div
-                    style={{
-                        display: 'inline-block',
-                        width: TEAMSWIDTH,
-                    }}
-                >
-                    {getTeam(200)}
-                </div>
-
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 10,
-                        left: 26,
-                    }}
-                >
-                    <small
-                        title={formatDatetimeFull(match.game_creation)}
-                        style={{ lineHeight: 1, display: 'inline-block' }}
+                    <div
+                        style={{
+                            display: 'inline-block',
+                            width: TEAMSWIDTH,
+                        }}
                     >
-                        {formatDatetime(match.game_creation)}
-                    </small>
-                    <small style={{ lineHeight: 1, display: 'inline-block', paddingLeft: 10 }}>
-                        {`${Math.floor(match.game_duration / 60)}:${numeral(
-                            match.game_duration % 60,
-                        ).format('00')}`}
-                    </small>
-                </div>
-
-                <div style={{ display: 'block', position: 'absolute', bottom: 3, left: 26 }}>
-                    <small
-                        className={`${store.state.theme} ${matchHighlightColor(match.queue_id)}`}
+                        {getTeam(100)}
+                    </div>
+                    <div style={{ display: 'inline-block', width: 8 }}></div>
+                    <div
+                        style={{
+                            display: 'inline-block',
+                            width: TEAMSWIDTH,
+                        }}
                     >
-                        {pageStore.state.queues[match.queue_id] && (
-                            <Fragment>
-                                {convertQueue(pageStore.state.queues[match.queue_id].description)}
-                            </Fragment>
-                        )}
-                        {pageStore.state.queues[match.queue_id] === undefined && (
-                            <Fragment>{match.queue_id}</Fragment>
-                        )}
-                    </small>
-                </div>
+                        {getTeam(200)}
+                    </div>
 
-                <Link
-                    to={`match/${match._id}/`}
-                    style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: 0,
-                        backgroundColor: '#ffffff20',
-                        width: 40,
-                        height: CARDHEIGHT,
-                        textAlign: 'center',
-                    }}
-                >
-                    <i
-                        className="material-icons"
-                        style={{ position: 'absolute', bottom: 5, right: 8 }}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 10,
+                            left: 26,
+                        }}
                     >
-                        arrow_downward
-                    </i>
-                </Link>
-            </div>
+                        <small
+                            title={formatDatetimeFull(match.game_creation)}
+                            style={{ lineHeight: 1, display: 'inline-block' }}
+                        >
+                            {formatDatetime(match.game_creation)}
+                        </small>
+                        <small style={{ lineHeight: 1, display: 'inline-block', paddingLeft: 10 }}>
+                            {`${Math.floor(match.game_duration / 60)}:${numeral(
+                                match.game_duration % 60,
+                            ).format('00')}`}
+                        </small>
+                    </div>
+
+                    <div style={{ display: 'block', position: 'absolute', bottom: 3, left: 26 }}>
+                        <small
+                            className={`${store.state.theme} ${matchHighlightColor(
+                                match.queue_id,
+                            )}`}
+                        >
+                            {pageStore.state.queues[match.queue_id] && (
+                                <Fragment>
+                                    {convertQueue(
+                                        pageStore.state.queues[match.queue_id].description,
+                                    )}
+                                </Fragment>
+                            )}
+                            {pageStore.state.queues[match.queue_id] === undefined && (
+                                <Fragment>{match.queue_id}</Fragment>
+                            )}
+                        </small>
+                    </div>
+
+                    <button
+                        onClick={() => setShowComments(!show_comments)}
+                        style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                            backgroundColor: '#ffffff20',
+                            width: 40,
+                            height: RIGHT_SPLIT,
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            borderStyle: null,
+                            borderWidth: 0,
+                        }}
+                    >
+                        <i style={{ paddingTop: 8 }} className="tiny material-icons">
+                            message
+                        </i>
+                        {props.comment_count !== undefined && <div>{props.comment_count}</div>}
+                    </button>
+                    <Link
+                        to={`match/${match._id}/`}
+                        style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: RIGHT_SPLIT,
+                            backgroundColor: '#ffffff20',
+                            width: 40,
+                            height: CARDHEIGHT - RIGHT_SPLIT,
+                            textAlign: 'center',
+                        }}
+                    >
+                        <i
+                            className="material-icons"
+                            style={{ position: 'absolute', bottom: 5, right: 8 }}
+                        >
+                            arrow_downward
+                        </i>
+                    </Link>
+                </div>
+                {show_comments && (
+                    <div
+                        style={{
+                            width: 600,
+                            paddingTop: 15,
+                            paddingBottom: 10,
+                            position: 'relative',
+                        }}
+                        className={`card-panel ${theme}`}
+                    >
+                        <Comments match={match} theme={theme} />
+                    </div>
+                )}
+            </>
         )
     } else {
         return <div></div>

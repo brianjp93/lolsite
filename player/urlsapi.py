@@ -24,6 +24,7 @@ urlpatterns = [
     path("comment/replies/", player_views.get_replies),
     path("comment/like/", player_views.like_comment),
     path("comment/dislike/", player_views.dislike_comment),
+    path("comment/count/", player_views.comment_count),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

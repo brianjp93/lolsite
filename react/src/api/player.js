@@ -125,6 +125,11 @@ function dislikeComment(data) {
     return axios.put(url, data)
 }
 
+function getCommentCount(data) {
+    let url = `/api/${version}/player/comment/count/`
+    return axios.get(url, { params: data })
+}
+
 export default {
     getSummoner,
     getSummoners,
@@ -150,4 +155,5 @@ export default {
     createComment,
     likeComment,
     dislikeComment,
+    getCommentCount,
 }
