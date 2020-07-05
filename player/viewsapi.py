@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.db.models.functions import Extract
 from django.db.models import Max, Min
 
+from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
 
 from player import tasks as pt
@@ -1648,6 +1649,7 @@ def get_replies(request, format=None):
 
 
 @api_view(["PUT"])
+@require_login
 def like_comment(request, format=None):
     """Like or un-like a comment.
 
@@ -1686,6 +1688,7 @@ def like_comment(request, format=None):
 
 
 @api_view(["PUT"])
+@require_login
 def dislike_comment(request, format=None):
     """Like or un-like a comment.
 

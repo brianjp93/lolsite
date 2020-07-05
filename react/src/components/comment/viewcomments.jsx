@@ -119,30 +119,28 @@ export function ViewComments(props) {
 export function Comment(props) {
     const [comment, setComment] = useState({})
     const [replies, setReplies] = useState([])
-    const [reply_page, setReplyPage] = useState(0)
+    const [reply_page, setReplyPage] = useState(1)
     const reply_limit = 10
     const comment_id = props.comment_id
     const tab_size = 15
     const hide_action_bar = props.hide_action_bar === undefined ? false : props.hide_action_bar
 
-    // get new replies when reply_page is incremented
-    // increment happens when `show more` is clicked
-    useEffect(() => {
-        if (reply_page > 0) {
-            const end = reply_limit * reply_page
-            const start = end - reply_limit
-            let data = {
-                comment_id: comment.id,
-                start,
-                end,
-                order_by: '-likes',
-            }
-            api.player.getReplies(data).then(response => {
-                let new_replies = [...replies, ...response.data.data]
-                setReplies(new_replies)
-            })
+    // get page and set page to page + 1
+    const getReplyPage = useCallback((comment_id, reply_list, page) => {
+        const end = reply_limit * page
+        const start = end - reply_limit
+        let data = {
+            comment_id,
+            start,
+            end,
+            order_by: '-likes',
         }
-    }, [reply_page, comment.id])
+        api.player.getReplies(data).then(response => {
+            let new_replies = [...reply_list, ...response.data.data]
+            setReplies(new_replies)
+        })
+        setReplyPage(page + 1)
+    }, [])
 
     useEffect(() => {
         if (props.comment !== undefined) {
@@ -223,9 +221,9 @@ export function Comment(props) {
                 {replies !== undefined &&
                     replies.length < comment.replies_count &&
                     !hide_action_bar && (
-                        <div style={{borderLeft: '3px dashed grey', marginLeft: tab_size}}>
+                        <div style={{ borderLeft: '3px dashed grey', marginLeft: tab_size }}>
                             <button
-                                onClick={() => setReplyPage(reply_page + 1)}
+                                onClick={() => getReplyPage(comment.id, replies, reply_page)}
                                 style={{}}
                                 className={`${props.theme} btn btn-small btn-flat`}
                             >
@@ -239,6 +237,7 @@ export function Comment(props) {
 }
 
 export function ActionBar(props) {
+    const [show_error, setShowError] = useState(false)
     const comment = props.comment
     const setComment = props.setComment
 
@@ -248,6 +247,14 @@ export function ActionBar(props) {
             .then(response => {
                 setComment(response.data.data)
             })
+            .catch(error => {
+                if (
+                    error.response !== undefined &&
+                    error.response.data.status === 'NOT_LOGGED_IN'
+                ) {
+                    setShowError(true)
+                }
+            })
     }, [comment, setComment])
 
     const handleDislikeClick = useCallback(() => {
@@ -255,6 +262,14 @@ export function ActionBar(props) {
             .dislikeComment({ comment_id: comment.id, dislike: !comment.is_disliked })
             .then(response => {
                 setComment(response.data.data)
+            })
+            .catch(error => {
+                if (
+                    error.response !== undefined &&
+                    error.response.data.status === 'NOT_LOGGED_IN'
+                ) {
+                    setShowError(true)
+                }
             })
     }, [comment, setComment])
 
@@ -297,6 +312,13 @@ export function ActionBar(props) {
                     reply
                 </button>
             </div>
+            {show_error && (
+                <div style={{ display: 'inline-block' }}>
+                    <span className="card-panel red darken-3">
+                        Must be logged in to like or dislike comments.
+                    </span>
+                </div>
+            )}
         </div>
     )
 }
