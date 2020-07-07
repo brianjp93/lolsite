@@ -1,24 +1,31 @@
 import requests
 
+HOST = 'https://api.lolesports.com/api'
 
-def league(slug):
+def league(slug=None, id=None):
     """Get data about a league.
 
     Parameters
     ----------
     slug : str
         lcs, lec, lck, lpl...
+    id : int
 
     Returns
     -------
     JSON data
 
     """
-    url = f"https://api.lolesports.com/api/v1/leagues?slug={slug}"
-    return requests.get(url)
+    params = {}
+    if slug is not None:
+        params['slug'] = slug
+    if id is not None:
+        params['id'] = id
+    url = f"{HOST}/v1/leagues"
+    return requests.get(url, params=params)
 
 
-def highlander_match(tournament_id, match_id):
+def highlander_match(tournament_id=None, match_id=None):
     """Get pro data about a match.
 
     Parameters
@@ -31,8 +38,13 @@ def highlander_match(tournament_id, match_id):
     JSON Data
 
     """
-    url = f"https://api.lolesports.com/api/v2/highlanderMatchDetails?tournamentId={tournament_id}&matchId={match_id}"
-    return requests.get(url)
+    params = {}
+    if tournament_id is not None:
+        params['tournamentId'] = tournament_id
+    if match_id is not None:
+        params['matchId'] = match_id
+    url = f"{HOST}/v2/highlanderMatchDetails"
+    return requests.get(url, params=params)
 
 
 def match(game_realm, game_id, game_hash):
