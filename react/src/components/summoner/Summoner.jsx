@@ -193,6 +193,8 @@ class Summoner extends Component {
             with_names:
                 filters.summoner_filter !== undefined ? filters.summoner_filter.split(',') : '',
             champion_key: filters.champion,
+            start_date: filters.start_date,
+            end_date: filters.end_date,
         }
         return data
     }

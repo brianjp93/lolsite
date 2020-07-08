@@ -13,6 +13,7 @@
     "query-string": "^6.9.0",
     "rc-slider": "^9.3.1",
     "react": "^16.12.0",
+    "react-datetime": "^2.16.3",
     "react-dom": "^16.12.0",
     "react-ga": "^2.7.0",
     "react-latex": "^1.6.0",

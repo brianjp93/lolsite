@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.db.models.functions import Extract
@@ -135,6 +136,10 @@ def match_filter(request, account_id=None):
     POST Parameters
     ---------------
     with_names : [str]
+    start_date : str
+        ISO DATETIME
+    end_date : str
+        ISO DATETIME
 
     Returns
     -------
@@ -148,6 +153,8 @@ def match_filter(request, account_id=None):
     queue = request.data.get("queue", None)
     with_names = request.data.get("with_names", [])
     champion_key = request.data.get("champion_key", None)
+    start_date = request.data.get("start_date", None)
+    end_date = request.data.get("end_date", None)
 
     if account_id is None:
         if name:
@@ -171,6 +178,12 @@ def match_filter(request, account_id=None):
             participants__current_account_id=account_id,
             participants__champion_id=champion_key,
         )
+    if start_date:
+        start_epoch = int(parse_datetime(start_date).timestamp() * 1000)
+        matches = matches.filter(game_creation__gte=start_epoch)
+    if end_date:
+        end_epoch = int(parse_datetime(end_date).timestamp() * 1000)
+        matches = matches.filter(game_creation__lte=end_epoch)
 
     # get matches with common players
     if with_names:
@@ -523,6 +536,8 @@ def get_summoner_page(request, format=None):
         Even if this is true, it may not check.
     after_index : int
         import matches after this index
+    start_date : str
+    end_date : str
 
     Returns
     -------
