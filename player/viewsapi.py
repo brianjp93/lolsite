@@ -140,6 +140,7 @@ def match_filter(request, account_id=None):
         ISO DATETIME
     end_date : str
         ISO DATETIME
+    order_by : str
 
     Returns
     -------
@@ -155,6 +156,7 @@ def match_filter(request, account_id=None):
     champion_key = request.data.get("champion_key", None)
     start_date = request.data.get("start_date", None)
     end_date = request.data.get("end_date", None)
+    order_by = request.data.get('order_by')
 
     if account_id is None:
         if name:
@@ -537,7 +539,11 @@ def get_summoner_page(request, format=None):
     after_index : int
         import matches after this index
     start_date : str
+        ISO DateTime
     end_date : str
+        ISO DateTime
+    order_by : str
+        enum('kills', 'deaths', 'assists')
 
     Returns
     -------
