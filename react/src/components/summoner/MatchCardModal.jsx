@@ -235,23 +235,20 @@ function MatchCardModal(props) {
 
     useEffect(() => {
         if (match_id !== undefined) {
-            getMatch()
-                .then(response => {
-                    setMatch(response.data.data)
-                })
-            getParticipants()
-                .then(response => {
-                    let parts = rankParticipants(response.data.data)
-                    setParticipants(parts)
-                })
-            getTimeline()
-                .then(response => {
-                    setTimeline(response.data.data)
-                })
+            getMatch().then(response => {
+                setMatch(response.data.data)
+            })
+            getParticipants().then(response => {
+                let parts = rankParticipants(response.data.data)
+                setParticipants(parts)
+            })
+            getTimeline().then(response => {
+                setTimeline(response.data.data)
+            })
         }
     }, [match_id, getMatch, getParticipants, getTimeline])
 
-    const getButtonStyle = (name) => {
+    const getButtonStyle = name => {
         let button_style = {}
         if (view === name) {
             button_style.backgroundColor = '#0000'
@@ -269,7 +266,7 @@ function MatchCardModal(props) {
         verticalAlign: 'top',
     }
     return (
-        <div style={{ marginBottom: 300, minWidth: '100%'}}>
+        <div style={{ marginBottom: 300, minWidth: '100%' }}>
             <div
                 style={{
                     display: 'inline-block',
@@ -307,25 +304,27 @@ function MatchCardModal(props) {
                 </div>
             </div>
 
-            <div style={{marginBottom: 10}}>
+            <div style={{ marginBottom: 10 }}>
                 <button
                     style={getButtonStyle('stats')}
                     onClick={() => setView('stats')}
-                    className={`${store.state.theme} btn`}>
+                    className={`${store.state.theme} btn`}
+                >
                     Game Stats
                 </button>
                 <button
                     style={getButtonStyle('comments')}
                     onClick={() => setView('comments')}
-                    className={`${store.state.theme} btn`}>
+                    className={`${store.state.theme} btn`}
+                >
                     Comments
                 </button>
             </div>
 
-            {view === 'stats' &&
+            {view === 'stats' && (
                 <div>
                     <div>{showParticipants()}</div>
-                    <div style={{ marginTop: 20 }}>
+                    <div style={{ marginTop: 20, marginBottom: 100 }}>
                         {isDataAcquired() && (
                             <React.Fragment>
                                 <div
@@ -413,12 +412,9 @@ function MatchCardModal(props) {
                         )}
                     </div>
                 </div>
-            }
+            )}
 
-            {view === 'comments' &&
-                <Comments theme={store.state.theme} match={match} />
-            }
-
+            {view === 'comments' && <Comments theme={store.state.theme} match={match} />}
         </div>
     )
 }
