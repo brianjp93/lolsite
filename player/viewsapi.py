@@ -81,7 +81,7 @@ def get_summoner(request, format=None):
 
 @api_view(["GET"])
 def get_my_summoners(request, format=None):
-    """
+    """Get data for summoners attached to logged in user.
 
     Parameters
     ----------
@@ -100,7 +100,7 @@ def get_my_summoners(request, format=None):
 
 @api_view(["POST"])
 def get_summoners(request, format=None):
-    """
+    """Get data for summoners for a list of account_ids.
 
     Parameters
     ----------
@@ -156,7 +156,7 @@ def match_filter(request, account_id=None):
     champion_key = request.data.get("champion_key", None)
     start_date = request.data.get("start_date", None)
     end_date = request.data.get("end_date", None)
-    order_by = request.data.get('order_by')
+    order_by = request.data.get("order_by")
 
     if account_id is None:
         if name:
