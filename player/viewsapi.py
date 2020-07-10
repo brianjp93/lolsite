@@ -79,26 +79,6 @@ def get_summoner(request, format=None):
             status_code = 400
     return Response(data, status=status_code)
 
-
-@api_view(["GET"])
-def get_my_summoners(request, format=None):
-    """Get data for summoners attached to logged in user.
-
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    list(Summoner)
-
-    """
-    status_code = 200
-    summoners = request.user.summoners.all()
-    data = {"data": SummonerSerializer(summoners, many=True).data}
-    return Response(data, status=status_code)
-
-
 @api_view(["POST"])
 def get_summoners(request, format=None):
     """Get data for summoners for a list of account_ids.
@@ -1632,16 +1612,20 @@ def create_update_comment(request, action):
     comment = None
     if action == "create":
         summoner = Summoner.objects.get(id=summoner_id)
-        if reply_to:
-            reply_to_comment = Comment.objects.get(id=reply_to)
-            comment = Comment(
-                reply_to=reply_to_comment,
-                summoner=summoner,
-                match=reply_to_comment.match,
-            )
-        elif match_id:
-            match = Match.objects.get(id=match_id)
-            comment = Comment(match=match, summoner=summoner)
+        if summoner.is_connected_to(request.user.id):
+            if reply_to:
+                reply_to_comment = Comment.objects.get(id=reply_to)
+                comment = Comment(
+                    reply_to=reply_to_comment,
+                    summoner=summoner,
+                    match=reply_to_comment.match,
+                )
+            elif match_id:
+                match = Match.objects.get(id=match_id)
+                comment = Comment(match=match, summoner=summoner)
+        else:
+            data = {'message': 'Not connected to selected summoner.', 'status': 'INVALID_SUMMONER'}
+            status_code = 404
     elif action == "update":
         query = Comment.objects.get(comment_id, summoner__user=request.user)
         if query.exists():
@@ -1732,6 +1716,7 @@ def like_comment(request, format=None):
     ----------
     comment_id : int
     like : bool
+    order_by : str
 
     Returns
     -------
@@ -1744,6 +1729,7 @@ def like_comment(request, format=None):
     nest = request.data.get("nest", 1)
     depth = request.data.get("depth", 10)
     like = request.data.get("like", False)
+    order_by = request.data.get("order_by", '-popularity')
     comment = Comment.objects.get(id=comment_id)
     comment.disliked_by.remove(request.user)
     if like:
@@ -1756,7 +1742,7 @@ def like_comment(request, format=None):
     comment.refresh_from_db()
     data = {
         "data": recursively_serialize_comment(
-            comment, nest=nest, depth=depth, order_by="-likes", user=request.user
+            comment, nest=nest, depth=depth, order_by=order_by, user=request.user
         )
     }
     return Response(data, status=status_code)
@@ -1771,6 +1757,7 @@ def dislike_comment(request, format=None):
     ----------
     comment_id : int
     like : bool
+    order_by : str
 
     Returns
     -------
@@ -1783,6 +1770,7 @@ def dislike_comment(request, format=None):
     nest = request.data.get("nest", 1)
     depth = request.data.get("depth", 10)
     dislike = request.data.get("dislike", False)
+    order_by = request.data.get("order_by", '-popularity')
     comment = Comment.objects.get(id=comment_id)
     comment.liked_by.remove(request.user)
     if dislike:
@@ -1795,7 +1783,7 @@ def dislike_comment(request, format=None):
     comment.refresh_from_db()
     data = {
         "data": recursively_serialize_comment(
-            comment, nest=nest, depth=depth, order_by="-likes", user=request.user
+            comment, nest=nest, depth=depth, order_by=order_by, user=request.user
         )
     }
     return Response(data, status=status_code)
