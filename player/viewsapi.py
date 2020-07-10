@@ -869,21 +869,21 @@ def get_summoner_champions_overview(request, format=None):
 
     POST Parameters
     ---------------
-    summoner_id : ID  
+    summoner_id : ID
         Internal DB ID
-    major_version : int  
-    minor_version : int  
-    season : int  
-    queue_in : list  
-        `Ex: [420, 410]`  
-    order_by : str  
+    major_version : int
+    minor_version : int
+    season : int
+    queue_in : list
+        `Ex: [420, 410]`
+    order_by : str
     start_datetime : ISO Datetime
     end_datetime : ISO Datetime
-    start : int  
-    end : int  
+    start : int
+    end : int
     fields : list[str]
         leave empty to return all fields
-    
+
     Returns
     -------
     JSON
@@ -1058,7 +1058,7 @@ def favorites(request, format=None):
     POST Parameters
     ---------------
     verb : enum('set', 'remove', 'order')
-    
+
     set OR remove
         summoner_id : ID
             internal ID of the summoner that you want to follow
@@ -1416,7 +1416,7 @@ def comment_count(request, format=None):
     ----------
     match_ids : list[int]
         Internal match ID
-    
+
     Returns
     -------
     JSON
@@ -1584,7 +1584,7 @@ def create_update_comment(request, action):
     comment_id : int
     markdown : str
     reply_to : int
-        comment id 
+        comment id
 
     Returns
     -------
