@@ -1,6 +1,5 @@
 """lolsite/management/commands/celery.py
 """
-# import shlex
 from __future__ import absolute_import
 import shlex
 import subprocess
