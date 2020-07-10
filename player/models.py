@@ -138,7 +138,7 @@ class Summoner(models.Model):
         bool
 
         """
-        query = SummonerLink.objects.filter(summoner=self, user__id=user_id)
+        query = SummonerLink.objects.filter(summoner=self, user__id=user_id, verified=True)
         return query.exists()
 
 
