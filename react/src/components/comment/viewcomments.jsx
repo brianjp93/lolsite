@@ -56,8 +56,16 @@ export function ViewComments(props) {
     const [comments, setComments] = useState([])
     const [comment_count, setCommentCount] = useState(0)
     const [page, setPage] = useState(1)
+    const [order_by, setOrderBy] = useState('-popularity')
     const limit = 10
     const match = props.match
+
+    const order_by_options = [
+        ['-popularity', 'Most Liked'],
+        ['popularity', 'Most Disliked'],
+        ['-created_date', 'Newest'],
+        ['created_date', 'Oldest'],
+    ]
 
     const getComments = useCallback(() => {
         const end = page * limit
@@ -68,10 +76,10 @@ export function ViewComments(props) {
             end,
             nest: 2,
             depth: 5,
-            order_by: '-likes',
+            order_by: order_by,
         }
         return api.player.getComments(data)
-    }, [match, limit, page])
+    }, [match, limit, page, order_by])
 
     // get and set comments when necessary
     useEffect(() => {
@@ -81,17 +89,44 @@ export function ViewComments(props) {
                 setCommentCount(response.data.count)
             })
         }
-    }, [getComments, match])
+    }, [getComments, match, order_by])
 
     return (
         <div style={{ marginBottom: 50, marginTop: 20 }}>
-            <Pagination
-                limit={limit}
-                theme={props.theme}
-                page={page}
-                setPage={setPage}
-                count={comment_count}
-            />
+            <div>
+                <div style={{ display: 'inline-block' }}>
+                    <Pagination
+                        limit={limit}
+                        theme={props.theme}
+                        page={page}
+                        setPage={setPage}
+                        count={comment_count}
+                    />
+                </div>
+                <div
+                    style={{
+                        display: 'inline-block',
+                        paddingLeft: 15,
+                    }}
+                    className={`input-field ${props.theme}`}
+                >
+                    <select
+                        onChange={event => setOrderBy(event.target.value)}
+                        value={order_by}
+                        ref={elt => {
+                            window.$(elt).formSelect()
+                        }}
+                    >
+                        {order_by_options.map((elt, key) => {
+                            return (
+                                <option key={key} value={elt[0]}>
+                                    {elt[1]}
+                                </option>
+                            )
+                        })}
+                    </select>
+                </div>
+            </div>
             <div style={{ height: 20 }}></div>
             {comments.map(comment => {
                 return (
@@ -280,16 +315,27 @@ export function ActionBar(props) {
     }
     let up_style = { ...gen_style }
     let down_style = { ...gen_style }
+    let down_color = '#b34c4c'
+    let up_color = '#409e3f'
     if (comment.is_liked) {
-        up_style.color = 'green'
-        up_style.border = '2px solid green'
+        up_style.color = up_color
+        up_style.border = '2px solid ' + up_color
     }
     if (comment.is_disliked) {
-        down_style.color = 'red'
-        down_style.border = '2px solid red'
+        down_style.color = down_color
+        down_style.border = '2px solid ' + down_color
+    }
+    const like_dislike_count = {
+        fontWeight: 'bold',
+        display: 'inline-block',
+        fontSize: 'small',
+        verticalAlign: 'text-bottom',
     }
     return (
         <div>
+            <div style={{...like_dislike_count, marginRight: 5, color: down_color}}>
+                {comment.dislikes}
+            </div>
             <i
                 onClick={handleDislikeClick}
                 style={{ ...down_style }}
@@ -301,6 +347,10 @@ export function ActionBar(props) {
             <i onClick={handleLikeClick} style={{ ...up_style }} className="tiny material-icons">
                 keyboard_arrow_up
             </i>
+            <div style={{...like_dislike_count, marginLeft: 5, color: up_color}}>
+                {comment.likes}
+            </div>
+
             <div style={{ display: 'inline-block' }}>
                 <button
                     onClick={() => {
