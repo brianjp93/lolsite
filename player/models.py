@@ -126,6 +126,21 @@ class Summoner(models.Model):
             checkpoint = None
         return checkpoint
 
+    def is_connected_to(self, user_id):
+        """Check if a summoner is connected to a user through a SummonerLink.
+
+        Parameters
+        ----------
+        user_id : int
+
+        Returns
+        -------
+        bool
+
+        """
+        query = SummonerLink.objects.filter(summoner=self, user__id=user_id)
+        return query.exists()
+
 
 class Pro(models.Model):
     position_choices = (
@@ -326,7 +341,7 @@ class EmailVerification(models.Model):
 
 
 class SummonerLink(models.Model):
-    uuid = models.CharField(max_length=128, default="", db_index=True)
+    uuid = models.CharField(max_length=128, default="", db_index=True, blank=True)
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     summoner = models.ForeignKey("Summoner", null=True, on_delete=models.CASCADE)
     verified = models.BooleanField(default=False, db_index=True)

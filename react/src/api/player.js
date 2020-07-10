@@ -15,11 +15,6 @@ function getSummoners(data) {
     return axios.post(url, data)
 }
 
-function mySummoners() {
-    let url = `/api/${version}/player/my-summoners/`
-    return axios.get(url)
-}
-
 function getSummonerPage(data) {
     let url = `/api/${version}/player/summoner-page/`
     return axios.post(url, data)
@@ -133,7 +128,6 @@ function getCommentCount(data) {
 export default {
     getSummoner,
     getSummoners,
-    mySummoners,
     getSummonerPage,
     getPositions,
     signUp,

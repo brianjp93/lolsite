@@ -1,13 +1,19 @@
 from django.contrib import admin
 from .models import Summoner, NameChange
 from .models import RankCheckpoint, RankPosition
-from .models import Custom, EmailVerification
+from .models import Custom, EmailVerification, SummonerLink
 
 
 class SummonerAdmin(admin.ModelAdmin):
     list_display = ("simple_name", "_id", "account_id", "region", "user")
     search_fields = ("name", "simple_name", "account_id", "_id", "puuid")
     list_filter = ("region",)
+
+
+class SummonerLinkAdmin(admin.ModelAdmin):
+    list_display = ('user', 'summoner')
+    raw_id_fields = ('user', 'summoner')
+    search_fields = ('user__email', 'summoner__simple_name')
 
 
 class NameChangeAdmin(admin.ModelAdmin):
@@ -43,6 +49,7 @@ class EmailVerificationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Summoner, SummonerAdmin)
+admin.site.register(SummonerLink, SummonerLinkAdmin)
 admin.site.register(NameChange, NameChangeAdmin)
 admin.site.register(RankCheckpoint, RankCheckpointAdmin)
 admin.site.register(RankPosition, RankPositionAdmin)

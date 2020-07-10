@@ -11,8 +11,7 @@ export function Comments(props) {
     const theme = props.theme
 
     useEffect(() => {
-        const data = {}
-        api.player.mySummoners(data).then(response => setSummoners(response.data.data))
+        api.player.getConnectedAccounts().then(response => setSummoners(response.data.data))
     }, [])
 
     return (
