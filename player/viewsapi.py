@@ -8,8 +8,9 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.core.cache import cache
 from django.contrib.auth.models import User
+from django.db import models
 from django.db.models.functions import Extract
-from django.db.models import Max, Min
+from django.db.models import Max, Min, F, Value
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
@@ -1502,7 +1503,7 @@ def get_comment(request):
         # must provide match_id or comment_id
         pass
     if query is not None:
-        query = query.order_by(order_by)
+        query = sort_comments(query, order_by)
         count = query.count()
         query = query[start:end]
         comment_data = [
@@ -1539,6 +1540,7 @@ def recursively_serialize_comment(
     nest : int
     depth : int
     order_by : str
+        enum('likes', 'popularity', 'created_date')
 
     Returns
     -------
@@ -1554,7 +1556,8 @@ def recursively_serialize_comment(
             out["is_liked"] = True
         if comment.disliked_by.filter(id=user.id).exists():
             out["is_disliked"] = True
-    query = comment.replies.all().order_by(order_by)
+    query = comment.replies.all()
+    query = sort_comments(query, order_by)
     count = query.count()
     out["replies_count"] = count
     has_more = count > depth
@@ -1567,6 +1570,34 @@ def recursively_serialize_comment(
                 )
             )
     return out
+
+
+def sort_comments(query, order_by):
+    """Order comments by some parameter.
+
+    popularity - ordering by popularity is interesting, at first
+        I thought I would just do `likes / (likes+dislikes)` but
+        this would cause 1 likes comments with a 1.0 like ratio
+        to be rated more highly than a comment with 1000 likes and 1 dislike.
+        To remedy this, I make the assumption that 1 extra like and dislike
+        exist and then make the ratio calculation from there.
+
+    Parameters
+    ----------
+    query : Comment QuerySet
+    order_by : str
+
+    Returns
+    -------
+    Comment QuerySet
+
+    """
+    if order_by in "-popularity":
+        query = query.annotate(
+            popularity=(F("likes") + 1.0) / (F("likes") + F("dislikes") + 2.0)
+        )
+    query = query.order_by(order_by)
+    return query
 
 
 def create_update_comment(request, action):

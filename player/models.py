@@ -366,6 +366,7 @@ class Comment(models.Model):
     liked_by = models.ManyToManyField(User, related_name="liked_comments")
     dislikes = models.IntegerField(default=0, db_index=True, blank=True)
     disliked_by = models.ManyToManyField(User, related_name="disliked_comments")
+    is_deleted = models.BooleanField(default=False, null=True)
 
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
     modified_date = models.DateTimeField(default=timezone.now, blank=True)
