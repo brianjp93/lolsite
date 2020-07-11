@@ -17,8 +17,8 @@ def restart_celery():
         subprocess.call(win_cmd)
         win_cmd = "celery worker -A lolsite -l info -P gevent"
         subprocess.call(win_cmd, shell=True)
-    elif platform in ["darwin"]:
-        cmd = "pkill -f celery worker"
+    elif platform in ["darwin", "linux"]:
+        cmd = "pkill -f celery\ worker"
         subprocess.call(shlex.split(cmd))
         cmd = "celery worker -A lolsite -l info"
         subprocess.call(shlex.split(cmd))
