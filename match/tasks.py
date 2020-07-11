@@ -1040,20 +1040,23 @@ def get_sorted_participants(match):
     """Use ML classifier to guess lane/role
     """
     ordered = []
-
-    for team_id in [100, 200]:
-        allowed = set(list(range(5)))
-        team = [""] * 5
-        unknown = []
-        for p in match.participants.filter(team_id=team_id):
-            role = predict_role(p, number=True)
-            if role in allowed:
-                team[role] = p
-                allowed.remove(role)
-            else:
-                unknown.append(p)
-        for p in unknown:
-            index = team.index("")
-            team[index] = p
-        ordered += team
+    participants = match.participants.all()
+    if participants.count() == 10:
+        for team_id in [100, 200]:
+            allowed = set(list(range(5)))
+            team = [""] * 5
+            unknown = []
+            for p in participants.filter(team_id=team_id):
+                role = predict_role(p, number=True)
+                if role in allowed:
+                    team[role] = p
+                    allowed.remove(role)
+                else:
+                    unknown.append(p)
+            for p in unknown:
+                index = team.index("")
+                team[index] = p
+            ordered += team
+    else:
+        ordered = list(participants)
     return ordered
