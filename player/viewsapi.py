@@ -137,7 +137,6 @@ def match_filter(request, account_id=None):
     champion_key = request.data.get("champion_key", None)
     start_date = request.data.get("start_date", None)
     end_date = request.data.get("end_date", None)
-    order_by = request.data.get("order_by")
 
     if account_id is None:
         if name:
@@ -541,7 +540,7 @@ def get_summoner_page(request, format=None):
         region = request.data.get("region", None)
         name = request.data.get("summoner_name", None)
         account_id = request.data.get("account_id", None)
-        language = request.data.get("language", "en_US")
+        # language = request.data.get("language", "en_US")
         champion_key = request.data.get("champion_key", None)
         queue = request.data.get("queue", None)
         page = int(request.data.get("page", 1))
@@ -567,7 +566,7 @@ def get_summoner_page(request, format=None):
             # only update if we're not importing for the first time
             update = False
             try:
-                r = pt.import_summoner(region, name=name)
+                pt.import_summoner(region, name=name)
             except Exception as error:
                 print(error)
                 data = {"message": "The summoner could not be found."}
@@ -1540,7 +1539,6 @@ def recursively_serialize_comment(
     query = sort_comments(query, order_by)
     count = query.count()
     out["replies_count"] = count
-    has_more = count > depth
     query = query[0:depth]
     if nest >= 1:
         for reply in query:
