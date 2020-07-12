@@ -10,10 +10,10 @@ class Notification(models.Model):
     comment = models.ForeignKey(
         "player.Comment", on_delete=models.CASCADE, related_name="notifications"
     )
+    is_read = models.BooleanField(default=False, blank=True, db_index=True)
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
     modified_date = models.DateTimeField(default=timezone.now, blank=True)
 
     def save(self, *args, **kwargs):
         self.modified_date = timezone.now()
         super().save(*args, **kwags)
-
