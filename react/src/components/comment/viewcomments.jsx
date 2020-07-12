@@ -60,6 +60,7 @@ export function ViewComments(props) {
     const [order_by, setOrderBy] = useState('-popularity')
     const limit = 10
     const match = props.match
+    const summoners = props.summoners !== undefined ? props.summoners : []
 
     const order_by_options = [
         ['-popularity', 'Most Liked'],
@@ -132,6 +133,7 @@ export function ViewComments(props) {
             {comments.map(comment => {
                 return (
                     <Comment
+                        summoners={summoners}
                         key={`${comment.id}`}
                         setView={props.setView}
                         setReplyComment={props.setReplyComment}
@@ -161,6 +163,7 @@ export function Comment(props) {
     const comment_id = props.comment_id
     const tab_size = 15
     const hide_action_bar = props.hide_action_bar === undefined ? false : props.hide_action_bar
+    const summoners = props.summoners !== undefined ? props.summoners : []
 
     // get page and set page to page + 1
     const getReplyPage = useCallback((comment_id, reply_list, page) => {
@@ -179,18 +182,30 @@ export function Comment(props) {
         setReplyPage(page + 1)
     }, [])
 
-    const is_player_in_game = useMemo(() => {
+    const player_in_game = useMemo(() => {
         if (props.match !== undefined && props.match.participants !== undefined) {
             if (comment.summoner !== undefined) {
                 const participants = props.match.participants
-                const part_summoner_ids = new Set(participants.map(elt => elt.summoner_id))
-                if (part_summoner_ids.has(comment.summoner._id)) {
+                for (let part of participants) {
+                    if (part.summoner_id === comment.summoner._id) {
+                        return part
+                    }
+                }
+            }
+        }
+        return {}
+    }, [props.match, comment])
+
+    const is_me = useMemo(() => {
+        if (comment.summoner !== undefined) {
+            for (let summ of summoners) {
+                if (summ._id === comment.summoner._id) {
                     return true
                 }
             }
         }
         return false
-    }, [props.match, comment])
+    }, [summoners, comment])
 
     useEffect(() => {
         if (props.comment !== undefined) {
@@ -207,6 +222,14 @@ export function Comment(props) {
             }
         }
     }, [comment, replies.length])
+
+    let name_style = {
+        color: '#8badad'
+    }
+    if (is_me) {
+        name_style.color = '#a8efef'
+        name_style.fontWeight = 'bold'
+    }
     return (
         <>
             <div
@@ -221,10 +244,10 @@ export function Comment(props) {
                 {comment.id !== undefined && (
                     <div style={{ marginBottom: 20 }}>
                         <div>
-                            {is_player_in_game && (
+                            {player_in_game.champion !== undefined && (
                                 <>
                                     <ReactTooltip id={`summoner-in-game-tooltip`} effect="solid">
-                                        <span>This player was a participant in this game.</span>
+                                        <span>This player was {player_in_game.champion.name} in this game.</span>
                                     </ReactTooltip>
                                     <div
                                         style={{ display: 'inline-block' }}
@@ -232,9 +255,9 @@ export function Comment(props) {
                                         data-for="summoner-in-game-tooltip"
                                     >
                                         <div style={{ display: 'inline-block', marginRight: 4 }}>
-                                            <i className="material-icons tiny">
-                                                check_circle_outline
-                                            </i>
+                                            <img
+                                                style={{width: 18, borderRadius: '50%'}}
+                                                src={player_in_game.champion.image_url} alt="" />
                                         </div>
                                     </div>
                                 </>
@@ -245,7 +268,7 @@ export function Comment(props) {
                                     marginBottom: 8,
                                     marginRight: 3,
                                     display: 'inline-block',
-                                    color: '#8badad',
+                                    ...name_style,
                                 }}
                             >
                                 <span>{comment.summoner.name}</span>
@@ -273,6 +296,7 @@ export function Comment(props) {
                                 return (
                                     <div key={`comment-reply-${reply.id}`}>
                                         <Comment
+                                            summoners={props.summoners}
                                             theme={props.theme}
                                             setReplyComment={props.setReplyComment}
                                             setView={props.setView}
