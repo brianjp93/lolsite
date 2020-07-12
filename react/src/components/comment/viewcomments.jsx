@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import api from '../../api/api'
+import ReactTooltip from 'react-tooltip'
 import { mdParser } from '../../constants/mdparser'
 import { formatDatetime } from '../../constants/general'
 
@@ -136,6 +137,7 @@ export function ViewComments(props) {
                         setReplyComment={props.setReplyComment}
                         comment={comment}
                         theme={props.theme}
+                        match={props.match}
                     />
                 )
             })}
@@ -177,6 +179,19 @@ export function Comment(props) {
         setReplyPage(page + 1)
     }, [])
 
+    const is_player_in_game = useMemo(() => {
+        if (props.match !== undefined && props.match.participants !== undefined) {
+            if (comment.summoner !== undefined) {
+                const participants = props.match.participants
+                const part_summoner_ids = new Set(participants.map(elt => elt.summoner_id))
+                if (part_summoner_ids.has(comment.summoner._id)) {
+                    return true
+                }
+            }
+        }
+        return false
+    }, [props.match, comment])
+
     useEffect(() => {
         if (props.comment !== undefined) {
             setComment(props.comment)
@@ -206,6 +221,24 @@ export function Comment(props) {
                 {comment.id !== undefined && (
                     <div style={{ marginBottom: 20 }}>
                         <div>
+                            {is_player_in_game && (
+                                <>
+                                    <ReactTooltip id={`summoner-in-game-tooltip`} effect="solid">
+                                        <span>This player was a participant in this game.</span>
+                                    </ReactTooltip>
+                                    <div
+                                        style={{ display: 'inline-block' }}
+                                        data-tip
+                                        data-for="summoner-in-game-tooltip"
+                                    >
+                                        <div style={{ display: 'inline-block', marginRight: 4 }}>
+                                            <i className="material-icons tiny">
+                                                check_circle_outline
+                                            </i>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                             <div
                                 style={{
                                     marginTop: 8,
@@ -244,6 +277,7 @@ export function Comment(props) {
                                             setReplyComment={props.setReplyComment}
                                             setView={props.setView}
                                             comment={reply}
+                                            match={props.match}
                                         />
                                     </div>
                                 )
@@ -333,7 +367,7 @@ export function ActionBar(props) {
     }
     return (
         <div>
-            <div style={{...like_dislike_count, marginRight: 5, color: down_color}}>
+            <div style={{ ...like_dislike_count, marginRight: 5, color: down_color }}>
                 {comment.dislikes}
             </div>
             <i
@@ -347,7 +381,7 @@ export function ActionBar(props) {
             <i onClick={handleLikeClick} style={{ ...up_style }} className="tiny material-icons">
                 keyboard_arrow_up
             </i>
-            <div style={{...like_dislike_count, marginLeft: 5, color: up_color}}>
+            <div style={{ ...like_dislike_count, marginLeft: 5, color: up_color }}>
                 {comment.likes}
             </div>
 

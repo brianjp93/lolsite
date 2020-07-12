@@ -43,8 +43,7 @@ export function CreateComment(props) {
                         summoner_id: summoner,
                         markdown,
                     }
-                }
-                else {
+                } else {
                     data = {
                         summoner_id: summoner,
                         markdown,
