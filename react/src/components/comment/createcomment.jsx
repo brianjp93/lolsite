@@ -88,6 +88,7 @@ export function CreateComment(props) {
                     {reply_to.id !== undefined && (
                         <div style={{ marginBottom: 10 }}>
                             <Comment
+                                summoners={summoners}
                                 comment={reply_to}
                                 setView={props.setView}
                                 theme={props.theme}
