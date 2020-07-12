@@ -8,9 +8,8 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.core.cache import cache
 from django.contrib.auth.models import User
-from django.db import models
 from django.db.models.functions import Extract
-from django.db.models import Max, Min, F, Value
+from django.db.models import Max, Min, F
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
@@ -78,6 +77,7 @@ def get_summoner(request, format=None):
             data["error"] = "No summoner found"
             status_code = 400
     return Response(data, status=status_code)
+
 
 @api_view(["POST"])
 def get_summoners(request, format=None):
@@ -1624,7 +1624,10 @@ def create_update_comment(request, action):
                 match = Match.objects.get(id=match_id)
                 comment = Comment(match=match, summoner=summoner)
         else:
-            data = {'message': 'Not connected to selected summoner.', 'status': 'INVALID_SUMMONER'}
+            data = {
+                "message": "Not connected to selected summoner.",
+                "status": "INVALID_SUMMONER",
+            }
             status_code = 404
     elif action == "update":
         query = Comment.objects.get(comment_id, summoner__user=request.user)
@@ -1729,7 +1732,7 @@ def like_comment(request, format=None):
     nest = request.data.get("nest", 1)
     depth = request.data.get("depth", 10)
     like = request.data.get("like", False)
-    order_by = request.data.get("order_by", '-popularity')
+    order_by = request.data.get("order_by", "-popularity")
     comment = Comment.objects.get(id=comment_id)
     comment.disliked_by.remove(request.user)
     if like:
@@ -1770,7 +1773,7 @@ def dislike_comment(request, format=None):
     nest = request.data.get("nest", 1)
     depth = request.data.get("depth", 10)
     dislike = request.data.get("dislike", False)
-    order_by = request.data.get("order_by", '-popularity')
+    order_by = request.data.get("order_by", "-popularity")
     comment = Comment.objects.get(id=comment_id)
     comment.liked_by.remove(request.user)
     if dislike:

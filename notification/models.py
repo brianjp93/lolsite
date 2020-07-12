@@ -16,4 +16,4 @@ class Notification(models.Model):
 
     def save(self, *args, **kwargs):
         self.modified_date = timezone.now()
-        super().save(*args, **kwags)
+        super().save(*args, **kwargs)
