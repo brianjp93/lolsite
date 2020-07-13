@@ -1260,11 +1260,7 @@ def get_connected_accounts(request, format=None):
     data = {}
     status_code = 200
     if request.method == "POST":
-        id_list = [
-            x.summoner.id
-            for x in SummonerLink.objects.filter(user=request.user, verified=True)
-        ]
-        query = Summoner.objects.filter(id__in=id_list)
+        query = player_filters.get_connected_accounts_query(request.user)
         serialized = SummonerSerializer(query, many=True).data
         data = {"data": serialized}
     else:

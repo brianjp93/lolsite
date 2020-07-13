@@ -11,6 +11,8 @@ from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
 
+from notification.models import Notification
+
 from data import constants as dc
 
 
@@ -138,7 +140,9 @@ class Summoner(models.Model):
         bool
 
         """
-        query = SummonerLink.objects.filter(summoner=self, user__id=user_id, verified=True)
+        query = SummonerLink.objects.filter(
+            summoner=self, user__id=user_id, verified=True
+        )
         return query.exists()
 
 
@@ -342,8 +346,12 @@ class EmailVerification(models.Model):
 
 class SummonerLink(models.Model):
     uuid = models.CharField(max_length=128, default="", db_index=True, blank=True)
-    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
-    summoner = models.ForeignKey("Summoner", null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, null=True, on_delete=models.CASCADE, related_name="summonerlinks"
+    )
+    summoner = models.ForeignKey(
+        "Summoner", null=True, on_delete=models.CASCADE, related_name="summonerlinks"
+    )
     verified = models.BooleanField(default=False, db_index=True)
 
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
@@ -387,5 +395,29 @@ class Comment(models.Model):
     modified_date = models.DateTimeField(default=timezone.now, blank=True)
 
     def save(self, *args, **kwargs):
+        create_notifications = True if self.id is None else False
         self.modified_date = timezone.now()
         super().save(*args, **kwargs)
+        if create_notifications:
+            self.create_comment_notifications()
+
+    def create_comment_notifications(self):
+        """Create notifications for all existing users in game.
+
+        Returns
+        -------
+        None
+
+        """
+        participants = self.match.participants.all()
+        summoner_ids = [x.summoner_id for x in participants]
+        summoners = Summoner.objects.filter(_id__in=summoner_ids)
+        for summoner in summoners:
+            if summoner._id != self.summoner._id:
+                query = SummonerLink.objects.filter(summoner=summoner)
+                for summonerlink in query:
+                    if summonerlink.user:
+                        notification = Notification(
+                            user=summonerlink.user, comment=self
+                        )
+                        notification.save()

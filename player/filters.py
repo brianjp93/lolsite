@@ -2,8 +2,8 @@
 """
 from data import constants as dc
 from data.models import Champion
-from player.models import Summoner
-from match.models import Match, Participant, Stats
+from player.models import Summoner, SummonerLink
+from match.models import Stats
 
 from django.db.models import Sum, Count, F, FloatField
 from django.db.models import ExpressionWrapper, Value, Case, When
@@ -235,3 +235,23 @@ def summoner_search(
     if order_by is not None:
         query = query.order_by(order_by)
     return query
+
+
+def get_connected_accounts_query(user):
+    """Get a queryset of a user's connected summoners.
+
+    Parameters
+    ----------
+    user : User
+
+    Return
+    ------
+    Summoner QuerySet
+
+    """
+    id_list = [
+        x.summoner.id
+        for x in SummonerLink.objects.filter(user=user, verified=True)
+    ]
+    return Summoner.objects.filter(id__in=id_list)
+
