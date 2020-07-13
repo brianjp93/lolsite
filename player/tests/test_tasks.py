@@ -33,3 +33,16 @@ class SignUpTests(TestCase):
     def test_password_length(self):
         is_valid = pt.is_new_email_valid("test@gmail.com", "abcd")
         self.assertFalse(is_valid)
+
+
+class GeneralTests(TestCase):
+    def test_simplify_email(self):
+        cases = [
+            ("hello", "hello"),
+            ("Brian", "brian"),
+            ("HAHAHOHO", "hahahoho"),
+            ("JEFf123", "jeff123"),
+            ("susan@gmail.Com ", "susan@gmail.com"),
+        ]
+        for case in cases:
+            self.assertEqual(pt.simplify_email(case[0]), case[1])
