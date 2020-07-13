@@ -15,6 +15,7 @@ import { ItemChangesPage } from './components/item/itemchanges'
 import { ItemsPage } from './components/item/items'
 import { ItemStatPage } from './components/item/itemstats'
 import { ChampionsPage } from './components/champion/champion'
+import { NotificationPage } from './components/notification/notification'
 
 import api from './api/api'
 
@@ -214,6 +215,10 @@ function Routes(props) {
                 <Route
                     path="/account/"
                     render={rest => <Account route={rest} store={props.store} />}
+                />
+                <Route
+                    path="/notifications/"
+                    render={rest => <NotificationPage route={rest} store={props.store} />}
                 />
                 <Route
                     exact

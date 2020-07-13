@@ -133,6 +133,7 @@ class Summoner extends Component {
                     this.checkForLiveGame()
                     let now = new Date().getTime()
                     this.setState({ last_refresh: now })
+                    this.getCommentCount()
                 })
             })
         }

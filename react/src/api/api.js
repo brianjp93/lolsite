@@ -3,6 +3,7 @@ import player from './player'
 import data from './data'
 import match from './match'
 import general from './general'
+import notification from './notification'
 
 export default {
     fun,
@@ -10,4 +11,5 @@ export default {
     data,
     match,
     general,
+    notification,
 }
