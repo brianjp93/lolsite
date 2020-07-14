@@ -17,3 +17,6 @@ class Notification(models.Model):
     def save(self, *args, **kwargs):
         self.modified_date = timezone.now()
         super().save(*args, **kwargs)
+
+    def get_match_id(self):
+        return self.comment.match.id

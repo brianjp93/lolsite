@@ -6,9 +6,9 @@ axios.defaults.xsrfHeaderName = "X-CSRFToken";
 axios.defaults.xsrfCookieName = "csrftoken";
 
 
-function getNotifications(data) {
+function getNotifications(params) {
     var url = `/api/${version}/notification/`
-    return axios.get(url, data)
+    return axios.get(url, {params})
 }
 
 export default {
