@@ -6,6 +6,30 @@ MIN_PASSWORD_LENGTH = 7
 TRUTHY = ["true", "True", "TRUE", True]
 FALSEY = ["false", "False", "FALSE", False]
 
+
+is_truthy = lambda x: x is True or (isinstance(x, str) and x.lower() == "true")
+is_falsey = lambda x: x is False or (isinstance(x, str) and x.lower() == "false")
+
+
+def get_null_bool(val):
+    """coerce val to bool or None
+
+    Parameters
+    ----------
+    val : str or bool
+
+    Returns
+    -------
+    bool or None
+    """
+    if is_truthy(val):
+        return True
+    elif is_falsey(val):
+        return False
+    else:
+        return None
+
+
 SEASONS = [
     {"_id": 0, "name": "PRESEASON 3",},
     {"_id": 1, "name": "SEASON 3",},
