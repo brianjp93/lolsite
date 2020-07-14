@@ -44,7 +44,7 @@ export function NotificationPage(props) {
     const [groups, setGroups] = useState([])
     const [page, setPage] = useState(1)
     const [count, setCount] = useState(null)
-    const [marked, setMarked] = useState(new Set())
+    // const [marked, setMarked] = useState(new Set())
     const order_by = '-created_date'
     const limit = 20
     const is_read = false
@@ -135,6 +135,17 @@ export function NotificationPage(props) {
                                     />
                                 )
                             })}
+                            {groups.length < count &&
+                                <tr>
+                                    <td>
+                                        <button
+                                            onClick={() => setPage(page+1)}
+                                            className={`btn ${props.theme}`}>
+                                            load more...
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
