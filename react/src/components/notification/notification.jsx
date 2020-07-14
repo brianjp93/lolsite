@@ -6,9 +6,7 @@ export function Notification(props) {
     const notification = props.notification
     return (
         <>
-            <div>
-                {notification.id}
-            </div>
+            <div>{notification.id}</div>
         </>
     )
 }
@@ -19,8 +17,10 @@ export function NotificationGroup(props) {
     const group = props.group
 
     useEffect(() => {
-        if (notification.length < props.notification.length) {
-            setNotification(props.notification)
+        if (props.notification !== undefined) {
+            if (notification.length < props.notification.length) {
+                setNotification(props.notification)
+            }
         }
     }, [props.notification, notification])
     return (
@@ -52,7 +52,9 @@ export function NotificationPage(props) {
     const getDateForUnitGroups = useCallback(
         groups => {
             let new_groups = [...groups]
-            const match_id_list = new_groups.map(x => x.comment__match__id)
+            const match_id_list = new_groups
+                .filter(x => x.comment__count === 1)
+                .map(x => x.comment__match__id)
             const params = {
                 match_id_list,
                 start: 0,
@@ -60,7 +62,13 @@ export function NotificationPage(props) {
                 order_by,
                 is_read,
             }
-            return api.notification.getNotifications(params)
+            if (match_id_list.length > 0) {
+                return api.notification.getNotifications(params)
+            } else {
+                return new Promise((resolve, reject) => {
+                    resolve({data: {data: []}})
+                })
+            }
         },
         [is_read],
     )
@@ -104,9 +112,7 @@ export function NotificationPage(props) {
                     <div>
                         <h4 style={{ display: 'inline-block' }}>Notifications</h4>
                         {count !== null && (
-                            <div style={{ display: 'inline-block', marginLeft: 8 }}>
-                                ({count})
-                            </div>
+                            <div style={{ display: 'inline-block', marginLeft: 8 }}>({count})</div>
                         )}
                     </div>
                     <table className="table">
