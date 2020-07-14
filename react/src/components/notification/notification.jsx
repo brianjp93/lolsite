@@ -3,26 +3,40 @@ import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
 
 export function Notification(props) {
-    return <div></div>
+    const notification = props.notification
+    return (
+        <>
+            <div>
+                {notification.id}
+            </div>
+        </>
+    )
 }
 
 export function NotificationGroup(props) {
-    const [comments, setComments] = useState([])
+    const [notification, setNotification] = useState([])
     const index = props.index
     const group = props.group
 
     useEffect(() => {
-        if (comments.length < props.comments.length) {
-            setComments(props.comments)
+        if (notification.length < props.notification.length) {
+            setNotification(props.notification)
         }
-    }, [props.comments, comments])
+    }, [props.notification, notification])
     return (
-        <tr>
-            <td>{index}</td>
-            <td>
-                There are {group.comment__count} new comments on match {group.get_match_id}
-            </td>
-        </tr>
+        <>
+            <tr>
+                <td>{index}</td>
+                <td>
+                    There are {group.comment__count} new comments on match {group.get_match_id}
+                </td>
+            </tr>
+            <tr>
+                <td colSpan={2}>
+                    <Notification notification={notification} theme={props.theme} />
+                </td>
+            </tr>
+        </>
     )
 }
 
@@ -64,10 +78,10 @@ export function NotificationPage(props) {
         api.notification.getNotifications(params).then(response => {
             let new_groups = response.data.data
             getDateForUnitGroups(new_groups).then(response => {
-                for (let comment of response.data.data) {
+                for (let notification of response.data.data) {
                     for (let i = 0; i < new_groups.length; i++) {
-                        if (new_groups[i].comment__match__id === comment.get_match_id) {
-                            new_groups[i].comments = [comment]
+                        if (new_groups[i].comment__match__id === notification.get_match_id) {
+                            new_groups[i].notifications = [notification]
                         }
                     }
                 }
@@ -97,8 +111,10 @@ export function NotificationPage(props) {
                     </div>
                     <table className="table">
                         <thead>
-                            <th>#</th>
-                            <th>count</th>
+                            <tr>
+                                <th>#</th>
+                                <th>count</th>
+                            </tr>
                         </thead>
                         <tbody>
                             {groups.map((group, key) => {
@@ -109,7 +125,7 @@ export function NotificationPage(props) {
                                         group={group}
                                         key={group.comment__match__id}
                                         count={group.comment__count}
-                                        comments={group.comments}
+                                        notification={group.notification}
                                     />
                                 )
                             })}
