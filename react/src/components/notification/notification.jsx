@@ -66,7 +66,7 @@ export function NotificationPage(props) {
                 return api.notification.getNotifications(params)
             } else {
                 return new Promise((resolve, reject) => {
-                    resolve({data: {data: []}})
+                    resolve({ data: { data: [] } })
                 })
             }
         },
@@ -135,17 +135,18 @@ export function NotificationPage(props) {
                                     />
                                 )
                             })}
-                            {groups.length < count &&
+                            {groups.length < count && (
                                 <tr>
                                     <td>
                                         <button
-                                            onClick={() => setPage(page+1)}
-                                            className={`btn ${props.theme}`}>
+                                            onClick={() => setPage(page + 1)}
+                                            className={`btn ${props.theme}`}
+                                        >
                                             load more...
                                         </button>
                                     </td>
                                 </tr>
-                            }
+                            )}
                         </tbody>
                     </table>
                 </div>
