@@ -400,6 +400,7 @@ class Comment(models.Model):
         super().save(*args, **kwargs)
         if create_notifications:
             self.create_comment_notifications()
+            self.create_reply_notifications()
 
     def get_op_summoners(self):
         """Get the connected summoner accounts of the comment poster.
@@ -409,8 +410,13 @@ class Comment(models.Model):
         [Summoner]
 
         """
-        op_users = [x.user for x in SummonerLink.objects.filter(summoner=self.summoner, verified=True)]
-        summonerquery = Summoner.objects.filter(summonerlinks__user__in=op_users).distinct()
+        op_users = [
+            x.user
+            for x in SummonerLink.objects.filter(summoner=self.summoner, verified=True)
+        ]
+        summonerquery = Summoner.objects.filter(
+            summonerlinks__user__in=op_users
+        ).distinct()
         return summonerquery
 
     def create_comment_notifications(self):
@@ -435,3 +441,21 @@ class Comment(models.Model):
                             user=summonerlink.user, comment=self
                         )
                         notification.save()
+
+    def create_reply_notifications(self):
+        """Create notification for the comment that was replied to.
+        """
+        if self.reply_to is not None:
+            participants = self.match.participants.all()
+            summoner_ids = [x.summoner_id for x in participants]
+
+            summoners = Summoner.objects.filter(_id__in=summoner_ids)
+            reply_summoners = Summoner.objects.filter(
+                summonerlinks__user=self.reply_to.summoner, summonerlinks__verified=True
+            )
+
+            query = summoners & reply_summoners
+            if not query.exists():
+                # user is not in this game
+                notification = Notification(user=self.reply_to, comment=self)
+                notification.save()
