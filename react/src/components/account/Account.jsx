@@ -6,20 +6,27 @@ import Footer from '../general/Footer'
 
 function Account(props) {
     let theme = props.store.state.theme
-    let region = props.store.state.region_selected
+    let default_region = props.store.state.region_selected
+    let all_regions = props.store.state.regions
 
-    let [uuid, setUuid] = useState('')
-    let [summoner_name, setName] = useState('')
-    let [connected_accounts, setConnectedAccounts] = useState([])
+    const [summoner_link, setSummonerLink] = useState({})
+    const [region, setRegion] = useState(default_region)
+    const [summoner_name, setName] = useState('')
+    const [connected_accounts, setConnectedAccounts] = useState([])
+    const [is_connected, setIsConnected] = useState(false)
+    const [show_error, setShowError] = useState(false)
 
-    let getUuid = useCallback(() => {
-        let data = { action: 'get' }
+    let getSummonerLink = useCallback(() => {
+        const data = {
+            action: 'get',
+            summoner_name,
+        }
         api.player.generateCode(data).then(response => {
             if (['', undefined, null].indexOf(response.data.uuid) === -1) {
-                setUuid(response.data.uuid)
+                setSummonerLink(response.data)
             }
         })
-    }, [])
+    }, [summoner_name])
 
     let getConnectedAccounts = useCallback(() => {
         api.player.getConnectedAccounts().then(response => {
@@ -27,31 +34,41 @@ function Account(props) {
         })
     }, [])
 
-    let handleGenerateCode = useCallback(event => {
-        let data = { action: 'create' }
-        api.player.generateCode(data).then(response => {
-            if (['', undefined, null].indexOf(response.data.uuid) === -1) {
-                setUuid(response.data.uuid)
-            }
-        })
-    }, [])
-
-    let handleConnect = useCallback(
+    let handleGenerateCode = useCallback(
         event => {
             let data = {
-                summoner_name: summoner_name,
-                region: region,
+                action: 'create',
+                summoner_name,
+                region,
             }
-            api.player.connectAccount(data).then(response => {})
+            api.player.generateCode(data).then(response => {
+                if (['', undefined, null].indexOf(response.data.uuid) === -1) {
+                    setSummonerLink(response.data)
+                }
+            })
         },
-        [summoner_name, region],
+        [region, summoner_name],
     )
+
+    let handleConnect = useCallback(() => {
+        let data = {
+            summoner_name: summoner_name,
+            region: region,
+        }
+        api.player.connectAccountWithProfileIcon(data).then(response => {
+            if (response.data.success === true) {
+                setIsConnected(true)
+                getConnectedAccounts()
+            } else {
+                setShowError(true)
+            }
+        })
+    }, [summoner_name, region])
 
     let handleNameChange = useCallback(event => {
         setName(event.target.value)
     }, [])
 
-    useEffect(getUuid, [theme])
     useEffect(getConnectedAccounts, [])
 
     let connect_attributes = {}
@@ -93,18 +110,52 @@ function Account(props) {
 
                         <div className="col l4 m12">
                             <div className={`card-panel ${theme}`}>
-                                {true && (
-                                    <div>
-                                        Riot is currently having issues with their third party
-                                        verification system, so users cannot connect their accounts
-                                        currently. :( Sorry about this.
-                                    </div>
-                                )}
-                                {false && (
+                                {!is_connected && (
                                     <>
                                         <div>Connect a LoL Account</div>
 
+                                        <div
+                                            style={{ paddingLeft: 15 }}
+                                            className={`input-field ${props.store.state.theme}`}
+                                        >
+                                            <select
+                                                ref={elt => {
+                                                    window.$(elt).formSelect()
+                                                }}
+                                                onChange={event => {
+                                                    setRegion(event.target.value)
+                                                }}
+                                                value={region}
+                                            >
+                                                {all_regions.map((_region, key) => {
+                                                    return (
+                                                        <option key={key} value={_region}>
+                                                            {_region}
+                                                        </option>
+                                                    )
+                                                })}
+                                            </select>
+                                        </div>
                                         <div>
+                                            <form
+                                                autoComplete="off"
+                                                onSubmit={event => event.preventDefault()}
+                                            >
+                                                <div className="input-field">
+                                                    <input
+                                                        name="summoner-name"
+                                                        autoComplete="off"
+                                                        id="summoner-name-connect"
+                                                        className={theme}
+                                                        type="text"
+                                                        value={summoner_name}
+                                                        onChange={handleNameChange}
+                                                    />
+                                                    <label htmlFor="summoner-name-connect">
+                                                        <span>Summoner Name</span>
+                                                    </label>
+                                                </div>
+                                            </form>
                                             <button
                                                 onClick={handleGenerateCode}
                                                 className={`${theme} btn-small`}
@@ -115,18 +166,21 @@ function Account(props) {
 
                                         <div>
                                             <div>
-                                                {uuid.length > 0 && (
-                                                    <span>
-                                                        Code:{' '}
-                                                        <span style={{ fontSize: 30 }}>{uuid}</span>
-                                                    </span>
+                                                {summoner_link.uuid !== undefined && (
+                                                    <div>
+                                                        <img
+                                                            style={{ width: 80 }}
+                                                            src={summoner_link.icon.image_url}
+                                                            alt=""
+                                                        />
+                                                    </div>
                                                 )}
-                                                {uuid.length === 0 && (
+                                                {summoner_link.uuid === undefined && (
                                                     <span>No Code Generated</span>
                                                 )}
                                             </div>
 
-                                            {uuid.length > 0 && (
+                                            {summoner_link.uuid !== undefined && (
                                                 <div
                                                     style={{
                                                         borderStyle: 'solid',
@@ -137,54 +191,51 @@ function Account(props) {
                                                     }}
                                                 >
                                                     <div>
-                                                        <span>
-                                                            Copy and paste this code into the{' '}
-                                                            <span style={{ fontWeight: 'bold' }}>
-                                                                Verification
-                                                            </span>{' '}
-                                                            section of the League of Legends Client
-                                                            settings.
-                                                        </span>
+                                                        <div>
+                                                            Please set your profile icon to the
+                                                            image above.
+                                                        </div>
                                                     </div>
                                                     <div style={{ paddingTop: 8 }}>
                                                         <span>
-                                                            After you paste the code into the
-                                                            client, enter your summoner name and
-                                                            click{' '}
-                                                            <span style={{ fontWeight: 'bold' }}>
-                                                                Connect
-                                                            </span>
-                                                            .
+                                                            After setting your profile image, click
+                                                            connect below. .
                                                         </span>
                                                     </div>
                                                 </div>
                                             )}
                                         </div>
+
+                                        {summoner_link.uuid !== undefined && (
+                                            <div>
+                                                <button
+                                                    {...connect_attributes}
+                                                    onClick={handleConnect}
+                                                    className={`${theme} btn-small`}
+                                                >
+                                                    Connect
+                                                </button>
+                                            </div>
+                                        )}
                                     </>
                                 )}
-
-                                {uuid.length > 0 && (
-                                    <div>
-                                        <div className="input-field">
-                                            <input
-                                                name="summoner-name"
-                                                autoComplete="off"
-                                                id="summoner-name-connect"
-                                                className={theme}
-                                                type="text"
-                                                value={summoner_name}
-                                                onChange={handleNameChange}
-                                            />
-                                            <label htmlFor="summoner-name-connect">
-                                                <span>Summoner Name</span>
-                                            </label>
-                                        </div>
+                                {is_connected && (
+                                    <div>successfully connected summoner account!</div>
+                                )}
+                                {show_error && (
+                                    <div
+                                        className="card card-panel red lighten-2"
+                                        style={{ color: 'black' }}
+                                    >
+                                        There was an error while trying to connect your account. Be
+                                        sure to set the correct profile icon.
+                                        <br />
                                         <button
-                                            {...connect_attributes}
-                                            onClick={handleConnect}
-                                            className={`${theme} btn-small`}
+                                            style={{ marginTop: 4 }}
+                                            onClick={() => setShowError(false)}
+                                            className={`btn ${theme}`}
                                         >
-                                            Connect
+                                            Close Error
                                         </button>
                                     </div>
                                 )}
@@ -256,13 +307,13 @@ function ChangePassword(props) {
                 <div className="col s12">
                     <div className="input-field">
                         <input
-                            id="old-password-input"
+                            id="old-input"
                             className={theme}
                             type="password"
                             value={old_password}
                             onChange={event => setOldPassword(event.target.value)}
                         />
-                        <label htmlFor="old-password-input">
+                        <label htmlFor="old-input">
                             <span>Current Password</span>
                         </label>
                     </div>

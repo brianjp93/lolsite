@@ -15,6 +15,7 @@ from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
 
 from player import tasks as pt
+from player import constants as player_constants
 from player import filters as player_filters
 from player.models import RankPosition, Comment
 from player.models import Favorite, SummonerLink
@@ -36,6 +37,7 @@ from .serializers import FavoriteSerializer
 from .serializers import CommentSerializer
 
 import time
+import random
 
 
 @api_view(["POST"])
@@ -1109,6 +1111,8 @@ def generate_code(request, format=None):
     ---------------
     action: str
         enum(create, get)
+    region : str
+    summoner_name : str
 
     Returns
     -------
@@ -1131,21 +1135,40 @@ def generate_code(request, format=None):
                         data = {"message": "Old link.  Please create a new link."}
                         status_code = 400
                     else:
-                        data = {"uuid": link.uuid}
+                        version = Champion.objects.first().get_newest_version()
+                        icon = ProfileIcon.objects.get(_id=link.profile_icon_id, version=version)
+                        icon_data = ProfileIconSerializer(icon, many=False).data
+                        data = {"uuid": link.uuid, 'icon': icon_data}
                 else:
                     data = {"message": "No SummonerLink found for this user."}
                     status_code = 404
             elif action == "create":
                 user = request.user
+                summoner_name = request.data['summoner_name']
+                region = request.data['region']
 
                 query = SummonerLink.objects.filter(user=user, verified=False)
                 if query.exists():
                     link = query.first()
                     link.delete()
-                link = SummonerLink(user=user)
+
+                summoner_id = pt.import_summoner(region, name=summoner_name)
+                summoner = Summoner.objects.get(id=summoner_id)
+
+                icon_id = None
+                for _ in range(100):
+                    icon_id = random.choice(player_constants.VERIFY_WITH_ICON)
+                    if icon_id != summoner.profile_icon_id:
+                        break
+
+                link = SummonerLink(user=user, profile_icon_id=icon_id)
                 link.save()
                 link.refresh_from_db()
-                data = {"uuid": link.uuid}
+
+                version = Champion.objects.first().get_newest_version()
+                icon = ProfileIcon.objects.get(_id=icon_id, version=version)
+                icon_data = ProfileIconSerializer(icon, many=False).data
+                data = {"uuid": link.uuid, 'icon': icon_data}
             else:
                 data = {"message": 'action must be "create" or "get".'}
                 status_code = 400
@@ -1226,6 +1249,89 @@ def connect_account(request, format=None):
                             data = {
                                 "success": False,
                                 "message": "Codes did not match.  Make sure you pasted the code into the client correctly.",
+                            }
+                    else:
+                        # no summonerlink exists
+                        data = {
+                            "success": False,
+                            "message": "Could not find SummonerLink for this user.",
+                        }
+            else:
+                data = {
+                    "success": False,
+                    "message": "Could not find a Summoner with the given name.",
+                }
+    else:
+        data = {"message": "Only POST requests allowed."}
+        status_code = 400
+    return Response(data, status=status_code)
+
+
+@api_view(["POST"])
+def connect_account_with_profile_icon(request, format=None):
+    """Attempt to connect a User to a LoL Summoner.
+
+    - uses profile icon id
+
+    POST Parameters
+    ---------------
+    summoner_name : str
+    region : str
+
+    Returns
+    -------
+    success or fail message
+
+    """
+    data = {}
+    status_code = 200
+
+    if request.method == "POST":
+        name = request.data["summoner_name"]
+        region = request.data["region"]
+
+        try:
+            _id = pt.import_summoner(region, name=name)
+        except Exception:
+            # COULDN'T IMPORT SUMMONER
+            data = {
+                "success": False,
+                "message": "Could not find a summoner with the name given.",
+            }
+        else:
+            # SUMMONER FOUND AND IMPORTED
+            query = Summoner.objects.filter(id=_id)
+            if query.exists():
+                summoner = query.first()
+
+                query = SummonerLink.objects.filter(
+                    user=request.user, summoner=summoner, verified=True
+                )
+                if query.exists():
+                    # ALREADY CONNECTED
+                    data = {
+                        "success": False,
+                        "message": "This summoner is already linked to this user.",
+                    }
+                else:
+                    # NOT YET CONNECTED
+                    query = SummonerLink.objects.filter(
+                        user=request.user, verified=False
+                    )
+                    if query.exists():
+                        summonerlink = query.first()
+                        if summoner.profile_icon_id == summonerlink.profile_icon_id:
+                            summonerlink.verified = True
+                            summonerlink.summoner = summoner
+                            summonerlink.save()
+                            data = {
+                                "success": True,
+                                "message": "Successfully connected summoner account.",
+                            }
+                        else:
+                            data = {
+                                "success": False,
+                                "message": "The profile icon was incorrect.",
                             }
                     else:
                         # no summonerlink exists

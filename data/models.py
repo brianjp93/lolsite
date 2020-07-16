@@ -337,18 +337,24 @@ class Champion(models.Model):
             parts = self.version.split(".")
             try:
                 (self.major, self.minor, self.patch) = map(int, parts)
-            except:
+            except Exception:
                 pass
         super(Champion, self).save(*args, **kwargs)
 
     def __str__(self):
         return f'Champion(_id="{self._id}", version="{self.version}", language="{self.language}")'
 
+    def get_newest_version(self):
+        query = Champion.objects.order_by('-major', '-minor', '-patch')
+        if query.exists():
+            return query.first().version
+        return None
+
     def image_url(self):
         url = ""
         try:
             url = self.image.image_url()
-        except:
+        except Exception:
             pass
         return url
 
