@@ -401,6 +401,18 @@ class Comment(models.Model):
         if create_notifications:
             self.create_comment_notifications()
 
+    def get_op_summoners(self):
+        """Get the connected summoner accounts of the comment poster.
+
+        Returns
+        -------
+        [Summoner]
+
+        """
+        op_users = [x.user for x in SummonerLink.objects.filter(summoner=self.summoner, verified=True)]
+        summonerquery = Summoner.objects.filter(summonerlinks__user__in=op_users).distinct()
+        return summonerquery
+
     def create_comment_notifications(self):
         """Create notifications for all existing users in game.
 
@@ -412,9 +424,11 @@ class Comment(models.Model):
         participants = self.match.participants.all()
         summoner_ids = [x.summoner_id for x in participants]
         summoners = Summoner.objects.filter(_id__in=summoner_ids)
+        op_summoner_ids = set(x.id for x in self.get_op_summoners())
+        # iterate through summoners in the game
         for summoner in summoners:
-            if summoner._id != self.summoner._id:
-                query = SummonerLink.objects.filter(summoner=summoner)
+            if summoner.id not in op_summoner_ids:
+                query = SummonerLink.objects.filter(summoner=summoner, verified=True)
                 for summonerlink in query:
                     if summonerlink.user:
                         notification = Notification(

@@ -7,7 +7,7 @@ from data import constants as dc
 from notification.models import Notification
 from notification.serializers import NotificationSerializer
 
-from django.db.models import Count, Max, Value
+from django.db.models import Count, Max
 
 
 @api_view(["GET", "PUT"])
@@ -28,7 +28,12 @@ def notification(request, format=None):
 
     PUT Parameters
     --------------
-    None
+    notification_id_list : [int]
+    is_read : bool
+        - Mark the notifications as read or unread
+            - True    -> read
+            - False   -> unread
+    match_id_list : [int]
 
     Returns
     -------
@@ -54,10 +59,15 @@ def notification(request, format=None):
             count_only=count_only,
         )
     elif request.method == "PUT":
-        notification_id_list = request.GET.getlist("notification_id_list[]", [])
-        is_read = request.GET.get("")
+        notification_id_list = request.data.get("notification_id_list")
+        is_read = request.data.get("is_read")
+        match_id_list = request.data.get("match_id_list")
+
         data, status_code = mark_notifications(
-            request.user, notification_id_list, is_read
+            request.user,
+            notification_id_list=notification_id_list,
+            is_read=is_read,
+            match_id_list=match_id_list,
         )
     else:
         data = {"message": "The request method is invalid.", "status": "INVALID_METHOD"}
@@ -79,14 +89,7 @@ def get_notifications(
 
     Parameters
     ----------
-    user : User Model
-    match_id_list : [int]
-    is_grouped : bool
-        show comments as groupings by match
-    start : int
-    end : int
-    is_read : bool
-    order_by : str
+    REFER TO : notification()
 
     Returns
     -------
@@ -101,10 +104,9 @@ def get_notifications(
             query = user.notifications.all()
             if is_read in [True, False]:
                 query = query.filter(is_read=is_read)
-            query = query.values("comment__match__id", "comment__match__game_creation").annotate(
-                Max("comment__created_date"),
-                Count("comment"),
-            )
+            query = query.values(
+                "comment__match__id", "comment__match__game_creation"
+            ).annotate(Max("comment__created_date"), Count("comment"),)
             if order_by == "-created_date":
                 query = query.order_by("-comment__created_date__max")
             elif order_by == "created_date":
@@ -135,29 +137,49 @@ def get_notifications(
     return data, status_code
 
 
-def mark_notifications(user, notification_id_list, is_read):
+def mark_notifications(
+    user, notification_id_list=None, is_read=None, match_id_list=None
+):
     """Mark notifications as read or unread.
 
     Parameters
     ----------
-    user : User Model
-    notification_id_list : [int]
-    is_read : bool
-        mark as read -> True
-        mark as unread -> False
+    REFER TO : notification()
 
     Returns
     -------
     data, status_code
 
     """
-    query = Notification.objects.filter(user=user, id__in=notification_id_list)
-    for noti in query:
-        noti.is_read = is_read
-        noti.save()
-    data = {
-        "data": NotificationSerializer(query, many=True).data,
-        "status": "NOTIFICATIONS_MARKED",
-    }
-    status_code = 200
+    is_read = dc.get_null_bool(is_read)
+    if is_read is None:
+        raise ValueError("is_read must be a bool")
+    if notification_id_list is None and match_id_list is None:
+        raise ValueError("notification_id_list or match_id_list must be provided")
+
+    if notification_id_list is not None:
+        query = Notification.objects.filter(
+            user=user, id__in=notification_id_list, is_read=not is_read
+        )
+    elif match_id_list is not None:
+        query = Notification.objects.filter(
+            user=user, comment__match__id__in=match_id_list, is_read=not is_read
+        )
+    else:
+        query = None
+
+    if query is not None:
+        count = query.count()
+        for noti in query:
+            noti.is_read = is_read
+            noti.save()
+        data = {
+            # "data": NotificationSerializer(query, many=True).data,
+            'count': count,
+            "status": "NOTIFICATIONS_MARKED",
+        }
+        status_code = 200
+    else:
+        data = {"message": "Insufficient Parameters.", "status": "INVALID_REQUEST"}
+        status_code = 400
     return data, status_code

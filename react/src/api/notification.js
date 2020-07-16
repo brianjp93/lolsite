@@ -1,16 +1,21 @@
-import axios from 'axios';
+import axios from 'axios'
 
-var version = 'v1';
+var version = 'v1'
 
-axios.defaults.xsrfHeaderName = "X-CSRFToken";
-axios.defaults.xsrfCookieName = "csrftoken";
-
+axios.defaults.xsrfHeaderName = 'X-CSRFToken'
+axios.defaults.xsrfCookieName = 'csrftoken'
 
 function getNotifications(params) {
     var url = `/api/${version}/notification/`
-    return axios.get(url, {params})
+    return axios.get(url, { params })
+}
+
+function markNotifications(data) {
+    var url = `/api/${version}/notification/`
+    return axios.put(url, data)
 }
 
 export default {
     getNotifications,
+    markNotifications,
 }

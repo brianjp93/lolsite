@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Redirect } from 'react-router-dom'
+import ReactTooltip from 'react-tooltip'
 import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
 import { formatDatetimeFull } from '../../constants/general'
@@ -43,8 +44,14 @@ export function NotificationGroup(props) {
             const match_url = response.data.data.get_absolute_url
             if (match_url.length === 0) {
             } else {
-                const comments_url = match_url + '?show=comments'
-                setRedirectMatch(comments_url)
+                const mark_noti_data = {
+                    match_id_list: [group.comment__match__id],
+                    is_read: true,
+                }
+                api.notification.markNotifications(mark_noti_data).then(response => {
+                    const comments_url = match_url + '/?show=comments'
+                    setRedirectMatch(comments_url)
+                })
             }
         })
     }, [group])
@@ -65,13 +72,23 @@ export function NotificationGroup(props) {
                         There are {group.comment__count} new comments on a match from{' '}
                         {formatDatetimeFull(group.comment__match__game_creation)}
                         <div style={{ display: 'inline-block' }}>
-                            <button
-                                onClick={goToMatch}
-                                style={{ marginLeft: 8 }}
-                                className={`btn btn-flat btn-small ${props.theme}`}
+                            <ReactTooltip id="mark-as-read-tooltip" effect="solid">
+                                <span>Go to match and mark notifications as read.</span>
+                            </ReactTooltip>
+                            <div
+                                style={{ display: 'inline-block' }}
+                                data-tip
+                                data-for="mark-as-read-tooltip"
+                                className={`input-field ${props.theme}`}
                             >
-                                go to match comments
-                            </button>
+                                <button
+                                    onClick={goToMatch}
+                                    style={{ marginLeft: 8 }}
+                                    className={`btn btn-flat btn-small ${props.theme}`}
+                                >
+                                    go to match comments
+                                </button>
+                            </div>
                         </div>
                         <div>
                             {notification.length === 0 && (
