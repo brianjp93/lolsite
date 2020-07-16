@@ -20,6 +20,7 @@ import {
 } from '../../constants/general'
 import { rankParticipants } from './rankparticipants'
 import { Comments } from '../comment/comments'
+import queryString from 'query-string'
 
 function MatchCardModal(props) {
     let store = props.store
@@ -247,6 +248,14 @@ function MatchCardModal(props) {
             })
         }
     }, [match_id, getMatch, getParticipants, getTimeline])
+
+    // on-load, check for query-string to tell what view to load
+    useEffect(() => {
+        const query = queryString.parse(window.location.search)
+        if (query.show === 'comments') {
+            setView('comments')
+        }
+    }, [])
 
     const getButtonStyle = name => {
         let button_style = {}
