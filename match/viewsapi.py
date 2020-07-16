@@ -134,13 +134,29 @@ def get_match_timeline(request, format=None):
 
 @api_view(["POST"])
 def get_match(request, format=None):
-    """
+    """Get a match and basic data about it.
+
+    Parameters
+    ----------
+    match_id : int
+    match_id_internal : int
+
+    Returns
+    -------
+    JSON
+
     """
     data = {}
     status_code = 200
     if request.method == "POST":
-        match_id = request.data["match_id"]
-        query = Match.objects.filter(_id=match_id)
+        match_id = request.data.get("match_id")
+        match_id_internal = request.data.get("match_id_internal")
+
+        if match_id is not None:
+            query = Match.objects.filter(_id=match_id)
+        else:
+            query = Match.objects.filter(id=match_id_internal)
+
         if query.exists():
             match = query.first()
             serializer = MatchSerializer(match)

@@ -7,6 +7,8 @@ from .models import Event, AssistingParticipants
 
 
 class MatchSerializer(serializers.ModelSerializer):
+    get_absolute_url = serializers.CharField()
+
     class Meta:
         model = Match
         fields = "__all__"

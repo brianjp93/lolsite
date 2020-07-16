@@ -7,7 +7,7 @@ from data import constants as dc
 from notification.models import Notification
 from notification.serializers import NotificationSerializer
 
-from django.db.models import Count, Max
+from django.db.models import Count, Max, Value
 
 
 @api_view(["GET", "PUT"])
@@ -101,10 +101,9 @@ def get_notifications(
             query = user.notifications.all()
             if is_read in [True, False]:
                 query = query.filter(is_read=is_read)
-            query = query.values("comment__match__id").annotate(
+            query = query.values("comment__match__id", "comment__match__game_creation").annotate(
                 Max("comment__created_date"),
                 Count("comment"),
-                Max("comment__match__game_creation"),
             )
             if order_by == "-created_date":
                 query = query.order_by("-comment__created_date__max")
