@@ -4,6 +4,7 @@ import pytz
 import logging
 
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 from data.models import ReforgedTree, ReforgedRune
@@ -113,19 +114,34 @@ class Match(models.Model):
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
 
-    def get_absolute_url(self):
-        pname = ''
-        try:
-            pname = self.participants.all().first().summoner_name_simplified
-        except Exception as e:
-            logger.exception('problem while finding participant')
+    def get_absolute_url(self, pname=None):
+        """Get url of match.
+        
+        Parameters
+        ----------
+        pname : str
+            Summoner name
+
+        Returns
+        -------
+        str
+
+        """
+        if pname is None:
+            pname = ""
+            try:
+                pname = self.participants.all().first().summoner_name_simplified
+            except Exception as e:
+                logger.exception("problem while finding participant")
+        else:
+            pname = simplify(pname)
         if pname:
             region = self.platform_id.lower()
             if region[-1].isdigit():
                 region = region[:-1]
-            url = f'/{region}/{pname}/match/{self._id}'
+            url = f"/{region}/{pname}/match/{self._id}"
         else:
-            url = ''
+            url = ""
         return url
 
     def get_creation(self):
@@ -157,6 +173,14 @@ class Match(models.Model):
 
     def get_comment_count(self):
         return self.comments.all().count()
+
+    def is_summoner_in_game(self, summoner):
+        """Find if a summoner is in the game.
+        """
+        query = self.participants.filter(
+            Q(summoner_id=summoner._id) | Q(account_id__in=summoner.account_id)
+        )
+        return query.exists()
 
 
 class Participant(models.Model):

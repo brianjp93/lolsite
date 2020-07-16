@@ -7,11 +7,19 @@ from .models import Event, AssistingParticipants
 
 
 class MatchSerializer(serializers.ModelSerializer):
-    get_absolute_url = serializers.CharField()
+    # get_absolute_url = serializers.CharField()
+    url = serializers.SerializerMethodField()
 
     class Meta:
         model = Match
         fields = "__all__"
+
+    def __init__(self, *args, summoner_name=None, **kwargs):
+        self.summoner_name = summoner_name
+        super().__init__(*args, **kwargs)
+
+    def get_url(self, obj):
+        return obj.get_absolute_url(pname=self.summoner_name)
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
