@@ -41,7 +41,7 @@ export function NotificationGroup(props) {
     const goToMatch = useCallback(() => {
         const data = { match_id_internal: group.comment__match__id }
         api.match.getMatch(data).then(response => {
-            const match_url = response.data.data.get_absolute_url
+            const match_url = response.data.data.url
             if (match_url.length === 0) {
             } else {
                 const mark_noti_data = {
