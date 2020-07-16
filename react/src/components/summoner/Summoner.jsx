@@ -419,10 +419,8 @@ class Summoner extends Component {
         this.setState({ queues: qdict })
     }
     closeModal() {
-        let href = this.props.route.location.pathname
-        href = href.split('/')
-        href = href.slice(0, href.length - 3).join('/') + '/'
-        this.props.route.history.push(href)
+        let pathname = window.location.pathname.split(/match\/\d+/)[0]
+        this.props.route.history.push(pathname)
     }
     render() {
         const custom_max_width = 'col l10 offset-l1 m12 s12'
