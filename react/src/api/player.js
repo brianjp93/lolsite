@@ -80,6 +80,11 @@ function connectAccount(data) {
     return axios.post(url, data)
 }
 
+function connectAccountWithProfileIcon(data) {
+    let url = `/api/${version}/player/connect-account-with-profile-icon/`
+    return axios.post(url, data)
+}
+
 function getConnectedAccounts() {
     let url = `/api/${version}/player/get-connected-accounts/`
     return axios.post(url)
@@ -141,6 +146,7 @@ export default {
     Favorite,
     generateCode,
     connectAccount,
+    connectAccountWithProfileIcon,
     getConnectedAccounts,
     changePassword,
     getTopPlayedWith,

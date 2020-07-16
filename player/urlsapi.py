@@ -16,6 +16,7 @@ urlpatterns = [
     path("favorites/", player_views.favorites),
     path("generate-code/", player_views.generate_code),
     path("connect-account/", player_views.connect_account),
+    path("connect-account-with-profile-icon/", player_views.connect_account_with_profile_icon),
     path("get-connected-accounts/", player_views.get_connected_accounts),
     path("change-password/", player_views.change_password),
     path("get-top-played-with/", player_views.get_top_played_with),
