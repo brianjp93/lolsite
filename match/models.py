@@ -1,6 +1,7 @@
 """match.models
 """
 import pytz
+import logging
 
 from django.db import models
 from django.utils import timezone
@@ -12,6 +13,8 @@ from data.models import SummonerSpell
 from data import constants as DATA_CONSTANTS
 
 from player.models import simplify
+
+logger = logging.getLogger(__name__)
 
 
 def sort_positions(positions):
@@ -109,6 +112,21 @@ class Match(models.Model):
 
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
+
+    def get_absolute_url(self):
+        pname = ''
+        try:
+            pname = self.participants.all().first().summoner_name_simplified
+        except Exception as e:
+            logger.exception('problem while finding participant')
+        if pname:
+            region = self.platform_id.lower()
+            if region[-1].isdigit():
+                region = region[:-1]
+            url = f'/{region}/{pname}/match/{self._id}'
+        else:
+            url = ''
+        return url
 
     def get_creation(self):
         """Get creation as datetime

@@ -1,21 +1,53 @@
 import React, { useState, useCallback, useEffect } from 'react'
+import { Redirect } from 'react-router-dom'
 import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
+import { formatDatetimeFull } from '../../constants/general'
 
 export function Notification(props) {
     const notification = props.notification
+    const comment = notification.comment
     return (
         <>
-            <div>{notification.id}</div>
+            <div style={{ textDecoration: 'underline' }}>
+                comment from <b>{comment.summoner.simple_name}</b>
+            </div>
+            <div>{comment.markdown}</div>
         </>
     )
 }
 
 export function NotificationGroup(props) {
     const [notification, setNotification] = useState([])
-    const [is_show_list, setIsShowList] = useState(false)
+    const [redirect_match, setRedirectMatch] = useState(null)
     const index = props.index
     const group = props.group
+    const is_read = props.is_read
+
+    const getRelatedNotifications = useCallback(() => {
+        const params = {
+            match_id_list: [group.comment__match__id],
+            start: 0,
+            end: 20,
+            is_read: is_read,
+            order_by: '-created_date',
+        }
+        api.notification.getNotifications(params).then(response => {
+            setNotification(response.data.data)
+        })
+    }, [is_read, group])
+
+    const goToMatch = useCallback(() => {
+        const data = { match_id_internal: group.comment__match__id }
+        api.match.getMatch(data).then(response => {
+            const match_url = response.data.data.get_absolute_url
+            if (match_url.length === 0) {
+            } else {
+                const comments_url = match_url + '?show=comments'
+                setRedirectMatch(comments_url)
+            }
+        })
+    }, [group])
 
     useEffect(() => {
         if (props.notification !== undefined) {
@@ -24,21 +56,53 @@ export function NotificationGroup(props) {
             }
         }
     }, [props.notification, notification])
-    return (
-        <>
-            <tr>
-                <td>{index}</td>
-                <td>
-                    There are {group.comment__count} new comments on match {group.get_match_id}
-                </td>
-            </tr>
-            <tr>
-                <td colSpan={2}>
-                    <Notification notification={notification} theme={props.theme} />
-                </td>
-            </tr>
-        </>
-    )
+    if (redirect_match === null) {
+        return (
+            <>
+                <tr>
+                    <td>{index}</td>
+                    <td>
+                        There are {group.comment__count} new comments on a match from{' '}
+                        {formatDatetimeFull(group.comment__match__game_creation)}
+                        <div style={{ display: 'inline-block' }}>
+                            <button
+                                onClick={goToMatch}
+                                style={{ marginLeft: 8 }}
+                                className={`btn btn-flat btn-small ${props.theme}`}
+                            >
+                                go to match comments
+                            </button>
+                        </div>
+                        <div>
+                            {notification.length === 0 && (
+                                <button
+                                    onClick={getRelatedNotifications}
+                                    style={{ marginLeft: 8 }}
+                                    className={`btn btn-flat btn-small ${props.theme}`}
+                                >
+                                    show notifications
+                                </button>
+                            )}
+                        </div>
+                    </td>
+                </tr>
+                {notification.length > 0 &&
+                    notification.map((noti, key) => {
+                        return (
+                            <tr key={noti.id}>
+                                <td colSpan={2}>
+                                    <div style={{ marginLeft: 40 }}>
+                                        <Notification notification={noti} theme={props.theme} />
+                                    </div>
+                                </td>
+                            </tr>
+                        )
+                    })}
+            </>
+        )
+    } else {
+        return <Redirect to={redirect_match} />
+    }
 }
 
 export function NotificationPage(props) {
@@ -111,7 +175,7 @@ export function NotificationPage(props) {
             <div className="row" style={{ marginBottom: 0 }}>
                 <div className="col l10 offset-l1">
                     <div>
-                        <h4 style={{ display: 'inline-block' }}>Notifications</h4>
+                        <h4 style={{ display: 'inline-block' }}>Notification Groups</h4>
                         {count !== null && (
                             <div style={{ display: 'inline-block', marginLeft: 8 }}>({count})</div>
                         )}
@@ -133,6 +197,7 @@ export function NotificationPage(props) {
                                         key={group.comment__match__id}
                                         count={group.comment__count}
                                         notification={group.notification}
+                                        is_read={is_read}
                                     />
                                 )
                             })}
