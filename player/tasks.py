@@ -1,11 +1,10 @@
 from celery import task
-from multiprocessing.dummy import Pool as ThreadPool
 
 from django.db import connection
 from django.utils import timezone
 from django.contrib.auth.models import User
 
-from .models import Summoner, NameChange
+from .models import Summoner
 from .models import simplify
 from .models import RankCheckpoint, RankPosition
 from .models import Custom, EmailVerification
@@ -19,7 +18,7 @@ from lolsite.tasks import get_riot_api
 def import_pros(overwrite=False):
     # TODO import pros
     if overwrite:
-        for pro in Pros.objects.all():
+        for pro in Pro.objects.all():
             pro.delete()
     for alias in constants.PROS:
         query = Pro.objects.filter(ign=alias)

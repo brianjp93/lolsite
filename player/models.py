@@ -346,6 +346,7 @@ class EmailVerification(models.Model):
 
 class SummonerLink(models.Model):
     uuid = models.CharField(max_length=128, default="", db_index=True, blank=True)
+    profile_icon_id = models.IntegerField(default=None, null=True, blank=True)
     user = models.ForeignKey(
         User, null=True, on_delete=models.CASCADE, related_name="summonerlinks"
     )
