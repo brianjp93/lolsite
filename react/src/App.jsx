@@ -217,6 +217,7 @@ function Routes(props) {
                     render={rest => <Account route={rest} store={props.store} />}
                 />
                 <Route
+                    exact
                     path="/notifications/"
                     render={rest => <NotificationPage route={rest} store={props.store} />}
                 />

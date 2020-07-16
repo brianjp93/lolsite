@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import { Link, Redirect } from 'react-router-dom'
+import { NotificationBell } from '../notification/notificationbell'
 import PropTypes from 'prop-types'
 import api from '../../api/api'
 
-
 class NavBar extends Component {
-    constructor(props)  {
+    constructor(props) {
         super(props)
         this.search_ref = React.createRef()
         this.user_dropdown_ref = React.createRef()
@@ -52,14 +52,17 @@ class NavBar extends Component {
     handleSearchOutsideClick(event) {
         if (this.search_ref.current && !this.search_ref.current.contains(event.target)) {
             if (this.state.is_quicksearch_open) {
-                this.setState({is_quicksearch_open: false})
+                this.setState({ is_quicksearch_open: false })
             }
         }
     }
     handleUserDropdownOutsideClick(event) {
-        if (this.user_dropdown_ref.current && !this.user_dropdown_ref.current.contains(event.target)) {
+        if (
+            this.user_dropdown_ref.current &&
+            !this.user_dropdown_ref.current.contains(event.target)
+        ) {
             if (this.state.is_show_user_dropdown) {
-                this.setState({is_show_user_dropdown: false})
+                this.setState({ is_show_user_dropdown: false })
             }
         }
     }
@@ -84,34 +87,28 @@ class NavBar extends Component {
                 end: 10,
                 fields: ['name', 'summoner_level'],
             }
-            api.player.summonerSearch(data)
+            api.player
+                .summonerSearch(data)
                 .then(response => {
-                    this.setState({summoner_search: response.data.data})
+                    this.setState({ summoner_search: response.data.data })
                 })
-                .catch(error => {
-                    
-                })
-                .then(() => {
-                    
-                })
-        }
-        else {
-            this.setState({summoner_search: []})
+                .catch(error => {})
+                .then(() => {})
+        } else {
+            this.setState({ summoner_search: [] })
         }
     }
     handleKeyListener(event) {
         if (this.props.ignore_hotkeys.indexOf(event.key.toLowerCase()) >= 0) {
             return
-        }
-        else {
+        } else {
             if (this.props.store.state.ignore_tags.has(event.target.tagName.toLowerCase())) {
                 if (['escape'].indexOf(event.key.toLowerCase()) >= 0) {
                     event.target.blur()
                     event.preventDefault()
                     event.stopPropagation()
                 }
-            }
-            else {
+            } else {
                 if (['/', 's'].indexOf(event.key.toLowerCase()) >= 0) {
                     this.input.focus()
                     this.input.select()
@@ -127,24 +124,20 @@ class NavBar extends Component {
             if (this.state.highlight_index >= 0) {
                 try {
                     name = this.state.summoner_search[this.state.highlight_index].name
-                }
-                catch(error) {
+                } catch (error) {
                     name = this.state.summoner_name
                 }
-            }
-            else {
+            } else {
                 name = this.state.summoner_name
             }
             if (name.length === 0) {
                 // don't search
-            }
-            else {
+            } else {
                 event.preventDefault()
                 event.stopPropagation()
-                this.setState({summoner_name: name, redirect: true, is_quicksearch_open: false})
+                this.setState({ summoner_name: name, redirect: true, is_quicksearch_open: false })
             }
-        }
-        else if (['ArrowUp', 'ArrowDown'].indexOf(event.key) >= 0) {
+        } else if (['ArrowUp', 'ArrowDown'].indexOf(event.key) >= 0) {
             event.preventDefault()
             event.stopPropagation()
             let index = this.state.highlight_index
@@ -152,75 +145,70 @@ class NavBar extends Component {
             if (index === null) {
                 if (event.key === 'ArrowUp') {
                     index = top_index
-                }
-                else if (event.key === 'ArrowDown') {
+                } else if (event.key === 'ArrowDown') {
                     index = 0
                 }
-            }
-            else {
+            } else {
                 if (event.key === 'ArrowUp') {
                     index--
                     if (index < 0) {
                         index = top_index
                     }
-                }
-                else if (event.key === 'ArrowDown') {
+                } else if (event.key === 'ArrowDown') {
                     index++
                     if (index > top_index) {
                         index = 0
                     }
                 }
             }
-            this.setState({highlight_index: index})
+            this.setState({ highlight_index: index })
         }
         return event
     }
     quickSearchLine(data, key) {
-        let {name, summoner_level} = data
+        let { name, summoner_level } = data
         let highlight_style = {}
         if (key === this.state.highlight_index) {
             highlight_style.backgroundColor = '#ffffff20'
         }
         return (
             <div
-                onClick={() => this.setState({
-                    summoner_name: name,
-                    redirect: true,
-                    is_quicksearch_open: false,
-                })}
+                onClick={() =>
+                    this.setState({
+                        summoner_name: name,
+                        redirect: true,
+                        is_quicksearch_open: false,
+                    })
+                }
                 style={{
                     padding: '0 10px',
                     cursor: 'pointer',
-                    ...highlight_style
+                    ...highlight_style,
                 }}
-                className='hover-lighten'
-                key={`${name}-${key}`}>
+                className="hover-lighten"
+                key={`${name}-${key}`}
+            >
                 <div
                     style={{
                         display: 'inline-block',
                         width: 50,
-                    }}>
-                    <span style={{
-                        borderStyle: 'solid',
-                        borderWidth: 1,
-                        borderColor: 'grey',
-                        borderRadius: 4,
-                        fontSize: 'smaller',
-                        padding: '2px 5px',
-                    }}>
-                        {summoner_level > 0 &&
-                            <span>
-                                {summoner_level}
-                            </span>
-                        }
-                        {summoner_level === 0 &&
-                            <span>##</span>
-                        }
+                    }}
+                >
+                    <span
+                        style={{
+                            borderStyle: 'solid',
+                            borderWidth: 1,
+                            borderColor: 'grey',
+                            borderRadius: 4,
+                            fontSize: 'smaller',
+                            padding: '2px 5px',
+                        }}
+                    >
+                        {summoner_level > 0 && <span>{summoner_level}</span>}
+                        {summoner_level === 0 && <span>##</span>}
                     </span>
                 </div>
-                <div style={{display: 'inline-block'}}>
-                    {name}
-                </div>
+                <div style={{ display: 'inline-block' }}>{name}</div>
             </div>
         )
     }
@@ -230,10 +218,14 @@ class NavBar extends Component {
         let user = store.state.user
         // var region = store.state.region_selected
         if (this.state.redirect) {
-            this.setState({redirect: false})
-            return <Redirect push to={`/${store.state.region_selected}/${this.state.summoner_name}/`} />
-        }
-        else {
+            this.setState({ redirect: false })
+            return (
+                <Redirect
+                    push
+                    to={`/${store.state.region_selected}/${this.state.summoner_name}/`}
+                />
+            )
+        } else {
             return (
                 <span>
                     <ul id="dropdown1" className="dropdown-content">
@@ -244,18 +236,20 @@ class NavBar extends Component {
                     <nav className={`${theme}`}>
                         <div className="nav-wrapper">
                             <Link
-                                to='/'
-                                className='left'
-                                style={{marginLeft:10, padding:'0px 15px'}}
+                                to="/"
+                                className="left"
+                                style={{ marginLeft: 10, padding: '0px 15px' }}
                             >
                                 hardstuck
                             </Link>
                             {
                                 // eslint-disable-next-line
                             }<a
-                                href='#' style={{cursor: 'pointer'}}
+                                href="#"
+                                style={{ cursor: 'pointer' }}
                                 data-target="mobile-navbar"
-                                className="sidenav-trigger" >
+                                className="sidenav-trigger"
+                            >
                                 <i className="material-icons">menu</i>
                             </a>
 
@@ -271,37 +265,40 @@ class NavBar extends Component {
                             */}
 
                             <form
-                                onSubmit={(event) => {
+                                onSubmit={event => {
                                     event.preventDefault()
                                 }}
                                 style={{
                                     display: 'inline-block',
                                     width: 350,
                                     background: '#ffffff20',
-                                }}>
-
+                                }}
+                            >
                                 <div
                                     style={{
                                         width: 60,
                                         display: 'inline-block',
                                         paddingLeft: 15,
                                     }}
-                                    className={`input-field ${store.state.theme}`}>
+                                    className={`input-field ${store.state.theme}`}
+                                >
                                     <select
-                                        ref={(elt) => {
+                                        ref={elt => {
                                             window.$(elt).formSelect()
                                         }}
-                                        onChange={(event) => {
-                                            store.setState({region_selected: event.target.value}, () => {
-                                                this.doSearch()
-                                            })
+                                        onChange={event => {
+                                            store.setState(
+                                                { region_selected: event.target.value },
+                                                () => {
+                                                    this.doSearch()
+                                                },
+                                            )
                                         }}
-                                        value={store.state.region_selected} >
+                                        value={store.state.region_selected}
+                                    >
                                         {store.state.regions.map((_region, key) => {
                                             return (
-                                                <option
-                                                    key={key}
-                                                    value={_region} >
+                                                <option key={key} value={_region}>
                                                     {_region}
                                                 </option>
                                             )
@@ -310,28 +307,39 @@ class NavBar extends Component {
                                 </div>
 
                                 <div
-                                    style={{display: 'inline-block', width: 280, position: 'relative'}}
-                                    className="input-field">
+                                    style={{
+                                        display: 'inline-block',
+                                        width: 280,
+                                        position: 'relative',
+                                    }}
+                                    className="input-field"
+                                >
                                     <input
-                                        autoComplete='off'
-                                        ref={(elt) => this.input = elt}
-                                        style={{color: '#929292'}}
+                                        autoComplete="off"
+                                        ref={elt => (this.input = elt)}
+                                        style={{ color: '#929292' }}
                                         value={this.state.summoner_name}
-                                        onChange={(event) => {
-                                            this.setState({summoner_name: event.target.value, highlight_index: null}, () => {
-                                                this.doSearch()
-                                            })
+                                        onChange={event => {
+                                            this.setState(
+                                                {
+                                                    summoner_name: event.target.value,
+                                                    highlight_index: null,
+                                                },
+                                                () => {
+                                                    this.doSearch()
+                                                },
+                                            )
                                         }}
-                                        onFocus={() => this.setState({is_quicksearch_open: true})}
+                                        onFocus={() => this.setState({ is_quicksearch_open: true })}
                                         onKeyDown={this.handleKeyDown}
-                                        id='summoner_search' type="search" />
+                                        id="summoner_search"
+                                        type="search"
+                                    />
                                     <label className="label-icon" htmlFor="summoner_search">
                                         <i className="material-icons">search</i>
                                     </label>
-                                    <i className="material-icons">
-                                        close
-                                    </i>
-                                    {this.state.is_quicksearch_open &&
+                                    <i className="material-icons">close</i>
+                                    {this.state.is_quicksearch_open && (
                                         <div
                                             ref={this.search_ref}
                                             className={`${theme} card-panel`}
@@ -342,68 +350,101 @@ class NavBar extends Component {
                                                 left: -60,
                                                 zIndex: 11,
                                                 padding: 0,
-                                            }}>
-                                            <div style={{textAlign: 'center'}}>
+                                            }}
+                                        >
+                                            <div style={{ textAlign: 'center' }}>
                                                 <button
-                                                    onClick={() => this.setState({is_quicksearch_open: false})}
+                                                    onClick={() =>
+                                                        this.setState({
+                                                            is_quicksearch_open: false,
+                                                        })
+                                                    }
                                                     className={`${theme} btn-small`}
-                                                    style={{width: '90%', textAlign: 'center'}}>
+                                                    style={{ width: '90%', textAlign: 'center' }}
+                                                >
                                                     close
                                                 </button>
                                             </div>
-                                            {this.state.summoner_search.length === 0 &&
+                                            {this.state.summoner_search.length === 0 && (
                                                 <div
-                                                    style={{padding: '0 10px'}}
-                                                    className="error-bordered">
+                                                    style={{ padding: '0 10px' }}
+                                                    className="error-bordered"
+                                                >
                                                     No matches.
                                                 </div>
-                                            }
+                                            )}
                                             {this.state.summoner_search.map((data, key) => {
                                                 return this.quickSearchLine(data, key)
                                             })}
                                         </div>
-                                    }
+                                    )}
                                 </div>
                             </form>
-                            <div style={{display: 'inline-block', marginLeft: 15}}>
-                                <Link to='/item/'>
-                                    Items
-                                </Link>
+                            <div style={{ display: 'inline-block', marginLeft: 15 }}>
+                                <Link to="/item/">Items</Link>
                             </div>
-                            <div style={{display: 'inline-block', marginLeft: 15}}>
-                                <Link to='/item/stats/'>
-                                    Stats
-                                </Link>
+                            <div style={{ display: 'inline-block', marginLeft: 15 }}>
+                                <Link to="/item/stats/">Stats</Link>
                             </div>
-                            <div style={{display: 'inline-block', marginLeft: 15}}>
-                                <Link to='/champion/'>
-                                    Champion
-                                </Link>
+                            <div style={{ display: 'inline-block', marginLeft: 15 }}>
+                                <Link to="/champion/">Champion</Link>
                             </div>
-                            {this.isLoggedIn() &&
-                                <span
-                                    style={{display: 'inline-block', marginRight: 15, position: 'relative'}}
-                                    className='right'>
-                                    <span
-                                        onClick={() => this.setState({is_show_user_dropdown: !this.state.is_show_user_dropdown})}
-                                        style={{cursor: 'pointer'}}>
+                            {this.isLoggedIn() && (
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        marginRight: 15,
+                                        position: 'relative',
+                                    }}
+                                    className="right"
+                                >
+                                    <div style={{ display: 'flex' }}>
+                                        <NotificationBell theme={theme} />
+                                    </div>
+
+                                    <div
+                                        onClick={() =>
+                                            this.setState({
+                                                is_show_user_dropdown: !this.state
+                                                    .is_show_user_dropdown,
+                                            })
+                                        }
+                                        style={{
+                                            cursor: 'pointer',
+                                            marginLeft: 15,
+                                            display: 'flex',
+                                        }}
+                                    >
                                         {user.email}{' '}
-                                        {this.state.is_show_user_dropdown &&
-                                            <i style={{display: 'inline', verticalAlign: 'bottom'}} className="material-icons">
+                                        {this.state.is_show_user_dropdown && (
+                                            <i
+                                                style={{
+                                                    display: 'inline',
+                                                    verticalAlign: 'bottom',
+                                                }}
+                                                className="material-icons"
+                                            >
                                                 arrow_drop_up
                                             </i>
-                                        }
-                                        {!this.state.is_show_user_dropdown &&
-                                            <i style={{display: 'inline', verticalAlign: 'bottom'}} className="material-icons">
+                                        )}
+                                        {!this.state.is_show_user_dropdown && (
+                                            <i
+                                                style={{
+                                                    display: 'inline',
+                                                    verticalAlign: 'bottom',
+                                                }}
+                                                className="material-icons"
+                                            >
                                                 arrow_drop_down
                                             </i>
-                                        }
-                                    </span>
+                                        )}
+                                    </div>
 
-                                    {this.state.is_show_user_dropdown &&
+                                    {this.state.is_show_user_dropdown && (
                                         <div
                                             ref={this.user_dropdown_ref}
-                                            id='user-dropdown' className={`${theme} card-panel`}
+                                            id="user-dropdown"
+                                            className={`${theme} card-panel`}
                                             style={{
                                                 position: 'absolute',
                                                 top: 50,
@@ -412,25 +453,41 @@ class NavBar extends Component {
                                                 margin: 0,
                                                 padding: '5px 10px',
                                                 zIndex: 10,
-                                            }}>
-
-                                            <div style={{height: 10}}></div>
+                                            }}
+                                        >
+                                            <div style={{ height: 10 }}></div>
 
                                             <div>
-                                                <Link to='/account'>
-                                                    <div style={{width: '100%'}}>
-                                                        My Account
-                                                    </div>
+                                                <Link to="/account">
+                                                    <div style={{ width: '100%' }}>My Account</div>
                                                 </Link>
                                             </div>
 
                                             {store.state.favorites.map(favorite => {
                                                 return (
-                                                    <div style={{margin: '0 0 10px 0', lineHeight: 1.5}} className='row'>
-                                                        <div style={{height: 30}} className="col s12">
-                                                            <Link onClick={() => this.setState({is_show_user_dropdown: false})} to={`/${favorite.region}/${favorite.name}/`} style={{marginRight: 15}}>
-                                                                <div style={{width: '100%'}}>
-                                                                    <div style={{
+                                                    <div
+                                                        style={{
+                                                            margin: '0 0 10px 0',
+                                                            lineHeight: 1.5,
+                                                        }}
+                                                        className="row"
+                                                    >
+                                                        <div
+                                                            style={{ height: 30 }}
+                                                            className="col s12"
+                                                        >
+                                                            <Link
+                                                                onClick={() =>
+                                                                    this.setState({
+                                                                        is_show_user_dropdown: false,
+                                                                    })
+                                                                }
+                                                                to={`/${favorite.region}/${favorite.name}/`}
+                                                                style={{ marginRight: 15 }}
+                                                            >
+                                                                <div style={{ width: '100%' }}>
+                                                                    <div
+                                                                        style={{
                                                                             display: 'inline-block',
                                                                             padding: 5,
                                                                             borderRadius: 3,
@@ -439,27 +496,30 @@ class NavBar extends Component {
                                                                             borderStyle: 'solid',
                                                                             borderWidth: 1,
                                                                             fontSize: 'small',
-                                                                        }}>
+                                                                        }}
+                                                                    >
                                                                         {favorite.region}
-                                                                    </div>
-                                                                    {' '}{favorite.name}
+                                                                    </div>{' '}
+                                                                    {favorite.name}
                                                                 </div>
                                                             </Link>
                                                         </div>
                                                     </div>
                                                 )
                                             })}
-                                            
-                                            <a style={{width: '100%'}} href='/logout'>Logout</a>
+
+                                            <a style={{ width: '100%' }} href="/logout">
+                                                Logout
+                                            </a>
                                         </div>
-                                    }
-                                </span>
-                            }
-                            {!this.isLoggedIn() &&
-                                <Link className='right' to='/login' style={{marginRight: 15}}>
+                                    )}
+                                </div>
+                            )}
+                            {!this.isLoggedIn() && (
+                                <Link className="right" to="/login" style={{ marginRight: 15 }}>
                                     <span>Login</span>
                                 </Link>
-                            }
+                            )}
                         </div>
                     </nav>
 

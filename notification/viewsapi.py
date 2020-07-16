@@ -18,8 +18,12 @@ def notification(request, format=None):
     --------------
     match_id_list : int
     is_grouped : bool
+    count_only : bool
+        don't return data, just get a count.
     start : int
     end : int
+    is_read : bool
+        Get notifications that have or have not been marked as read.
     order_by : str
 
     PUT Parameters
@@ -38,6 +42,7 @@ def notification(request, format=None):
         start = int(request.GET.get("start", 0))
         end = int(request.GET.get("end", 10))
         order_by = request.GET.get("order_by", "-created_date")
+        count_only = dc.get_null_bool(request.GET.get("count_only", False))
         data, status_code = get_notifications(
             request.user,
             match_id_list=match_id_list,
@@ -46,6 +51,7 @@ def notification(request, format=None):
             end=end,
             order_by=order_by,
             is_read=is_read,
+            count_only=count_only,
         )
     elif request.method == "PUT":
         notification_id_list = request.GET.getlist("notification_id_list[]", [])
@@ -67,6 +73,7 @@ def get_notifications(
     end=10,
     order_by="-created_date",
     is_read=None,
+    count_only=False,
 ):
     """Get notifications for a user.
 
@@ -95,16 +102,22 @@ def get_notifications(
             if is_read in [True, False]:
                 query = query.filter(is_read=is_read)
             query = query.values("comment__match__id").annotate(
-                Max("comment__created_date"), Count("comment"), Max("comment__match__game_creation"),
+                Max("comment__created_date"),
+                Count("comment"),
+                Max("comment__match__game_creation"),
             )
             if order_by == "-created_date":
                 query = query.order_by("-comment__created_date__max")
             elif order_by == "created_date":
                 query = query.order_by("comment__created_date__max")
             count = query.count()
-            query = query[start:end]
-            data = {"data": query, "count": count}
-            status_code = 200
+            if count_only:
+                data = {"data": count}
+                status_code = 200
+            else:
+                query = query[start:end]
+                data = {"data": query, "count": count}
+                status_code = 200
         else:
             query = user.notifications.order_by(order_by)
             if match_id_list is not None:

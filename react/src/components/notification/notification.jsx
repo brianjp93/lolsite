@@ -13,6 +13,7 @@ export function Notification(props) {
 
 export function NotificationGroup(props) {
     const [notification, setNotification] = useState([])
+    const [is_show_list, setIsShowList] = useState(false)
     const index = props.index
     const group = props.group
 
