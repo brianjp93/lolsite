@@ -197,41 +197,48 @@ export function NotificationPage(props) {
                             <div style={{ display: 'inline-block', marginLeft: 8 }}>({count})</div>
                         )}
                     </div>
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>count</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {groups.map((group, key) => {
-                                return (
-                                    <NotificationGroup
-                                        index={key + 1}
-                                        theme={props.store.state.theme}
-                                        group={group}
-                                        key={group.comment__match__id}
-                                        count={group.comment__count}
-                                        notification={group.notification}
-                                        is_read={is_read}
-                                    />
-                                )
-                            })}
-                            {groups.length < count && (
+                    {groups.length > 0 && (
+                        <table className="table">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <button
-                                            onClick={() => setPage(page + 1)}
-                                            className={`btn ${props.theme}`}
-                                        >
-                                            load more...
-                                        </button>
-                                    </td>
+                                    <th>#</th>
+                                    <th>count</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {groups.map((group, key) => {
+                                    return (
+                                        <NotificationGroup
+                                            index={key + 1}
+                                            theme={props.store.state.theme}
+                                            group={group}
+                                            key={group.comment__match__id}
+                                            count={group.comment__count}
+                                            notification={group.notification}
+                                            is_read={is_read}
+                                        />
+                                    )
+                                })}
+                                {groups.length < count && (
+                                    <tr>
+                                        <td>
+                                            <button
+                                                onClick={() => setPage(page + 1)}
+                                                className={`btn ${props.theme}`}
+                                            >
+                                                load more...
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                    {groups.length === 0 &&
+                        <div>
+                            No notifications right now.
+                        </div>
+                    }
                 </div>
             </div>
         </Skeleton>
