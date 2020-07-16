@@ -6,14 +6,15 @@ from .models import Custom, EmailVerification, SummonerLink
 
 class SummonerAdmin(admin.ModelAdmin):
     list_display = ("simple_name", "_id", "account_id", "region", "user")
-    search_fields = ("name", "simple_name", "account_id", "_id", "puuid")
+    search_fields = ("simple_name", "account_id", "_id")
     list_filter = ("region",)
+    raw_id_fields = ("user", "pro")
 
 
 class SummonerLinkAdmin(admin.ModelAdmin):
-    list_display = ('user', 'summoner')
-    raw_id_fields = ('user', 'summoner')
-    search_fields = ('user__email', 'summoner__simple_name')
+    list_display = ("user", "summoner")
+    raw_id_fields = ("user", "summoner")
+    search_fields = ("user__email", "summoner__simple_name")
 
 
 class NameChangeAdmin(admin.ModelAdmin):
