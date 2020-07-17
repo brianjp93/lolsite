@@ -9,6 +9,7 @@ class SummonerAdmin(admin.ModelAdmin):
     search_fields = ("simple_name", "account_id", "_id")
     list_filter = ("region",)
     raw_id_fields = ("user", "pro")
+    show_full_result_count = False
 
 
 class SummonerLinkAdmin(admin.ModelAdmin):
@@ -26,6 +27,7 @@ class RankCheckpointAdmin(admin.ModelAdmin):
     list_display = ("summoner", "created_date")
     search_fields = ("summoner__name", "summoner__simple_name", "summoner__account_id")
     raw_id_fields = ("summoner",)
+    show_full_result_count = False
 
 
 class RankPositionAdmin(admin.ModelAdmin):
