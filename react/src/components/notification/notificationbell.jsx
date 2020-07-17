@@ -39,7 +39,7 @@ export function NotificationBell(props) {
             <ReactTooltip id="notification-tooltip" effect="solid">
                 <span>You have {count} new notification groups.</span>
             </ReactTooltip>
-            <Link to={'/notifications/'}>
+            <Link to='/notifications/'>
                 <div
                     style={{ display: 'flex', cursor: 'pointer' }}
                     data-tip

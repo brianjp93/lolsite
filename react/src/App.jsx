@@ -242,7 +242,6 @@ function Routes(props) {
                     render={rest => <ChampionsPage route={rest} store={props.store} />}
                 />
 
-                <Route exact path="/themes/" render={() => <Themes store={props.store} />} />
                 <Route exact path="/set-roles/" render={() => <SetRoles store={props.store} />} />
             </Switch>
         </main>
