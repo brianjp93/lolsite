@@ -15,18 +15,7 @@ function Account(props) {
     const [connected_accounts, setConnectedAccounts] = useState([])
     const [is_connected, setIsConnected] = useState(false)
     const [show_error, setShowError] = useState(false)
-
-    let getSummonerLink = useCallback(() => {
-        const data = {
-            action: 'get',
-            summoner_name,
-        }
-        api.player.generateCode(data).then(response => {
-            if (['', undefined, null].indexOf(response.data.uuid) === -1) {
-                setSummonerLink(response.data)
-            }
-        })
-    }, [summoner_name])
+    const [is_mounted, setIsMounted] = useState(false)
 
     let getConnectedAccounts = useCallback(() => {
         api.player.getConnectedAccounts().then(response => {
@@ -63,13 +52,19 @@ function Account(props) {
                 setShowError(true)
             }
         })
-    }, [summoner_name, region])
+    }, [summoner_name, region, getConnectedAccounts])
 
     let handleNameChange = useCallback(event => {
         setName(event.target.value)
     }, [])
 
-    useEffect(getConnectedAccounts, [])
+    useEffect(() => {
+        if (! is_mounted) {
+            getConnectedAccounts()
+        }
+    }, [getConnectedAccounts, is_mounted])
+
+    useEffect(() => setIsMounted(true), [])
 
     let connect_attributes = {}
     if (summoner_name.length === 0) {
