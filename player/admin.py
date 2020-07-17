@@ -10,6 +10,7 @@ class SummonerAdmin(admin.ModelAdmin):
     list_filter = ("region",)
     raw_id_fields = ("user", "pro")
     show_full_result_count = False
+    list_per_page = 20
 
 
 class SummonerLinkAdmin(admin.ModelAdmin):
@@ -28,6 +29,7 @@ class RankCheckpointAdmin(admin.ModelAdmin):
     search_fields = ("summoner__name", "summoner__simple_name", "summoner__account_id")
     raw_id_fields = ("summoner",)
     show_full_result_count = False
+    list_per_page = 30
 
 
 class RankPositionAdmin(admin.ModelAdmin):

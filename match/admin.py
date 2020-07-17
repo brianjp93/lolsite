@@ -16,6 +16,7 @@ class MatchAdmin(admin.ModelAdmin):
         "_id",
     )
     show_full_result_count = False
+    list_per_page = 30
 
 
 class ParticipantAdmin(admin.ModelAdmin):
@@ -23,6 +24,7 @@ class ParticipantAdmin(admin.ModelAdmin):
     raw_id_fields = ("match",)
     search_fields = ("summoner_name_simplified", "match___id")
     show_full_result_count = False
+    list_per_page = 30
 
 
 class StatsAdmin(admin.ModelAdmin):
@@ -30,12 +32,14 @@ class StatsAdmin(admin.ModelAdmin):
     raw_id_fields = ("participant",)
     search_fields = ("participant__match___id", "participant__summoner_name")
     show_full_result_count = False
+    list_per_page = 30
 
 
 class TimelineAdmin(admin.ModelAdmin):
     list_display = ("key", "start", "end", "value")
     raw_id_fields = ("participant",)
     show_full_result_count = False
+    list_per_page = 30
 
 
 class TeamAdmin(admin.ModelAdmin):
@@ -43,6 +47,7 @@ class TeamAdmin(admin.ModelAdmin):
     raw_id_fields = ("match",)
     search_fields = ("match___id",)
     show_full_result_count = False
+    list_per_page = 30
 
 
 class BanAdmin(admin.ModelAdmin):
@@ -50,6 +55,7 @@ class BanAdmin(admin.ModelAdmin):
     raw_id_fields = ("team",)
     search_fields = ("team__match___id",)
     show_full_result_count = False
+    list_per_page = 30
 
 
 # ADVANCEDTIMELINE STUFF
@@ -59,6 +65,7 @@ class AdvancedTimelineAdmin(admin.ModelAdmin):
     list_display = ("match",)
     raw_id_fields = ("match",)
     show_full_result_count = False
+    list_per_page = 30
 
 
 class FrameAdmin(admin.ModelAdmin):
@@ -66,6 +73,7 @@ class FrameAdmin(admin.ModelAdmin):
     search_fields = ("timeline__match___id",)
     raw_id_fields = ("timeline",)
     show_full_result_count = False
+    list_per_page = 30
 
 
 class ParticipantFrameAdmin(admin.ModelAdmin):
@@ -73,18 +81,21 @@ class ParticipantFrameAdmin(admin.ModelAdmin):
     search_fields = ("frame__timeline__match___id",)
     raw_id_fields = ("frame",)
     show_full_result_count = False
+    list_per_page = 30
 
 
 class EventAdmin(admin.ModelAdmin):
     list_display = ("_type", "participant_id", "timestamp")
     raw_id_fields = ("frame",)
     show_full_result_count = False
+    list_per_page = 30
 
 
 class AssistingParticipantsAdmin(admin.ModelAdmin):
     list_display = ("participant_id",)
     raw_id_fields = ("event",)
     show_full_result_count = False
+    list_per_page = 30
 
 
 admin.site.register(Match, MatchAdmin)
