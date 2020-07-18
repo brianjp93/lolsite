@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Rito
 from .models import Queue, Season, Map
 from .models import GameMode, GameType
