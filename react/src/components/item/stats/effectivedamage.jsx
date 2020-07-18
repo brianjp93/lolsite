@@ -28,7 +28,7 @@ export function EffectiveDamage(props) {
 
     const data = useMemo(() => {
         let new_data = []
-        for (let armor = 30; armor < 300; armor += 3) {
+        for (let armor = 30; armor < 401; armor += 5) {
             let elt = { armor }
             for (let item of items) {
                 if (is_item_visible[item.name]) {

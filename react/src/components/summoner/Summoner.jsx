@@ -264,6 +264,7 @@ class Summoner extends Component {
                 this.getSummonerPage(() => {
                     this.getPositions()
                     this.setState({ last_refresh: new Date().getTime() })
+                    this.getCommentCount()
                     if (callback !== undefined) {
                         try {
                             callback()
