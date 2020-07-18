@@ -1,16 +1,24 @@
 from django.contrib import admin
+from django.core.paginator import Paginator
 from .models import Summoner, NameChange
 from .models import RankCheckpoint, RankPosition
 from .models import Custom, EmailVerification, SummonerLink
 
 
+class FixedCountPaginator(Paginator):
+    @property
+    def count(self):
+        return 100_000_000
+
+
 class SummonerAdmin(admin.ModelAdmin):
     list_display = ("simple_name", "region")
-    search_fields = ("simple_name", )
+    search_fields = ("simple_name",)
     list_select_related = True
     raw_id_fields = ("user", "pro")
     show_full_result_count = False
     list_per_page = 20
+    paginator = FixedCountPaginator
 
 
 class SummonerLinkAdmin(admin.ModelAdmin):
