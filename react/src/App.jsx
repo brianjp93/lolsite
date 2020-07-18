@@ -3,7 +3,6 @@ import { Switch, Route, withRouter } from 'react-router-dom'
 
 import ReactGA from 'react-ga'
 import Modal from 'react-modal'
-import Themes from './components/test/Themes'
 import Home from './components/general/Home'
 import Summoner from './components/summoner/Summoner'
 import SignUp from './components/account/SignUp'
