@@ -1,5 +1,5 @@
 from django.contrib import admin
-from player.admin import FixedCountPaginator
+from player.admin import CachedCountPaginator
 
 from .models import Match, Participant, Stats
 from .models import Timeline, Team, Ban
@@ -18,7 +18,7 @@ class MatchAdmin(admin.ModelAdmin):
     )
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 class ParticipantAdmin(admin.ModelAdmin):
@@ -27,7 +27,7 @@ class ParticipantAdmin(admin.ModelAdmin):
     search_fields = ("summoner_name_simplified", "match___id")
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 class StatsAdmin(admin.ModelAdmin):
@@ -36,7 +36,7 @@ class StatsAdmin(admin.ModelAdmin):
     search_fields = ("participant__match___id", "participant__summoner_name")
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 class TimelineAdmin(admin.ModelAdmin):
@@ -44,7 +44,7 @@ class TimelineAdmin(admin.ModelAdmin):
     raw_id_fields = ("participant",)
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 class TeamAdmin(admin.ModelAdmin):
@@ -53,7 +53,7 @@ class TeamAdmin(admin.ModelAdmin):
     search_fields = ("match___id",)
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 class BanAdmin(admin.ModelAdmin):
@@ -62,7 +62,7 @@ class BanAdmin(admin.ModelAdmin):
     search_fields = ("team__match___id",)
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 # ADVANCEDTIMELINE STUFF
@@ -73,7 +73,7 @@ class AdvancedTimelineAdmin(admin.ModelAdmin):
     raw_id_fields = ("match",)
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 class FrameAdmin(admin.ModelAdmin):
@@ -82,7 +82,7 @@ class FrameAdmin(admin.ModelAdmin):
     raw_id_fields = ("timeline",)
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 class ParticipantFrameAdmin(admin.ModelAdmin):
@@ -91,7 +91,7 @@ class ParticipantFrameAdmin(admin.ModelAdmin):
     raw_id_fields = ("frame",)
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 class EventAdmin(admin.ModelAdmin):
@@ -99,7 +99,7 @@ class EventAdmin(admin.ModelAdmin):
     raw_id_fields = ("frame",)
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 class AssistingParticipantsAdmin(admin.ModelAdmin):
@@ -107,7 +107,7 @@ class AssistingParticipantsAdmin(admin.ModelAdmin):
     raw_id_fields = ("event",)
     show_full_result_count = False
     list_per_page = 30
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 admin.site.register(Match, MatchAdmin)
