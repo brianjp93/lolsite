@@ -1366,8 +1366,11 @@ def get_connected_accounts(request, format=None):
     data = {}
     status_code = 200
     if request.method == "POST":
-        query = player_filters.get_connected_accounts_query(request.user)
-        serialized = SummonerSerializer(query, many=True).data
+        if request.user.is_authenticated:
+            query = player_filters.get_connected_accounts_query(request.user)
+            serialized = SummonerSerializer(query, many=True).data
+        else:
+            serialized = []
         data = {"data": serialized}
     else:
         pass
