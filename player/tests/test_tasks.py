@@ -7,7 +7,7 @@ from model_mommy import mommy
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from player.models import Custom
+from player.models import EmailVerification
 from player import tasks as pt
 
 
@@ -17,6 +17,8 @@ class SignUpTests(TestCase):
         user = User.objects.get(email="test@gmail.com")
         self.assertEqual(user.email, "test@gmail.com")
         self.assertEqual(user.username, "test@gmail.com")
+        query = user.emailverification_set.all()
+        self.assertTrue(query.exists())
 
     def test_email_already_exists(self):
         pt.create_account("test@gmail.com", "test-password")
