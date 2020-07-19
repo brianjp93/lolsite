@@ -1,4 +1,4 @@
-import urllib.parse
+import hashlib
 
 from django.contrib import admin
 from django.core.paginator import Paginator
@@ -12,12 +12,13 @@ from .models import Custom, EmailVerification, SummonerLink
 class CachedCountPaginator(Paginator):
     @property
     def count(self):
-        hash_string = self.object_list.explain()
-        hash_string = urllib.parse.quote(hash_string)
-        data = cache.get(hash_string, None)
+        explain_string = self.object_list.explain()
+        bytes_string = bytes(explain_string, 'utf8')
+        hex_hash = hashlib.md5(bytes_string).hexdigest()
+        data = cache.get(hex_hash, None)
         if data is None:
             data = super().count
-            cache.set(hash_string, data, 60 * 60 * 12)
+            cache.set(hex_hash, data, 60 * 60 * 12)
         return data
 
 
