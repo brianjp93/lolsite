@@ -1,14 +1,24 @@
+import urllib.parse
+
 from django.contrib import admin
 from django.core.paginator import Paginator
+from django.core.cache import cache
+
 from .models import Summoner, NameChange
 from .models import RankCheckpoint, RankPosition
 from .models import Custom, EmailVerification, SummonerLink
 
 
-class FixedCountPaginator(Paginator):
+class CachedCountPaginator(Paginator):
     @property
     def count(self):
-        return 100_000_000
+        hash_string = self.object_list.explain()
+        hash_string = urllib.parse.quote(hash_string)
+        data = cache.get(hash_string, None)
+        if data is None:
+            data = super().count
+            cache.set(hash_string, data, 60 * 60 * 12)
+        return data
 
 
 class SummonerAdmin(admin.ModelAdmin):
@@ -18,7 +28,7 @@ class SummonerAdmin(admin.ModelAdmin):
     raw_id_fields = ("user", "pro")
     show_full_result_count = False
     list_per_page = 20
-    paginator = FixedCountPaginator
+    paginator = CachedCountPaginator
 
 
 class SummonerLinkAdmin(admin.ModelAdmin):
