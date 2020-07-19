@@ -13,7 +13,7 @@ class CachedCountPaginator(Paginator):
     @property
     def count(self):
         explain_string = self.object_list.explain()
-        bytes_string = bytes(explain_string, 'utf8')
+        bytes_string = bytes(explain_string, "utf8")
         hex_hash = hashlib.md5(bytes_string).hexdigest()
         data = cache.get(hex_hash, None)
         if data is None:
