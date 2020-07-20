@@ -18,9 +18,11 @@ logger = logging.getLogger(__name__)
 def home(request, path=""):
     """Return basic home address and let react render the rest.
     """
+    # some tasks that need to run
     dt.import_missing.delay()
     dt.compute_changes.delay(5)
     nt.delete_old_notifications.delay()
+
     user = request.user
     data = get_base_react_context(request, user=user)
     return TemplateResponse(request, "layout/home.html", data)
