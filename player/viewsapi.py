@@ -1136,16 +1136,18 @@ def generate_code(request, format=None):
                         status_code = 400
                     else:
                         version = Champion.objects.first().get_newest_version()
-                        icon = ProfileIcon.objects.get(_id=link.profile_icon_id, version=version)
+                        icon = ProfileIcon.objects.get(
+                            _id=link.profile_icon_id, version=version
+                        )
                         icon_data = ProfileIconSerializer(icon, many=False).data
-                        data = {"uuid": link.uuid, 'icon': icon_data}
+                        data = {"uuid": link.uuid, "icon": icon_data}
                 else:
                     data = {"message": "No SummonerLink found for this user."}
                     status_code = 404
             elif action == "create":
                 user = request.user
-                summoner_name = request.data['summoner_name']
-                region = request.data['region']
+                summoner_name = request.data["summoner_name"]
+                region = request.data["region"]
 
                 query = SummonerLink.objects.filter(user=user, verified=False)
                 if query.exists():
@@ -1168,7 +1170,7 @@ def generate_code(request, format=None):
                 version = Champion.objects.first().get_newest_version()
                 icon = ProfileIcon.objects.get(_id=icon_id, version=version)
                 icon_data = ProfileIconSerializer(icon, many=False).data
-                data = {"uuid": link.uuid, 'icon': icon_data}
+                data = {"uuid": link.uuid, "icon": icon_data}
             else:
                 data = {"message": 'action must be "create" or "get".'}
                 status_code = 400
@@ -1605,11 +1607,14 @@ def serialize_comment(comment, user=None):
     out = CommentSerializer(comment).data
     out["is_liked"] = False
     out["is_disliked"] = False
-    if user is not None:
-        if comment.liked_by.filter(id=user.id).exists():
-            out["is_liked"] = True
-        if comment.disliked_by.filter(id=user.id).exists():
-            out["is_disliked"] = True
+    if comment.is_deleted:
+        out["markdown"] = ""
+    else:
+        if user is not None:
+            if comment.liked_by.filter(id=user.id).exists():
+                out["is_liked"] = True
+            if comment.disliked_by.filter(id=user.id).exists():
+                out["is_disliked"] = True
     return out
 
 
@@ -1631,15 +1636,7 @@ def recursively_serialize_comment(
     list(Comment)
 
     """
-    out = CommentSerializer(comment).data
-    out["replies"] = []
-    out["is_liked"] = False
-    out["is_disliked"] = False
-    if user is not None:
-        if comment.liked_by.filter(id=user.id).exists():
-            out["is_liked"] = True
-        if comment.disliked_by.filter(id=user.id).exists():
-            out["is_disliked"] = True
+    out = serialize_comment(comment, user=user)
     query = comment.replies.all()
     query = sort_comments(query, order_by)
     count = query.count()
@@ -1755,7 +1752,7 @@ def create_update_comment(request, action):
 
 
 def delete_comment(request):
-    """Delete comment
+    """Set is_deleted=True. Doesn't actually delete.
 
     Parameters
     ----------
@@ -1771,9 +1768,13 @@ def delete_comment(request):
     comment_id = request.data["comment_id"]
     query = Comment.objects.filter(id=comment_id, user=request.user)
     if query.exists():
-        pass
+        comment = query.first()
+        comment.is_deleted = True
+        comment.save()
+        data = {"data": serialize_comment(comment, user=request.user)}
     else:
-        pass
+        data = {"message": "Could not find comment.", "status": "NOT_FOUND"}
+        status_code = 404
     return data, status_code
 
 
