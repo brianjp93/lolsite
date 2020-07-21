@@ -4,7 +4,6 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from django.http import QueryDict
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.core.cache import cache
@@ -590,8 +589,6 @@ def get_summoner_page(request, format=None):
         # print(f'Took {summoner_time} to get summoner.')
 
         if update:
-            # enable delay when celery is working
-            # pt.import_summoner.delay(region, name=name)
             summoner__id = pt.import_summoner(region, name=name)
             summoner = Summoner.objects.get(id=summoner__id)
 
@@ -644,8 +641,9 @@ def get_summoner_page(request, format=None):
                 mt.import_recent_matches(
                     start_index, end_index, summoner.account_id, region, **kwargs
                 )
+                # import 50 recent matches in the background
                 mt.import_recent_matches.delay(
-                    0, 100, summoner.account_id, region,
+                    0, 50, summoner.account_id, region,
                 )
                 if IS_PRINT_TIMERS:
                     print(

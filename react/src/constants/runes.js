@@ -309,7 +309,7 @@ var RUNEDATA = {
       "name": "Nimbus Cloak",
       "perkVars": 1,
       "perkDesc": [
-        "TBD?"
+        "Times Activated"
       ],
       "perkFormat": ["{0}"]
     },
