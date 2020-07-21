@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import api from '../../api/api'
 import ReactTooltip from 'react-tooltip'
+import toastr from 'toastr'
 import { mdParser } from '../../constants/mdparser'
 import { formatDatetime } from '../../constants/general'
 
@@ -224,7 +225,7 @@ export function Comment(props) {
     }, [comment, replies.length])
 
     let name_style = {
-        color: '#8badad'
+        color: '#8badad',
     }
     if (is_me) {
         name_style.color = '#a8efef'
@@ -247,7 +248,10 @@ export function Comment(props) {
                             {player_in_game.champion !== undefined && (
                                 <>
                                     <ReactTooltip id={`summoner-in-game-tooltip`} effect="solid">
-                                        <span>This player was {player_in_game.champion.name} in this game.</span>
+                                        <span>
+                                            This player was {player_in_game.champion.name} in this
+                                            game.
+                                        </span>
                                     </ReactTooltip>
                                     <div
                                         style={{ display: 'inline-block' }}
@@ -256,8 +260,10 @@ export function Comment(props) {
                                     >
                                         <div style={{ display: 'inline-block', marginRight: 4 }}>
                                             <img
-                                                style={{width: 18, borderRadius: '50%'}}
-                                                src={player_in_game.champion.image_url} alt="" />
+                                                style={{ width: 18, borderRadius: '50%' }}
+                                                src={player_in_game.champion.image_url}
+                                                alt=""
+                                            />
                                         </div>
                                     </div>
                                 </>
@@ -283,14 +289,24 @@ export function Comment(props) {
                                         setComment={setComment}
                                         setReplyComment={props.setReplyComment}
                                         theme={props.theme}
+                                        is_me={is_me}
                                     />
                                 </div>
                             )}
                         </div>
-                        <div
-                            style={{ marginLeft: 15 }}
-                            dangerouslySetInnerHTML={{ __html: mdParser.render(comment.markdown) }}
-                        ></div>
+                        {!comment.is_deleted && (
+                            <div
+                                style={{ marginLeft: 15 }}
+                                dangerouslySetInnerHTML={{
+                                    __html: mdParser.render(comment.markdown),
+                                }}
+                            ></div>
+                        )}
+                        {comment.is_deleted && (
+                            <div style={{ padding: 20, color: 'grey' }}>
+                                This comment was deleted
+                            </div>
+                        )}
                         <div>
                             {replies.map(reply => {
                                 return (
@@ -331,8 +347,10 @@ export function Comment(props) {
 
 export function ActionBar(props) {
     const [show_error, setShowError] = useState(false)
+    const [show_delete_message, setShowDeleteMessage] = useState(false)
     const comment = props.comment
     const setComment = props.setComment
+    const is_me = props.is_me || false
 
     const handleLikeClick = useCallback(() => {
         api.player
@@ -363,6 +381,21 @@ export function ActionBar(props) {
                 ) {
                     setShowError(true)
                 }
+            })
+    }, [comment, setComment])
+
+    const handleDelete = useCallback(() => {
+        api.player
+            .deleteComment({ comment_id: comment.id })
+            .then(response => {
+                let new_comment = { ...comment }
+                new_comment.markdown = response.data.data.markdown
+                new_comment.is_deleted = response.data.data.is_deleted
+                setComment(new_comment)
+                setShowDeleteMessage(false)
+            })
+            .catch(error => {
+                toastr.error('There was an error while deleting your comment.')
             })
     }, [comment, setComment])
 
@@ -420,6 +453,49 @@ export function ActionBar(props) {
                     reply
                 </button>
             </div>
+
+            {is_me && !comment.is_deleted && (
+                <div style={{ display: 'inline-block', position: 'relative' }}>
+                    <button
+                        onClick={() => setShowDeleteMessage(true)}
+                        className={`${props.theme} btn btn-flat btn-small`}
+                    >
+                        delete
+                    </button>
+
+                    {show_delete_message && (
+                        <div style={{ position: 'absolute', bottom: 30, left: -150, zIndex: 2 }}>
+                            <div
+                                style={{ width: 300 }}
+                                className={`${props.theme} card card-panel`}
+                            >
+                                <div>
+                                    Are you sure you want to delete your comment? The comment will
+                                    still exist, but the content will only show "deleted".
+                                </div>
+                                <div style={{ marginTop: 10 }}>
+                                    <button
+                                        onClick={handleDelete}
+                                        className={`${props.theme} btn btn-small`}
+                                    >
+                                        Delete
+                                    </button>
+                                    <button
+                                        style={{ marginLeft: 8 }}
+                                        onClick={() => {
+                                            setShowDeleteMessage(false)
+                                        }}
+                                        className={`${props.theme} btn btn-small`}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {show_error && (
                 <div style={{ display: 'inline-block' }}>
                     <span className="card-panel red darken-3">

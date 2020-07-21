@@ -4,6 +4,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
+from django.http import QueryDict
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.core.cache import cache
@@ -1607,6 +1608,7 @@ def serialize_comment(comment, user=None):
     out = CommentSerializer(comment).data
     out["is_liked"] = False
     out["is_disliked"] = False
+    out["replies"] = []
     if comment.is_deleted:
         out["markdown"] = ""
     else:
@@ -1765,8 +1767,10 @@ def delete_comment(request):
     """
     data = {}
     status_code = 200
+
     comment_id = request.data["comment_id"]
-    query = Comment.objects.filter(id=comment_id, user=request.user)
+    query = Comment.objects.filter(id=comment_id, summoner__summonerlinks__user=request.user)
+
     if query.exists():
         comment = query.first()
         comment.is_deleted = True

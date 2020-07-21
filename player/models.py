@@ -420,6 +420,9 @@ class Comment(models.Model):
         ).distinct()
         return summonerquery
 
+    def get_users(self):
+        return User.objects.filter(summonerlinks__summoner=self.summoner)
+
     def create_comment_notifications(self):
         """Create notifications for all existing users in game.
 
