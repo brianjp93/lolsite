@@ -187,7 +187,7 @@ export function ChampionCard(props) {
                     >
                         {letter}
                     </div>
-                    <div style={{textDecoration: 'underline', display: 'inline-block'}}>
+                    <div style={{ textDecoration: 'underline', display: 'inline-block' }}>
                         {spell.name}
                     </div>
                 </div>
@@ -205,7 +205,9 @@ export function ChampionCard(props) {
             return (
                 <div>
                     {champion.spells.reverse().map((spell, key) => {
-                        return <div key={`${spell._id}`}>{spell_elt(spell, ability_letters[key])}</div>
+                        return (
+                            <div key={`${spell._id}`}>{spell_elt(spell, ability_letters[key])}</div>
+                        )
                     })}
                 </div>
             )
@@ -251,12 +253,7 @@ export function ChampionCard(props) {
                                 src={champion.image_url}
                                 alt=""
                             />
-                            <div
-                                style={{
-                                    display: 'inline-block',
-                                    marginLeft: 60,
-                                }}
-                            >
+                            <div style={{ display: 'inline-block', marginLeft: 60 }}>
                                 {champion.name}
                             </div>
                         </h6>
