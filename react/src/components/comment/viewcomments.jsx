@@ -394,7 +394,7 @@ export function ActionBar(props) {
                 setComment(new_comment)
                 setShowDeleteMessage(false)
             })
-            .catch(error => {
+            .catch(() => {
                 toastr.error('There was an error while deleting your comment.')
             })
     }, [comment, setComment])
@@ -442,7 +442,7 @@ export function ActionBar(props) {
                 {comment.likes}
             </div>
 
-            <div style={{ display: 'inline-block' }}>
+            <div style={{ display: 'inline-block', marginLeft: 8 }}>
                 <button
                     onClick={() => {
                         props.setReplyComment(comment)
