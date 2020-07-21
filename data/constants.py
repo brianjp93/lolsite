@@ -7,8 +7,12 @@ TRUTHY = ["true", "True", "TRUE", True]
 FALSEY = ["false", "False", "FALSE", False]
 
 
-is_truthy = lambda x: x is True or (isinstance(x, str) and x.lower() == "true")
-is_falsey = lambda x: x is False or (isinstance(x, str) and x.lower() == "false")
+def is_truthy(val):
+    return val is True or (isinstance(val, str) and val.lower() == "true")
+
+
+def is_falsey(val):
+    return val is False or (isinstance(val, str) and val.lower() == "false")
 
 
 def get_null_bool(val):
@@ -22,12 +26,12 @@ def get_null_bool(val):
     -------
     bool or None
     """
+    out = None
     if is_truthy(val):
-        return True
+        out = True
     elif is_falsey(val):
-        return False
-    else:
-        return None
+        out = False
+    return out
 
 
 SEASONS = [
