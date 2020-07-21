@@ -115,6 +115,11 @@ function createComment(data) {
     return axios.post(url, data)
 }
 
+function deleteComment(data) {
+    let url = `/api/${version}/player/comment/`
+    return axios.delete(url, {data})
+}
+
 function likeComment(data) {
     let url = `/api/${version}/player/comment/like/`
     return axios.put(url, data)
@@ -153,6 +158,7 @@ export default {
     getComments,
     getReplies,
     createComment,
+    deleteComment,
     likeComment,
     dislikeComment,
     getCommentCount,

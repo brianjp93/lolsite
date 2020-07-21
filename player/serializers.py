@@ -50,4 +50,5 @@ class CommentSerializer(DynamicSerializer):
             "modified_date",
             "reply_to",
             "summoner",
+            "is_deleted",
         ]
