@@ -250,7 +250,7 @@ def get_participants(request, format=None):
                 }
                 champion = (
                     Champion.objects.filter(language=language, key=part.champion_id)
-                    .order_by("-version")
+                    .order_by("-major", "-minor", "-patch")
                     .first()
                 )
                 p["champion"] = {

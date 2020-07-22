@@ -14,22 +14,6 @@ from .serializers import ChampionSpellSerializer
 from django.core.cache import cache
 
 
-def get_summoner_page(request, format=None):
-    """Get all data needed to render the basic summoner page.
-
-    POST Parameters
-    ---------------
-    summoner_name : str
-    region : str
-
-    Returns
-    -------
-    JSON Data
-
-    """
-    pass
-
-
 @api_view(["POST"])
 def get_profile_icon(request, format=None):
     """
