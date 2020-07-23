@@ -37,7 +37,7 @@ def get_profile_icon(request, format=None):
     if request.method == "POST":
         query = ProfileIcon.objects.filter(_id=profile_icon_id)
         if query.exists():
-            query = query.order_by("-major", '-minor', '-patch')
+            query = query.order_by("-major", "-minor", "-patch")
             profile_icon = query.first()
             serializer = ProfileIconSerializer(profile_icon)
             data["data"] = serializer.data
@@ -98,10 +98,10 @@ def get_item(request, format=None):
     minor = request.data.get("minor")
 
     if None in [major, minor]:
-        item = Item.objects.all().order_by("-major", "-minor").first()
-        major = item.major
-        minor = item.minor
-    version = f"{major}.{minor}.1"
+        item = Item.objects.all().order_by("-major", "-minor", "-patch").first()
+        version = item.version
+    else:
+        version = f"{major}.{minor}.1"
 
     if item_id:
         query = Item.objects.filter(_id=item_id, version=version)
@@ -110,12 +110,22 @@ def get_item(request, format=None):
             item_data = serialize_item(item)
             data["data"] = item_data
         else:
-            item = Item.objects.filter(_id=item_id).order_by("-major", "-minor").first()
+            item = (
+                Item.objects.filter(_id=item_id)
+                .order_by("-major", "-minor", "-patch")
+                .first()
+            )
             item_data = serialize_item(item)
             data["data"] = item_data
     elif item_list:
         query = Item.objects.filter(_id__in=item_list, version=version)
+
         serialized_items = []
+
+        if not query.exists():
+            item = Item.objects.all().order_by("-major", "-minor", "-patch").first()
+            query = Item.objects.filter(_id__in=item_list, version=item.version)
+
         for item in query:
             item_data = serialize_item(item)
             serialized_items.append(item_data)
@@ -213,7 +223,11 @@ def get_reforged_runes(request, format=None):
             if version is None:
                 SET_CACHE = False
                 # get newest version of runes
-                tree = ReforgedTree.objects.all().order_by("-version").first()
+                tree = (
+                    ReforgedTree.objects.all()
+                    .order_by("-major", "-minor", "-patch")
+                    .first()
+                )
                 version = tree.version
                 runes = ReforgedRune.objects.filter(reforgedtree__version=version)
             else:
@@ -221,7 +235,11 @@ def get_reforged_runes(request, format=None):
                 if not runes.exists():
                     SET_CACHE = False
                     # get newest version of runes
-                    tree = ReforgedTree.objects.all().order_by("-version").first()
+                    tree = (
+                        ReforgedTree.objects.all()
+                        .order_by("-major", "-minor", "-patch")
+                        .first()
+                    )
                     version = tree.version
                     runes = ReforgedRune.objects.filter(reforgedtree__version=version)
             runes_data = ReforgedRuneSerializer(runes, many=True)

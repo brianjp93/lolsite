@@ -254,10 +254,10 @@ def get_participants(request, format=None):
                     .first()
                 )
                 p["champion"] = {
-                    "_id": champion._id,
-                    "name": champion.name,
-                    "key": champion.key,
-                    "image_url": champion.image_url(),
+                    "_id": champion._id if champion is not None else 'NA',
+                    "name": champion.name if champion is not None else 'NA',
+                    "key": champion.key if champion is not None else 'NA',
+                    "image_url": champion.image_url() if champion is not None else '',
                 }
                 try:
                     stats = part.stats

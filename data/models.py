@@ -92,12 +92,23 @@ class ReforgedTree(models.Model):
         max_length=32, default="en_US", db_index=True, blank=True
     )
     version = models.CharField(max_length=32, default="", db_index=True, blank=True)
+    major = models.IntegerField(default=None, null=True, db_index=True, blank=True)
+    minor = models.IntegerField(default=None, null=True, db_index=True, blank=True)
+    patch = models.IntegerField(default=None, null=True, db_index=True, blank=True)
     icon = models.CharField(max_length=128, default="", blank=True)
     key = models.CharField(max_length=128, default="", blank=True)
     name = models.CharField(max_length=128, default="", blank=True)
 
     class Meta:
         unique_together = ("_id", "language", "version")
+
+    def save(self, *args, **kwargs):
+        # save major, minor, patch by parsing version
+        if self.major is None:
+            parts = [int(x) for x in self.version.split(".")]
+            for i, attr in enumerate(["major", "minor", "patch"]):
+                setattr(self, attr, parts[i])
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'ReforgedTree(_id={self._id}, language="{self.language}", version="{self.version}")'
@@ -133,9 +144,9 @@ class ReforgedRune(models.Model):
 class Item(models.Model):
     _id = models.IntegerField(db_index=True)
     version = models.CharField(max_length=128, default="", db_index=True, blank=True)
-    major = models.IntegerField(default=0, db_index=True, blank=True)
-    minor = models.IntegerField(default=0, db_index=True, blank=True)
-    patch = models.IntegerField(default=0, db_index=True, blank=True)
+    major = models.IntegerField(default=None, null=True, db_index=True, blank=True)
+    minor = models.IntegerField(default=None, null=True, db_index=True, blank=True)
+    patch = models.IntegerField(default=None, null=True, db_index=True, blank=True)
     language = models.CharField(
         max_length=32, default="en_US", db_index=True, blank=True
     )

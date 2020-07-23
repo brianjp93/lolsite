@@ -178,6 +178,7 @@ QUEUES = [
         "description": "Odyssey Extraction: Onslaught games",
     },
     {"_id": 1200, "_map": "Nexus Blitz", "description": "Nexus Blitz games"},
+    {"_id": 1300, "_map": "Nexus Blitz", "description": "Nexus Blitz games"},
     {"_id": 2000, "_map": "Summoner's Rift", "description": "Tutorial Part 1"},
     {"_id": 2010, "_map": "Summoner's Rift", "description": "Tutorial Part 2"},
     {"_id": 2020, "_map": "Summoner's Rift", "description": "Tutorial Part 3"},

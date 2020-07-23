@@ -239,6 +239,9 @@ function ChampionImage(props) {
         borderStyle: 'solid',
         borderWidth: 2,
         borderColor: props.color,
+        cursor: 'pointer',
+        width: 30,
+        height: 30,
     }
     if (!props.is_selected) {
         image_style = {
@@ -246,19 +249,28 @@ function ChampionImage(props) {
             opacity: 0.3,
         }
     }
+
+    let vert_align = {}
+    if (props.participant.champion.image_url === '') {
+        vert_align.verticalAlign = 'top'
+    }
+
     return (
-        <div style={{ display: 'inline-block', paddingRight: props.padding_pixels }}>
-            <img
-                onClick={props.handleClick}
-                style={{
-                    cursor: 'pointer',
-                    width: 30,
-                    ...image_style,
-                }}
-                aria-label={props.participant.champion.name}
-                src={props.participant.champion.image_url}
-                alt=""
-            />
+        <div style={{ display: 'inline-block', paddingRight: props.padding_pixels, ...vert_align }}>
+            {props.participant.champion.image_url === '' && (
+                <div onClick={props.handleClick} style={{ ...image_style }}>
+                    NA
+                </div>
+            )}
+            {props.participant.champion.image_url !== '' && (
+                <img
+                    onClick={props.handleClick}
+                    style={{ ...image_style }}
+                    aria-label={props.participant.champion.name}
+                    src={props.participant.champion.image_url}
+                    alt=""
+                />
+            )}
         </div>
     )
 }

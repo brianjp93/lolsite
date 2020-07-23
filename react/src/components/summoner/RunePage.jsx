@@ -100,30 +100,47 @@ class RunePage extends Component {
         let parts = this.props.participants
         return parts.map(part => {
             var is_selected = false
-            var select_style = {}
+            var select_style = {
+                height: 30,
+                width: 30,
+                cursor: 'pointer',
+            }
             if (this.state.selected_part !== null && part._id === this.state.selected_part._id) {
                 is_selected = true
             }
             if (is_selected) {
                 select_style = {
+                    ...select_style,
                     borderStyle: 'solid',
                     borderWidth: 3,
                     borderColor: 'white',
                 }
             } else {
                 select_style = {
+                    ...select_style,
                     opacity: 0.4,
                 }
             }
             return (
                 <div key={`${match.id}-${part.id}-rune-champ-image`}>
-                    <img
-                        title={part.summoner_name}
-                        onClick={() => this.setState({ selected_part: part })}
-                        style={{ height: 30, ...select_style, cursor: 'pointer' }}
-                        src={part.champion.image_url}
-                        alt=""
-                    />
+                    {part.champion.image_url === '' && (
+                        <div
+                            title={part.summoner_name}
+                            onClick={() => this.setState({ selected_part: part })}
+                            style={{ ...select_style }}
+                        >
+                            NA
+                        </div>
+                    )}
+                    {part.champion.image_url !== '' && (
+                        <img
+                            title={part.summoner_name}
+                            onClick={() => this.setState({ selected_part: part })}
+                            style={{ ...select_style }}
+                            src={part.champion.image_url}
+                            alt=""
+                        />
+                    )}
                 </div>
             )
         })
