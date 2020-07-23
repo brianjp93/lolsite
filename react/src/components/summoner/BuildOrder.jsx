@@ -5,7 +5,6 @@ import ReactTooltip from 'react-tooltip'
 import api from '../../api/api'
 import toastr from 'toastr'
 
-
 function BuildOrder(props) {
     const [participant_selection, setParticipantSelection] = useState(props.my_part._id)
     const [purchase_history, setPurchaseHistory] = useState({})
@@ -17,11 +16,11 @@ function BuildOrder(props) {
 
     const image_width = 30
     const usable_width = props.expanded_width - 30
-    const available_width = (usable_width - (props.participants.length * image_width))
+    const available_width = usable_width - props.participants.length * image_width
     const padding_pixels = available_width / props.participants.length
     const participants = [
         ...props.participants.filter(participant => participant.team_id === 100),
-        ...props.participants.filter(participant => participant.team_id === 200)
+        ...props.participants.filter(participant => participant.team_id === 200),
     ]
 
     const participant_data = useMemo(() => {
@@ -42,7 +41,7 @@ function BuildOrder(props) {
                 groups.push(group)
             }
         }
-        
+
         let groups_with_count = []
         for (let group of groups) {
             let group_count = {}
@@ -51,8 +50,7 @@ function BuildOrder(props) {
                 if (group_count[key] === undefined) {
                     event.count = 1
                     group_count[key] = event
-                }
-                else {
+                } else {
                     group_count[key].count++
                 }
             }
@@ -65,7 +63,7 @@ function BuildOrder(props) {
     useEffect(() => {
         let purchase = {}
         if ([null, undefined].indexOf(props.timeline) < 0) {
-            for (let i=0; i<props.timeline.length; i++) {
+            for (let i = 0; i < props.timeline.length; i++) {
                 let frame = props.timeline[i]
                 for (let event of frame.events) {
                     if (['ITEM_PURCHASED', 'ITEM_SOLD'].indexOf(event._type) >= 0) {
@@ -87,7 +85,7 @@ function BuildOrder(props) {
     useEffect(() => {
         let skills = {}
         if ([null, undefined].indexOf(props.timeline) < 0) {
-            for (let i=0; i<props.timeline.length; i++) {
+            for (let i = 0; i < props.timeline.length; i++) {
                 let frame = props.timeline[i]
                 for (let event of frame.events) {
                     if (['SKILL_LEVEL_UP'].indexOf(event._type) >= 0) {
@@ -108,28 +106,27 @@ function BuildOrder(props) {
         for (let i in purchase_history[participant_selection]) {
             let group = purchase_history[participant_selection][i]
             for (let event of group) {
-                if (items[ event.item_id ] === undefined) {
+                if (items[event.item_id] === undefined) {
                     item_set.add(event.item_id)
                 }
             }
         }
         let item_list = [...item_set]
         if (item_list.length > 0) {
-            api.data.getItem({item_list: item_list})
-                .then(response => {
-                    let new_items = {...items}
-                    for (let item of response.data.data) {
-                        new_items[item._id] = item
-                    }
-                    setItems(new_items)
-                })
+            api.data.getItem({ item_list: item_list }).then(response => {
+                let new_items = { ...items }
+                for (let item of response.data.data) {
+                    new_items[item._id] = item
+                }
+                setItems(new_items)
+            })
         }
     }, [participant_selection, purchase_history, items])
 
     let count = 0
     let lines = 1
     return (
-        <div style={{marginLeft: 30}}>
+        <div style={{ marginLeft: 30 }}>
             {participants.map((participant, index) => {
                 return (
                     <ChampionImage
@@ -144,47 +141,56 @@ function BuildOrder(props) {
                             if (participant._id !== participant_selection) {
                                 setParticipantSelection(participant._id)
                             }
-                        }} />
+                        }}
+                    />
                 )
             })}
 
-            <div style={{marginTop: 5, marginBottom: 5}} className='row'>
+            <div style={{ marginTop: 5, marginBottom: 5 }} className="row">
                 <div className="col s6">
                     <label htmlFor={`${props.match_id}-build-selection`}>
-                        <input id={`${props.match_id}-build-selection`} onChange={useCallback(() => setDisplayPage('build'), [])} type="radio" checked={display_page === 'build'}/>
+                        <input
+                            id={`${props.match_id}-build-selection`}
+                            onChange={useCallback(() => setDisplayPage('build'), [])}
+                            type="radio"
+                            checked={display_page === 'build'}
+                        />
                         <span>Build Order</span>
                     </label>
                 </div>
                 <div className="col s6">
                     <label htmlFor={`${props.match_id}-skill-selection`}>
-                        <input id={`${props.match_id}-skill-selection`} onChange={useCallback(() => setDisplayPage('skill'), [])} type="radio" checked={display_page === 'skill'}/>
+                        <input
+                            id={`${props.match_id}-skill-selection`}
+                            onChange={useCallback(() => setDisplayPage('skill'), [])}
+                            type="radio"
+                            checked={display_page === 'skill'}
+                        />
                         <span>Skill Order</span>
                     </label>
                 </div>
             </div>
-            
 
-            {display_page === 'build' &&
+            {display_page === 'build' && (
                 <div
-                    className='quiet-scroll'
-                    style={{marginTop: 5, overflowY: 'scroll', height: 300, width: 385}}>
+                    className="quiet-scroll"
+                    style={{ marginTop: 5, overflowY: 'scroll', height: 300, width: 385 }}
+                >
                     {participant_groups.map((group, key) => {
                         let total_seconds = Object.values(group)[0].timestamp / 1000
                         let minutes = Math.floor(total_seconds / 60)
                         let seconds = Math.floor(total_seconds % 60)
                         count++
-                        let div_style = {display: 'inline-block'}
-                        if (count > (lines * 9)) {
+                        let div_style = { display: 'inline-block' }
+                        if (count > lines * 9) {
                             lines++
-                            div_style = {display: 'block'}
+                            div_style = { display: 'block' }
                         }
                         return (
                             <span key={`${props.match_id}-${key}`}>
-                                <div style={div_style}>
-                                        
-                                </div>
-                                <div style={{display: 'inline-block'}} key={key}>
-                                    <div style={{display: 'block', color: 'grey', width: 50}}>
+                                <div style={div_style}></div>
+                                <div style={{ display: 'inline-block' }} key={key}>
+                                    <div style={{ display: 'block', color: 'grey', width: 50 }}>
                                         {minutes}:{numeral(seconds).format('00')}
                                     </div>
                                     <div>
@@ -197,7 +203,7 @@ function BuildOrder(props) {
                                                     action = 'sold'
                                                     image_style = {
                                                         ...image_style,
-                                                        opacity: .3,
+                                                        opacity: 0.3,
                                                         borderWidth: 3,
                                                         borderStyle: 'solid',
                                                         borderColor: 'darkred',
@@ -209,20 +215,41 @@ function BuildOrder(props) {
                                                 let minutes = Math.floor(total_seconds / 60)
                                                 let seconds = Math.floor(total_seconds % 60)
                                                 return (
-                                                    <div key={sub_key} style={{display: 'inline-block'}}>
-                                                        <div style={{display: 'inline-block', position: 'relative'}}>
+                                                    <div
+                                                        key={sub_key}
+                                                        style={{ display: 'inline-block' }}
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                display: 'inline-block',
+                                                                position: 'relative',
+                                                            }}
+                                                        >
                                                             <ReactTooltip
                                                                 id={`${props.match_id}-${item_data._id}-${key}-${sub_key}-tt`}
-                                                                effect='solid' >
-                                                                <h4 style={{marginBottom: 0}}>{item_data.name}</h4>
+                                                                effect="solid"
+                                                            >
+                                                                <h4 style={{ marginBottom: 0 }}>
+                                                                    {item_data.name}
+                                                                </h4>
 
-                                                                <div style={{marginBottom: 15}}>{action} at {minutes}:{numeral(seconds).format('00')}.</div>
+                                                                <div style={{ marginBottom: 15 }}>
+                                                                    {action} at {minutes}:
+                                                                    {numeral(seconds).format('00')}.
+                                                                </div>
 
                                                                 <div
-                                                                    className='item-description-tt'
-                                                                    style={{maxWidth: 500, wordBreak: 'normal', whiteSpace: 'normal'}}
-                                                                    dangerouslySetInnerHTML={{__html: item_data.description}}>
-                                                                </div>
+                                                                    className="item-description-tt"
+                                                                    style={{
+                                                                        maxWidth: 500,
+                                                                        wordBreak: 'normal',
+                                                                        whiteSpace: 'normal',
+                                                                    }}
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html:
+                                                                            item_data.description,
+                                                                    }}
+                                                                ></div>
                                                             </ReactTooltip>
                                                             <img
                                                                 data-tip
@@ -230,11 +257,14 @@ function BuildOrder(props) {
                                                                 style={{
                                                                     width: 30,
                                                                     borderRadius: 5,
-                                                                    ...image_style
+                                                                    ...image_style,
                                                                 }}
-                                                                src={item_data.image_url} alt="" />
-                                                            {event.count > 1 &&
-                                                                <div style={{
+                                                                src={item_data.image_url}
+                                                                alt=""
+                                                            />
+                                                            {event.count > 1 && (
+                                                                <div
+                                                                    style={{
                                                                         position: 'absolute',
                                                                         bottom: 0,
                                                                         right: 0,
@@ -244,33 +274,39 @@ function BuildOrder(props) {
                                                                         textAlign: 'center',
                                                                         fontSize: 'smaller',
                                                                         borderRadius: 5,
-                                                                    }}>
+                                                                    }}
+                                                                >
                                                                     {event.count}
                                                                 </div>
-                                                            }
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )
                                             }
                                             return null
                                         })}
-                                        {key < participant_groups.length - 1 &&
-                                            <span><i className="small material-icons">arrow_forward</i></span>
-                                        }
+                                        {key < participant_groups.length - 1 && (
+                                            <span>
+                                                <i className="small material-icons">
+                                                    arrow_forward
+                                                </i>
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             </span>
                         )
                     })}
                 </div>
-            }
-            {display_page === 'skill' &&
+            )}
+            {display_page === 'skill' && (
                 <SkillLevelUp
                     skills={skills[participant_selection]}
                     my_part={props.my_part}
                     selected_participant={participant_data}
-                    expanded_width={props.expanded_width} />
-            }
+                    expanded_width={props.expanded_width}
+                />
+            )}
         </div>
     )
 }
@@ -285,14 +321,17 @@ BuildOrder.propTypes = {
 }
 
 function ChampionImage(props) {
-    let image_style = {}
+    let image_style = {
+        cursor: 'pointer',
+        width: 30,
+        height: 30,
+    }
     if (!props.is_selected) {
         image_style = {
             ...image_style,
-            opacity: .3,
+            opacity: 0.3,
         }
-    }
-    else {
+    } else {
         image_style = {
             ...image_style,
             borderWidth: 3,
@@ -300,18 +339,33 @@ function ChampionImage(props) {
             borderStyle: 'solid',
         }
     }
+
+    let vert_align = {}
+    if (props.participant.champion.image_url === '') {
+        vert_align.verticalAlign = 'top'
+    }
+
     return (
-        <div style={{display: 'inline-block', paddingRight: props.padding_pixels}}>
-            <img
-                onClick={props.handleClick}
-                style={{
-                    cursor: 'pointer',
-                    width: 30,
-                    ...image_style
-                }}
-                aria-label={props.participant.champion.name}
-                src={props.participant.champion.image_url}
-                alt=""/>
+        <div style={{ display: 'inline-block', paddingRight: props.padding_pixels, ...vert_align }}>
+            {props.participant.champion.image_url === '' && (
+                <div
+                    onClick={props.handleClick}
+                    style={{ display: 'inline-block', ...image_style }}
+                >
+                    NA
+                </div>
+            )}
+            {props.participant.champion.image_url !== '' && (
+                <img
+                    onClick={props.handleClick}
+                    style={{
+                        ...image_style,
+                    }}
+                    aria-label={props.participant.champion.name}
+                    src={props.participant.champion.image_url}
+                    alt=""
+                />
+            )}
         </div>
     )
 }
@@ -323,17 +377,17 @@ ChampionImage.propTypes = {
     theme: PropTypes.string,
 }
 
-
 function SkillLevelUp(props) {
     const [spells, setSpells] = useState({})
-    
+
     useEffect(() => {
-        let params = {champion_id: props.selected_participant.champion._id}
-        api.data.getChampionSpells(params)
+        let params = { champion_id: props.selected_participant.champion._id }
+        api.data
+            .getChampionSpells(params)
             .then(response => {
                 let output = {}
                 let data = response.data.data
-                for (let i=0; i<data.length; i++) {
+                for (let i = 0; i < data.length; i++) {
                     let spell = data[i]
                     let letter = ['q', 'w', 'e', 'r'][i]
                     // let letter = spell._id[spell._id.length - 1].toLowerCase()
@@ -350,108 +404,140 @@ function SkillLevelUp(props) {
     let div_height = 30
     return (
         <div>
-            {props.skills !== undefined && [...Array(19).keys()].map(num => {
-                let skill = props.skills[num - 1]
-                return (
-                    <div key={num} style={{display: 'inline-block'}}>
-                        {['lvl', 'q', 'w', 'e', 'r'].map((skill_num, key) => {
-                            let output = '.'
-                            let div_style = {
-                                height: div_height,
-                                width: div_width,
-                                borderStyle: 'solid',
-                                borderColor: 'grey',
-                                borderWidth: 1,
-                            }
-                            if (num === 0) {
-                                div_style = {
+            {props.skills !== undefined &&
+                [...Array(19).keys()].map(num => {
+                    let skill = props.skills[num - 1]
+                    return (
+                        <div key={num} style={{ display: 'inline-block' }}>
+                            {['lvl', 'q', 'w', 'e', 'r'].map((skill_num, key) => {
+                                let output = '.'
+                                let div_style = {
                                     height: div_height,
-                                    width: 30,
+                                    width: div_width,
                                     borderStyle: 'solid',
                                     borderColor: 'grey',
-                                    borderWidth: 0,
+                                    borderWidth: 1,
                                 }
-                                if (['q', 'w', 'e', 'r'].indexOf(skill_num) >= 0) {
-                                    output = (
-                                        <span>
-                                            <ReactTooltip
-                                                id={`${props.selected_participant._id}-${skill_num}-ability`}
-                                                effect='solid' >
-                                                <div style={{maxWidth: 500, wordBreak: 'normal', whiteSpace: 'normal'}}>
-                                                    {spells[skill_num] !== undefined &&
-                                                        <div>
-                                                            <div>
-                                                                <div style={{display: 'inline-block'}}>
-                                                                    <img
-                                                                        style={{height: 50, borderRadius: 8}}
-                                                                        src={spells[skill_num].image_url} alt=""/>
-                                                                </div>
-                                                                <h4 style={{display: 'inline-block', marginLeft: 10}}>
-                                                                    {spells[skill_num].name}
-                                                                </h4>
-                                                            </div>
-                                                            <div dangerouslySetInnerHTML={{__html: spells[skill_num].description}}>
-                                                            </div>
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </ReactTooltip>
-                                            <div
-                                                data-tip
-                                                data-for={`${props.selected_participant._id}-${skill_num}-ability`}
-                                                style={{width: 30, height: 30, position: 'relative'}} >
-                                                {skill_num}
-
-                                                {spells[skill_num] !== undefined &&
-                                                    <img
-                                                        src={spells[skill_num].image_url}
-                                                        alt=""
+                                if (num === 0) {
+                                    div_style = {
+                                        height: div_height,
+                                        width: 30,
+                                        borderStyle: 'solid',
+                                        borderColor: 'grey',
+                                        borderWidth: 0,
+                                    }
+                                    if (['q', 'w', 'e', 'r'].indexOf(skill_num) >= 0) {
+                                        output = (
+                                            <span>
+                                                <ReactTooltip
+                                                    id={`${props.selected_participant._id}-${skill_num}-ability`}
+                                                    effect="solid"
+                                                >
+                                                    <div
                                                         style={{
-                                                            position: 'absolute',
-                                                            top: 0,
-                                                            left: 0,
-                                                            width: 30,
-                                                            borderStyle: 'solid',
-                                                            borderColor: 'grey',
-                                                            borderWidth: 2,
-                                                        }}/>
-                                                }
-                                            </div>
-                                        </span>
-                                    )
-                                }
-                                else {
+                                                            maxWidth: 500,
+                                                            wordBreak: 'normal',
+                                                            whiteSpace: 'normal',
+                                                        }}
+                                                    >
+                                                        {spells[skill_num] !== undefined && (
+                                                            <div>
+                                                                <div>
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'inline-block',
+                                                                        }}
+                                                                    >
+                                                                        <img
+                                                                            style={{
+                                                                                height: 50,
+                                                                                borderRadius: 8,
+                                                                            }}
+                                                                            src={
+                                                                                spells[skill_num]
+                                                                                    .image_url
+                                                                            }
+                                                                            alt=""
+                                                                        />
+                                                                    </div>
+                                                                    <h4
+                                                                        style={{
+                                                                            display: 'inline-block',
+                                                                            marginLeft: 10,
+                                                                        }}
+                                                                    >
+                                                                        {spells[skill_num].name}
+                                                                    </h4>
+                                                                </div>
+                                                                <div
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html:
+                                                                            spells[skill_num]
+                                                                                .description,
+                                                                    }}
+                                                                ></div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </ReactTooltip>
+                                                <div
+                                                    data-tip
+                                                    data-for={`${props.selected_participant._id}-${skill_num}-ability`}
+                                                    style={{
+                                                        width: 30,
+                                                        height: 30,
+                                                        position: 'relative',
+                                                    }}
+                                                >
+                                                    {skill_num}
+
+                                                    {spells[skill_num] !== undefined && (
+                                                        <img
+                                                            src={spells[skill_num].image_url}
+                                                            alt=""
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: 0,
+                                                                left: 0,
+                                                                width: 30,
+                                                                borderStyle: 'solid',
+                                                                borderColor: 'grey',
+                                                                borderWidth: 2,
+                                                            }}
+                                                        />
+                                                    )}
+                                                </div>
+                                            </span>
+                                        )
+                                    } else {
+                                        output = '.'
+                                    }
+                                } else if (skill_num === 'lvl') {
+                                    div_style = {
+                                        ...div_style,
+                                        borderStyle: 'none',
+                                        borderWidth: 0,
+                                    }
+                                    output = `${num}`
+                                } else if (skill !== undefined && skill.skill_slot === key) {
+                                    div_style = {
+                                        ...div_style,
+                                        textAlign: 'center',
+                                        background: '#196893',
+                                    }
+                                    output = skill_num
+                                } else {
                                     output = '.'
                                 }
-                            }
-                            else if (skill_num === 'lvl') {
-                                div_style = {
-                                    ...div_style,
-                                    borderStyle: 'none',
-                                    borderWidth: 0,
-                                }
-                                output = `${num}`
-                            }
-                            else if (skill !== undefined && skill.skill_slot === key) {
-                                div_style = {
-                                    ...div_style,
-                                    textAlign: 'center',
-                                    background: '#196893',
-                                }
-                                output = skill_num
-                            }
-                            else {
-                                output = '.'
-                            }
-                            return (
-                                <div key={key} style={div_style}>
-                                    <span>{output}</span>
-                                </div>
-                            )
-                        })}
-                    </div>
-                )
-            })}
+                                return (
+                                    <div key={key} style={div_style}>
+                                        <span>{output}</span>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    )
+                })}
         </div>
     )
 }
