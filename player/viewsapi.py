@@ -615,7 +615,7 @@ def get_summoner_page(request, format=None):
 
             query = ProfileIcon.objects.filter(_id=summoner.profile_icon_id)
             if query.exists():
-                query = query.order_by("-version")
+                query = query.order_by("-major", "-minor", "-patch")
                 profile_icon = query.first()
                 profile_icon_ser = ProfileIconSerializer(profile_icon)
                 profile_icon_data = profile_icon_ser.data

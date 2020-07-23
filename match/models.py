@@ -486,7 +486,9 @@ class Stats(models.Model):
         except:
             pass
         else:
-            query = Item.objects.filter(_id=item_id).order_by("-version")
+            query = Item.objects.filter(_id=item_id).order_by(
+                "-major", "-minor", "-patch"
+            )
             version_query = query.filter(version=version)
             if version and version_query.exists():
                 item = version_query.first()
