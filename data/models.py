@@ -62,7 +62,7 @@ class Map(models.Model):
         if version:
             pass
         else:
-            query = Item.objects.all().order_by("-version")
+            query = Item.objects.all().order_by("-major", "-minor", "-patch")
             if query.exists():
                 version = query.first().version
             else:

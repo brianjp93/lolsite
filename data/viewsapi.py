@@ -37,7 +37,7 @@ def get_profile_icon(request, format=None):
     if request.method == "POST":
         query = ProfileIcon.objects.filter(_id=profile_icon_id)
         if query.exists():
-            query = query.order_by("-version")
+            query = query.order_by("-major", '-minor', '-patch')
             profile_icon = query.first()
             serializer = ProfileIconSerializer(profile_icon)
             data["data"] = serializer.data
