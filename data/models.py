@@ -291,9 +291,19 @@ class ItemRune(models.Model):
     _type = models.CharField(max_length=128, default="", blank=True)
 
 
+def get_item_with_default(li, index, default_val=None):
+    try:
+        return li[index]
+    except ValueError:
+        return default_val
+
+
 class ProfileIcon(models.Model):
     _id = models.IntegerField(db_index=True)
     version = models.CharField(max_length=128, default="", blank=True, db_index=True)
+    major = models.IntegerField(default=None, db_index=True, null=True, blank=True)
+    minor = models.IntegerField(default=None, db_index=True, null=True, blank=True)
+    patch = models.IntegerField(default=None, db_index=True, null=True, blank=True)
     language = models.CharField(max_length=128, default="", blank=True, db_index=True)
     full = models.CharField(max_length=128, default="", blank=True)
     group = models.CharField(max_length=128, default="", blank=True)
@@ -305,6 +315,14 @@ class ProfileIcon(models.Model):
 
     class Meta:
         unique_together = ("_id", "version", "language")
+
+    def save(self, *args, **kwargs):
+        # save major, minor, patch by parsing version
+        if self.major is None:
+            parts = [int(x) for x in self.version.split(".")]
+            for i, attr in enumerate(["major", "minor", "patch"]):
+                setattr(self, attr, parts[i])
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'ProfileIcon(_id={self._id}, version="{self.version}", language="{self.language}")'
@@ -345,7 +363,7 @@ class Champion(models.Model):
         return f'Champion(_id="{self._id}", version="{self.version}", language="{self.language}")'
 
     def get_newest_version(self):
-        query = Champion.objects.order_by('-major', '-minor', '-patch')
+        query = Champion.objects.order_by("-major", "-minor", "-patch")
         if query.exists():
             return query.first().version
         return None

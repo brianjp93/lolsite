@@ -57,3 +57,18 @@ class MapTest(TestCase):
             map_model.minimap_url(version="9.7.1"),
             "https://ddragon.leagueoflegends.com/cdn/9.7.1/img/map/map10.png",
         )
+
+
+class ProfileIconTest(TestCase):
+    def test_version_parse(self):
+        versions = [
+            ("10.10.1", (10, 10, 1)),
+            ("9.9.10", (9, 9, 10)),
+            ("11.12.2", (11, 12, 2)),
+            ("15.3.4", (15, 3, 4)),
+        ]
+        for ver, parts in versions:
+            pi = mommy.make("data.ProfileIcon", version=ver)
+            self.assertEqual((pi.major, pi.minor, pi.patch), parts)
+        with self.assertRaises(ValueError):
+            pi = mommy.make("data.ProfileIcon", version="10.10.14ab")

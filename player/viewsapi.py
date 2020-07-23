@@ -274,7 +274,7 @@ def serialize_matches(
 
                 champ_query = Champion.objects.filter(
                     key=participant.champion_id, language="en_US"
-                ).order_by("-version")
+                ).order_by("-major", "-minor", "-patch")
                 if champ_query.exists():
                     champ = champ_query.first()
                     participant_data["champion"] = {
@@ -1767,7 +1767,9 @@ def delete_comment(request):
     status_code = 200
 
     comment_id = request.data["comment_id"]
-    query = Comment.objects.filter(id=comment_id, summoner__summonerlinks__user=request.user)
+    query = Comment.objects.filter(
+        id=comment_id, summoner__summonerlinks__user=request.user
+    )
 
     if query.exists():
         comment = query.first()
