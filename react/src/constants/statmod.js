@@ -1,5 +1,5 @@
 function getStatModImageUrl({ patch = 'latest', key = '' }) {
-    return `http://raw.communitydragon.org/${patch}/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/statmods/${key}.png`
+    return `https://raw.communitydragon.org/${patch}/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/statmods/${key}.png`
 }
 
 // plugins/rcp-be-lol-game-data/global/default/v1/perk-images/statmods/statmodsadaptiveforceicon.png
