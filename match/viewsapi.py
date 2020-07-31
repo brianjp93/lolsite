@@ -159,11 +159,14 @@ def get_match(request, format=None):
 
         if query.exists():
             match = query.first()
-            op_summoners = [
-                x
-                for x in Summoner.objects.filter(summonerlinks__user=request.user)
-                if x.summonerlinks.get(user=request.user).verified is True
-            ]
+            if request.user.is_authenticated:
+                op_summoners = [
+                    x
+                    for x in Summoner.objects.filter(summonerlinks__user=request.user)
+                    if x.summonerlinks.get(user=request.user).verified is True
+                ]
+            else:
+                op_summoners = []
             summoner_name = None
             for pot_sum in op_summoners:
                 if match.is_summoner_in_game(pot_sum):
