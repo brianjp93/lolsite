@@ -95,7 +95,9 @@ export function ChampionGrid(props) {
             </div>
             <div>
                 {processed_champions
-                    .filter(champion => fuzzysearch(search, champion.name.toLowerCase()))
+                    .filter(champion =>
+                        fuzzysearch(search.toLowerCase(), champion.name.toLowerCase()),
+                    )
                     .map(champion => {
                         return (
                             <ChampionCard
