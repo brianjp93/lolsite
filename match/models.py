@@ -230,7 +230,7 @@ class Participant(models.Model):
 
     def save(self, *args, **kwargs):
         self.summoner_name_simplified = simplify(self.summoner_name)
-        super(Participant, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return (

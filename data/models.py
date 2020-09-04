@@ -169,13 +169,13 @@ class Item(models.Model):
         unique_together = ("_id", "version", "language")
 
     def save(self, *args, **kwargs):
-        if all([self.major == 0, self.minor == 0, self.patch == 0]):
+        if all([self.major is None, self.minor is None, self.patch is None]):
             parts = self.version.split(".")
             try:
                 (self.major, self.minor, self.patch) = map(int, parts)
             except:
-                pass
-        super(Item, self).save(*args, **kwargs)
+                print('Could not parse item version.')
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Item(name="{self.name}", version="{self.version}", language="{self.language}")'
@@ -368,7 +368,7 @@ class Champion(models.Model):
                 (self.major, self.minor, self.patch) = map(int, parts)
             except Exception:
                 pass
-        super(Champion, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Champion(_id="{self._id}", version="{self.version}", language="{self.language}")'
