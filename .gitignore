@@ -9,6 +9,7 @@ tags
 gitbuild
 
 /static/
+.hypothesis/
 
 .DS_Store
 .ipynb_checkpoints/*

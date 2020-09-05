@@ -3,17 +3,19 @@
 Tests for data.models
 
 """
-from unittest.mock import Mock
-
 from model_mommy import mommy
+from hypothesis.extra.django import TestCase, from_model
+from hypothesis.strategies import text
+from hypothesis import given
 
-from django.test import TestCase
+from data.models import Rito
 
 
 class RitoTest(TestCase):
-    def test_str(self):
-        rito = mommy.make("data.Rito", token="hello world")
-        self.assertEqual(rito.__str__(), 'Rito(token="hello world")')
+    # @given(token=text())
+    # def test_str(self, token):
+    #     rito = from_model(Rito, token=token)
+    #     self.assertEqual(rito.__str__(), f'Rito(token="{token}")')
 
 
 class QueueTest(TestCase):
