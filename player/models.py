@@ -15,6 +15,8 @@ from notification.models import Notification
 
 from data import constants as dc
 
+from player.utils import get_admin
+
 
 def simplify(name):
     """Return the lowercase, no space version of a string.
@@ -291,7 +293,26 @@ class Custom(models.Model):
     def save(self, *args, **kwargs):
         # Always set modified_date on save().
         self.modified_date = timezone.now()
+        # Send email to admin if new user.
+        if self.pk is None:
+            self.notify_admin_user_created()
         super(Custom, self).save(*args, **kwargs)
+
+    def notify_admin_user_created(self):
+        """Send email to admin about new user.
+        """
+        admin = get_admin()
+        subject = "new user created on hardstuck.club"
+        message = f"""
+            User {self.user.email} was created.
+        """
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [admin.email],
+            html_message=message,
+        )
 
 
 class EmailVerification(models.Model):
@@ -402,6 +423,25 @@ class Comment(models.Model):
         if create_notifications:
             self.create_comment_notifications()
             self.create_reply_notifications()
+            self.notify_admin_comment_created()
+
+    def notify_admin_comment_created(self):
+        """Send email to admin about created comment.
+        """
+        admin = get_admin()
+        subject = "New comment written."
+        message = f"""
+            User {self.summoner.name} wrote a comment.
+
+            {self.markdown}
+        """
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [admin.email],
+            html_message=message,
+        )
 
     def get_op_summoners(self):
         """Get the connected summoner accounts of the comment poster.
