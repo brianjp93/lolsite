@@ -306,13 +306,14 @@ class Custom(models.Model):
         message = f"""
             User {self.user.email} was created.
         """
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [admin.email],
-            html_message=message,
-        )
+        if admin:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [admin.email],
+                html_message=message,
+            )
 
 
 class EmailVerification(models.Model):
@@ -435,13 +436,14 @@ class Comment(models.Model):
 
             {self.markdown}
         """
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [admin.email],
-            html_message=message,
-        )
+        if admin:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [admin.email],
+                html_message=message,
+            )
 
     def get_op_summoners(self):
         """Get the connected summoner accounts of the comment poster.

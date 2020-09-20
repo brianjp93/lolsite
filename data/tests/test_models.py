@@ -12,6 +12,7 @@ from data.models import Rito
 
 
 class RitoTest(TestCase):
+    pass
     # @given(token=text())
     # def test_str(self, token):
     #     rito = from_model(Rito, token=token)
