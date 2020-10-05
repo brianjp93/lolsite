@@ -22,7 +22,7 @@ DATABASES = {
         "USER": config("LOLSITE_DB_USER"),
         "HOST": config("LOLSITE_DB_HOST"),
         "PORT": config("LOLSITE_DB_PORT"),
-        "PASSWORD": config("LOLSITE_DB_PASS"),
+        "PASSWORD": config("LOLSITE_DB_PASS", ''),
     }
 }
 
