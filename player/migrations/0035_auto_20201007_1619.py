@@ -2,7 +2,7 @@
 from django.db import migrations
 
 
-# create gin index on gdm_customer_number
+# create gin index on simple_name
 forward_simple_name = """
     CREATE EXTENSION IF NOT EXISTS pg_trgm;
     CREATE INDEX player_summoner_simple_name_trgm ON player_summoner USING gin(simple_name gin_trgm_ops);
