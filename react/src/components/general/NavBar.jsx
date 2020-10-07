@@ -137,7 +137,7 @@ class NavBar extends Component {
                 event.stopPropagation()
                 this.setState({ summoner_name: name, redirect: true, is_quicksearch_open: false })
             }
-        } else if (['ArrowUp', 'ArrowDown'].indexOf(event.key) >= 0) {
+        } else if (['ArrowUp', 'ArrowDown', 'Tab'].indexOf(event.key) >= 0) {
             event.preventDefault()
             event.stopPropagation()
             let index = this.state.highlight_index
@@ -145,7 +145,7 @@ class NavBar extends Component {
             if (index === null) {
                 if (event.key === 'ArrowUp') {
                     index = top_index
-                } else if (event.key === 'ArrowDown') {
+                } else if (event.key === 'ArrowDown' || event.key === 'Tab') {
                     index = 0
                 }
             } else {
@@ -154,7 +154,7 @@ class NavBar extends Component {
                     if (index < 0) {
                         index = top_index
                     }
-                } else if (event.key === 'ArrowDown') {
+                } else if (event.key === 'ArrowDown' || event.key === 'Tab') {
                     index++
                     if (index > top_index) {
                         index = 0
