@@ -80,7 +80,7 @@ class NavBar extends Component {
             let name = this.state.summoner_name
             name = name.split(' ').join('').toLowerCase()
             let data = {
-                simple_name: name,
+                simple_name__icontains: name,
                 region: region,
                 order_by: 'simple_name',
                 start: 0,
@@ -367,10 +367,12 @@ class NavBar extends Component {
                                             </div>
                                             {this.state.summoner_search.length === 0 && (
                                                 <div
-                                                    style={{ padding: '0 10px' }}
+                                                    style={{ padding: '10px 10px', lineHeight: '30px' }}
                                                     className="error-bordered"
                                                 >
                                                     No matches.
+                                                    <br />
+                                                    Please provide at least 3 characters.
                                                 </div>
                                             )}
                                             {this.state.summoner_search.map((data, key) => {
