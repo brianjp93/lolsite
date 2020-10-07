@@ -901,7 +901,7 @@ def get_summoner_champions_overview(request, format=None):
 
 @api_view(["POST"])
 def summoner_search(request, format=None):
-    """
+    """Provide at least 3 character simple_name to take advantage of trigram gin index.
 
     POST Parameters
     ---------------
