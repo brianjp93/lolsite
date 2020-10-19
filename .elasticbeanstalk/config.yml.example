@@ -1,0 +1,18 @@
+branch-defaults:
+  master:
+    environment: lolsite
+    group_suffix: null
+global:
+  application_name: lolsite
+  branch: null
+  default_ec2_keyname: lolsite
+  default_platform: Python 3.6
+  default_region: us-west-2
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: default
+  repository: null
+  sc: git
+  workspace_type: Application
