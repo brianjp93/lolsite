@@ -25,6 +25,7 @@ class NavBar extends Component {
         this.handleKeyDown = this.handleKeyDown.bind(this)
         this.handleKeyListener = this.handleKeyListener.bind(this)
         this.doSearch = this.doSearch.bind(this)
+        this.simplify_name = this.simplify_name.bind(this)
         this.quickSearchLine = this.quickSearchLine.bind(this)
         this.isLoggedIn = this.isLoggedIn.bind(this)
         this.handleSearchOutsideClick = this.handleSearchOutsideClick.bind(this)
@@ -74,11 +75,14 @@ class NavBar extends Component {
         }
         return false
     }
+    simplify_name(name) {
+        return name.split(' ').join('').toLowerCase()
+    }
     doSearch() {
         if (this.state.summoner_name.length >= 3) {
             let region = this.props.store.state.region_selected
             let name = this.state.summoner_name
-            name = name.split(' ').join('').toLowerCase()
+            name = this.simplify_name(name)
             let data = {
                 simple_name__icontains: name,
                 region: region,
@@ -90,7 +94,9 @@ class NavBar extends Component {
             api.player
                 .summonerSearch(data)
                 .then(response => {
-                    this.setState({ summoner_search: response.data.data })
+                    if (name === this.simplify_name(this.state.summoner_name)) {
+                        this.setState({ summoner_search: response.data.data })
+                    }
                 })
                 .catch(error => {})
                 .then(() => {})
