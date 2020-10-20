@@ -227,7 +227,7 @@ def summoner_search(
     query = Summoner.objects.all()
 
     if simple_name__icontains is not None:
-        query = query.filter(simple_name__icontains=simple_name__icontains)
+        query = query.filter(simple_name__contains=simple_name__icontains.lower())
     if simple_name is not None:
         query = query.filter(simple_name=simple_name)
     if region is not None:
