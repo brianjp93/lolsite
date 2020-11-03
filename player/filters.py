@@ -46,7 +46,9 @@ def get_summoner_champions_overview(
     """
     all_fields = True if not fields else False
     min_game_time = 60 * 5
-    query = Stats.objects.filter(participant__match__game_duration__gt=min_game_time)
+    query = Stats.objects.select_related(
+        'participant', 'participant__match'
+    ).filter(participant__match__game_duration__gt=min_game_time)
 
     if summoner_id is not None:
         summoner = Summoner.objects.get(id=summoner_id)
