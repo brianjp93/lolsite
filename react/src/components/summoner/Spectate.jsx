@@ -74,6 +74,7 @@ class Spectate extends Component {
     }
     participantLine(part) {
         var pos = this.getTopSoloPosition(part.positions)
+        let champion = part.champion || {}
         return (
             <div key={part.summonerId}>
                 <hr />
@@ -81,7 +82,7 @@ class Spectate extends Component {
                     <div style={{ display: 'inline-block' }}>
                         <img
                             style={{ height: 50, borderRadius: 4 }}
-                            src={part.champion.image_url}
+                            src={champion.image_url}
                             alt=""
                         />
                         <div>
