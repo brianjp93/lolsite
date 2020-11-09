@@ -469,13 +469,14 @@ class ChampionImage(models.Model):
         return f'ChampionImage(champion="{self.champion._id}")'
 
     def image_url(self):
-        return f"https://ddragon.leagueoflegends.com/cdn/{self.champion.version}/img/champion/{self.full}"
+        return f"https://cdn.communitydragon.org/{self.champion.version}/champion/{self.champion.key}/square"
+        # return f"https://ddragon.leagueoflegends.com/cdn/{self.champion.version}/img/champion/{self.full}"
 
-    def splash_url(self, skin=0):
-        return f"https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{self.champion._id}_{skin}.jpg"
+    def splash_url(self):
+        return f"https://cdn.communitydragon.org/{self.champion.version}/champion/{self.champion._id}/splash-art"
 
-    def loading_art_url(self, skin=0):
-        return f"https://ddragon.leagueoflegends.com/cdn/img/champion/loading/{self.champion._id}_{skin}.jpg"
+    def loading_art_url(self):
+        return f" https://cdn.communitydragon.org/{self.champion.version}/champion/{self.champion._id}/portrait"
 
 
 class ChampionInfo(models.Model):
