@@ -116,7 +116,7 @@ class Match(models.Model):
 
     def get_absolute_url(self, pname=None):
         """Get url of match.
-        
+
         Parameters
         ----------
         pname : str
@@ -131,7 +131,7 @@ class Match(models.Model):
             pname = ""
             try:
                 pname = self.participants.all().first().summoner_name_simplified
-            except Exception as e:
+            except:
                 logger.exception("problem while finding participant")
         else:
             pname = simplify(pname)
@@ -477,7 +477,7 @@ class Stats(models.Model):
     def perk_5_image_url(self):
         return self.get_perk_image(5)
 
-    def get_item_image_url(self, number, version=None):
+    def get_item_image_url(self, number, major=None, minor=None):
         """Get item image URL.
         """
         url = ""
@@ -489,8 +489,12 @@ class Stats(models.Model):
             query = Item.objects.filter(_id=item_id).order_by(
                 "-major", "-minor", "-patch"
             )
-            version_query = query.filter(version=version)
-            if version and version_query.exists():
+            version_query = query.filter(major=major, minor=minor)
+            if all([
+                major is not None,
+                minor is not None,
+                version_query.exists(),
+            ]):
                 item = version_query.first()
                 url = item.image_url()
             elif query.exists():
@@ -498,26 +502,26 @@ class Stats(models.Model):
                 url = item.image_url()
         return url
 
-    def item_0_image_url(self):
-        return self.get_item_image_url(0)
+    def item_0_image_url(self, major=None, minor=None):
+        return self.get_item_image_url(0, major=major, minor=minor)
 
-    def item_1_image_url(self):
-        return self.get_item_image_url(1)
+    def item_1_image_url(self, major=None, minor=None):
+        return self.get_item_image_url(1, major=major, minor=minor)
 
-    def item_2_image_url(self):
-        return self.get_item_image_url(2)
+    def item_2_image_url(self, major=None, minor=None):
+        return self.get_item_image_url(2, major=major, minor=minor)
 
-    def item_3_image_url(self):
-        return self.get_item_image_url(3)
+    def item_3_image_url(self, major=None, minor=None):
+        return self.get_item_image_url(3, major=major, minor=minor)
 
-    def item_4_image_url(self):
-        return self.get_item_image_url(4)
+    def item_4_image_url(self, major=None, minor=None):
+        return self.get_item_image_url(4, major=major, minor=minor)
 
-    def item_5_image_url(self):
-        return self.get_item_image_url(5)
+    def item_5_image_url(self, major=None, minor=None):
+        return self.get_item_image_url(5, major=major, minor=minor)
 
-    def item_6_image_url(self):
-        return self.get_item_image_url(6)
+    def item_6_image_url(self, major=None, minor=None):
+        return self.get_item_image_url(6, major=major, minor=minor)
 
 
 class Timeline(models.Model):

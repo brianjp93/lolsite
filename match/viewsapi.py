@@ -276,19 +276,19 @@ def get_participants(request, format=None):
                         "deaths": stats.deaths,
                         "gold_earned": stats.gold_earned,
                         "item_0": stats.item_0,
-                        "item_0_image_url": stats.item_0_image_url(),
+                        "item_0_image_url": stats.item_0_image_url(major=match.major, minor=match.minor),
                         "item_1": stats.item_1,
-                        "item_1_image_url": stats.item_1_image_url(),
+                        "item_1_image_url": stats.item_1_image_url(major=match.major, minor=match.minor),
                         "item_2": stats.item_2,
-                        "item_2_image_url": stats.item_2_image_url(),
+                        "item_2_image_url": stats.item_2_image_url(major=match.major, minor=match.minor),
                         "item_3": stats.item_3,
-                        "item_3_image_url": stats.item_3_image_url(),
+                        "item_3_image_url": stats.item_3_image_url(major=match.major, minor=match.minor),
                         "item_4": stats.item_4,
-                        "item_4_image_url": stats.item_4_image_url(),
+                        "item_4_image_url": stats.item_4_image_url(major=match.major, minor=match.minor),
                         "item_5": stats.item_5,
-                        "item_5_image_url": stats.item_5_image_url(),
+                        "item_5_image_url": stats.item_5_image_url(major=match.major, minor=match.minor),
                         "item_6": stats.item_6,
-                        "item_6_image_url": stats.item_6_image_url(),
+                        "item_6_image_url": stats.item_6_image_url(major=match.major, minor=match.minor),
                         "kills": stats.kills,
                         "largest_multi_kill": stats.largest_multi_kill,
                         "magic_damage_dealt": stats.magic_damage_dealt,
@@ -384,7 +384,7 @@ def get_spectate(request, format=None):
         else:
             mt.import_spectate_from_data(spectate_data, region)
             summoners = mt.import_summoners_from_spectate(spectate_data, region)
-            vals = pool.map(
+            pool.map(
                 lambda x: pt.import_positions(x, threshold_days=3, close=True),
                 summoners.values(),
             )

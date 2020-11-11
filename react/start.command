@@ -1,2 +1,2 @@
-cd /Users/brian/Documents/code/django/lolsite/react
+cd /Users/brian/Documents/code/lolsite/react
 npm run start
