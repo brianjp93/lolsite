@@ -299,7 +299,7 @@ def serialize_matches(
                         else:
                             item_cache[stats.item_0] = {
                                 "_id": stats.item_0,
-                                "image_url": stats.item_0_image_url(),
+                                "image_url": stats.item_0_image_url(major=match.major, minor=match.minor),
                             }
                             item_0 = item_cache[stats.item_0]
 
@@ -309,7 +309,7 @@ def serialize_matches(
                         else:
                             item_cache[stats.item_1] = {
                                 "_id": stats.item_1,
-                                "image_url": stats.item_1_image_url(),
+                                "image_url": stats.item_1_image_url(major=match.major, minor=match.minor),
                             }
                             item_1 = item_cache[stats.item_1]
 
@@ -318,7 +318,7 @@ def serialize_matches(
                         else:
                             item_cache[stats.item_2] = {
                                 "_id": stats.item_2,
-                                "image_url": stats.item_2_image_url(),
+                                "image_url": stats.item_2_image_url(major=match.major, minor=match.minor),
                             }
                             item_2 = item_cache[stats.item_2]
 
@@ -327,7 +327,7 @@ def serialize_matches(
                         else:
                             item_cache[stats.item_3] = {
                                 "_id": stats.item_3,
-                                "image_url": stats.item_3_image_url(),
+                                "image_url": stats.item_3_image_url(major=match.major, minor=match.minor),
                             }
                             item_3 = item_cache[stats.item_3]
 
@@ -336,7 +336,7 @@ def serialize_matches(
                         else:
                             item_cache[stats.item_4] = {
                                 "_id": stats.item_4,
-                                "image_url": stats.item_4_image_url(),
+                                "image_url": stats.item_4_image_url(major=match.major, minor=match.minor),
                             }
                             item_4 = item_cache[stats.item_4]
 
@@ -345,7 +345,7 @@ def serialize_matches(
                         else:
                             item_cache[stats.item_5] = {
                                 "_id": stats.item_5,
-                                "image_url": stats.item_5_image_url(),
+                                "image_url": stats.item_5_image_url(major=match.major, minor=match.minor),
                             }
                             item_5 = item_cache[stats.item_5]
 
@@ -354,7 +354,7 @@ def serialize_matches(
                         else:
                             item_cache[stats.item_6] = {
                                 "_id": stats.item_6,
-                                "image_url": stats.item_6_image_url(),
+                                "image_url": stats.item_6_image_url(major=match.major, minor=match.minor),
                             }
                             item_6 = item_cache[stats.item_6]
 
