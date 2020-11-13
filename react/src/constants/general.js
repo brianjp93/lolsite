@@ -175,6 +175,7 @@ export function getStatCosts() {
 
         BaseManaRegen: 150 / 50,
         Lethality: 5,
+        Haste: 26.67,
         // MagicPen: 16 * 100,
         CooldownReduction: 26.67,
         HealAndShieldPower: 56.67,

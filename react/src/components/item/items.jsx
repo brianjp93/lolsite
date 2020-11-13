@@ -78,6 +78,7 @@ const stat_name = {
     CooldownReduction: ['CDR', 'Cooldown Reduction'],
     HealAndShieldPower: ['H+S', 'Heal and Shield Power'],
     PercentBaseHPRegen: ['Base Regen', 'Base Health Regen Percentage'],
+    Haste: ['Haste', 'Ability Haste'],
 }
 function convertStatName(name) {
     if (stat_name[name] !== undefined) {
@@ -210,7 +211,7 @@ export function ItemsGrid(props) {
                 </div>
 
                 <div className="col s4">
-                    <div class={`input-field ${theme}`}>
+                    <div className={`input-field ${theme}`}>
                         <select
                             ref={elt => window.$(elt).formSelect()}
                             onChange={event => setOrderBy(event.target.value)}
@@ -283,6 +284,12 @@ export function processItem(item, stat_costs) {
         item.stats.Lethality = parseFloat(x[1])
     }
 
+    // Ability Haste
+    x = description.match(/([0-9]+) Ability Haste/)
+    if (x !== null) {
+        item.stats.Haste = parseFloat(x[1])
+    }
+
     x = description.match(/\+([0-9]+)% Magic Penetration/)
     if (x !== null) {
         item.stats.MagicPen = parseFloat(x[1])
@@ -292,13 +299,15 @@ export function processItem(item, stat_costs) {
     }
 
     if (item.name.indexOf("Rabadon's") >= 0) {
-        x = item.description.match(/Increases Ability Power by ([0-9]+)%/)
-        let mult = parseInt(x[1]) / 100 + 1
-        let ap = item.stats.FlatMagicDamageMod
-        let total = numeral(mult * ap).format('0')
-        item.notes.push(
-            `This item technically gives ${ap} x ${mult} = ${total} AP.  Making it worth considerably more.`,
-        )
+        try {
+            x = item.description.match(/Increases.*Ability Power by ([0-9]+)%/)
+            let mult = parseInt(x[1]) / 100 + 1
+            let ap = item.stats.FlatMagicDamageMod
+            let total = numeral(mult * ap).format('0')
+            item.notes.push(
+                `This item technically gives ${ap} x ${mult} = ${total} AP.  Making it worth considerably more.`,
+            )
+        } catch (error) {}
     }
 
     x = description.match(/\+([0-9]+) Magic Penetration/)
