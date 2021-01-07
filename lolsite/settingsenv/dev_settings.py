@@ -13,6 +13,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "192.168.0.24", "127.0.0.1"]
 BASE_URL = "http://localhost:8000"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 DATABASES = {
