@@ -274,12 +274,12 @@ export function processItem(item, stat_costs) {
 
     let description = stripHtml(item.description)
 
-    x = description.match(/\+([0-9]+)% Base Mana Regen/)
+    x = description.match(/([0-9]+)% Base Mana Regen/)
     if (x !== null) {
         item.stats.BaseManaRegen = parseFloat(x[1])
     }
 
-    x = description.match(/\+([0-9]+) Lethality/)
+    x = description.match(/([0-9]+) Lethality/)
     if (x !== null) {
         item.stats.Lethality = parseFloat(x[1])
     }
