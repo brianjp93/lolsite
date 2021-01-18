@@ -335,7 +335,7 @@ export function processItem(item, stat_costs) {
         item.stats.PercentLifeStealMod = parseFloat(x[1]) / 100
     }
 
-    x = description.match(/\+([0-9]+)% Armor Penetration/)
+    x = description.match(/([0-9]+)% Armor Penetration/)
     if (x !== null) {
         item.stats.ArmorPen = parseFloat(x[1]) / 100
         item.notes.push(
