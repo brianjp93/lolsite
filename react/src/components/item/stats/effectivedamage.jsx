@@ -323,10 +323,9 @@ export function EffectiveDamage(props) {
                     to the enemy's armor. Then assume <Latex>$$1AD = 1\ Physical\ Damage$$</Latex>.
                     Then we apply the average damage of crit such that
                     <Latex displayMode>{`$$avg\\ dmg = dmg \\times (1 + Crit\\ Chance)$$`}</Latex>
-                    If <b>has Infinity Edge</b> is selected, crit damage is increased by 25%, except
-                    for IE which always has the multiplier applied
+                    If <b>has Infinity Edge</b> is selected, crit damage is increased by 35% if total crit &gt; 60%.
                     <Latex displayMode>
-                        {`$$avg\\ dmg = dmg \\times (1 + (Crit\\ Chance \\times 1.25))$$`}
+                        {`$$avg\\ dmg = dmg \\times (1 + (Crit\\ Chance \\times 1.35))$$`}
                     </Latex>
                     If <b>auto based</b> is selected, it is assumed that attack speed will affect
                     damage output linearly. This should be selected for most ADCs and other
