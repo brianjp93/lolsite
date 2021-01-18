@@ -39,7 +39,7 @@ export function ArmorPenComparison(props) {
     const width = props.width
 
     const getItems = useCallback(() => {
-        const item_list = [3033, 3036, 3035, 3181, 3142, 3147, 3388, 3814, 3179, 3134]
+        const item_list = [3036, 3035, 3181, 3142, 3147, 3388, 3814, 3179, 3134]
         const data = { item_list }
         return api.data.getItem(data)
     }, [])
