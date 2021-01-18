@@ -351,10 +351,14 @@ function computeDamageIncrease(
     level,
     has_ie,
 ) {
-    const crit_mult = has_ie === true ? 1.25 : 1
     const new_ad = start_ad + increase_ad
     const new_lethality = lethality + lethality_increase
     let new_crit = start_crit + crit_increase
+    let crit_mult = 1
+    // if has ie and crit > 60% then crit mult is 1.35
+    if (new_crit >= .6 && has_ie) {
+        crit_mult = 1.35
+    }
     new_crit = new_crit > 1 ? 1 : new_crit
     const new_pen = pen_increase + start_pen
     const initial_armor =
