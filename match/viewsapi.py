@@ -11,7 +11,7 @@ from .models import Match, Participant
 
 from .models import sort_positions
 
-from player.models import Summoner
+from player.models import Summoner, simplify
 
 from data.models import Champion
 
@@ -34,21 +34,18 @@ def get_match_timeline(request, format=None):
     ---------------
     match_id : ID
         Riot's match ID
-    region : str
 
     Returns
     -------
     JSON Timeline Data
 
     """
-    # required = ["match_id", "region"]
     data = {}
     status_code = 200
     cache_seconds = 60 * 60 * 2
     api = get_riot_api()
     if api:
         match_id = request.data.get("match_id", None)
-        # region = request.data.get("region", None)
         if request.method == "POST":
             match = Match.objects.get(_id=match_id)
             try:
@@ -489,4 +486,36 @@ def get_latest_unlabeled_match(request, format=None):
     match = p.match
     serializer = MatchSerializer(match)
     data = {"data": serializer.data}
+    return Response(data)
+
+
+def _get_played_together(summoner_names):
+    simplified_names = [simplify(x) for x in summoner_names]
+    if simplified_names:
+        qs = Match.objects.all()
+        for name in simplified_names:
+            qs = qs.filter(participants__summoner_name_simplified=name)
+    else:
+        qs = Match.objects.none()
+    return qs
+
+
+@api_view(['GET'])
+def get_played_together(request, format=None):
+    """Get a count of games played together
+
+    Parameters
+    ----------
+    summoner_names: list
+    region: str
+
+    Returns
+    -------
+    json
+        {count: int}
+
+    """
+    summoner_names = request.GET.get('summoner_names')
+    qs = _get_played_together(summoner_names)
+    data = {'count': qs.count()}
     return Response(data)
