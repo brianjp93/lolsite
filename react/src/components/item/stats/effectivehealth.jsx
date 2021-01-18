@@ -160,27 +160,6 @@ export function EffectiveHealth(props) {
                     Armor or MR
                 </span>
             </div>
-
-            <div>
-                <p
-                    style={{
-                        padding: '0px 15px 0px 0px',
-                        borderRadius: 6,
-                        background: '#2828285e',
-                        margin: '5px 0px',
-                        display: 'inline-block' }}>
-                    <label>
-                        <input
-                            checked={with_cinder_hulk}
-                            type="checkbox"
-                            onChange={() => {
-                                setWithCinderHulk(!with_cinder_hulk)
-                            }}
-                        />
-                        <span>with cinderhulk</span>
-                    </label>
-                </p>
-            </div>
         </div>
     )
 }

@@ -93,7 +93,6 @@ export function EffectiveDamage(props) {
                 3181,
                 3142,
                 3147,
-                3033,
                 3036,
                 3179,
                 3035,
