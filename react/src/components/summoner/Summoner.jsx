@@ -1135,14 +1135,16 @@ class SummonerCard extends Component {
                         })}
                     </div>
 
-                    <div>
-                        <button
-                            onClick={this.toggleDefault}
-                            style={{width: '100%'}}
-                            className={`${theme} btn-small`}>
-                            Set as Default Profile
-                        </button>
-                    </div>
+                    {this.props.store.state.user.email !== undefined &&
+                        <div>
+                            <button
+                                onClick={this.toggleDefault}
+                                style={{width: '100%'}}
+                                className={`${theme} btn-small`}>
+                                Set as Default Profile
+                            </button>
+                        </div>
+                    }
 
                 </div>
             </span>
