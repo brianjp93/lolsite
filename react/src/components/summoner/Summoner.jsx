@@ -615,6 +615,7 @@ class SummonerCard extends Component {
         this.setRefreshTime = this.setRefreshTime.bind(this)
         this.toggleFavorite = this.toggleFavorite.bind(this)
         this.isFavorite = this.isFavorite.bind(this)
+        this.toggleDefault = this.toggleDefault.bind(this)
     }
     componentDidMount() {
         this.setRefreshTime()
@@ -783,7 +784,6 @@ class SummonerCard extends Component {
             data.verb = 'set'
         }
         api.player.Favorite(data).then(response => {
-            // console.log(response)
             this.props.store.setState({ favorites: response.data.data })
         })
     }
@@ -796,16 +796,31 @@ class SummonerCard extends Component {
         }
         return false
     }
+    toggleDefault() {
+        let data = {summoner_id: null}
+        let keys = Object.keys(this.props.store.state.user.default_summoner)
+        if (keys.length === 0) {
+            data = {summoner_id: this.props.summoner.id}
+        }
+        api.player.editDefaultSummoner(data).then(response => {
+            if (response.data.status === 'success') {
+                let user = {...this.props.store.state.user}
+                user.default_summoner = response.data.default_summoner
+                this.props.store.setState({user: user})
+            }
+        })
+    }
     render() {
         var reload_attrs = {
             disabled: this.props.pageStore.state.is_reloading_matches ? true : false,
         }
         let pageStore = this.props.pageStore
+        let theme = this.props.store.state.theme
         return (
             <span>
                 <div
                     style={{ position: 'relative', padding: 18 }}
-                    className={`card-panel ${this.props.store.state.theme}`}
+                    className={`card-panel ${theme}`}
                 >
                     {this.props.icon.image_url !== undefined && (
                         <span
@@ -882,7 +897,7 @@ class SummonerCard extends Component {
                         <br />
                         <Spectate.SpectateModal
                             queue_convert={this.props.store.state.queue_convert}
-                            theme={this.props.store.state.theme}
+                            theme={theme}
                             summoner_id={this.props.summoner._id}
                             pageStore={this.props.pageStore}
                         >
@@ -1018,12 +1033,12 @@ class SummonerCard extends Component {
                                                 }}
                                             >
                                                 <small
-                                                    className={`${this.props.store.state.theme} pill`}
+                                                    className={`${theme} pill`}
                                                 >
                                                     {this.queueName(pos.queue_type)}
                                                 </small>{' '}
                                                 <span
-                                                    className={`${this.props.store.state.theme} pill`}
+                                                    className={`${theme} pill`}
                                                 >
                                                     {pos.league_points} LP
                                                 </span>
@@ -1093,12 +1108,12 @@ class SummonerCard extends Component {
                                                 }}
                                             >
                                                 <small
-                                                    className={`${this.props.store.state.theme} pill`}
+                                                    className={`${theme} pill`}
                                                 >
                                                     {this.queueName(pos.queue_type)}
                                                 </small>{' '}
                                                 <span
-                                                    className={`${this.props.store.state.theme} pill`}
+                                                    className={`${theme} pill`}
                                                 >
                                                     {pos.league_points} LP
                                                 </span>
@@ -1119,6 +1134,16 @@ class SummonerCard extends Component {
                             return null
                         })}
                     </div>
+
+                    <div>
+                        <button
+                            onClick={this.toggleDefault}
+                            style={{width: '100%'}}
+                            className={`${theme} btn-small`}>
+                            Set as Default Profile
+                        </button>
+                    </div>
+
                 </div>
             </span>
         )
