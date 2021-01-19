@@ -285,6 +285,7 @@ def decode_int_to_rank(rank_integer):
 class Custom(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone = models.CharField(max_length=20, default=None, null=True, blank=True)
+    default_summoner = models.OneToOneField('player.Summoner', default=None, null=True, blank=True, on_delete=models.SET_NULL)
     is_email_verified = models.BooleanField(default=False, db_index=True, blank=True)
 
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
