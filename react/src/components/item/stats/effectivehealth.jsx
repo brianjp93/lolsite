@@ -11,7 +11,6 @@ export function EffectiveHealth(props) {
     const [items, setItems] = useState([])
     const [is_item_visible, setIsItemVisible] = useState({})
     const [armor_mr, setArmorMR] = useState(50)
-    const [with_cinder_hulk, setWithCinderHulk] = useState(false)
 
     const height = props.height === undefined ? 200 : props.height
     const width = props.width === undefined ? 500 : props.width
@@ -46,7 +45,6 @@ export function EffectiveHealth(props) {
                             armor_mr,
                             item.stats.FlatHPPoolMod,
                             defense,
-                            with_cinder_hulk,
                         )
                 } else {
                     elt[item.name] = null
@@ -55,7 +53,7 @@ export function EffectiveHealth(props) {
             new_data.push(elt)
         }
         return new_data
-    }, [items, armor_mr, is_item_visible, with_cinder_hulk])
+    }, [items, armor_mr, is_item_visible])
 
     const handleLegendClick = event => {
         let new_is_visible = { ...is_item_visible }
@@ -174,13 +172,9 @@ function computeGoldPerEffectiveHealth(
     current_armor_mr,
     health_added,
     armor_mr_added,
-    with_cinder_hulk
 ) {
     const current_effective_health = computeEffectiveHealth(current_health, current_armor_mr)
     let new_health = current_health + health_added
-    if (with_cinder_hulk === true) {
-        new_health = 1.15 * new_health
-    }
     const new_armor_mr = current_armor_mr + armor_mr_added
     const new_effective_health = computeEffectiveHealth(new_health, new_armor_mr)
     return gold / (new_effective_health - current_effective_health)
