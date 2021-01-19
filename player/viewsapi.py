@@ -1898,3 +1898,26 @@ def dislike_comment(request, format=None):
         )
     }
     return Response(data, status=status_code)
+
+
+@api_view(["POST"])
+@require_login
+def edit_default_summoner(request, format=None):
+    data = {}
+    status_code = 200
+    summoner_id = request.data['summoner_id']
+    if summoner_id is None:
+        request.user.custom.default_summoner = None
+        request.user.custom.save()
+        data = {'status': 'success', 'default_summoner': {}}
+    else:
+        qs = Summoner.objects.filter(id=summoner_id)
+        if qs.exists():
+            summoner = qs.first()
+            request.user.custom.default_summoner = summoner
+            request.user.custom.save()
+            data = {'status': 'success', 'default_summoner': SummonerSerializer(summoner).data}
+        else:
+            status_code = 404
+            data = {'status': 'failure', 'message': 'Could not find Summoner with given id.'}
+    return Response(data, status=status_code)

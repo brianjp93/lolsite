@@ -135,6 +135,11 @@ function getCommentCount(data) {
     return axios.get(url, { params: data })
 }
 
+function editDefaultSummoner(data) {
+    let url = `/api/${version}/player/default-summoner/`
+    return axios.post(url, data)
+}
+
 export default {
     getSummoner,
     getSummoners,
@@ -162,4 +167,5 @@ export default {
     likeComment,
     dislikeComment,
     getCommentCount,
+    editDefaultSummoner,
 }
