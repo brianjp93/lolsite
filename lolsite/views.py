@@ -2,7 +2,7 @@
 """
 from django.template.response import TemplateResponse
 
-from player.serializers import FavoriteSerializer
+from player.serializers import FavoriteSerializer, SummonerSerializer
 
 from data import tasks as dt
 from data import constants
@@ -33,11 +33,15 @@ def get_base_react_context(request, user=None):
     """
     user_data = {}
     favorite_data = {}
+    default_summoner = {}
+    if hasattr(user, 'custom') and user.custom.default_summoner:
+        default_summoner = SummonerSerializer(user.custom.default_summoner, many=False).data
     if user.is_authenticated:
         try:
             user_data = {
                 "email": request.user.email,
                 "is_email_verified": user.custom.is_email_verified,
+                "default_summoner": default_summoner,
                 "id": user.id,
             }
         except Exception:
