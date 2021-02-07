@@ -1039,7 +1039,7 @@ def get_sorted_participants(match):
     """Use ML classifier to guess lane/role
     """
     ordered = []
-    participants = match.participants.all()
+    participants = match.participants.all().select_related('stats')
     if participants.count() == 10:
         for team_id in [100, 200]:
             allowed = set(list(range(5)))
