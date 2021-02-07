@@ -13,6 +13,7 @@ from django.db.models import Max, Min, F
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
+from lolsite.helpers import query_debugger
 
 from player import tasks as pt
 from player import constants as player_constants
@@ -22,7 +23,10 @@ from player.models import Favorite, SummonerLink
 from player.models import decode_int_to_rank, validate_password
 
 from data.constants import IS_PRINT_TIMERS
-from data.models import ProfileIcon, Champion
+from data.models import (
+    ProfileIcon, Champion, SummonerSpell, SummonerSpellImage,
+    Item,
+)
 from data.serializers import ProfileIconSerializer
 
 from match import tasks as mt
@@ -196,28 +200,58 @@ def serialize_matches(
     Serialized Match List
 
     """
-    timer_start = time.time()
-
     cache_get_time = 0
     cache_set_time = 0
 
     perk_cache = {}
     perk_tree_cache = {}
-    item_cache = {}
-    spell_cache = {}
 
     matches = []
     match_query = match_query.prefetch_related(
-        "participants", "teams", "participants__stats"
+        "participants", "teams",
     )
+
+    # spell keys
+    all_spells = set()
+    # champion keys
+    all_champs = set()
+    all_items = set()
+    for match in match_query:
+        for participant in match.participants.all():
+            all_spells.add(participant.spell_1_id)
+            all_spells.add(participant.spell_2_id)
+
+            all_champs.add(participant.champion_id)
+
+            if participant.current_account_id == account_id:
+                for i in range(7):
+                    item__id = getattr(participant.stats, f'item_{i}', None)
+                    if item__id is not None:
+                        all_items.add(item__id)
+
+    spell_query = SummonerSpellImage.objects.filter(
+        spell__key__in=all_spells,
+    ).select_related('spell')
+    spell_data = {x.spell.key: x.image_url() for x in spell_query}
+
+    champion_query = Champion.objects.filter(
+        key__in=all_champs,
+        language='en_US',
+    ).order_by('key', '-major', '-minor').distinct('key').select_related('image')
+    champ_data = {x.key: x for x in champion_query}
+
+    item_query = Item.objects.filter(
+        _id__in=all_items,
+    ).order_by(
+        '_id', '-major', '-minor',
+    ).distinct('_id').select_related('image')
+    item_data = {x._id: x for x in item_query}
+
     for match in match_query:
         # match_serializer = MatchSerializer(match)
         cache_key = f"account/{account_id}/match/{match._id}"
 
-        cache_get_time_temp = time.time()
         cached = cache.get(cache_key)
-        cache_get_time_temp = time.time() - cache_get_time_temp
-        cache_get_time += cache_get_time_temp
 
         if cached:
             matches.append(cached)
@@ -230,33 +264,11 @@ def serialize_matches(
                 "queue_id": match.queue_id,
                 "major": match.major,
                 "minor": match.minor,
-                "tier_average": match.tier_average(),
             }
 
             participants = []
             part_query = mt.get_sorted_participants(match)
             for participant in part_query:
-                # participant_ser = ParticipantSerializer(participant)
-
-                # SPELLS
-                if participant.spell_1_id in spell_cache:
-                    spell_1 = spell_cache[participant.spell_1_id]
-                else:
-                    spell_cache[participant.spell_1_id] = {
-                        "_id": participant.spell_1_id,
-                        "image_url": participant.spell_1_image_url(),
-                    }
-                    spell_1 = spell_cache[participant.spell_1_id]
-
-                if participant.spell_2_id in spell_cache:
-                    spell_2 = spell_cache[participant.spell_2_id]
-                else:
-                    spell_cache[participant.spell_2_id] = {
-                        "_id": participant.spell_2_id,
-                        "image_url": participant.spell_2_image_url(),
-                    }
-                    spell_2 = spell_cache[participant.spell_2_id]
-
                 participant_data = {
                     "_id": participant._id,
                     "summoner_name": participant.summoner_name,
@@ -267,23 +279,20 @@ def serialize_matches(
                     "role": participant.role,
                     "team_id": participant.team_id,
                     "spell_1_id": participant.spell_1_id,
-                    "spell_1_image_url": spell_1["image_url"],
+                    "spell_1_image_url": spell_data.get(participant.spell_1_id, ''),
                     "spell_2_id": participant.spell_2_id,
-                    "spell_2_image_url": spell_2["image_url"],
+                    "spell_2_image_url": spell_data.get(participant.spell_2_id, ''),
                 }
 
-                champ_query = Champion.objects.filter(
-                    key=participant.champion_id, language="en_US"
-                ).order_by("-major", "-minor", "-patch")
-                if champ_query.exists():
-                    champ = champ_query.first()
-                    participant_data["champion"] = {
+                champ = champ_data.get(participant.champion_id, None)
+                if champ:
+                    participant_data['champion'] = {
                         "_id": champ._id,
                         "image_url": champ.image_url(),
                         "name": champ.name,
                     }
                 else:
-                    participant_data["champion"] = {}
+                    participant_data['champion'] = {}
 
                 participant_data["stats"] = {}
                 # only add stats if it's for the current summoner
@@ -293,70 +302,14 @@ def serialize_matches(
                     except:
                         pass
                     else:
-                        # ITEM 0
-                        if stats.item_0 in item_cache:
-                            item_0 = item_cache[stats.item_0]
-                        else:
-                            item_cache[stats.item_0] = {
-                                "_id": stats.item_0,
-                                "image_url": stats.item_0_image_url(major=match.major, minor=match.minor),
-                            }
-                            item_0 = item_cache[stats.item_0]
-
-                        # ITEM 1
-                        if stats.item_1 in item_cache:
-                            item_1 = item_cache[stats.item_1]
-                        else:
-                            item_cache[stats.item_1] = {
-                                "_id": stats.item_1,
-                                "image_url": stats.item_1_image_url(major=match.major, minor=match.minor),
-                            }
-                            item_1 = item_cache[stats.item_1]
-
-                        if stats.item_2 in item_cache:
-                            item_2 = item_cache[stats.item_2]
-                        else:
-                            item_cache[stats.item_2] = {
-                                "_id": stats.item_2,
-                                "image_url": stats.item_2_image_url(major=match.major, minor=match.minor),
-                            }
-                            item_2 = item_cache[stats.item_2]
-
-                        if stats.item_3 in item_cache:
-                            item_3 = item_cache[stats.item_3]
-                        else:
-                            item_cache[stats.item_3] = {
-                                "_id": stats.item_3,
-                                "image_url": stats.item_3_image_url(major=match.major, minor=match.minor),
-                            }
-                            item_3 = item_cache[stats.item_3]
-
-                        if stats.item_4 in item_cache:
-                            item_4 = item_cache[stats.item_4]
-                        else:
-                            item_cache[stats.item_4] = {
-                                "_id": stats.item_4,
-                                "image_url": stats.item_4_image_url(major=match.major, minor=match.minor),
-                            }
-                            item_4 = item_cache[stats.item_4]
-
-                        if stats.item_5 in item_cache:
-                            item_5 = item_cache[stats.item_5]
-                        else:
-                            item_cache[stats.item_5] = {
-                                "_id": stats.item_5,
-                                "image_url": stats.item_5_image_url(major=match.major, minor=match.minor),
-                            }
-                            item_5 = item_cache[stats.item_5]
-
-                        if stats.item_6 in item_cache:
-                            item_6 = item_cache[stats.item_6]
-                        else:
-                            item_cache[stats.item_6] = {
-                                "_id": stats.item_6,
-                                "image_url": stats.item_6_image_url(major=match.major, minor=match.minor),
-                            }
-                            item_6 = item_cache[stats.item_6]
+                        part_items = {}
+                        for item_i in range(7):
+                            key = f'item_{item_i}'
+                            item_id = getattr(stats, key)
+                            item = item_data.get(item_id)
+                            if item:
+                                part_items[f'item_{item_i}'] = item._id
+                                part_items[f'item_{item_i}_image_url'] = item.image_url()
 
                         if stats.perk_primary_style in perk_tree_cache:
                             perk_primary_style = perk_tree_cache[
@@ -390,20 +343,6 @@ def serialize_matches(
                             perk_0 = perk_cache[stats.perk_0]
 
                         stats_data = {
-                            "item_0": stats.item_0,
-                            "item_0_image_url": item_0["image_url"],
-                            "item_1": stats.item_1,
-                            "item_1_image_url": item_1["image_url"],
-                            "item_2": stats.item_2,
-                            "item_2_image_url": item_2["image_url"],
-                            "item_3": stats.item_3,
-                            "item_3_image_url": item_3["image_url"],
-                            "item_4": stats.item_4,
-                            "item_4_image_url": item_4["image_url"],
-                            "item_5": stats.item_5,
-                            "item_5_image_url": item_5["image_url"],
-                            "item_6": stats.item_6,
-                            "item_6_image_url": item_6["image_url"],
                             "perk_primary_style": stats.perk_primary_style,
                             "perk_primary_style_image_url": perk_primary_style[
                                 "image_url"
@@ -433,6 +372,7 @@ def serialize_matches(
                             "total_heal": stats.total_heal,
                             "time_ccing_others": stats.time_ccing_others,
                         }
+                        stats_data.update(part_items)
                         participant_data["stats"] = stats_data
                 else:
                     # general data for all participants
@@ -458,14 +398,10 @@ def serialize_matches(
                         participant_data["stats"] = stats_data
                 participants.append(participant_data)
 
-            # SORT PARTICIPANTS SO THAT LANES MATCH UP (imperfect)
-            # participants.sort(key=participant_sort)
-
             match_data["participants"] = participants
 
             teams = []
             for team in match.teams.all():
-                # team_ser = TeamSerializer(team)
                 team_data = {
                     "win_str": team.win_str,
                     "_id": team._id,
@@ -481,20 +417,13 @@ def serialize_matches(
 
             matches.append(match_data)
 
-            cache_set_time_temp = time.time()
             cache.set(cache_key, match_data, None)
-            cache_set_time_temp = time.time() - cache_set_time_temp
-            cache_set_time += cache_set_time_temp
 
-    # print(f'Cache GET time : {cache_get_time}')
-    # print(f'Cache SET time : {cache_set_time}')
-    timer_end = time.time()
-    if IS_PRINT_TIMERS:
-        print(f"Match serialize_matches() took {timer_end - timer_start}.")
     return matches
 
 
 @api_view(["POST"])
+@query_debugger
 def get_summoner_page(request, format=None):
     """Get the basic information needed to render the summoner page.
 
@@ -532,7 +461,6 @@ def get_summoner_page(request, format=None):
     JSON Summoner Page Data
 
     """
-    timer_start = time.time()
     data = {}
     status_code = 200
 
@@ -561,7 +489,6 @@ def get_summoner_page(request, format=None):
         elif _id:
             query = Summoner.objects.filter(id=_id, region=region)
 
-        summoner_time = time.time()
         if query.exists():
             summoner = query.first()
         else:
@@ -585,8 +512,6 @@ def get_summoner_page(request, format=None):
                         "error": "Could not find a summoner in this region with that name."
                     }
                     status_code = 404
-        summoner_time = time.time() - summoner_time
-        # print(f'Took {summoner_time} to get summoner.')
 
         if update:
             summoner__id = pt.import_summoner(region, name=name)
@@ -613,9 +538,8 @@ def get_summoner_page(request, format=None):
             else:
                 rank_positions = []
 
-            query = ProfileIcon.objects.filter(_id=summoner.profile_icon_id)
+            query = ProfileIcon.objects.filter(_id=summoner.profile_icon_id).order_by("-major", "-minor", "-patch")
             if query.exists():
-                query = query.order_by("-major", "-minor", "-patch")
                 profile_icon = query.first()
                 profile_icon_ser = ProfileIconSerializer(profile_icon)
                 profile_icon_data = profile_icon_ser.data
@@ -623,7 +547,6 @@ def get_summoner_page(request, format=None):
                 profile_icon_data = {}
 
             # check for new games
-            import_time = time.time()
             if trigger_import:
                 kwargs = {}
                 start_index = 0
@@ -637,41 +560,27 @@ def get_summoner_page(request, format=None):
                     start_index = (page - 1) * count
                 end_index = start_index + count
 
-                timer_matches_import = time.time()
                 mt.import_recent_matches(
                     start_index, end_index, summoner.account_id, region, **kwargs
                 )
                 # import 50 recent matches in the background
                 mt.import_recent_matches.delay(
-                    0, 50, summoner.account_id, region,
+                    end_index, end_index + 30, summoner.account_id, region,
                 )
-                if IS_PRINT_TIMERS:
-                    print(
-                        f"mt.import_recent_matches() took {time.time() - timer_matches_import}."
-                    )
 
                 if queue is None and after_index in [None, 0]:
                     summoner.last_summoner_page_import = timezone.now()
                     summoner.save()
-            import_time = time.time() - import_time
-            # print(f'Match import time took {import_time}.')
 
             match_query = match_filter(request, account_id=summoner.account_id)
-            # match_count = match_query.count()
 
             start = (page - 1) * count
             end = page * count
             match_query = match_query.order_by(order_by)
 
-            match_query_time = time.time()
             match_query = match_query[start:end]
-            match_query_time = time.time() - match_query_time
-            # print(f'Match query time : {match_query_time}.')
 
-            match_serialize_time = time.time()
             matches = serialize_matches(match_query, summoner.account_id)
-            match_serialize_time = time.time() - match_serialize_time
-            # print(f'Match serialize time : {match_serialize_time}')
 
             data = {
                 "matches": matches,
@@ -681,9 +590,6 @@ def get_summoner_page(request, format=None):
                 "positions": rank_positions,
             }
 
-    timer_end = time.time()
-    if IS_PRINT_TIMERS:
-        print(f"get_summoner_page() took {timer_end - timer_start}.")
     return Response(data, status=status_code)
 
 
