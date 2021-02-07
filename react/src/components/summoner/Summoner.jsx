@@ -816,6 +816,7 @@ class SummonerCard extends Component {
         }
         let pageStore = this.props.pageStore
         let theme = this.props.store.state.theme
+        let store = this.props.store
         return (
             <span>
                 <div
@@ -896,7 +897,7 @@ class SummonerCard extends Component {
                         </span>
                         <br />
                         <Spectate.SpectateModal
-                            queue_convert={this.props.store.state.queue_convert}
+                            queue_convert={store.state.queue_convert}
                             theme={theme}
                             summoner_id={this.props.summoner._id}
                             pageStore={this.props.pageStore}
@@ -942,7 +943,7 @@ class SummonerCard extends Component {
                         </button>
                     </span>
 
-                    {this.props.store.state.user.email !== undefined && (
+                    {store.state.user.email !== undefined && (
                         <Fragment>
                             <ReactTooltip effect="solid" id="favorite-button">
                                 <span>
@@ -1135,13 +1136,22 @@ class SummonerCard extends Component {
                         })}
                     </div>
 
-                    {this.props.store.state.user.email !== undefined &&
+                    {store.state.user.email !== undefined &&
                         <div>
                             <button
                                 onClick={this.toggleDefault}
                                 style={{width: '100%'}}
                                 className={`${theme} btn-small`}>
-                                Set as Default Profile
+                                {store.state.user.default_summoner.id === pageStore.state.summoner.id &&
+                                    <Fragment>
+                                        Remove as Default Profile
+                                    </Fragment>
+                                }
+                                {store.state.user.default_summoner.id !== pageStore.state.summoner.id &&
+                                    <Fragment>
+                                        Set as Default Profile
+                                    </Fragment>
+                                }
                             </button>
                         </div>
                     }
