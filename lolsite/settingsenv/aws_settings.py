@@ -5,6 +5,8 @@ import os
 import requests
 from decouple import config
 import urllib.parse
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -91,3 +93,23 @@ CACHES = {
         "LOCATION": "lolsite.zcb1mj.cfg.usw2.cache.amazonaws.com:11211",
     }
 }
+
+
+def before_breadcrumb(crumb, hint):
+    if crumb.get("category", None) == "django.security.DisallowedHost":
+        return None
+    return crumb
+
+
+def before_send(event, hint):
+    if event.get("logger", None) == "django.security.DisallowedHost":
+        return None
+    return event
+
+
+sentry_sdk.init(
+    dsn=config("SENTRY_DSN", ""),
+    integrations=[DjangoIntegration()],
+    before_breadcrumb=before_breadcrumb,
+    before_send=before_send,
+)

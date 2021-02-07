@@ -13,9 +13,6 @@ import os
 import pathlib
 from decouple import config
 
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-
 
 SECRET_KEY = config(
     "LOLSITE_SECRET_KEY", "6cs%&oj!lvxpvj44r63-#ie=-%er1hs@%sbt1k9=lf7-b_mlxv"
@@ -140,23 +137,3 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 DEFAULT_FROM_EMAIL = "brianjp93@gmail.com"
-
-
-def before_breadcrumb(crumb, hint):
-    if crumb.get("category", None) == "django.security.DisallowedHost":
-        return None
-    return crumb
-
-
-def before_send(event, hint):
-    if event.get("logger", None) == "django.security.DisallowedHost":
-        return None
-    return event
-
-
-sentry_sdk.init(
-    dsn=config("SENTRY_DSN", ""),
-    integrations=[DjangoIntegration()],
-    before_breadcrumb=before_breadcrumb,
-    before_send=before_send,
-)
