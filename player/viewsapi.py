@@ -13,7 +13,6 @@ from django.db.models import Max, Min, F
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
-from lolsite.helpers import query_debugger
 
 from player import tasks as pt
 from player import constants as player_constants
@@ -22,9 +21,8 @@ from player.models import RankPosition, Comment
 from player.models import Favorite, SummonerLink
 from player.models import decode_int_to_rank, validate_password
 
-from data.constants import IS_PRINT_TIMERS
 from data.models import (
-    ProfileIcon, Champion, SummonerSpell, SummonerSpellImage,
+    ProfileIcon, Champion, SummonerSpellImage,
     Item,
 )
 from data.serializers import ProfileIconSerializer
