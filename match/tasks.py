@@ -567,8 +567,7 @@ def ranked_import(name=None, account_id=None, region=None, **kwargs):
     None
 
     """
-    queue = [420, 440, 470]
-    kwargs["queue"] = queue
+    kwargs["queue"] = [420, 440, 470]
 
     if region is None:
         raise Exception("region parameter is required.")
