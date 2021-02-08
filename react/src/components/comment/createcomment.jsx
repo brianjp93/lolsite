@@ -32,29 +32,32 @@ export function CreateComment(props) {
     const theme = props.theme
     const reply_to = props.reply_to === undefined ? {} : props.reply_to
 
-    const createComment = (match_id, markdown) => {
-        const new_errors = isValid(markdown, summoner)
-        if (new_errors.length === 0) {
-            let data
-            if (reply_to.id !== undefined) {
-                data = {
-                    reply_to: reply_to.id,
-                    summoner_id: summoner,
-                    markdown,
+    const createComment = useCallback(
+        (match_id, markdown) => {
+            const new_errors = isValid(markdown, summoner)
+            if (new_errors.length === 0) {
+                let data
+                if (reply_to.id !== undefined) {
+                    data = {
+                        reply_to: reply_to.id,
+                        summoner_id: summoner,
+                        markdown,
+                    }
+                } else {
+                    data = {
+                        summoner_id: summoner,
+                        markdown,
+                        match_id,
+                    }
                 }
-            } else {
-                data = {
-                    summoner_id: summoner,
-                    markdown,
-                    match_id,
-                }
+                api.player.createComment(data).then(response => {
+                    setPostedComment(response.data.data)
+                    setView('view')
+                })
             }
-            api.player.createComment(data).then(response => {
-                setPostedComment(response.data.data)
-                setView('view')
-            })
-        }
-    }
+        },
+        [summoner, reply_to, setView],
+    )
 
     const handleChange = useCallback(({ html, text }) => {
         setText(text)
