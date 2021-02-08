@@ -316,14 +316,24 @@ function MatchCardModal(props) {
             <div style={{ marginBottom: 10 }}>
                 <button
                     style={getButtonStyle('stats')}
-                    onClick={() => setView('stats')}
+                    onClick={() => {
+                        setView('stats')
+                        let qs = {show: 'stats'}
+                        qs = queryString.stringify(qs)
+                        window.history.pushState(null, null, '?'+qs)
+                    }}
                     className={`${store.state.theme} btn`}
                 >
                     Game Stats
                 </button>
                 <button
                     style={getButtonStyle('comments')}
-                    onClick={() => setView('comments')}
+                    onClick={() => {
+                        setView('comments')
+                        let qs = {show: 'comments'}
+                        qs = queryString.stringify(qs)
+                        window.history.pushState(null, null, '?'+qs)
+                    }}
                     className={`${store.state.theme} btn`}
                 >
                     Comments
