@@ -435,7 +435,7 @@ class Stats(models.Model):
         """
         url = ""
         query = ReforgedTree.objects.filter(_id=self.perk_sub_style).order_by(
-            "-version"
+            "-major", "-minor",
         )
         if query.exists():
             perk = query.first()

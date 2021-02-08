@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from lolsite.tasks import get_riot_api
+from lolsite.helpers import query_debugger
 from match import tasks as mt
 from player import tasks as pt
 
@@ -13,7 +14,7 @@ from .models import sort_positions
 
 from player.models import Summoner, simplify
 
-from data.models import Champion
+from data.models import Champion, Item, ReforgedRune
 
 from .serializers import MatchSerializer
 
@@ -130,6 +131,7 @@ def get_match_timeline(request, format=None):
 
 
 @api_view(["POST"])
+@query_debugger
 def get_match(request, format=None):
     """Get a match and basic data about it.
 
@@ -154,8 +156,8 @@ def get_match(request, format=None):
         else:
             query = Match.objects.filter(id=match_id_internal)
 
-        if query.exists():
-            match = query.first()
+        if query:
+            match = query[0]
             if request.user.is_authenticated:
                 op_summoners = [
                     x
@@ -180,6 +182,7 @@ def get_match(request, format=None):
 
 
 @api_view(["POST"])
+@query_debugger
 def get_participants(request, format=None):
     """
 
@@ -227,6 +230,37 @@ def get_participants(request, format=None):
             part_query = mt.get_sorted_participants(match)
             if len(part_query) != match.participants.count():
                 part_query = match.participants.all().select_related("stats")
+
+            all_champs = Champion.objects.filter(
+                key__in=set(part.champion_id for part in part_query),
+                language=language,
+            ).order_by('key', '-major', '-minor').distinct(
+                'key',
+            ).select_related('image')
+            champ_data = {x.key: x for x in all_champs}
+
+            all_items = set()
+            all_runes = set()
+            for part in part_query:
+                for _i in range(7):
+                    all_items.add(getattr(part.stats, f'item_{_i}'))
+
+                for _i in range(6):
+                    all_runes.add(getattr(part.stats, f'perk_{_i}'))
+            item_data = Item.objects.filter(
+                _id__in=all_items,
+            ).order_by(
+                '_id', '-major', '-minor',
+            ).distinct('_id').select_related('image')
+            item_data = {x._id: x for x in item_data}
+
+            rune_data = ReforgedRune.objects.filter(
+                _id__in=all_runes,
+            ).order_by(
+                '_id', '-reforgedtree__major', 'reforgedtree__minor'
+            ).distinct('_id')
+            rune_data = {x._id: x for x in rune_data}
+
             for part in part_query:
                 p = {
                     "id": part.id,
@@ -248,11 +282,7 @@ def get_participants(request, format=None):
                     "tier": part.tier,
                     "rank": part.rank,
                 }
-                champion = (
-                    Champion.objects.filter(language=language, key=part.champion_id)
-                    .order_by("-major", "-minor", "-patch")
-                    .first()
-                )
+                champion = champ_data[part.champion_id]
                 p["champion"] = {
                     "_id": champion._id if champion is not None else 'NA',
                     "name": champion.name if champion is not None else 'NA',
@@ -272,20 +302,6 @@ def get_participants(request, format=None):
                         "damage_self_mitigated": stats.damage_self_mitigated,
                         "deaths": stats.deaths,
                         "gold_earned": stats.gold_earned,
-                        "item_0": stats.item_0,
-                        "item_0_image_url": stats.item_0_image_url(major=match.major, minor=match.minor),
-                        "item_1": stats.item_1,
-                        "item_1_image_url": stats.item_1_image_url(major=match.major, minor=match.minor),
-                        "item_2": stats.item_2,
-                        "item_2_image_url": stats.item_2_image_url(major=match.major, minor=match.minor),
-                        "item_3": stats.item_3,
-                        "item_3_image_url": stats.item_3_image_url(major=match.major, minor=match.minor),
-                        "item_4": stats.item_4,
-                        "item_4_image_url": stats.item_4_image_url(major=match.major, minor=match.minor),
-                        "item_5": stats.item_5,
-                        "item_5_image_url": stats.item_5_image_url(major=match.major, minor=match.minor),
-                        "item_6": stats.item_6,
-                        "item_6_image_url": stats.item_6_image_url(major=match.major, minor=match.minor),
                         "kills": stats.kills,
                         "largest_multi_kill": stats.largest_multi_kill,
                         "magic_damage_dealt": stats.magic_damage_dealt,
@@ -294,36 +310,6 @@ def get_participants(request, format=None):
                         "neutral_minions_killed": stats.neutral_minions_killed,
                         "neutral_minions_killed_enemy_jungle": stats.neutral_minions_killed_enemy_jungle,
                         "neutral_minions_killed_team_jungle": stats.neutral_minions_killed_team_jungle,
-                        "perk_0_image_url": stats.get_perk_image(0),
-                        "perk_0": stats.perk_0,
-                        "perk_0_var_1": stats.perk_0_var_1,
-                        "perk_0_var_2": stats.perk_0_var_2,
-                        "perk_0_var_3": stats.perk_0_var_3,
-                        "perk_1_image_url": stats.get_perk_image(1),
-                        "perk_1": stats.perk_1,
-                        "perk_1_var_1": stats.perk_1_var_1,
-                        "perk_1_var_2": stats.perk_1_var_2,
-                        "perk_1_var_3": stats.perk_1_var_3,
-                        "perk_2_image_url": stats.get_perk_image(2),
-                        "perk_2": stats.perk_2,
-                        "perk_2_var_1": stats.perk_2_var_1,
-                        "perk_2_var_2": stats.perk_2_var_2,
-                        "perk_2_var_3": stats.perk_2_var_3,
-                        "perk_3_image_url": stats.get_perk_image(3),
-                        "perk_3": stats.perk_3,
-                        "perk_3_var_1": stats.perk_3_var_1,
-                        "perk_3_var_2": stats.perk_3_var_2,
-                        "perk_3_var_3": stats.perk_3_var_3,
-                        "perk_4_image_url": stats.get_perk_image(4),
-                        "perk_4": stats.perk_4,
-                        "perk_4_var_1": stats.perk_4_var_1,
-                        "perk_4_var_2": stats.perk_4_var_2,
-                        "perk_4_var_3": stats.perk_4_var_3,
-                        "perk_5_image_url": stats.get_perk_image(5),
-                        "perk_5": stats.perk_5,
-                        "perk_5_var_1": stats.perk_5_var_1,
-                        "perk_5_var_2": stats.perk_5_var_2,
-                        "perk_5_var_3": stats.perk_5_var_3,
                         "perk_primary_style": stats.perk_primary_style,
                         "perk_sub_style": stats.perk_sub_style,
                         "perk_sub_style_image_url": stats.perk_sub_style_image_url(),
@@ -346,6 +332,27 @@ def get_participants(request, format=None):
                         "wards_killed": stats.wards_killed,
                         "wards_placed": stats.wards_placed,
                     }
+
+                    # items
+                    for _i in range(7):
+                        key = f'item_{_i}'
+                        item_id = getattr(stats, key)
+                        p['stats'][key] = item_id
+                        item = item_data.get(item_id)
+                        p['stats'][f'{key}_image_url'] = item.image.image_url() if item else None
+
+                    # runes
+                    for _i in range(6):
+                        key = f'perk_{_i}'
+                        perk_id = getattr(stats, key)
+                        p['stats'][key] = perk_id
+                        rune = rune_data.get(perk_id)
+                        p['stats'][f'{key}'] = perk_id
+                        p['stats'][f'{key}_image_url'] = rune.image_url() if rune else None
+                        for _j in range(1, 4):
+                            var = f'{key}_var_{_j}'
+                            p['stats'][var] = getattr(stats, var)
+
                 participants.append(p)
             # participants.sort(key=lambda x: participant_sort(x))
 
