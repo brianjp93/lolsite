@@ -496,13 +496,14 @@ class Comment(models.Model):
             participants = self.match.participants.all()
             summoner_ids = [x.summoner_id for x in participants]
 
-            summoners = Summoner.objects.filter(_id__in=summoner_ids)
-            reply_summoners = Summoner.objects.filter(
-                summonerlinks__user=self.reply_to.summoner, summonerlinks__verified=True
+            users = User.objects.filter(
+                summonerlinks__summoner___id__in=summoner_ids,
+                summonerlinks__verified=True,
             )
-
-            query = summoners & reply_summoners
-            if not query.exists():
-                # user is not in this game
-                notification = Notification(user=self.reply_to, comment=self)
+            reply_to_users = User.objects.filter(
+                summonerlinks__summoner=self.reply_to.summoner,
+                summonerlinks__verified=True,
+            )
+            for user in reply_to_users | users:
+                notification = Notification(user=user, comment=self)
                 notification.save()
