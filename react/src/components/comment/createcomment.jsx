@@ -27,6 +27,9 @@ export function CreateComment(props) {
     const [text, setText] = useState('')
     const [summoner, setSummoner] = useState(null)
     const [posted_comment, setPostedComment] = useState({})
+    const [loading, setLoading] = useState(false)
+    const [showError, setShowError] = useState(false)
+
     const setView = props.setView
     const match = props.match
     const theme = props.theme
@@ -50,9 +53,14 @@ export function CreateComment(props) {
                         match_id,
                     }
                 }
+                setLoading(true)
                 api.player.createComment(data).then(response => {
                     setPostedComment(response.data.data)
                     setView('view')
+                    setLoading(false)
+                }).catch(error => {
+                    setShowError(true)
+                    setLoading(false)
                 })
             }
         },
@@ -71,7 +79,7 @@ export function CreateComment(props) {
         }
     }, [props.summoners, summoner])
 
-    const button_disabled = { disabled: isValid(text, summoner).length > 0 }
+    const button_disabled = { disabled: isValid(text, summoner).length > 0 && !loading}
 
     return (
         <>
@@ -152,6 +160,17 @@ export function CreateComment(props) {
                     <button onClick={() => setView('view')} className={`${theme} btn-small`}>
                         Discard Comment
                     </button>
+                    {loading &&
+                        <div>
+                            Posting comment...
+                        </div>
+                    }
+                    {showError &&
+                        <div>
+                            Sorry, there seems to have been an error while posting
+                            your comment, try again later.
+                        </div>
+                    }
                 </div>
             )}
         </>
