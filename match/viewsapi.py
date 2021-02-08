@@ -130,7 +130,6 @@ def get_match_timeline(request, format=None):
 
 
 @api_view(["POST"])
-@query_debugger
 def get_match(request, format=None):
     """Get a match and basic data about it.
 
