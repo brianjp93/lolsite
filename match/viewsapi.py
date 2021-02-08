@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from lolsite.tasks import get_riot_api
-from lolsite.helpers import query_debugger
 from match import tasks as mt
 from player import tasks as pt
 
@@ -182,7 +181,6 @@ def get_match(request, format=None):
 
 
 @api_view(["POST"])
-@query_debugger
 def get_participants(request, format=None):
     """
 
@@ -354,7 +352,6 @@ def get_participants(request, format=None):
                             p['stats'][var] = getattr(stats, var)
 
                 participants.append(p)
-            # participants.sort(key=lambda x: participant_sort(x))
 
             data = {"data": participants}
 
