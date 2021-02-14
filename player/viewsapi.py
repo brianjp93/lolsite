@@ -231,7 +231,7 @@ def serialize_matches(
             }
 
             participants = []
-            part_query = mt.get_sorted_participants(match, participants=match.participants.all())
+            part_query = mt.get_sorted_participants(match, participants=match.participants.all().select_related('stats'))
             for participant in part_query:
                 participant_data = {
                     "_id": participant._id,
@@ -452,8 +452,8 @@ def get_summoner_page(request, format=None):
         elif _id:
             query = Summoner.objects.filter(id=_id, region=region)
 
-        if query.exists():
-            summoner = query.first()
+        if query:
+            summoner = query[0]
         else:
             # only update if we're not importing for the first time
             update = False
@@ -467,8 +467,8 @@ def get_summoner_page(request, format=None):
             else:
                 simplified = pt.simplify(name)
                 query = Summoner.objects.filter(simple_name=simplified, region=region)
-                if query.exists():
-                    summoner = query.first()
+                if query:
+                    summoner = query[0]
                 else:
                     summoner = None
                     data = {
@@ -501,9 +501,10 @@ def get_summoner_page(request, format=None):
             else:
                 rank_positions = []
 
-            query = ProfileIcon.objects.filter(_id=summoner.profile_icon_id).order_by("-major", "-minor", "-patch")
-            if query.exists():
-                profile_icon = query.first()
+            query = ProfileIcon.objects.filter(_id=summoner.profile_icon_id)
+            query = query.order_by('_id', "-major", "-minor", "-patch").distinct('_id')
+            if query:
+                profile_icon = query[0]
                 profile_icon_ser = ProfileIconSerializer(profile_icon)
                 profile_icon_data = profile_icon_ser.data
             else:
