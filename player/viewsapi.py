@@ -231,7 +231,7 @@ def serialize_matches(
             }
 
             participants = []
-            part_query = mt.get_sorted_participants(match)
+            part_query = mt.get_sorted_participants(match, participants=match.participants.all())
             for participant in part_query:
                 participant_data = {
                     "_id": participant._id,
@@ -387,7 +387,6 @@ def serialize_matches(
 
 
 @api_view(["POST"])
-@query_debugger
 def get_summoner_page(request, format=None):
     """Get the basic information needed to render the summoner page.
 
