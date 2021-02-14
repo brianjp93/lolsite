@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "rest_framework",
     "storages",
+    'core',
     "lolsite",
     "data",
     "match",
