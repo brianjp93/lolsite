@@ -297,7 +297,7 @@ class Participant(models.Model):
             url = spell.image_url()
         return url
 
-    def as_data_row(self, max_spell=70, max_champ=1000):
+    def as_data_row(self, max_spell=70, max_champ=1000, team=None):
         convert_lane = {
             "NONE": 0,
             "TOP": 1,
@@ -318,9 +318,9 @@ class Participant(models.Model):
         max_vs = 1
         max_dmg = 1
         max_gold = 1
-        for part in self.match.participants.filter(
-            team_id=self.team_id
-        ).prefetch_related("stats"):
+        if team is None:
+            team = self.match.participants.filter(team_id=self.team_id).select_related('stats')
+        for part in team:
             if part.stats.vision_score > max_vs:
                 max_vs = part.stats.vision_score
             if part.stats.total_damage_dealt_to_champions > max_dmg:
