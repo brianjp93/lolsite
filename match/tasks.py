@@ -3,7 +3,7 @@
 from django.db.utils import IntegrityError
 from django.db.models import Count, Subquery, OuterRef
 from django.db.models import Case, When, Sum
-from django.db.models import IntegerField
+from django.db.models import IntegerField, Q
 from django.db import connection
 from django.utils import timezone
 
@@ -99,7 +99,7 @@ def import_summoner_from_participant(part, region):
             )
             try:
                 summoner.save()
-            except IntegrityError as error:
+            except IntegrityError:
                 # probably already saved it in a separate thread
                 pass
 
@@ -475,7 +475,7 @@ def import_season_matches(season_id, account_id, region, **kwargs):
             r = api.match.filter(account_id, region=region, season=season_id, **kwargs)
             try:
                 matches = r.json()["matches"]
-            except Exception as error:
+            except Exception:
                 print(r.content)
                 print(r.headers)
                 r = api.match.filter(
@@ -491,7 +491,7 @@ def import_season_matches(season_id, account_id, region, **kwargs):
                         print(f"importing {match_id}")
                         try:
                             import_match(match_id, region)
-                        except KeyError as error:
+                        except KeyError:
                             print("Waiting...")
                             time.sleep(10)
                             import_match(match_id, region)
@@ -637,7 +637,7 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
                     matches = []
                 else:
                     matches = r.json()["matches"]
-            except Exception as error:
+            except Exception:
                 time.sleep(10)
                 r = api.match.filter(account_id, region=region, **kwargs)
                 if r.status_code == 404:
@@ -922,7 +922,7 @@ def import_summoners_from_spectate(data, region):
             try:
                 summoner.save()
                 summoners[summoner._id] = summoner.id
-            except IntegrityError as error:
+            except IntegrityError:
                 query = Summoner.objects.filter(region=region, _id=summoner_id)
                 if query.exists():
                     summoner = query.first()
@@ -930,55 +930,52 @@ def import_summoners_from_spectate(data, region):
     return summoners
 
 
-def get_player_ranks(match_id, threshold_days=1):
+def get_player_ranks(summoner_list, threshold_days=1):
     """
     """
-    query = Match.objects.filter(id=match_id)
-    if query.exists():
-        summoners = []
-        match = query.first()
-        participants = match.participants.all()
-        for part in participants:
-            query = Summoner.objects.filter(_id=part.summoner_id)
-            summoners.append(query.first())
-        with ThreadPool(10) as pool:
-            pool.map(
-                lambda x: pt.import_positions(x.id, threshold_days=threshold_days),
-                summoners,
-            )
+    with ThreadPool(10) as pool:
+        pool.map(
+            lambda x: pt.import_positions(x, threshold_days=threshold_days),
+            summoner_list,
+        )
 
 
-def apply_player_ranks(match_id, threshold_days=1):
+def apply_player_ranks(match, threshold_days=1):
     """
     """
-    query = Match.objects.filter(id=match_id)
-    if query.exists():
-        match = query.first()
-        now = timezone.now()
-        one_day_ago = now - timezone.timedelta(days=1)
-        if match.get_creation() > one_day_ago:
-            # ok -- apply ranks
-            get_player_ranks(match_id, threshold_days=threshold_days)
-            for part in match.participants.all():
-                if not part.tier:
-                    # only applying if it is not already applied
-                    query = Summoner.objects.filter(
-                        _id=part.summoner_id, account_id=part.account_id
-                    )
-                    if query.exists():
-                        summoner = query.first()
-                        checkpoint = summoner.get_newest_rank_checkpoint()
-                        if checkpoint:
-                            query = checkpoint.positions.filter(
-                                queue_type="RANKED_SOLO_5x5"
-                            )
-                            if query.exists():
-                                position = query.first()
-                                part.rank, part.tier = position.rank, position.tier
-                                part.save()
-                else:
-                    # if any tiers are already applied, stop
-                    return
+    if not isinstance(match, Match):
+        match = Match.objects.get(id=match)
+
+    now = timezone.now()
+    one_day_ago = now - timezone.timedelta(days=1)
+    if match.get_creation() > one_day_ago:
+        # ok -- apply ranks
+        parts = match.participants.all()
+        q = Q()
+        for part in parts:
+            q |= Q(_id=part.summoner_id, account_id=part.account_id)
+        summoner_qs = Summoner.objects.filter(q)
+        summoner_list = [x for x in summoner_qs]
+        summoners = {x.account_id: x for x in summoner_qs}
+        get_player_ranks(summoner_list, threshold_days=threshold_days)
+
+        for part in parts:
+            if not part.tier:
+                # only applying if it is not already applied
+                summoner = summoners.get(part.account_id)
+                if summoner:
+                    checkpoint = summoner.get_newest_rank_checkpoint()
+                    if checkpoint:
+                        query = checkpoint.positions.filter(
+                            queue_type="RANKED_SOLO_5x5"
+                        )
+                        if query:
+                            position = query[0]
+                            part.rank, part.tier = position.rank, position.tier
+                            part.save()
+            else:
+                # if any tiers are already applied, stop
+                return
 
 
 def create_role_model_fit(recent_days=None, max_entries=10_000):

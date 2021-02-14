@@ -100,12 +100,12 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         return summoner_model.id
 
 
-def import_positions(summoner_id, threshold_days=None, close=False):
+def import_positions(summoner, threshold_days=None, close=False):
     """Get most recent position data for Summoner.
 
     Parameters
     ----------
-    summoner_id : ID
+    summoner : Summoner or Summoner.id
         The internal ID of the Summoner model
     threshold_days : int
         Only update if the last update was more than {threshold_days} days ago
@@ -115,7 +115,8 @@ def import_positions(summoner_id, threshold_days=None, close=False):
     None
 
     """
-    summoner = Summoner.objects.get(id=summoner_id)
+    if not isinstance(summoner, Summoner):
+        summoner = Summoner.objects.get(id=summoner)
 
     rankcheckpoint = summoner.get_newest_rank_checkpoint()
     if rankcheckpoint and threshold_days:
