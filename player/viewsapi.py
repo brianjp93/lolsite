@@ -13,6 +13,7 @@ from django.db.models import Max, Min, F
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
+from lolsite.helpers import query_debugger
 
 from player import tasks as pt
 from player import constants as player_constants
@@ -198,9 +199,6 @@ def serialize_matches(
     Serialized Match List
 
     """
-    cache_get_time = 0
-    cache_set_time = 0
-
     perk_cache = {}
     perk_tree_cache = {}
 
@@ -209,41 +207,9 @@ def serialize_matches(
         "participants", "teams",
     )
 
-    # spell keys
-    all_spells = set()
-    # champion keys
-    all_champs = set()
-    all_items = set()
-    for match in match_query:
-        for participant in match.participants.all():
-            all_spells.add(participant.spell_1_id)
-            all_spells.add(participant.spell_2_id)
-
-            all_champs.add(participant.champion_id)
-
-            if participant.current_account_id == account_id:
-                for i in range(7):
-                    item__id = getattr(participant.stats, f'item_{i}', None)
-                    if item__id is not None:
-                        all_items.add(item__id)
-
-    spell_query = SummonerSpellImage.objects.filter(
-        spell__key__in=all_spells,
-    ).select_related('spell')
-    spell_data = {x.spell.key: x.image_url() for x in spell_query}
-
-    champion_query = Champion.objects.filter(
-        key__in=all_champs,
-        language='en_US',
-    ).order_by('key', '-major', '-minor').distinct('key').select_related('image')
-    champ_data = {x.key: x for x in champion_query}
-
-    item_query = Item.objects.filter(
-        _id__in=all_items,
-    ).order_by(
-        '_id', '-major', '-minor',
-    ).distinct('_id').select_related('image')
-    item_data = {x._id: x for x in item_query}
+    spell_data = match_query.get_spell_images()
+    champ_data = match_query.get_champs()
+    item_data = match_query.get_items(account_id=account_id)
 
     for match in match_query:
         # match_serializer = MatchSerializer(match)
@@ -286,7 +252,7 @@ def serialize_matches(
                 if champ:
                     participant_data['champion'] = {
                         "_id": champ._id,
-                        "image_url": champ.image_url(),
+                        "image_url": champ.image.image_url(),
                         "name": champ.name,
                     }
                 else:
@@ -421,6 +387,7 @@ def serialize_matches(
 
 
 @api_view(["POST"])
+@query_debugger
 def get_summoner_page(request, format=None):
     """Get the basic information needed to render the summoner page.
 
