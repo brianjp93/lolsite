@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from lolsite.tasks import get_riot_api
+from lolsite.helpers import query_debugger
 from match import tasks as mt
 from player import tasks as pt
 
@@ -13,7 +14,7 @@ from .models import sort_positions
 
 from player.models import Summoner, simplify
 
-from data.models import Champion, Item, ReforgedRune
+from data.models import Champion, ReforgedRune
 
 from .serializers import MatchSerializer
 
@@ -210,9 +211,11 @@ def get_participants(request, format=None):
         language = request.data.get("language", "en_US")
         apply_ranks = request.data.get("apply_ranks", False)
         if match_id:
-            match = Match.objects.get(id=match_id)
+            match_qs = Match.objects.filter(id=match_id)
         else:
-            match = Match.objects.get(_id=match__id)
+            match_qs = Match.objects.filter(_id=match__id)
+        match = match_qs.get()
+        participants_qs = match.participants.all().select_related('stats')
 
         cache_key = f"match/{match._id}/participants"
         cache_data = cache.get(cache_key)
@@ -221,35 +224,22 @@ def get_participants(request, format=None):
             status_code = cache_data["status"]
         else:
             if apply_ranks:
-                mt.apply_player_ranks(match.id, threshold_days=1)
+                mt.apply_player_ranks(match, threshold_days=1)
             participants = []
 
-            part_query = mt.get_sorted_participants(match)
-            if len(part_query) != match.participants.count():
-                part_query = match.participants.all().select_related("stats")
+            part_query = mt.get_sorted_participants(match, participants=participants_qs)
+            if len(part_query) != len(participants_qs):
+                part_query = participants_qs
 
-            all_champs = Champion.objects.filter(
-                key__in=set(part.champion_id for part in part_query),
-                language=language,
-            ).order_by('key', '-major', '-minor').distinct(
-                'key',
-            ).select_related('image')
-            champ_data = {x.key: x for x in all_champs}
+            champ_data = match_qs.get_champs()
+            item_data = match_qs.get_items()
+            spell_images = match_qs.get_spell_images()
+            perk_substyles = match_qs.get_perk_substyles()
 
-            all_items = set()
             all_runes = set()
             for part in part_query:
-                for _i in range(7):
-                    all_items.add(getattr(part.stats, f'item_{_i}'))
-
                 for _i in range(6):
                     all_runes.add(getattr(part.stats, f'perk_{_i}'))
-            item_data = Item.objects.filter(
-                _id__in=all_items,
-            ).order_by(
-                '_id', '-major', '-minor',
-            ).distinct('_id').select_related('image')
-            item_data = {x._id: x for x in item_data}
 
             rune_data = ReforgedRune.objects.filter(
                 _id__in=all_runes,
@@ -270,9 +260,9 @@ def get_participants(request, format=None):
                     "summoner_name": part.summoner_name,
                     "highest_achieved_season_tier": part.highest_achieved_season_tier,
                     "spell_1_id": part.spell_1_id,
-                    "spell_1_image_url": part.spell_1_image_url(),
+                    "spell_1_image_url": spell_images.get(part.spell_1_id),
                     "spell_2_id": part.spell_2_id,
-                    "spell_2_image_url": part.spell_2_image_url(),
+                    "spell_2_image_url": spell_images.get(part.spell_2_id),
                     "team_id": part.team_id,
                     "lane": part.lane,
                     "role": part.role,
@@ -284,7 +274,7 @@ def get_participants(request, format=None):
                     "_id": champion._id if champion is not None else 'NA',
                     "name": champion.name if champion is not None else 'NA',
                     "key": champion.key if champion is not None else 'NA',
-                    "image_url": champion.image_url() if champion is not None else '',
+                    "image_url": champion.image.image_url() if champion is not None else '',
                 }
                 try:
                     stats = part.stats
@@ -309,7 +299,7 @@ def get_participants(request, format=None):
                         "neutral_minions_killed_team_jungle": stats.neutral_minions_killed_team_jungle,
                         "perk_primary_style": stats.perk_primary_style,
                         "perk_sub_style": stats.perk_sub_style,
-                        "perk_sub_style_image_url": stats.perk_sub_style_image_url(),
+                        "perk_sub_style_image_url": perk_substyles.get(stats.perk_sub_style),
                         "stat_perk_0": stats.stat_perk_0,
                         "stat_perk_1": stats.stat_perk_1,
                         "stat_perk_2": stats.stat_perk_2,
