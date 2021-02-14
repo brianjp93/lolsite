@@ -8,8 +8,8 @@ from django.db.models import Q
 from django.utils import timezone
 
 from data.models import ReforgedTree, ReforgedRune
-from data.models import Item
-from data.models import SummonerSpell
+from data.models import Item, SummonerSpellImage
+from data.models import SummonerSpell, Champion
 
 from data import constants as DATA_CONSTANTS
 
@@ -94,6 +94,44 @@ def lp_sort(position):
     return lp
 
 
+class MatchQuerySet(models.QuerySet):
+
+    def get_items(self, account_id=None):
+        item_ids = set()
+        qs = Stats.objects.filter(participant__match__in=self.all())
+        if account_id is not None:
+            qs = qs.filter(participant__current_account_id=account_id)
+        for stat in qs:
+            for i in range(7):
+                key = f'item_{i}'
+                item_id = getattr(stat, key)
+                item_ids.add(item_id)
+        qs = Item.objects.filter(_id__in=item_ids)
+        qs = qs.order_by('_id', '-major', '-minor')
+        qs = qs.distinct('_id').select_related('image')
+        return {x._id: x for x in qs}
+
+    def get_champs(self):
+        champ_ids = set()
+        for match in self.all().prefetch_related('participants'):
+            for part in match.participants.all():
+                champ_ids.add(part.champion_id)
+        qs = Champion.objects.filter(key__in=champ_ids, language='en_US')
+        qs = qs.order_by('key', '-major', '-minor').distinct('key').select_related('image')
+        return {x.key: x for x in qs}
+
+    def get_spell_images(self, account_id=None):
+        spell_ids = set()
+        for match in self.all().prefetch_related('participants'):
+            for part in match.participants.all():
+                spell_ids.add(part.spell_1_id)
+                spell_ids.add(part.spell_2_id)
+        qs = SummonerSpellImage.objects.filter(spell__key__in=spell_ids)
+        qs = qs.select_related('spell')
+        qs = qs.order_by('-spell__version').distinct('spell__version')
+        return {x.spell.key: x.image_url() for x in qs}
+
+
 class Match(models.Model):
     _id = models.BigIntegerField(unique=True, db_index=True)
     game_creation = models.BigIntegerField(db_index=True)
@@ -110,6 +148,8 @@ class Match(models.Model):
     minor = models.IntegerField(db_index=True)
     patch = models.IntegerField()
     build = models.IntegerField()
+
+    objects = MatchQuerySet.as_manager()
 
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
