@@ -1,6 +1,7 @@
 from django.db import models
-
 from django.utils import timezone
+
+from core.models import VersionedModel
 
 
 class Rito(models.Model):
@@ -86,29 +87,18 @@ class GameType(models.Model):
         return f'GameType(name="{self.name}")'
 
 
-class ReforgedTree(models.Model):
+class ReforgedTree(VersionedModel):
     _id = models.IntegerField(db_index=True)
     language = models.CharField(
         max_length=32, default="en_US", db_index=True, blank=True
     )
     version = models.CharField(max_length=32, default="", db_index=True, blank=True)
-    major = models.IntegerField(default=None, null=True, db_index=True, blank=True)
-    minor = models.IntegerField(default=None, null=True, db_index=True, blank=True)
-    patch = models.IntegerField(default=None, null=True, db_index=True, blank=True)
     icon = models.CharField(max_length=128, default="", blank=True)
     key = models.CharField(max_length=128, default="", blank=True)
     name = models.CharField(max_length=128, default="", blank=True)
 
     class Meta:
         unique_together = ("_id", "language", "version")
-
-    def save(self, *args, **kwargs):
-        # save major, minor, patch by parsing version
-        if self.major is None:
-            parts = [int(x) for x in self.version.split(".")]
-            for i, attr in enumerate(["major", "minor", "patch"]):
-                setattr(self, attr, parts[i])
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'ReforgedTree(_id={self._id}, language="{self.language}", version="{self.version}")'
@@ -141,12 +131,9 @@ class ReforgedRune(models.Model):
         return f"https://ddragon.leagueoflegends.com/cdn/img/{self.icon}"
 
 
-class Item(models.Model):
+class Item(VersionedModel):
     _id = models.IntegerField(db_index=True)
     version = models.CharField(max_length=128, default="", db_index=True, blank=True)
-    major = models.IntegerField(default=None, null=True, db_index=True, blank=True)
-    minor = models.IntegerField(default=None, null=True, db_index=True, blank=True)
-    patch = models.IntegerField(default=None, null=True, db_index=True, blank=True)
     language = models.CharField(
         max_length=32, default="en_US", db_index=True, blank=True
     )
@@ -167,15 +154,6 @@ class Item(models.Model):
 
     class Meta:
         unique_together = ("_id", "version", "language")
-
-    def save(self, *args, **kwargs):
-        if all([self.major is None, self.minor is None, self.patch is None]):
-            parts = self.version.split(".")
-            try:
-                (self.major, self.minor, self.patch) = map(int, parts)
-            except:
-                print('Could not parse item version.')
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Item(name="{self.name}", version="{self.version}", language="{self.language}")'
@@ -309,12 +287,9 @@ def get_item_with_default(li, index, default_val=None):
         return default_val
 
 
-class ProfileIcon(models.Model):
+class ProfileIcon(VersionedModel):
     _id = models.IntegerField(db_index=True)
     version = models.CharField(max_length=128, default="", blank=True, db_index=True)
-    major = models.IntegerField(default=None, db_index=True, null=True, blank=True)
-    minor = models.IntegerField(default=None, db_index=True, null=True, blank=True)
-    patch = models.IntegerField(default=None, db_index=True, null=True, blank=True)
     language = models.CharField(max_length=128, default="", blank=True, db_index=True)
     full = models.CharField(max_length=128, default="", blank=True)
     group = models.CharField(max_length=128, default="", blank=True)
@@ -327,14 +302,6 @@ class ProfileIcon(models.Model):
     class Meta:
         unique_together = ("_id", "version", "language")
 
-    def save(self, *args, **kwargs):
-        # save major, minor, patch by parsing version
-        if self.major is None:
-            parts = [int(x) for x in self.version.split(".")]
-            for i, attr in enumerate(["major", "minor", "patch"]):
-                setattr(self, attr, parts[i])
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return f'ProfileIcon(_id={self._id}, version="{self.version}", language="{self.language}")'
 
@@ -342,12 +309,9 @@ class ProfileIcon(models.Model):
         return f"https://ddragon.leagueoflegends.com/cdn/{self.version}/img/profileicon/{self.full}"
 
 
-class Champion(models.Model):
+class Champion(VersionedModel):
     _id = models.CharField(max_length=128, default="", blank=True, db_index=True)
     version = models.CharField(max_length=128, default="", blank=True, db_index=True)
-    major = models.IntegerField(default=0, db_index=True)
-    minor = models.IntegerField(default=0, db_index=True)
-    patch = models.IntegerField(default=0, db_index=True)
     language = models.CharField(max_length=128, default="", blank=True, db_index=True)
     key = models.IntegerField(db_index=True)
     name = models.CharField(max_length=128, default="", blank=True)
@@ -360,15 +324,6 @@ class Champion(models.Model):
 
     class Meta:
         unique_together = ("_id", "version", "language")
-
-    def save(self, *args, **kwargs):
-        if all([self.major == 0, self.minor == 0, self.patch == 0]):
-            parts = self.version.split(".")
-            try:
-                (self.major, self.minor, self.patch) = map(int, parts)
-            except Exception:
-                pass
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Champion(_id="{self._id}", version="{self.version}", language="{self.language}")'
@@ -682,7 +637,7 @@ class ChampionSpellVar(models.Model):
         return f'ChampionSpellVar(spell="{self.spell._id}", key="{self.key}")'
 
 
-class SummonerSpell(models.Model):
+class SummonerSpell(VersionedModel):
     _id = models.CharField(max_length=128, default="", blank=True, db_index=True)
     key = models.IntegerField(db_index=True)
     version = models.CharField(max_length=128, db_index=True)
