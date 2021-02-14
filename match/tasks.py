@@ -1002,7 +1002,7 @@ def create_role_model_fit(recent_days=None, max_entries=10_000):
     joblib.dump(clf, "role_predict.svc")
 
 
-def predict_role(participant, classifier_file="role_predict.svc", number=False):
+def predict_role(participant, classifier_file="role_predict.svc", number=False, team=None):
     """
 
     Parameters
@@ -1012,7 +1012,7 @@ def predict_role(participant, classifier_file="role_predict.svc", number=False):
         file of saved classifier instance using joblib
     """
     convert = ["top", "jg", "mid", "adc", "sup"]
-    guess = CLF.predict([participant.as_data_row()])[0]
+    guess = CLF.predict([participant.as_data_row(team=team)])[0]
     if number:
         out = guess
     else:
@@ -1035,18 +1035,20 @@ def guess_roles():
         )
 
 
-def get_sorted_participants(match):
+def get_sorted_participants(match, participants=None):
     """Use ML classifier to guess lane/role
     """
     ordered = []
-    participants = match.participants.all().select_related('stats')
-    if participants.count() == 10:
+    if not participants:
+        participants = match.participants.all().select_related('stats')
+    if len(participants) == 10:
         for team_id in [100, 200]:
             allowed = set(list(range(5)))
             team = [""] * 5
             unknown = []
-            for p in participants.filter(team_id=team_id):
-                role = predict_role(p, number=True)
+            team_parts = [x for x in participants.all() if x.team_id == team_id]
+            for p in team_parts:
+                role = predict_role(p, number=True, team=team_parts)
                 if role in allowed:
                     team[role] = p
                     allowed.remove(role)
