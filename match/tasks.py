@@ -424,7 +424,7 @@ def parse_match(data):
                 {"champion_id": _ban["championId"], "pick_turn": _ban["pickTurn"],}
             )
 
-        win = True if _team.get("win", "Fail") == "Win" else False
+        win = _team.get('win', 'Fail') == 'Win'
         team = {
             "_id": _team["teamId"],
             "baron_kills": _team["baronKills"],
