@@ -16,8 +16,8 @@ def get_riot_api():
     """
     api = None
     query = Rito.objects.all()
-    if query.exists():
-        rito = query.first()
+    if query:
+        rito = query[0]
         if rito.token:
             api = RiotAPI(rito.token)
     return api
