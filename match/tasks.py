@@ -15,7 +15,6 @@ from .models import Event
 
 from .models import Spectate
 
-from data.constants import IS_PRINT_TIMERS
 from data.models import Champion, SummonerSpell
 from lolsite.tasks import get_riot_api
 
@@ -56,10 +55,7 @@ def import_match(match_id, region, refresh=False, close=False):
     """
     api = get_riot_api()
     if api:
-        timer_start = time.time()
         r = api.match.get(match_id, region=region)
-        if IS_PRINT_TIMERS:
-            print(f"Match get request took {time.time() - timer_start}.")
         match = r.json()
 
         if r.status_code == 429:
@@ -138,7 +134,6 @@ def import_match_from_data(data, refresh=False, region=""):
         else:
             raise error
 
-    participant_import_timer = time.time()
     participants_data = parsed.pop("participants")
     for _p_data in participants_data:
 
@@ -179,13 +174,8 @@ def import_match_from_data(data, refresh=False, region=""):
         except IntegrityError as error:
             match_model.delete()
             raise error
-    if IS_PRINT_TIMERS:
-        print(
-            f"Importing 10 participants took {time.time() - participant_import_timer}."
-        )
 
     # TEAMS
-    team_import_timer = time.time()
     teams = parsed.pop("teams")
     for _t_data in teams:
         _t_data["match"] = match_model
@@ -207,8 +197,6 @@ def import_match_from_data(data, refresh=False, region=""):
             except Exception as error:
                 ban_model.delete()
                 raise error
-    if IS_PRINT_TIMERS:
-        print(f"Team imports took {time.time() - team_import_timer}.")
 
 
 def parse_match(data):
