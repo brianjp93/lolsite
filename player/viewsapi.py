@@ -8,8 +8,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.core.cache import cache
 from django.contrib.auth.models import User
-from django.db.models.functions import Extract
-from django.db.models import Max, Min, F
+from django.db.models.functions import Extract, Max, Min, F
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
@@ -18,23 +17,22 @@ from lolsite.helpers import query_debugger
 from player import tasks as pt
 from player import constants as player_constants
 from player import filters as player_filters
-from player.models import RankPosition, Comment
-from player.models import Favorite, SummonerLink
-from player.models import decode_int_to_rank, validate_password
+from player.models import (
+    RankPosition, Comment, Favorite,
+    SummonerLink, decode_int_to_rank, validate_password,
+)
 
 from data.models import ProfileIcon, Champion
 from data.serializers import ProfileIconSerializer
 
 from match import tasks as mt
-from match.models import Match
-
-from match.models import sort_positions
+from match.models import Match, sort_positions
 
 from .models import Summoner
-from .serializers import SummonerSerializer
-from .serializers import RankPositionSerializer
-from .serializers import FavoriteSerializer
-from .serializers import CommentSerializer
+from .serializers import (
+    SummonerSerializer, RankPositionSerializer,
+    FavoriteSerializer, CommentSerializer
+)
 
 import time
 import random
