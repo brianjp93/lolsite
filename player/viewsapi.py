@@ -71,8 +71,8 @@ def get_summoner(request, format=None):
         else:
             query = None
 
-        if query and query.exists():
-            summoner = query.first()
+        if query:
+            summoner = query[0]
             serializer = SummonerSerializer(summoner)
             data["data"] = serializer.data
         else:
@@ -147,7 +147,7 @@ def match_filter(request, account_id=None):
         elif account_id:
             query = Summoner.objects.filter(account_id=account_id, region=region)
         summoner_get_time = time.time()
-        summoner = query.first()
+        summoner = query[0]
         summoner_get_time = time.time() - summoner_get_time
         # print(f'Summoner get time in match_filter() : {summoner_get_time}.')
         account_id = summoner.account_id
