@@ -7,6 +7,7 @@ from django.utils import timezone
 import pytz
 import logging
 
+from core.models import VersionedModel
 from data.models import ReforgedTree, ReforgedRune
 from data.models import Item, SummonerSpellImage
 from data.models import SummonerSpell, Champion
@@ -140,7 +141,7 @@ class MatchQuerySet(models.QuerySet):
         return {x._id: x.image_url() for x in qs}
 
 
-class Match(models.Model):
+class Match(VersionedModel):
     _id = models.BigIntegerField(unique=True, db_index=True)
     game_creation = models.BigIntegerField(db_index=True)
     game_duration = models.IntegerField()
@@ -150,11 +151,7 @@ class Match(models.Model):
     platform_id = models.CharField(max_length=16, default="", blank=True)
     queue_id = models.IntegerField(db_index=True)
     season_id = models.IntegerField()
-
     game_version = models.CharField(max_length=32, default="", blank=True)
-    major = models.IntegerField(db_index=True)
-    minor = models.IntegerField(db_index=True)
-    patch = models.IntegerField()
     build = models.IntegerField()
 
     objects = MatchQuerySet.as_manager()
