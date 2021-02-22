@@ -8,7 +8,8 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.core.cache import cache
 from django.contrib.auth.models import User
-from django.db.models.functions import Extract, Max, Min, F
+from django.db.models.functions import Extract
+from django.db.models import Max, Min, F
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
