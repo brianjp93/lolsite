@@ -22,10 +22,7 @@ from player.models import RankPosition, Comment
 from player.models import Favorite, SummonerLink
 from player.models import decode_int_to_rank, validate_password
 
-from data.models import (
-    ProfileIcon, Champion, SummonerSpellImage,
-    Item,
-)
+from data.models import ProfileIcon, Champion
 from data.serializers import ProfileIconSerializer
 
 from match import tasks as mt
