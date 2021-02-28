@@ -23,14 +23,14 @@ def home(request, path=""):
     dt.compute_changes.delay(5)
     nt.delete_old_notifications.delay()
 
-    user = request.user
-    data = get_base_react_context(request, user=user)
+    data = get_base_react_context(request)
     return TemplateResponse(request, "layout/home.html", data)
 
 
-def get_base_react_context(request, user=None):
+def get_base_react_context(request):
     """Get the react context data.
     """
+    user = request.user
     user_data = {}
     favorite_data = {}
     default_summoner = {}
