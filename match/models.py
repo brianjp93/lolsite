@@ -98,7 +98,7 @@ class MatchQuerySet(models.QuerySet):
 
     def get_items(self, account_id=None):
         item_ids = set()
-        qs = Stats.objects.filter(participant__match__in=self.all())
+        qs = Stats.objects.filter(participant__match__in=self)
         if account_id is not None:
             qs = qs.filter(participant__current_account_id=account_id)
         for stat in qs:
@@ -113,7 +113,7 @@ class MatchQuerySet(models.QuerySet):
 
     def get_champs(self):
         champ_ids = set()
-        for match in self.all().prefetch_related('participants'):
+        for match in self.prefetch_related('participants'):
             for part in match.participants.all():
                 champ_ids.add(part.champion_id)
         qs = Champion.objects.filter(key__in=champ_ids, language='en_US')
@@ -122,7 +122,7 @@ class MatchQuerySet(models.QuerySet):
 
     def get_spell_images(self, account_id=None):
         spell_ids = set()
-        for match in self.all().prefetch_related('participants'):
+        for match in self.prefetch_related('participants'):
             for part in match.participants.all():
                 spell_ids.add(part.spell_1_id)
                 spell_ids.add(part.spell_2_id)
@@ -133,7 +133,7 @@ class MatchQuerySet(models.QuerySet):
 
     def get_perk_substyles(self):
         substyles = set()
-        for match in self.all().prefetch_related('participants'):
+        for match in self.prefetch_related('participants'):
             for part in match.participants.all().select_related('stats'):
                 substyles.add(part.stats.perk_sub_style)
         qs = ReforgedTree.objects.filter(_id__in=substyles)
