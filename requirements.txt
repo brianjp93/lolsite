@@ -25,7 +25,7 @@ django-elasticache==1.0.3
 django-elastipymemcache==1.2.1
 django-extensions==3.0.9
 django-storages==1.9.1
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 docker==3.7.0
 docker-compose==1.25.4
 docker-pycreds==0.4.0
