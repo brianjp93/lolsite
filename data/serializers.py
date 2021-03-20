@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from rest_framework import serializers
 from .models import ProfileIcon, Item, ItemGold, ItemStat
 from .models import ReforgedRune, Champion, ChampionSpell
@@ -36,6 +37,11 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if isinstance(self.instance, QuerySet):
+            self.instance = self.instance.select_related('image')
 
 
 class ItemGoldSerializer(serializers.ModelSerializer):
@@ -94,3 +100,12 @@ class ChampionSerializer(DynamicSerializer):
     class Meta:
         model = Champion
         fields = "__all__"
+
+    def __init__(self, instance=None, **kwargs):
+        if isinstance(instance, QuerySet):
+            instance = instance.select_related('image', 'stats')
+            instance = instance.prefetch_related(
+                'spells', 'spells__vars', 'spells__image',
+                'spells__effect_burn',
+            )
+        super().__init__(instance=instance, **kwargs)

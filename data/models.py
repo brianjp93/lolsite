@@ -575,8 +575,10 @@ class ChampionSpell(models.Model):
     def get_effect(self):
         """Get the effect list, in ascending order.
         """
-        query = self.effect_burn.all().order_by("sort_int")
-        out = [x.value for x in query]
+        query = self.effect_burn.all()
+        out = [x for x in query]
+        out.sort(key=lambda x: x.sort_int)
+        out = [x.value for x in out]
         return out
 
     def image_url(self):
