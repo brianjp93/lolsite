@@ -67,6 +67,8 @@ const stat_name = {
     FlatArmorMod: ['Armor', 'Armor'],
     FlatSpellBlockMod: ['MR', 'Magic Resist'],
     PercentLifeStealMod: ['LS', 'Life Steal'],
+    PhysicalVamp: ['Physical Vamp', 'Physical Vamp %'],
+    OmniVamp: ['Omnivamp', 'Omnivamp %'],
     FlatCritChanceMod: ['Crit', 'Crit Chance'],
     FlatHPRegenMod: ['HP Regen', 'Flat Health Regeneration'],
     FlatMovementSpeedMod: ['Flat MS', 'Flat Movement Speed'],
@@ -168,6 +170,8 @@ export function ItemsGrid(props) {
                 {statCheckbox('PercentAttackSpeedMod', 'Attack Speed')}
                 {statCheckbox('FlatCritChanceMod', 'Crit Chance')}
                 {statCheckbox('PercentLifeStealMod', 'Life Steal')}
+                {statCheckbox('OmniVamp', 'Omnivamp')}
+                {statCheckbox('PhysicalVamp', 'Physical Vamp')}
                 {statCheckbox('Lethality', 'Lethality')}
                 {statCheckbox('ArmorPen', 'Armor Penetration %')}
             </div>
@@ -310,29 +314,39 @@ export function processItem(item, stat_costs) {
         } catch (error) {}
     }
 
-    x = description.match(/\+([0-9]+) Magic Penetration/)
+    x = description.match(/([0-9]+) Magic Penetration/)
     if (x !== null) {
-        item.stats.FlatMagicPen = parseFloat(x[1]) / 100
+        item.stats.FlatMagicPen = parseFloat(x[1])
     }
 
-    x = description.match(/\+([0-9]+)% Cooldown Reduction/)
+    x = description.match(/([0-9]+)% Cooldown Reduction/)
     if (x !== null) {
         item.stats.CooldownReduction = parseFloat(x[1])
     }
 
-    x = description.match(/\+([0-9]+)% Heal and Shield Power/)
+    x = description.match(/([0-9]+)% Heal and Shield Power/i)
     if (x !== null) {
         item.stats.HealAndShieldPower = parseFloat(x[1])
     }
 
-    x = description.match(/\+([0-9]+)% Base Health Regen/)
+    x = description.match(/([0-9]+)% Base Health Regen/)
     if (x !== null) {
         item.stats.PercentBaseHPRegen = parseFloat(x[1])
     }
 
-    x = description.match(/\+([0-9]+)% Life Steal/)
+    x = description.match(/([0-9]+)% Life Steal/)
     if (x !== null) {
         item.stats.PercentLifeStealMod = parseFloat(x[1]) / 100
+    }
+
+    x = description.match(/([0-9]+) Physical Vamp/)
+    if (x !== null) {
+        item.stats.PhysicalVamp = parseFloat(x[1])
+    }
+
+    x = description.match(/([0-9]+)% Omnivamp(?:$|(?:<br>))/i)
+    if (x !== null) {
+        item.stats.OmniVamp = parseFloat(x[1])
     }
 
     x = description.match(/([0-9]+)% Armor Penetration/)
