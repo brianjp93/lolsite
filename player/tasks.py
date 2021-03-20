@@ -146,7 +146,7 @@ def import_positions(summoner, threshold_days=None, close=False):
                             "progress", None
                         ),
                     }
-                    query = rankcheckpoint.positions.get(**attrs)
+                    rankcheckpoint.positions.get(**attrs)
                     print("Nothing has changed, not creating a new checkpoint")
                 except:
                     print("Change detected.")
