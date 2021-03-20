@@ -11,6 +11,7 @@ from .serializers import ItemGoldSerializer
 from .serializers import ReforgedRuneSerializer, ChampionSerializer
 from .serializers import ChampionSpellSerializer
 
+from lolsite.helpers import query_debugger
 from django.core.cache import cache
 
 
@@ -285,6 +286,7 @@ def get_current_season(request, format=None):
     return Response(data, status=status_code)
 
 
+@query_debugger
 @api_view(["POST"])
 def get_champions(request, format=None):
     """Get champion data
@@ -335,6 +337,11 @@ def get_champions(request, format=None):
 
             if order_by:
                 query = query.order_by(order_by)
+            query = query.select_related('image', 'stats')
+            query = query.prefetch_related(
+                'spells', 'spells__vars', 'spells__image',
+                'spells__effect_burn',
+            )
             champion_data = ChampionSerializer(query, many=True, fields=fields).data
             data = {"data": champion_data}
             if len(champion_data) > 0 and cache_key:
