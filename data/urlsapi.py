@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 from data import viewsapi as data_views
 from rest_framework.urlpatterns import format_suffix_patterns
 

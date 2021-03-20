@@ -179,6 +179,8 @@ def all_items(request, format=None):
         data = cache_data
     else:
         query = Item.objects.filter(version=version)
+        query = query.select_related('gold', 'image')
+        query = query.prefetch_related('stats', 'maps')
         if query.exists():
             items = []
             for item in query:
