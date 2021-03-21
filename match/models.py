@@ -128,7 +128,7 @@ class MatchQuerySet(models.QuerySet):
                 spell_ids.add(part.spell_2_id)
         qs = SummonerSpellImage.objects.filter(spell__key__in=spell_ids)
         qs = qs.select_related('spell')
-        qs = qs.order_by('-spell__version').distinct('spell__version')
+        qs = qs.order_by('spell___id', '-spell__major', '-spell__minor').distinct('spell___id')
         return {x.spell.key: x.image_url() for x in qs}
 
     def get_perk_substyles(self):
