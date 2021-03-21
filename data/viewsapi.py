@@ -286,7 +286,6 @@ def get_current_season(request, format=None):
     return Response(data, status=status_code)
 
 
-@query_debugger
 @api_view(["POST"])
 def get_champions(request, format=None):
     """Get champion data
