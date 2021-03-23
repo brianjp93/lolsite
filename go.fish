@@ -5,6 +5,8 @@
 # postgres and redis-server must be running
 # create session `lolsite`
 # assumes venv `lolsite`
+sudo service redis-server start
+sudo service postgresql start
 set environ 'conda deactivate && conda activate lolsite'
 tmux new-session -d -s lolsite
 tmux send-keys "$environ && python manage.py rundev" C-m
