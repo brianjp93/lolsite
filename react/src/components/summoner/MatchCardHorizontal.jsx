@@ -328,7 +328,7 @@ function MatchCard(props) {
                             ></div>
 
                             <img
-                                src={part.champion.image_url}
+                                src={part.champion.image_15}
                                 alt={part.champion.name}
                                 style={{ height: 15, borderRadius: 5, paddingRight: 2 }}
                             />
@@ -448,7 +448,7 @@ function MatchCard(props) {
                                 marginLeft: 4,
                                 borderRadius: 5,
                             }}
-                            src={mypart.stats.item_6_image_url}
+                            src={mypart.stats.item_6_image_30}
                             alt=""
                         />
                     </div>
@@ -461,14 +461,14 @@ function MatchCard(props) {
                         }}
                     >
                         <div style={{ width: 100 }}>
-                            <span>{item(mypart.stats.item_0, mypart.stats.item_0_image_url)}</span>
-                            <span>{item(mypart.stats.item_1, mypart.stats.item_1_image_url)}</span>
-                            <span>{item(mypart.stats.item_2, mypart.stats.item_2_image_url)}</span>
+                            <span>{item(mypart.stats.item_0, mypart.stats.item_0_image_30)}</span>
+                            <span>{item(mypart.stats.item_1, mypart.stats.item_1_image_30)}</span>
+                            <span>{item(mypart.stats.item_2, mypart.stats.item_2_image_30)}</span>
                         </div>
                         <div style={{ width: 100 }}>
-                            <span>{item(mypart.stats.item_3, mypart.stats.item_3_image_url)}</span>
-                            <span>{item(mypart.stats.item_4, mypart.stats.item_4_image_url)}</span>
-                            <span>{item(mypart.stats.item_5, mypart.stats.item_5_image_url)}</span>
+                            <span>{item(mypart.stats.item_3, mypart.stats.item_3_image_30)}</span>
+                            <span>{item(mypart.stats.item_4, mypart.stats.item_4_image_30)}</span>
+                            <span>{item(mypart.stats.item_5, mypart.stats.item_5_image_30)}</span>
                         </div>
                     </span>
 

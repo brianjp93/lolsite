@@ -210,7 +210,7 @@ class PlayerChampionSummary extends Component {
                     {champ !== undefined &&
                         <img
                             style={{maxHeight:30, display: 'inline-block', borderRadius: '50%'}}
-                            src={champ.image_url} alt="" />
+                            src={champ.thumb[30]} alt="" />
                     }
                     <div style={{
                             marginLeft: 3,
@@ -227,7 +227,7 @@ class PlayerChampionSummary extends Component {
                         </div>
                     </div>
                 </div>
-                
+
                 <div>
                     <StatBar
                         theme={theme}
