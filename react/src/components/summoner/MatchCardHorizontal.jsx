@@ -101,7 +101,7 @@ function MatchCard(props) {
                 major,
                 minor,
             }
-            api.data.getItem(data).then(response => {
+            api.data.getItem(data).then((response) => {
                 if (items[version] === undefined) {
                     items[version] = {}
                 }
@@ -190,7 +190,7 @@ function MatchCard(props) {
             return props.pageStore.state.neutral_color
         }
     }
-    const getKDA = part => {
+    const getKDA = (part) => {
         if (part !== undefined) {
             let k = part.stats.kills
             let a = part.stats.assists
@@ -205,7 +205,7 @@ function MatchCard(props) {
         return 0
     }
     const kda = getKDA(mypart)
-    const convertQueue = queue => {
+    const convertQueue = (queue) => {
         let convert = {
             'Co-op vs. AI Intermediate Bot': 'Co-op vs Bots Int',
         }
@@ -214,7 +214,7 @@ function MatchCard(props) {
         }
         return queue
     }
-    const getMaxDamage = match => {
+    const getMaxDamage = (match) => {
         let max = 0
         for (let player of match.participants) {
             if (player.stats.total_damage_dealt_to_champions > max) {
@@ -228,9 +228,9 @@ function MatchCard(props) {
         perc = Math.round(perc)
         return perc
     }
-    const getTotalKills = match => {
-        let team100 = match.participants.filter(part => part.team_id === 100)
-        let team200 = match.participants.filter(part => part.team_id === 200)
+    const getTotalKills = (match) => {
+        let team100 = match.participants.filter((part) => part.team_id === 100)
+        let team200 = match.participants.filter((part) => part.team_id === 200)
 
         let kills = {
             100: 0,
@@ -274,11 +274,11 @@ function MatchCard(props) {
         let perc = (kp / max) * 100
         return perc
     }
-    const getTeam = team_id => {
-        let team = participants.filter(participant => participant.team_id === team_id)
+    const getTeam = (team_id) => {
+        let team = participants.filter((participant) => participant.team_id === team_id)
         return (
             <div>
-                {team.map(part => {
+                {team.map((part) => {
                     let dmg_perc = getDamagePercentage(part, match)
                     let wid = dmg_perc * 0.9
 
@@ -397,25 +397,12 @@ function MatchCard(props) {
         return (
             <>
                 <div
-                    style={{
-                        width: 600,
-                        height: CARDHEIGHT,
-                        paddingTop: 15,
-                        paddingBottom: 10,
-                        position: 'relative',
-                    }}
-                    className={`card-panel ${theme}`}
+                    style={{height: CARDHEIGHT}}
+                    className={`card-panel ${theme} match-card`}
                 >
                     <div
-                        style={{
-                            display: 'inline-block',
-                            width: 8,
-                            height: 100,
-                            background: `${topBarColor()}`,
-                            borderRadius: 2,
-                            marginLeft: -15,
-                            marginRight: 8,
-                        }}
+                        className="win-loss-card-bar"
+                        style={{ background: `${topBarColor()}` }}
                     ></div>
                     <div
                         style={{
