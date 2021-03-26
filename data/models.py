@@ -1,11 +1,7 @@
-import urllib
-
-from celery import task
-from django.core.files import File
 from django.db import models
 from django.utils import timezone
 
-from core.models import VersionedModel
+from core.models import VersionedModel, ThumbnailedModel
 
 
 class Rito(models.Model):
@@ -238,7 +234,7 @@ class ItemGold(models.Model):
     total = models.IntegerField()
 
 
-class ItemImage(models.Model):
+class ItemImage(ThumbnailedModel):
     item = models.OneToOneField("Item", on_delete=models.CASCADE, related_name="image")
     full = models.CharField(max_length=128, default="", blank=True)
     group = models.CharField(max_length=128)
@@ -412,19 +408,11 @@ class Champion(VersionedModel):
         return out
 
 
-def champion_image_location(instance, filename):
-    return f'champions/{instance.champion.version}/{filename}'
+def champion_image_location(instance, name):
+    pass
 
 
-@task(name='data.models.import_champion_image')
-def import_champion_image(model_id, force=False):
-    obj = ChampionImage.objects.get(id=model_id)
-    if not obj.file or force:
-        r = urllib.request.urlretrieve(obj.image_url())
-        obj.file.save(obj.full, File(open(r[0], 'rb')))
-
-
-class ChampionImage(models.Model):
+class ChampionImage(ThumbnailedModel):
     champion = models.OneToOneField(
         "Champion", on_delete=models.CASCADE, related_name="image"
     )
@@ -435,12 +423,6 @@ class ChampionImage(models.Model):
     w = models.IntegerField()
     x = models.IntegerField()
     y = models.IntegerField()
-    file = models.ImageField(upload_to=champion_image_location, default=None, null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if not self.file:
-            import_champion_image.delay(self.id)
 
     def __str__(self):
         return f'ChampionImage(champion="{self.champion._id}")'
