@@ -9,6 +9,7 @@ tags
 gitbuild
 
 /static/
+/media/
 .hypothesis/
 
 .DS_Store
