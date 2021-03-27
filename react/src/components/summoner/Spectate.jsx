@@ -43,14 +43,14 @@ class Spectate extends Component {
         }
         api.match
             .getSpectate(data)
-            .then(response => {
+            .then((response) => {
                 this.setState({ spectate_data: response.data.data }, () => {
                     if (callback !== undefined) {
                         callback()
                     }
                 })
             })
-            .catch(error => {
+            .catch((error) => {
                 if (callback !== undefined) {
                     callback()
                 }
@@ -81,8 +81,8 @@ class Spectate extends Component {
                 <div>
                     <div style={{ display: 'inline-block' }}>
                         <img
-                            style={{ height: 50, borderRadius: 4 }}
-                            src={champion.image_url}
+                            style={{ height: 40, borderRadius: 4 }}
+                            src={champion.thumbs?.file_40}
                             alt=""
                         />
                         <div>
@@ -165,7 +165,10 @@ class Spectate extends Component {
                                 right: 60,
                             }}
                         >
-                            <button onClick={this.props.closeModal} className={`btn-floating btn-large red`}>
+                            <button
+                                onClick={this.props.closeModal}
+                                className={`btn-floating btn-large red`}
+                            >
                                 <i className="material-icons">close</i>
                             </button>
                         </div>
@@ -175,7 +178,7 @@ class Spectate extends Component {
                             {formatDatetimeTime(this.state.spectate_data.gameStartTime)} |{' '}
                             <span
                                 style={{ width: 50, display: 'inline-block' }}
-                                ref={elt => {
+                                ref={(elt) => {
                                     this.matchtime = elt
                                 }}
                             ></span>
@@ -183,12 +186,12 @@ class Spectate extends Component {
                         <div style={{ height: 10 }}></div>
                         <div>
                             <div style={{ width: 350, display: 'inline-block' }}>
-                                {this.getTeam(100).map(part => {
+                                {this.getTeam(100).map((part) => {
                                     return this.participantLine(part)
                                 })}
                             </div>
                             <div style={{ width: 350, display: 'inline-block', paddingLeft: 15 }}>
-                                {this.getTeam(200).map(part => {
+                                {this.getTeam(200).map((part) => {
                                     return this.participantLine(part)
                                 })}
                             </div>
@@ -217,12 +220,6 @@ class SpectateModal extends Component {
         MODALSTYLE.content.display = 'flex'
         return (
             <div>
-                {/* <Modal */}
-                {/*     classNames={{modal: `${theme} custom-modal`}} */}
-                {/*     styles={{overlay: {overflowX: 'scroll'}}} */}
-                {/*     open={this.props.pageStore.state.is_spectate_modal_open} */}
-                {/*     onClose={() => this.props.pageStore.setState({is_spectate_modal_open: false})} */}
-                {/*     center> */}
                 <Modal
                     style={MODALSTYLE}
                     isOpen={this.props.pageStore.state.is_spectate_modal_open}
@@ -231,7 +228,9 @@ class SpectateModal extends Component {
                     }
                 >
                     <Spectate
-                        closeModal={() => this.props.pageStore.setState({ is_spectate_modal_open: false })}
+                        closeModal={() =>
+                            this.props.pageStore.setState({ is_spectate_modal_open: false })
+                        }
                         queue_convert={this.props.queue_convert}
                         theme={theme}
                         region={this.props.pageStore.props.region}
