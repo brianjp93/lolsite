@@ -259,7 +259,7 @@ function BuildOrder(props) {
                                                                     borderRadius: 5,
                                                                     ...image_style,
                                                                 }}
-                                                                src={item_data.image_url}
+                                                                src={item_data.thumbs.file_30}
                                                                 alt=""
                                                             />
                                                             {event.count > 1 && (
@@ -341,13 +341,13 @@ function ChampionImage(props) {
     }
 
     let vert_align = {}
-    if (props.participant.champion.image_url === '') {
+    if (props.participant.champion?.thumbs?.file_30 === undefined) {
         vert_align.verticalAlign = 'top'
     }
 
     return (
         <div style={{ display: 'inline-block', paddingRight: props.padding_pixels, ...vert_align }}>
-            {props.participant.champion.image_url === '' && (
+            {props.participant.champion?.thumbs?.file_30 === undefined && (
                 <div
                     onClick={props.handleClick}
                     style={{ display: 'inline-block', ...image_style }}
@@ -355,14 +355,14 @@ function ChampionImage(props) {
                     NA
                 </div>
             )}
-            {props.participant.champion.image_url !== '' && (
+            {props.participant.champion?.thumbs?.file_30 !== undefined && (
                 <img
                     onClick={props.handleClick}
                     style={{
                         ...image_style,
                     }}
                     aria-label={props.participant.champion.name}
-                    src={props.participant.champion.image_url}
+                    src={props.participant.champion?.thumbs?.file_30}
                     alt=""
                 />
             )}

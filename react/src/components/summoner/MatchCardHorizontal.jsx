@@ -328,7 +328,7 @@ function MatchCard(props) {
                             ></div>
 
                             <img
-                                src={part.champion.image_15}
+                                src={part.champion.thumbs?.file_15}
                                 alt={part.champion.name}
                                 style={{ height: 15, borderRadius: 5, paddingRight: 2 }}
                             />
@@ -415,7 +415,7 @@ function MatchCard(props) {
                         <div>
                             <img
                                 style={{ height: 40, display: 'inline' }}
-                                src={mypart.champion.image_url}
+                                src={mypart.champion.thumbs?.file_40}
                                 alt=""
                             />
                             <div style={{ display: 'inline-block', paddingLeft: 4 }}>
@@ -448,7 +448,7 @@ function MatchCard(props) {
                                 marginLeft: 4,
                                 borderRadius: 5,
                             }}
-                            src={mypart.stats.item_6_image_30}
+                            src={mypart.stats.item_6_thumbs?.file_30}
                             alt=""
                         />
                     </div>
@@ -461,14 +461,14 @@ function MatchCard(props) {
                         }}
                     >
                         <div style={{ width: 100 }}>
-                            <span>{item(mypart.stats.item_0, mypart.stats.item_0_image_30)}</span>
-                            <span>{item(mypart.stats.item_1, mypart.stats.item_1_image_30)}</span>
-                            <span>{item(mypart.stats.item_2, mypart.stats.item_2_image_30)}</span>
+                            <span>{item(mypart.stats.item_0, mypart.stats.item_0_thumbs?.file_30)}</span>
+                            <span>{item(mypart.stats.item_1, mypart.stats.item_1_thumbs?.file_30)}</span>
+                            <span>{item(mypart.stats.item_2, mypart.stats.item_2_thumbs?.file_30)}</span>
                         </div>
                         <div style={{ width: 100 }}>
-                            <span>{item(mypart.stats.item_3, mypart.stats.item_3_image_30)}</span>
-                            <span>{item(mypart.stats.item_4, mypart.stats.item_4_image_30)}</span>
-                            <span>{item(mypart.stats.item_5, mypart.stats.item_5_image_30)}</span>
+                            <span>{item(mypart.stats.item_3, mypart.stats.item_3_thumbs?.file_30)}</span>
+                            <span>{item(mypart.stats.item_4, mypart.stats.item_4_thumbs?.file_30)}</span>
+                            <span>{item(mypart.stats.item_5, mypart.stats.item_5_thumbs?.file_30)}</span>
                         </div>
                     </span>
 

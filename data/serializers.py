@@ -33,6 +33,7 @@ class ProfileIconSerializer(serializers.ModelSerializer):
 
 class ItemSerializer(serializers.ModelSerializer):
     image_url = serializers.CharField()
+    thumbs = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
@@ -42,6 +43,9 @@ class ItemSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
         if isinstance(self.instance, QuerySet):
             self.instance = self.instance.select_related('image')
+
+    def get_thumbs(self, instance):
+        return instance.image.thumbs()
 
 
 class ItemGoldSerializer(serializers.ModelSerializer):
@@ -94,7 +98,7 @@ class ChampionSpellSerializer(DynamicSerializer):
 
 class ChampionSerializer(DynamicSerializer):
     image_url = serializers.CharField()
-    thumb = serializers.SerializerMethodField()
+    thumbs = serializers.SerializerMethodField()
     stats = ChampionStatsSerializer()
     spells = ChampionSpellSerializer(many=True)
 
@@ -111,9 +115,5 @@ class ChampionSerializer(DynamicSerializer):
             )
         super().__init__(instance=instance, **kwargs)
 
-    def get_thumb(self, obj):
-        return {
-            '15': obj.image.file_15.url,
-            '30': obj.image.file_30.url,
-            '40': obj.image.file_40.url,
-        }
+    def get_thumbs(self, instance):
+        return instance.image.thumbs()

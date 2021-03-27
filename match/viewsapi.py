@@ -275,6 +275,7 @@ def get_participants(request, format=None):
                     "name": champion.name if champion is not None else 'NA',
                     "key": champion.key if champion is not None else 'NA',
                     "image_url": champion.image.image_url() if champion is not None else '',
+                    "thumbs": champion.image.thumbs() if champion is not None else '',
                 }
                 try:
                     stats = part.stats
@@ -327,6 +328,7 @@ def get_participants(request, format=None):
                         p['stats'][key] = item_id
                         item = item_data.get(item_id)
                         p['stats'][f'{key}_image_url'] = item.image.image_url() if item else None
+                        p['stats'][f'{key}_thumbs'] = item.image.thumbs() if item else None
 
                     # runes
                     for _i in range(6):
@@ -398,6 +400,7 @@ def get_spectate(request, format=None):
                     part["champion"] = {
                         "name": champion.name,
                         "image_url": champion.image_url(),
+                        "thumbs": champion.image.thumbs(),
                     }
 
             data = {"data": spectate_data}

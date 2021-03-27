@@ -8,7 +8,6 @@ import StatBar from '../general/StatBar'
 
 import api from '../../api/api'
 
-
 class PlayerChampionSummary extends Component {
     constructor(props) {
         super(props)
@@ -27,17 +26,27 @@ class PlayerChampionSummary extends Component {
             stats: [],
 
             queues: {
-                'norms': [2, 430, 400],
-                'solo': [420],
-                'flex': [440],
+                norms: [2, 430, 400],
+                solo: [420],
+                flex: [440],
                 '3v3': [470],
-                'aram': [100, 450],
+                aram: [100, 450],
+                clash: [700],
             },
 
             fields: [
-                'kda', 'kills_sum', 'deaths_sum', 'assists_sum',
-                'dpm', 'gpm', 'cspm', 'vspm', 'dtpd', 'minutes',
-                'wins', 'losses',
+                'kda',
+                'kills_sum',
+                'deaths_sum',
+                'assists_sum',
+                'dpm',
+                'gpm',
+                'cspm',
+                'vspm',
+                'dtpd',
+                'minutes',
+                'wins',
+                'losses',
             ],
 
             is_loading: false,
@@ -64,10 +73,9 @@ class PlayerChampionSummary extends Component {
         }
     }
     getCurrentSeason() {
-        api.data.getCurrentSeason()
-            .then(response => {
-                this.setState({version: response.data.data})
-            })
+        api.data.getCurrentSeason().then((response) => {
+            this.setState({ version: response.data.data })
+        })
     }
     getChampionData() {
         let champion_keys = []
@@ -77,17 +85,16 @@ class PlayerChampionSummary extends Component {
             }
         }
         if (champion_keys.length > 0) {
-            let data = {champions: champion_keys}
-            api.data.getChampions(data)
-                .then(response => {
-                    let new_champ = Object.assign({}, this.state.champions)
-                    for (var champ of response.data.data) {
-                        if (new_champ[champ.key] === undefined) {
-                            new_champ[champ.key] = champ
-                        }
+            let data = { champions: champion_keys }
+            api.data.getChampions(data).then((response) => {
+                let new_champ = Object.assign({}, this.state.champions)
+                for (var champ of response.data.data) {
+                    if (new_champ[champ.key] === undefined) {
+                        new_champ[champ.key] = champ
                     }
-                    this.setState({champions: new_champ})
-                })
+                }
+                this.setState({ champions: new_champ })
+            })
         }
     }
     getParams() {
@@ -105,8 +112,7 @@ class PlayerChampionSummary extends Component {
             let now = moment()
             let start = now.subtract(this.state.time_value, 'days')
             data.start_datetime = start.toISOString()
-        }
-        else if (this.state.time_division === 'season') {
+        } else if (this.state.time_division === 'season') {
             data.season = this.state.time_value
         }
 
@@ -120,16 +126,15 @@ class PlayerChampionSummary extends Component {
         let data = this.getParams()
 
         if (data.summoner_id !== undefined) {
-            this.setState({is_loading: true})
-            api.player.getChampionsOverview(data)
-                .then(response => {
-                    this.setState({stats: response.data.data}, this.getChampionData)
+            this.setState({ is_loading: true })
+            api.player
+                .getChampionsOverview(data)
+                .then((response) => {
+                    this.setState({ stats: response.data.data }, this.getChampionData)
                 })
-                .catch(error => {
-
-                })
+                .catch((error) => {})
                 .then(() => {
-                    this.setState({is_loading: false})
+                    this.setState({ is_loading: false })
                 })
         }
     }
@@ -142,9 +147,8 @@ class PlayerChampionSummary extends Component {
     updateTimeFrame(time_division, time_value) {
         if (this.state.time_division === time_division && this.state.time_value === time_value) {
             // do nothing
-        }
-        else {
-            this.setState({time_division, time_value}, this.getChampionStats)
+        } else {
+            this.setState({ time_division, time_value }, this.getChampionStats)
         }
     }
     truncateName(name) {
@@ -160,9 +164,8 @@ class PlayerChampionSummary extends Component {
     selectQueue(name) {
         if (this.state.queue_selection === name) {
             // do nothing
-        }
-        else {
-            this.setState({queue_selection: name}, this.getChampionStats)
+        } else {
+            this.setState({ queue_selection: name }, this.getChampionStats)
         }
     }
     isQueueSelected(name) {
@@ -173,9 +176,19 @@ class PlayerChampionSummary extends Component {
     }
     renderChampionData(data) {
         const {
-            count, kills_sum, deaths_sum, assists_sum,
-            wins, losses, champion_id, champion,
-            vspm, cspm, kda, dpm, dtpd,
+            count,
+            kills_sum,
+            deaths_sum,
+            assists_sum,
+            wins,
+            losses,
+            champion_id,
+            champion,
+            vspm,
+            cspm,
+            kda,
+            dpm,
+            dtpd,
         } = data
         let theme = this.props.store.state.theme
 
@@ -184,46 +197,43 @@ class PlayerChampionSummary extends Component {
         let average_assists = assists_sum / count
         // let win_percentage = (wins / (wins + losses)) * 100
         let champ = this.state.champions[champion_id]
-        return(
+        return (
             <div
                 style={{
                     display: 'inline-block',
-                    width: '100%'
-                }}>
-                {champ !== undefined &&
-                    <ReactTooltip
-                        id={`${champion_id}-image-tooltip`}
-                        effect='solid'>
-                        <span>{champ.name}: {champ.title}</span>
+                    width: '100%',
+                }}
+            >
+                {champ !== undefined && (
+                    <ReactTooltip id={`${champion_id}-image-tooltip`} effect="solid">
+                        <span>
+                            {champ.name}: {champ.title}
+                        </span>
                     </ReactTooltip>
-                }
-                {champ === undefined &&
-                    <ReactTooltip
-                        id={`${champion_id}-image-tooltip`}
-                        effect='solid'>
+                )}
+                {champ === undefined && (
+                    <ReactTooltip id={`${champion_id}-image-tooltip`} effect="solid">
                         <span>{champion}</span>
                     </ReactTooltip>
-                }
-                <div
-                    data-tip
-                    data-for={`${champion_id}-image-tooltip`} >
-                    {champ !== undefined &&
+                )}
+                <div data-tip data-for={`${champion_id}-image-tooltip`}>
+                    {champ !== undefined && (
                         <img
-                            style={{maxHeight:30, display: 'inline-block', borderRadius: '50%'}}
-                            src={champ.thumb[30]} alt="" />
-                    }
-                    <div style={{
+                            style={{ maxHeight: 30, display: 'inline-block', borderRadius: '50%' }}
+                            src={champ.thumbs?.file_30}
+                            alt=""
+                        />
+                    )}
+                    <div
+                        style={{
                             marginLeft: 3,
                             display: 'inline-block',
-                            fontSize: 'small'
-                        }}>
-                        <div style={{fontWeight: 'bold'}}>
-                            {this.truncateName(champion)}
-                        </div>
+                            fontSize: 'small',
+                        }}
+                    >
+                        <div style={{ fontWeight: 'bold' }}>{this.truncateName(champion)}</div>
                         <div>
-                            <span style={{fontWeight: 'bold'}}>
-                                {count}
-                            </span>{' '}games
+                            <span style={{ fontWeight: 'bold' }}>{count}</span> games
                         </div>
                     </div>
                 </div>
@@ -234,7 +244,8 @@ class PlayerChampionSummary extends Component {
                         val1={wins}
                         val2={losses}
                         label1={<span>{wins} Wins</span>}
-                        label2={<span>{losses} Losses</span>} />
+                        label2={<span>{losses} Losses</span>}
+                    />
                 </div>
 
                 <div
@@ -245,80 +256,66 @@ class PlayerChampionSummary extends Component {
                         borderBottomWidth: 1,
                         borderBottomColor: 'grey',
                         paddingBottom: 5,
-                    }}>
-                </div>
+                    }}
+                ></div>
 
                 <div>
                     <div>
-                        <span style={{fontWeight: 'bold'}}>
-                            {numeral(kda).format('0.00')}
-                        </span>{' '}
+                        <span style={{ fontWeight: 'bold' }}>{numeral(kda).format('0.00')}</span>{' '}
                         <span>KDA</span>
                     </div>
-                    <div style={{fontSize: 'small', paddingLeft: 15}}>
-                        <span style={{fontWeight: 'bold'}}>
+                    <div style={{ fontSize: 'small', paddingLeft: 15 }}>
+                        <span style={{ fontWeight: 'bold' }}>
                             {numeral(average_kills).format('0.0')}
                         </span>
                         /
-                        <span style={{fontWeight: 'bold'}}>
+                        <span style={{ fontWeight: 'bold' }}>
                             {numeral(average_deaths).format('0.0')}
                         </span>
                         /
-                        <span style={{fontWeight: 'bold'}}>
+                        <span style={{ fontWeight: 'bold' }}>
                             {numeral(average_assists).format('0.0')}
                         </span>
                     </div>
                 </div>
 
-                <div style={{fontSize: 'small', marginTop: 5}}>
-                    <ReactTooltip
-                        id={`${champion_id}-dpm-tooltip`}
-                        effect='solid' >
+                <div style={{ fontSize: 'small', marginTop: 5 }}>
+                    <ReactTooltip id={`${champion_id}-dpm-tooltip`} effect="solid">
                         <span>Damage per Minute</span>
                     </ReactTooltip>
-                    <div
-                        data-tip
-                        data-for={`${champion_id}-dpm-tooltip`}>
-                        <span>DPM</span> : <span style={{fontWeight: 'bold'}}>{numeral(dpm).format('0,0')}</span>
+                    <div data-tip data-for={`${champion_id}-dpm-tooltip`}>
+                        <span>DPM</span> :{' '}
+                        <span style={{ fontWeight: 'bold' }}>{numeral(dpm).format('0,0')}</span>
                     </div>
                 </div>
 
-                <div style={{fontSize: 'small'}}>
-                    <ReactTooltip
-                        id={`${champion_id}-dtpd-tooltip`}
-                        effect='solid' >
+                <div style={{ fontSize: 'small' }}>
+                    <ReactTooltip id={`${champion_id}-dtpd-tooltip`} effect="solid">
                         <span>Damage Taken per Death</span>
                     </ReactTooltip>
-                    <div
-                        data-tip
-                        data-for={`${champion_id}-dtpd-tooltip`}>
-                        <span>DT/D</span> : <span style={{fontWeight: 'bold'}}>{numeral(dtpd).format('0,0')}</span>
+                    <div data-tip data-for={`${champion_id}-dtpd-tooltip`}>
+                        <span>DT/D</span> :{' '}
+                        <span style={{ fontWeight: 'bold' }}>{numeral(dtpd).format('0,0')}</span>
                     </div>
                 </div>
 
-                <div style={{fontSize: 'small'}}>
-                    <ReactTooltip
-                        id={`${champion_id}-cs-tooltip`}
-                        effect='solid' >
+                <div style={{ fontSize: 'small' }}>
+                    <ReactTooltip id={`${champion_id}-cs-tooltip`} effect="solid">
                         <span>CS per Minute</span>
                     </ReactTooltip>
-                    <div
-                        data-tip
-                        data-for={`${champion_id}-cs-tooltip`}>
-                        <span>CS/M</span> : <span style={{fontWeight: 'bold'}}>{numeral(cspm).format('0.00')}</span>
+                    <div data-tip data-for={`${champion_id}-cs-tooltip`}>
+                        <span>CS/M</span> :{' '}
+                        <span style={{ fontWeight: 'bold' }}>{numeral(cspm).format('0.00')}</span>
                     </div>
                 </div>
 
-                <div style={{fontSize: 'small'}}>
-                    <ReactTooltip
-                        id={`${champion_id}-vs-tooltip`}
-                        effect='solid' >
+                <div style={{ fontSize: 'small' }}>
+                    <ReactTooltip id={`${champion_id}-vs-tooltip`} effect="solid">
                         <span>Vision Score per Minute</span>
                     </ReactTooltip>
-                    <div
-                        data-tip
-                        data-for={`${champion_id}-vs-tooltip`}>
-                        <span>VS/M</span> : <span style={{fontWeight: 'bold'}}>{numeral(vspm).format('0.00')}</span>
+                    <div data-tip data-for={`${champion_id}-vs-tooltip`}>
+                        <span>VS/M</span> :{' '}
+                        <span style={{ fontWeight: 'bold' }}>{numeral(vspm).format('0.00')}</span>
                     </div>
                 </div>
             </div>
@@ -345,7 +342,7 @@ class PlayerChampionSummary extends Component {
             margin: '0 4px',
         }
         let selected_style = {
-            ...unselected_style
+            ...unselected_style,
         }
         selected_style.fontWeight = 'bold'
         selected_style.borderWidth = 2
@@ -353,91 +350,130 @@ class PlayerChampionSummary extends Component {
         selected_style.color = '#9aa8ce'
 
         let queue_selected_style = {
-            ...selected_style
+            ...selected_style,
         }
         queue_selected_style.borderColor = '#9accd2'
         queue_selected_style.color = '#9accd2'
         return (
             <div>
-                <div
-                    style={{marginBottom: 5}}
-                    className="row">
-                    <div
-                        style={{fontSize: 'small'}}
-                        className='col s12 unselectable'>
-                        <div style={{display: 'inline-block'}}>
+                <div style={{ marginBottom: 5 }} className="row">
+                    <div style={{ fontSize: 'small' }} className="col s12 unselectable">
+                        <div style={{ display: 'inline-block' }}>
                             <div
                                 onClick={() => this.updateTimeFrame('days', 30)}
-                                style={this.isTimeFrameSelected('days', 30) ? selected_style : unselected_style}>
+                                style={
+                                    this.isTimeFrameSelected('days', 30)
+                                        ? selected_style
+                                        : unselected_style
+                                }
+                            >
                                 30 days
                             </div>
                             <div
                                 onClick={() => this.updateTimeFrame('days', 60)}
-                                style={this.isTimeFrameSelected('days', 60) ? selected_style : unselected_style}>
+                                style={
+                                    this.isTimeFrameSelected('days', 60)
+                                        ? selected_style
+                                        : unselected_style
+                                }
+                            >
                                 60 days
                             </div>
                         </div>
-                        <div style={{display: 'inline-block', float: 'right'}}>
-                            {major !== undefined && [major, major - 1, major - 2].map((ver, key) => {
-                                return(
-                                    <div
-                                        key={`${ver}-${key}`}
-                                        onClick={() => this.updateTimeFrame('season', ver)}
-                                        style={this.isTimeFrameSelected('season', ver) ? selected_style : unselected_style}>
-                                        Season {ver}
-                                    </div>
-                                )
-                            })}
+                        <div style={{ display: 'inline-block', float: 'right' }}>
+                            {major !== undefined &&
+                                [major, major - 1, major - 2].map((ver, key) => {
+                                    return (
+                                        <div
+                                            key={`${ver}-${key}`}
+                                            onClick={() => this.updateTimeFrame('season', ver)}
+                                            style={
+                                                this.isTimeFrameSelected('season', ver)
+                                                    ? selected_style
+                                                    : unselected_style
+                                            }
+                                        >
+                                            Season {ver}
+                                        </div>
+                                    )
+                                })}
                         </div>
                     </div>
                 </div>
-                <div
-                    style={{marginBottom: 5}}
-                    className="row">
-                    <div
-                        style={{fontSize: 'small'}}
-                        className="col s12 unselectable">
-                        <div style={{display: 'inline-block'}}>
+                <div style={{ marginBottom: 5 }} className="row">
+                    <div style={{ fontSize: 'small' }} className="col s12 unselectable">
+                        <div style={{ display: 'inline-block' }}>
                             <div
                                 onClick={() => this.selectQueue('')}
-                                style={this.isQueueSelected('') ? queue_selected_style : unselected_style}>
+                                style={
+                                    this.isQueueSelected('')
+                                        ? queue_selected_style
+                                        : unselected_style
+                                }
+                            >
                                 All
                             </div>
                         </div>
 
-                        <div style={{display: 'inline-block', float: 'right'}}>
+                        <div style={{ display: 'inline-block', float: 'right' }}>
                             <div
                                 onClick={() => this.selectQueue('solo')}
-                                style={this.isQueueSelected('solo') ? queue_selected_style : unselected_style}>
+                                style={
+                                    this.isQueueSelected('solo')
+                                        ? queue_selected_style
+                                        : unselected_style
+                                }
+                            >
                                 Solo/Duo
                             </div>
                             <div
                                 onClick={() => this.selectQueue('flex')}
-                                style={this.isQueueSelected('flex') ? queue_selected_style : unselected_style}>
+                                style={
+                                    this.isQueueSelected('flex')
+                                        ? queue_selected_style
+                                        : unselected_style
+                                }
+                            >
                                 Flex
                             </div>
-                            {/* <div
-                                onClick={() => this.selectQueue('3v3')}
-                                style={this.isQueueSelected('3v3') ? queue_selected_style : unselected_style}>
-                                3v3
-                            </div> */}
                             <div
                                 onClick={() => this.selectQueue('norms')}
-                                style={this.isQueueSelected('norms') ? queue_selected_style : unselected_style}>
+                                style={
+                                    this.isQueueSelected('norms')
+                                        ? queue_selected_style
+                                        : unselected_style
+                                }
+                            >
                                 Norms
                             </div>
                             <div
+                                onClick={() => this.selectQueue('clash')}
+                                style={
+                                    this.isQueueSelected('clash')
+                                        ? queue_selected_style
+                                        : unselected_style
+                                }
+                            >
+                                Clash
+                            </div>
+                            <div
                                 onClick={() => this.selectQueue('aram')}
-                                style={this.isQueueSelected('aram') ? queue_selected_style : unselected_style}>
+                                style={
+                                    this.isQueueSelected('aram')
+                                        ? queue_selected_style
+                                        : unselected_style
+                                }
+                            >
                                 ARAM
                             </div>
                         </div>
                     </div>
                 </div>
-                <div
-                    style={{marginBottom:0}}
-                    className="row">
-                    <div className="col s12 quiet-scroll" style={{maxHeight: 300, overflowY: 'scroll'}}>
+                <div style={{ marginBottom: 0 }} className="row">
+                    <div
+                        className="col s12 quiet-scroll"
+                        style={{ maxHeight: 300, overflowY: 'scroll' }}
+                    >
                         {this.state.stats.map((data, key) => {
                             return (
                                 <Fragment key={`${data.champion_id}-${key}`}>
@@ -450,25 +486,22 @@ class PlayerChampionSummary extends Component {
                                             borderColor: 'grey',
                                             borderRadius: 4,
                                             padding: 8,
-                                            margin: '0 2px'
+                                            margin: '0 2px',
                                         }}
-                                        key={`${data.champion_id}-${key}`}>
-                                        {this.state.is_loading &&
-                                            <div style={{textAlign: 'center'}}>
-                                                <Orbit size={80} style={{margin: 'auto'}} />
+                                        key={`${data.champion_id}-${key}`}
+                                    >
+                                        {this.state.is_loading && (
+                                            <div style={{ textAlign: 'center' }}>
+                                                <Orbit size={80} style={{ margin: 'auto' }} />
                                             </div>
-                                        }
-                                        {!this.state.is_loading &&
-                                            this.renderChampionData(data)
-                                        }
+                                        )}
+                                        {!this.state.is_loading && this.renderChampionData(data)}
                                     </div>
-                                    {(key + 1) % 5 === 0 &&
-                                        <br/>
-                                    }
+                                    {(key + 1) % 5 === 0 && <br />}
                                 </Fragment>
                             )
                         })}
-                        {this.state.stats.length === 0 && !this.state.is_loading &&
+                        {this.state.stats.length === 0 && !this.state.is_loading && (
                             <div
                                 style={{
                                     display: 'inline-block',
@@ -478,20 +511,29 @@ class PlayerChampionSummary extends Component {
                                     borderColor: 'grey',
                                     borderRadius: 4,
                                     padding: 8,
-                                    margin: '0 2px'
-                                }} >
+                                    margin: '0 2px',
+                                }}
+                            >
                                 <span>No Data</span>
                             </div>
-                        }
-                        {!(this.state.stats.length === 0 && !this.state.is_loading) && !this.state.is_load_all &&
-                            <div style={{paddingTop: 8}}>
-                                <button
-                                    onClick={() => this.setState({is_load_all: true}, this.getChampionStats)}
-                                    className={`${this.props.theme} btn-small`} style={{width: '100%'}}>
-                                    Load All
-                                </button>
-                            </div>
-                        }
+                        )}
+                        {!(this.state.stats.length === 0 && !this.state.is_loading) &&
+                            !this.state.is_load_all && (
+                                <div style={{ paddingTop: 8 }}>
+                                    <button
+                                        onClick={() =>
+                                            this.setState(
+                                                { is_load_all: true },
+                                                this.getChampionStats,
+                                            )
+                                        }
+                                        className={`${this.props.theme} btn-small`}
+                                        style={{ width: '100%' }}
+                                    >
+                                        Load All
+                                    </button>
+                                </div>
+                            )}
                     </div>
                 </div>
             </div>
@@ -504,6 +546,5 @@ PlayerChampionSummary.propTypes = {
     summoner: PropTypes.object.isRequired,
     theme: PropTypes.string,
 }
-
 
 export default PlayerChampionSummary

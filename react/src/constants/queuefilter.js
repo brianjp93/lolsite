@@ -18,6 +18,10 @@ let queuefilter = [
         id: 430
     },
     {
+        name: 'Clash',
+        id: 700
+    },
+    {
         name: 'ARAM',
         id: 450
     },

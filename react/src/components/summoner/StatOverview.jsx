@@ -265,7 +265,7 @@ class StatOverview extends Component {
                         var heights = (bargraph_height - 40) / parts.length
                         return (
                             <div key={`${match._id}-${part._id}`} style={{height:heights, width:30}}>
-                                <img title={part.summoner_name} style={{height:20}} src={part.champion.image_url} alt={part.champion.name}/>
+                                <img title={part.summoner_name} style={{height:20}} src={part.champion.thumbs.file_30} alt={part.champion.name}/>
                             </div>
                         )
                     })}
@@ -291,7 +291,7 @@ class StatOverview extends Component {
                                 }
                             }}
                             domain={[0, 'dataMax']} type='number'/>
-                        <Tooltip formatter={(value, name, props) => {
+                        <Tooltip formatter={(value, name, _) => {
                             var convert = this.state.convert
                             if (convert[name] !== undefined) {
                                 name = convert[name]

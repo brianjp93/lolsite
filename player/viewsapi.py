@@ -248,8 +248,8 @@ def serialize_matches(
                 if champ:
                     participant_data['champion'] = {
                         "_id": champ._id,
-                        "image_url": champ.image.file_40.url,
-                        "image_15": champ.image.file_15.url,
+                        "image_url": champ.image.image_url(),
+                        "thumbs": champ.image.thumbs(),
                         "name": champ.name,
                     }
                 else:
@@ -271,9 +271,7 @@ def serialize_matches(
                             if item:
                                 part_items[f'item_{item_i}'] = item._id
                                 part_items[f'item_{item_i}_image_url'] = item.image_url()
-                                part_items[f'item_{item_i}_image_15'] = item.image.file_15.url
-                                part_items[f'item_{item_i}_image_30'] = item.image.file_30.url
-                                part_items[f'item_{item_i}_image_40'] = item.image.file_40.url
+                                part_items[f'item_{item_i}_thumbs'] = item.image.thumbs()
 
                         if stats.perk_primary_style in perk_tree_cache:
                             perk_primary_style = perk_tree_cache[
