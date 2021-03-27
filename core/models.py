@@ -71,10 +71,26 @@ class ThumbnailedModel(models.Model):
         super().save()
         self.save_files()
 
-    def save_files(self, force=False):
+    def save_files(self, force=False, sync=False):
         fields = [self.file] + [getattr(self, f'file_{size}') for size in self.SIZES]
         if not all(fields) or force:
-            save_files.delay(self.id, self._meta.app_label, self._meta.model_name, force=force)
+            args = (self.id, self._meta.app_label, self._meta.model_name)
+            kwargs = {'force': force}
+            if sync:
+                save_files(*args, **kwargs)
+            else:
+                save_files.delay(*args, **kwargs)
 
     def image_url(self):
         raise NotImplementedError()
+
+    def thumbs(self):
+        thumbs = {}
+        for attr in [f'file_{size}' for size in self.SIZES]:
+            field = getattr(self, attr)
+            if not field:
+                self.save_files(sync=True)
+                self.refresh_from_db()
+                field = getattr(self, attr)
+            thumbs[attr] = field.url
+        return thumbs

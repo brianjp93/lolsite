@@ -267,7 +267,7 @@ function ChampionImage(props) {
                     onClick={props.handleClick}
                     style={{ ...image_style }}
                     aria-label={props.participant.champion.name}
-                    src={props.participant.champion.image_url}
+                    src={props.participant.champion.thumbs.file_30}
                     alt=""
                 />
             )}

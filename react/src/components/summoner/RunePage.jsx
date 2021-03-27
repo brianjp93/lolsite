@@ -26,7 +26,7 @@ class RunePage extends Component {
         }
         this.setDefaultParticipant()
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(_, prevState) {
         if (prevState.selected_part === null) {
             if (this.props.participants !== null) {
                 this.setDefaultParticipant()
@@ -98,7 +98,7 @@ class RunePage extends Component {
         var match = this.props.match
         // let parts = [...this.props.parent.getTeam100(), ...this.props.parent.getTeam200()]
         let parts = this.props.participants
-        return parts.map(part => {
+        return parts.map((part) => {
             var is_selected = false
             var select_style = {
                 height: 30,
@@ -137,7 +137,7 @@ class RunePage extends Component {
                             title={part.summoner_name}
                             onClick={() => this.setState({ selected_part: part })}
                             style={{ ...select_style }}
-                            src={part.champion.image_url}
+                            src={part.champion.thumbs?.file_30}
                             alt=""
                         />
                     )}
@@ -147,9 +147,7 @@ class RunePage extends Component {
     }
     render() {
         let match = this.props.match
-        // let mypart = this.props.parent.getMyPart()
         var rune_stat_height = (this.props.pageStore.state.match_card_height - 20) / 6
-        // let parts = [...this.props.parent.getTeam100(), ...this.props.parent.getTeam200()]
         return (
             <div>
                 <div
@@ -163,7 +161,7 @@ class RunePage extends Component {
                     {this.partSelection()}
                 </div>
                 <div style={{ display: 'inline-block' }}>
-                    {this.getPerks().map(perk => {
+                    {this.getPerks().map((perk) => {
                         var rune = this.getRune(perk.id)
                         var rune_etc = RUNES.data[perk.id]
                         if (rune && rune_etc && rune_etc.perkFormat) {
@@ -298,7 +296,7 @@ class RuneTooltip extends Component {
                 }
             >
                 <div
-                    ref={elt => {
+                    ref={(elt) => {
                         this.target_elt = elt
                     }}
                     style={this.props.style}

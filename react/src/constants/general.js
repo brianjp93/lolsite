@@ -136,14 +136,14 @@ export function participantItems(part, match, store) {
             }}
         >
             <div style={{ width: 100 }}>
-                <span>{item(part.stats.item_0, part.stats.item_0_image_url, match, store)}</span>
-                <span>{item(part.stats.item_1, part.stats.item_1_image_url, match, store)}</span>
-                <span>{item(part.stats.item_2, part.stats.item_2_image_url, match, store)}</span>
+                <span>{item(part.stats.item_0, part.stats.item_0_thumbs?.file_30, match, store)}</span>
+                <span>{item(part.stats.item_1, part.stats.item_1_thumbs?.file_30, match, store)}</span>
+                <span>{item(part.stats.item_2, part.stats.item_2_thumbs?.file_30, match, store)}</span>
             </div>
             <div style={{ width: 100 }}>
-                <span>{item(part.stats.item_3, part.stats.item_3_image_url, match, store)}</span>
-                <span>{item(part.stats.item_4, part.stats.item_4_image_url, match, store)}</span>
-                <span>{item(part.stats.item_5, part.stats.item_5_image_url, match, store)}</span>
+                <span>{item(part.stats.item_3, part.stats.item_3_thumbs?.file_30, match, store)}</span>
+                <span>{item(part.stats.item_4, part.stats.item_4_thumbs?.file_30, match, store)}</span>
+                <span>{item(part.stats.item_5, part.stats.item_5_thumbs?.file_30, match, store)}</span>
             </div>
         </div>
     )
