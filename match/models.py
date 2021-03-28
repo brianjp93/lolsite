@@ -282,6 +282,9 @@ class Participant(models.Model):
             f"Participant(summoner_name={self.summoner_name}, match={self.match._id})"
         )
 
+    def get_champion(self):
+        return Champion.objects.filter(key=self.champion_id).order_by('-major', '-minor').first()
+
     def spell_1_image_url(self):
         """Get spell 1 image URL.
         """

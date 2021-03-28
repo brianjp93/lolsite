@@ -14,6 +14,7 @@ from django.utils import timezone
 from notification.models import Notification
 
 from data import constants as dc
+from data.models import ProfileIcon
 
 from player.utils import get_admin
 
@@ -103,6 +104,9 @@ class Summoner(models.Model):
 
     def __str__(self):
         return f'Summoner(name="{self.name}", region={self.region})'
+
+    def get_profile_icon(self):
+        return ProfileIcon.objects.filter(_id=self.profile_icon_id).order_by('-major', '-minor').first()
 
     def save(self, *args, **kwargs):
         if self.name:
