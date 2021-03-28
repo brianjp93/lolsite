@@ -30,7 +30,7 @@ def home(request, path=""):
 
 
 def get_meta_data(request):
-    logo = static('logo.png')
+    logo = static('logo-large.png')
     meta = {
         'type': 'website',
         'title': 'Hardstuck.club: A league of legends match history and stats site.',
