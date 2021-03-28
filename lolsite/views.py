@@ -1,6 +1,7 @@
 """lolsite/views.py
 """
 from django.template.response import TemplateResponse
+from django.templatetags.static import static
 
 from player.serializers import FavoriteSerializer, SummonerSerializer
 
@@ -24,7 +25,20 @@ def home(request, path=""):
     nt.delete_old_notifications.delay()
 
     data = get_base_react_context(request)
+    data['meta'] = get_meta_data(request)
     return TemplateResponse(request, "layout/home.html", data)
+
+
+def get_meta_data(request):
+    logo = static('logo.png')
+    meta = {
+        'type': 'website',
+        'title': 'Hardstuck.club: A league of legends match history and stats site.',
+        'url': 'https://hardstuck.club',
+        'image': logo,
+        'description': 'Accept your hardstuck-ness.',
+    }
+    return meta
 
 
 def get_base_react_context(request):

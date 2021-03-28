@@ -8,11 +8,20 @@
     <meta name="description" content="{% block metadescription %}{% endblock metadescription %}"/>
     <title>HardStuck</title>
 
+    {% if meta %}
+        <meta property="og:type" content="{{ meta.type }}">
+        <meta property="og:url" content="{{ meta.url }}">
+        <meta property="og:title" content="{{ meta.title }}">
+        <meta property="og:description" content="{{ meta.description }}">
+        <meta property="og:image" content="{{ meta.image }}">
+    {% endif %}
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
     <script src="{% static 'materialize/js/materialize.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'materialize/css/materialize.min.css' %}" >
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- <link rel="shortcut icon" type="image/png" href="{% static 'logo.png' %}"/> -->
     <!-- latex css -->
     <link
         href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.css"
@@ -32,21 +41,18 @@
             <link rel='stylesheet' href='{% static file %}' >
         {% endfor %}
     {% endif %}
-
     <title>{% block title %}{% endblock title %}</title>
-
-    <!-- <link rel="shortcut icon" type="image/png" href="{% static 'favicon-suitesale.ico' %}"> -->
 
     {% block header %}{% endblock header %}
 </head>
-    
+
 <body id="body-wrap">
     {% block body %}
     {% endblock body %}
 
     {% block htmlfooter %}
     {% endblock htmlfooter %}
-    
+
     {% block footer %}{% endblock footer %}
 
 </body>
