@@ -92,7 +92,7 @@ def get_meta_data(request):
             champions = list(champions.items())
             champions.sort(key=lambda x: -x[1]['count'])
             champions = champions[:3]
-            top_played = [f'{x[0]} - {x[1]["count"]}({int(x[1]["wins"] / x[1]["count"] * 100)}% WR)' for x in champions]
+            top_played = [f'{x[0]} - {x[1]["count"]} ({int(x[1]["wins"] / x[1]["count"] * 100)}% WR)' for x in champions]
             top_played = ', '.join(top_played)
             deaths = deaths if deaths > 0 else 1
             kda = (kills + assists) / deaths
