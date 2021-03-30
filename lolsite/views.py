@@ -1,5 +1,6 @@
 """lolsite/views.py
 """
+from django.core.exceptions import ObjectDoesNotExist
 from django.template.response import TemplateResponse
 from django.templatetags.static import static
 
@@ -19,6 +20,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+META = {
+    'type': 'website',
+    'title': 'Hardstuck.club: A league of legends match history and stats site.',
+    'url': 'https://hardstuck.club',
+    'image': static('logo-large.png'),
+    'description': 'Accept your hardstuck-ness.',
+}
+QUEUE_DICT = {x['_id']: x for x in constants.QUEUES}
+
 
 def home(request, path=""):
     """Return basic home address and let react render the rest.
@@ -34,15 +44,18 @@ def home(request, path=""):
 
 
 def get_meta_data(request):
-    logo = static('logo-large.png')
-    meta = {
-        'type': 'website',
-        'title': 'Hardstuck.club: A league of legends match history and stats site.',
-        'url': 'https://hardstuck.club',
-        'image': logo,
-        'description': 'Accept your hardstuck-ness.',
-    }
-    r = re.match(r'/([a-z]+)/(.*)/', request.path)
+    metacopy = META.copy()
+    meta = get_summoner_meta_data(request, metacopy)
+    if meta:
+        return meta
+    meta = get_match_meta_data(request, metacopy)
+    if meta:
+        return meta
+    return META
+
+
+def get_summoner_meta_data(request, meta):
+    r = re.match(r'/([a-z]+)/([^/]+)/$', request.path)
     if r:
         region, name = r.groups()
         name = simplify(name)
@@ -108,8 +121,57 @@ def get_meta_data(request):
             icon = summoner.get_profile_icon()
             if icon:
                 meta['image'] = icon.image_url()
+        return meta
 
-    return meta
+
+def get_match_meta_data(request, meta):
+    r = re.match(r'/([a-z]+)/([^/]+)/match/([0-9]+)/(?:.*)?', request.path)
+    if r:
+        region, name, match_id = r.groups()
+        name = simplify(name)
+        try:
+            summoner = Summoner.objects.get(region=region, simple_name=name)
+        except ObjectDoesNotExist:
+            logger.exception('Could not find summoner.')
+            return
+        try:
+            match = Match.objects.get(_id=match_id)
+        except ObjectDoesNotExist:
+            logger.exception('Could not find match.')
+            return
+        try:
+            part = match.participants.get(account_id=summoner.account_id)
+        except ObjectDoesNotExist:
+            logger.exception('Could not find participant in match.')
+            return
+        kills = part.stats.kills
+        deaths = part.stats.deaths
+        deaths = 1 if deaths < 1 else deaths
+        assists = part.stats.assists
+        minutes = match.game_duration / 60
+        dpm = part.stats.total_damage_dealt_to_champions / minutes
+        kda = (kills + assists) / deaths
+        vspm = part.stats.vision_score / minutes
+        queue = QUEUE_DICT.get(match.queue_id, None)
+        queue = queue['description'].strip('games').strip() if queue is not None else '?'
+        champion = part.get_champion()
+        image = champion.image_url() if champion else meta['image']
+        if minutes < 5:
+            outcome = 'draw'
+        else:
+            outcome = 'win' if part.stats.win else 'lose'
+
+        stats = [
+            f'OUTCOME: {outcome}',
+            f'DPM: {int(dpm)}',
+            f'VISION/M: {vspm:.2f}',
+        ]
+        stats = ' || '.join(stats)
+
+        meta['title'] = f'{summoner.name} ({kills} / {deaths} / {assists})[{kda:.2f} KDA] in a {queue} game.'
+        meta['description'] = stats
+        meta['image'] = image
+        return meta
 
 
 def get_base_react_context(request):
