@@ -12,7 +12,7 @@ function timeline(data) {
 
 function participants(data) {
     var url = `/api/${version}/match/participants/`
-    return axios.post(url, data)
+    return axios.get(url, {params: data})
 }
 
 function getSpectate(data) {

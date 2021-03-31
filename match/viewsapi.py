@@ -2,6 +2,7 @@
 """
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.generics import ListAPIView
 
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
@@ -23,6 +24,7 @@ from player.serializers import RankPositionSerializer
 from multiprocessing.dummy import Pool as ThreadPool
 
 from django.core.cache import cache
+from django.shortcuts import get_object_or_404
 
 
 @api_view(["POST"])
@@ -180,61 +182,58 @@ def get_match(request, format=None):
     return Response(data, status=status_code)
 
 
-@api_view(["POST"])
-def get_participants(request, format=None):
-    """
+class ParticipantsView(ListAPIView):
+    """Retrieve participants for a specific game.
 
-    POST Parameters
-    ---------------
-    match_id : ID
-        Internal match ID
-    match__id : ID
-        RIOT match ID
-    language : str
-        default - 'en_US'
-    apply_ranks : bool
-        attempt to apply each player's rank to their
-        participant data.
-
-    Returns
-    -------
-    Participant JSON
+    Parameters
+    ----------
+    `match_id`: int\n
+    * internal ID\n
+    `match__id`: int\n
+    * riot ID\n
+    `language`: str\n
+    `apply_ranks`: bool\n
 
     """
-    data = {}
-    status_code = 200
-    cache_seconds = 60 * 60 * 24
-
-    if request.method == "POST":
-        match_id = request.data.get("match_id")
-        match__id = request.data.get("match__id")
-        language = request.data.get("language", "en_US")
-        apply_ranks = request.data.get("apply_ranks", False)
+    def get_queryset(self):
+        if hasattr(self, 'qs'):
+            return self.qs
+        match_id = self.request.query_params.get("match_id")
+        match__id = self.request.query_params.get("match__id")
+        self.language = self.request.query_params.get("language", "en_US")
+        self.apply_ranks = self.request.query_params.get("apply_ranks", False)
         if match_id:
             match_qs = Match.objects.filter(id=match_id)
         else:
             match_qs = Match.objects.filter(_id=match__id)
-        match = match_qs.get()
-        participants_qs = match.participants.all().select_related('stats')
+        self.match_qs = match_qs
+        self.match = get_object_or_404(match_qs)
+        self.qs = self.match.participants.all().select_related('stats')
+        return self.qs
 
-        cache_key = f"match/{match._id}/participants"
+    def get(self, *args, **kwargs):
+        self.get_queryset()
+        data = {}
+        status_code = 200
+        cache_seconds = 60 * 60 * 24
+        cache_key = f"match/{self.match._id}/participants"
         cache_data = cache.get(cache_key)
         if cache_data:
             data = cache_data["data"]
             status_code = cache_data["status"]
         else:
-            if apply_ranks:
-                mt.apply_player_ranks(match, threshold_days=1)
+            if self.apply_ranks:
+                mt.apply_player_ranks(self.match, threshold_days=1)
             participants = []
 
-            part_query = mt.get_sorted_participants(match, participants=participants_qs)
-            if len(part_query) != len(participants_qs):
-                part_query = participants_qs
+            part_query = mt.get_sorted_participants(self.match, participants=self.qs)
+            if len(part_query) != len(self.qs):
+                part_query = self.qs
 
-            champ_data = match_qs.get_champs()
-            item_data = match_qs.get_items()
-            spell_images = match_qs.get_spell_images()
-            perk_substyles = match_qs.get_perk_substyles()
+            champ_data = self.match_qs.get_champs()
+            item_data = self.match_qs.get_items()
+            spell_images = self.match_qs.get_spell_images()
+            perk_substyles = self.match_qs.get_perk_substyles()
 
             all_runes = set()
             for part in part_query:
@@ -281,7 +280,7 @@ def get_participants(request, format=None):
                     stats = part.stats
                 except:
                     stats = None
-                if stats:
+                else:
                     p["stats"] = {
                         "champ_level": stats.champ_level,
                         "assists": stats.assists,
@@ -348,7 +347,7 @@ def get_participants(request, format=None):
 
             new_cache = {"data": data, "status": status_code}
             cache.set(cache_key, new_cache, cache_seconds)
-    return Response(data, status=status_code)
+        return Response(data, status=status_code)
 
 
 @api_view(["POST"])
