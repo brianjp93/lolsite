@@ -20,6 +20,10 @@ body {
     min-height: 100%;
 }
 
+.logo-glow {
+    filter: drop-shadow(0 0 0.25rem rgba(109, 154, 220, 100));
+}
+
 .horizontal-scroll {
     overflow-x: scroll;
     white-space: nowrap;

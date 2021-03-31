@@ -66,7 +66,6 @@ class Home extends Component {
     }
     render() {
         let store = this.props.store
-        console.log(store.state.static)
         return (
             <div>
                 <div style={{minHeight: 1200}}>

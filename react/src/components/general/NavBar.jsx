@@ -98,7 +98,7 @@ class NavBar extends Component {
                         this.setState({ summoner_search: response.data.data })
                     }
                 })
-                .catch(error => {})
+                .catch(_ => {})
                 .then(() => {})
         } else {
             this.setState({ summoner_search: [] })
@@ -246,30 +246,12 @@ class NavBar extends Component {
                                 className="left"
                                 style={{ marginLeft: 10, padding: '0px 15px' }}
                             >
-                                hardstuck
+                                <img
+                                    title='Welcome to the hardstuck club.'
+                                    className='logo-glow'
+                                    style={{maxHeight: '100%', verticalAlign: 'middle', marginRight: 10}}
+                                    src={`${store.state.static}logo-clean.png`} alt="HardStuck Club" />
                             </Link>
-                            {
-                                // eslint-disable-next-line
-                            }<a
-                                href="#"
-                                style={{ cursor: 'pointer' }}
-                                data-target="mobile-navbar"
-                                className="sidenav-trigger"
-                            >
-                                <i className="material-icons">menu</i>
-                            </a>
-
-                            {/*
-                                <ul className="left hide-on-med-and-down">
-                                    <li>
-                                        <a class="dropdown-trigger" href="#!" data-target="dropdown1">
-                                            Account
-                                            <i class="material-icons right">arrow_drop_down</i>
-                                        </a>
-                                    </li>
-                                </ul>
-                            */}
-
                             <form
                                 onSubmit={event => {
                                     event.preventDefault()
@@ -388,6 +370,10 @@ class NavBar extends Component {
                                     )}
                                 </div>
                             </form>
+
+                            <div
+                                style={{display: 'contents'}}
+                                className='hide-on-med-and-down'>
                             <div style={{ display: 'inline-block', marginLeft: 15 }}>
                                 <Link to="/item/">Items</Link>
                             </div>
@@ -522,7 +508,8 @@ class NavBar extends Component {
                                         </div>
                                     )}
                                 </div>
-                            )}
+                                )}
+                            </div>
                             {!this.isLoggedIn() && (
                                 <Link className="right" to="/login" style={{ marginRight: 15 }}>
                                     <span>Login</span>
