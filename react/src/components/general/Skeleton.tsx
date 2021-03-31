@@ -2,7 +2,7 @@ import React from 'react'
 import NavBar from './NavBar'
 import Footer from './Footer'
 
-export default function Skeleton(props) {
+export default function Skeleton(props: any) {
     return (
         <React.Fragment>
             <NavBar store={props.store} />

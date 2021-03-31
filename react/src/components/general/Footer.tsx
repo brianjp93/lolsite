@@ -1,7 +1,4 @@
-// components/general/Footer.jsx
-import React from 'react'
-
-function footer(props) {
+function footer(props: any) {
     return (
         <div>
             <div
