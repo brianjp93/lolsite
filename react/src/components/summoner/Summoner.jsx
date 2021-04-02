@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react'
+import { Component, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import ReactGA from 'react-ga'
 import Orbit from '../general/spinners/orbit'
@@ -328,7 +328,7 @@ class Summoner extends Component {
                     this.getCommentCount,
                 )
             })
-            .catch(error => {})
+            .catch(_ => {})
     }
     pagination() {
         const theme = this.props.store.state.theme
@@ -388,7 +388,7 @@ class Summoner extends Component {
         }
         api.match
             .checkForLiveGame(data)
-            .then(response => {
+            .then(_ => {
                 this.setState({ is_live_game: true })
             })
             .catch(error => {
@@ -407,7 +407,7 @@ class Summoner extends Component {
         api.player
             .getPositions(data)
             .then(response => this.setState({ positions: response.data.data }))
-            .catch(error => {})
+            .catch(_ => {})
     }
     setQueueDict() {
         var queue_elt = document.getElementById('queues')
