@@ -1031,7 +1031,7 @@ def get_sorted_participants(match, participants=None):
             allowed = set(list(range(5)))
             team = [""] * 5
             unknown = []
-            team_parts = [x for x in participants.all() if x.team_id == team_id]
+            team_parts = [x for x in participants if x.team_id == team_id]
             for p in team_parts:
                 role = predict_role(p, number=True, team=team_parts)
                 if role in allowed:
