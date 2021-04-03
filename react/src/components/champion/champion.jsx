@@ -252,7 +252,7 @@ export function ChampionCard(props) {
                                     left: 10,
                                     top: 8,
                                 }}
-                                src={champion.image_url}
+                                src={champion.image.file}
                                 alt=""
                             />
                             <div style={{ display: 'inline-block', marginLeft: 60 }}>
