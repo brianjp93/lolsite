@@ -259,7 +259,7 @@ function BuildOrder(props) {
                                                                     borderRadius: 5,
                                                                     ...image_style,
                                                                 }}
-                                                                src={item_data.thumbs.file_30}
+                                                                src={item_data.image.file_30}
                                                                 alt=""
                                                             />
                                                             {event.count > 1 && (

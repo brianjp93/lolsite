@@ -424,7 +424,7 @@ export function Item(props) {
                                     right: 0,
                                     top: 8,
                                 }}
-                                src={item.image_url}
+                                src={item.image.file_40}
                                 alt=""
                             />
                             <div
