@@ -129,8 +129,6 @@ class ChampionImageSerializer(serializers.ModelSerializer):
 
 
 class ChampionSerializer(DynamicSerializer):
-    image_url = serializers.CharField()
-    thumbs = serializers.SerializerMethodField()
     image = ChampionImageSerializer()
     stats = ChampionStatsSerializer()
     spells = ChampionSpellSerializer(many=True)
@@ -147,6 +145,3 @@ class ChampionSerializer(DynamicSerializer):
                 'spells__effect_burn',
             )
         return super().__new__(cls, instance, *args, **kwargs)
-
-    def get_thumbs(self, instance):
-        return instance.image.thumbs()
