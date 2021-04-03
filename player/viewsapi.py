@@ -28,6 +28,7 @@ from data.serializers import ProfileIconSerializer
 
 from match import tasks as mt
 from match.models import Match, sort_positions
+from match.serializers import BasicMatchSerializer
 
 from .models import Summoner
 from .serializers import (
@@ -177,210 +178,6 @@ def match_filter(request, account_id=None):
             matches = matches.filter(
                 participants__summoner_name_simplified__in=with_names_simplified
             )
-    return matches
-
-
-def serialize_matches(
-    match_query, account_id
-):  # pylint: disable=too-many-statements, too-many-branches
-    """Precise serializer for a match_query.
-
-    Parameters
-    ----------
-    match_query : Match QuerySet
-    account_id : str
-
-    Returns
-    -------
-    Serialized Match List
-
-    """
-    perk_cache = {}
-    perk_tree_cache = {}
-
-    matches = []
-    match_query = match_query.prefetch_related(
-        "participants", "teams",
-    )
-
-    spell_data = match_query.get_spell_images()
-    champ_data = match_query.get_champs()
-    item_data = match_query.get_items(account_id=account_id)
-
-    for match in match_query:
-        # match_serializer = MatchSerializer(match)
-        cache_key = f"account/{account_id}/match/{match._id}"
-
-        cached = cache.get(cache_key)
-
-        if cached:
-            matches.append(cached)
-        else:
-            match_data = {
-                "id": match.id,
-                "_id": match._id,
-                "game_duration": match.game_duration,
-                "game_creation": match.game_creation,
-                "queue_id": match.queue_id,
-                "major": match.major,
-                "minor": match.minor,
-            }
-
-            participants = []
-            part_query = mt.get_sorted_participants(match, participants=match.participants.all().select_related('stats'))
-            for participant in part_query:
-                participant_data = {
-                    "_id": participant._id,
-                    "summoner_name": participant.summoner_name,
-                    "current_account_id": participant.current_account_id,
-                    "account_id": participant.account_id,
-                    "summoner_id": participant.summoner_id,
-                    "lane": participant.lane,
-                    "role": participant.role,
-                    "team_id": participant.team_id,
-                    "spell_1_id": participant.spell_1_id,
-                    "spell_1_image_url": spell_data.get(participant.spell_1_id, ''),
-                    "spell_2_id": participant.spell_2_id,
-                    "spell_2_image_url": spell_data.get(participant.spell_2_id, ''),
-                }
-
-                champ = champ_data.get(participant.champion_id, None)
-                if champ:
-                    participant_data['champion'] = {
-                        "_id": champ._id,
-                        "image_url": champ.image.image_url(),
-                        "thumbs": champ.image.thumbs(),
-                        "name": champ.name,
-                    }
-                else:
-                    participant_data['champion'] = {}
-
-                participant_data["stats"] = {}
-                # only add stats if it's for the current summoner
-                if participant.current_account_id == account_id:
-                    try:
-                        stats = participant.stats
-                    except:
-                        pass
-                    else:
-                        part_items = {}
-                        for item_i in range(7):
-                            key = f'item_{item_i}'
-                            item_id = getattr(stats, key)
-                            item = item_data.get(item_id)
-                            if item:
-                                part_items[f'item_{item_i}'] = item._id
-                                part_items[f'item_{item_i}_image_url'] = item.image_url()
-                                part_items[f'item_{item_i}_thumbs'] = item.image.thumbs()
-
-                        if stats.perk_primary_style in perk_tree_cache:
-                            perk_primary_style = perk_tree_cache[
-                                stats.perk_primary_style
-                            ]
-                        else:
-                            perk_tree_cache[stats.perk_primary_style] = {
-                                "_id": stats.perk_primary_style,
-                                "image_url": stats.perk_primary_style_image_url(),
-                            }
-                            perk_primary_style = perk_tree_cache[
-                                stats.perk_primary_style
-                            ]
-
-                        if stats.perk_sub_style in perk_tree_cache:
-                            perk_sub_style = perk_tree_cache[stats.perk_sub_style]
-                        else:
-                            perk_tree_cache[stats.perk_sub_style] = {
-                                "_id": stats.perk_sub_style,
-                                "image_url": stats.perk_sub_style_image_url(),
-                            }
-                            perk_sub_style = perk_tree_cache[stats.perk_sub_style]
-
-                        if stats.perk_0 in perk_cache:
-                            perk_0 = perk_cache[stats.perk_0]
-                        else:
-                            perk_cache[stats.perk_0] = {
-                                "_id": stats.perk_0,
-                                "image_url": stats.perk_0_image_url(),
-                            }
-                            perk_0 = perk_cache[stats.perk_0]
-
-                        stats_data = {
-                            "perk_primary_style": stats.perk_primary_style,
-                            "perk_primary_style_image_url": perk_primary_style[
-                                "image_url"
-                            ],
-                            "perk_sub_style": stats.perk_sub_style,
-                            "perk_sub_style_image_url": perk_sub_style["image_url"],
-                            "perk_0": stats.perk_0,
-                            "perk_0_image_url": perk_0["image_url"],
-                            "perk_0_var_1": stats.perk_0_var_1,
-                            "perk_0_var_2": stats.perk_0_var_2,
-                            "perk_0_var_3": stats.perk_0_var_3,
-                            "kills": stats.kills,
-                            "deaths": stats.deaths,
-                            "assists": stats.assists,
-                            "gold_earned": stats.gold_earned,
-                            "champ_level": stats.champ_level,
-                            "total_damage_dealt_to_champions": stats.total_damage_dealt_to_champions,
-                            "vision_score": stats.vision_score,
-                            "vision_wards_bought_in_game": stats.vision_wards_bought_in_game,
-                            "wards_placed": stats.wards_placed,
-                            "wards_killed": stats.wards_killed,
-                            "total_damage_taken": stats.total_damage_taken,
-                            "damage_dealt_to_objectives": stats.damage_dealt_to_objectives,
-                            "damage_dealt_to_turrets": stats.damage_dealt_to_turrets,
-                            "total_minions_killed": stats.total_minions_killed,
-                            "neutral_minions_killed": stats.neutral_minions_killed,
-                            "total_heal": stats.total_heal,
-                            "time_ccing_others": stats.time_ccing_others,
-                        }
-                        stats_data.update(part_items)
-                        participant_data["stats"] = stats_data
-                else:
-                    # general data for all participants
-                    try:
-                        stats = participant.stats
-                    except:
-                        pass
-                    else:
-                        stats_data = {
-                            "kills": stats.kills,
-                            "deaths": stats.deaths,
-                            "assists": stats.assists,
-                            "champ_level": stats.champ_level,
-                            "total_damage_dealt_to_champions": stats.total_damage_dealt_to_champions,
-                            "vision_score": stats.vision_score,
-                            "total_damage_taken": stats.total_damage_taken,
-                            "damage_dealt_to_objectives": stats.damage_dealt_to_objectives,
-                            "damage_dealt_to_turrets": stats.damage_dealt_to_turrets,
-                            "gold_earned": stats.gold_earned,
-                            "total_heal": stats.total_heal,
-                            "time_ccing_others": stats.time_ccing_others,
-                        }
-                        participant_data["stats"] = stats_data
-                participants.append(participant_data)
-
-            match_data["participants"] = participants
-
-            teams = []
-            for team in match.teams.all():
-                team_data = {
-                    "win_str": team.win_str,
-                    "_id": team._id,
-                }
-                # team_data['bans'] = []
-                # for ban in team.bans.all():
-                #     ban_ser = BanSerializer(ban)
-                #     ban_data = ban_ser.data
-                #     team_data['bans'].append(ban_data)
-
-                teams.append(team_data)
-            match_data["teams"] = teams
-
-            matches.append(match_data)
-
-            cache.set(cache_key, match_data, None)
-
     return matches
 
 
@@ -534,7 +331,8 @@ def get_summoner_page(request, format=None):
 
             match_query = match_query[start:end]
 
-            matches = serialize_matches(match_query, summoner.account_id)
+            # matches = serialize_matches(match_query, summoner.account_id)
+            matches = BasicMatchSerializer(match_query, account_id=summoner.account_id, many=True).data
 
             data = {
                 "matches": matches,

@@ -145,3 +145,17 @@ class ChampionSerializer(DynamicSerializer):
                 'spells__effect_burn',
             )
         return super().__new__(cls, instance, *args, **kwargs)
+
+
+class BasicChampionWithImageSerializer(serializers.ModelSerializer):
+    image = ChampionImageSerializer()
+
+    class Meta:
+        model = Champion
+        fields = ['_id', 'name', 'image']
+
+    def __new__(cls, instance, *args, **kwargs):
+        if isinstance(instance, QuerySet):
+            instance = instance.select_related('image')
+        return super().__new__(cls, instance, *args, **kwargs)
+
