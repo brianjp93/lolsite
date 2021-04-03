@@ -7,7 +7,6 @@ from .models import Champion
 from match.models import Match, Item
 
 from .serializers import ProfileIconSerializer, ItemSerializer
-from .serializers import ItemGoldSerializer
 from .serializers import ReforgedRuneSerializer, ChampionSerializer
 from .serializers import ChampionSpellSerializer
 
@@ -48,30 +47,6 @@ def get_profile_icon(request, format=None):
     return Response(data, status=status_code)
 
 
-def serialize_item(item):
-    """Serialize and Item model
-
-    Parameters
-    ----------
-    Item
-
-    Returns
-    -------
-    dict
-
-    """
-    item_data = ItemSerializer(item).data
-    item_data["stats"] = {x.key: x.value for x in item.stats.all()}
-    item_data["gold"] = {}
-    try:
-        item_gold_data = ItemGoldSerializer(item.gold).data
-        item_data["gold"] = item_gold_data
-    except:
-        pass
-    item_data["maps"] = {x.key: x.value for x in item.maps.all()}
-    return item_data
-
-
 @api_view(["POST"])
 def get_item(request, format=None):
     """
@@ -106,9 +81,9 @@ def get_item(request, format=None):
 
     if item_id:
         query = Item.objects.filter(_id=item_id, version=version)
-        if query.exists():
-            item = query.first()
-            item_data = serialize_item(item)
+        if query:
+            item = query[0]
+            item_data = ItemSerializer(item).data
             data["data"] = item_data
         else:
             item = (
@@ -116,7 +91,7 @@ def get_item(request, format=None):
                 .order_by("-major", "-minor", "-patch")
                 .first()
             )
-            item_data = serialize_item(item)
+            item_data = ItemSerializer(item).data
             data["data"] = item_data
     elif item_list:
         query = Item.objects.filter(_id__in=item_list, version=version)
@@ -127,9 +102,7 @@ def get_item(request, format=None):
             item = Item.objects.all().order_by("-major", "-minor", "-patch").first()
             query = Item.objects.filter(_id__in=item_list, version=item.version)
 
-        for item in query:
-            item_data = serialize_item(item)
-            serialized_items.append(item_data)
+        serialized_items = ItemSerializer(query, many=True).data
         data["data"] = serialized_items
 
     return Response(data, status=status_code)
@@ -180,13 +153,8 @@ def all_items(request, format=None):
         data = cache_data
     else:
         query = Item.objects.filter(version=version)
-        query = query.select_related('gold', 'image')
-        query = query.prefetch_related('stats', 'maps')
-        if query.exists():
-            items = []
-            for item in query:
-                item_data = serialize_item(item)
-                items.append(item_data)
+        items = ItemSerializer(query, many=True).data
+        if items:
             data = {"data": items, "version": version}
             cache.set(cache_key, data, cache_seconds)
         else:

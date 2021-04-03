@@ -1,8 +1,11 @@
 from django.db.models import QuerySet
 from rest_framework import serializers
-from .models import ProfileIcon, Item, ItemGold, ItemStat
-from .models import ReforgedRune, Champion, ChampionSpell
-from .models import ItemMap, ChampionStats, ChampionSpellVar
+from .models import (
+    ProfileIcon, Item, ItemGold, ItemStat,
+    ReforgedRune, Champion, ChampionSpell,
+    ItemMap, ChampionStats, ChampionSpellVar,
+    ItemImage, ChampionImage,
+)
 
 
 class DynamicSerializer(serializers.ModelSerializer):
@@ -31,23 +34,6 @@ class ProfileIconSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ItemSerializer(serializers.ModelSerializer):
-    image_url = serializers.CharField()
-    thumbs = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Item
-        fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if isinstance(self.instance, QuerySet):
-            self.instance = self.instance.select_related('image')
-
-    def get_thumbs(self, instance):
-        return instance.image.thumbs()
-
-
 class ItemGoldSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemGold
@@ -57,13 +43,47 @@ class ItemGoldSerializer(serializers.ModelSerializer):
 class ItemMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemMap
-        fields = ["key", "value"]
+        fields = ['key', 'value']
+
+
+class ItemImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemImage
+        fields = [
+            'file',
+            'file_15',
+            'file_30',
+            'file_40',
+        ]
 
 
 class ItemStatSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemStat
+        fields = ['key', 'value']
+
+
+class ItemSerializer(serializers.ModelSerializer):
+    gold = ItemGoldSerializer()
+    image = ItemImageSerializer()
+    stats = serializers.SerializerMethodField()
+    maps = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Item
         fields = "__all__"
+
+    def get_maps(self, instance):
+        return {x.key: x.value for x in instance.maps.all()}
+
+    def get_stats(self, instance):
+        return {x.key: x.value for x in instance.stats.all()}
+
+    def __new__(cls, instance, *args, **kwargs):
+        if isinstance(instance, QuerySet):
+            instance = instance.select_related('image', 'gold')
+            instance = instance.prefetch_related('stats', 'maps')
+        return super().__new__(cls, instance, *args, **kwargs)
 
 
 class ReforgedRuneSerializer(serializers.ModelSerializer):
@@ -96,9 +116,22 @@ class ChampionSpellSerializer(DynamicSerializer):
         fields = "__all__"
 
 
+class ChampionImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ChampionImage
+        fields = [
+            'file',
+            'file_15',
+            'file_30',
+            'file_40',
+        ]
+
+
 class ChampionSerializer(DynamicSerializer):
     image_url = serializers.CharField()
     thumbs = serializers.SerializerMethodField()
+    image = ChampionImageSerializer()
     stats = ChampionStatsSerializer()
     spells = ChampionSpellSerializer(many=True)
 
@@ -106,14 +139,14 @@ class ChampionSerializer(DynamicSerializer):
         model = Champion
         fields = "__all__"
 
-    def __init__(self, instance=None, **kwargs):
+    def __new__(cls, instance, *args, **kwargs):
         if isinstance(instance, QuerySet):
             instance = instance.select_related('image', 'stats')
             instance = instance.prefetch_related(
                 'spells', 'spells__vars', 'spells__image',
                 'spells__effect_burn',
             )
-        super().__init__(instance=instance, **kwargs)
+        return super().__new__(cls, instance, *args, **kwargs)
 
     def get_thumbs(self, instance):
         return instance.image.thumbs()
