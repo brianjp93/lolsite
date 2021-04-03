@@ -100,6 +100,7 @@ def get_summoner_meta_data(request, meta):
                         newstat['wins'] += 1
 
             total = wins + losses
+            total = total or 1
             wr = int(wins / total * 100)
             meta['title'] = f'{summoner.name} is {wins} and {losses} in the past {wins + losses} games. {wr}% WR.'
             champions = list(champions.items())
@@ -107,7 +108,7 @@ def get_summoner_meta_data(request, meta):
             champions = champions[:3]
             top_played = [f'{x[0]} - {x[1]["count"]} ({int(x[1]["wins"] / x[1]["count"] * 100)}% WR)' for x in champions]
             top_played = ', '.join(top_played)
-            deaths = deaths if deaths > 0 else 1
+            deaths = deaths or 1
             kda = (kills + assists) / deaths
             dpm = damage / (seconds / 60)
             vspm = vision_score / (seconds / 60)
