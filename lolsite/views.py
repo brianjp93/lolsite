@@ -110,8 +110,11 @@ def get_summoner_meta_data(request, meta):
             top_played = ', '.join(top_played)
             deaths = deaths or 1
             kda = (kills + assists) / deaths
-            dpm = damage / (seconds / 60)
-            vspm = vision_score / (seconds / 60)
+            dpm = 0
+            vspm = 0
+            if seconds:
+                dpm = damage / (seconds / 60)
+                vspm = vision_score / (seconds / 60)
             description = [
                 f'TOP: {top_played}',
                 f'AVG KDA: {kda:.2f}',
@@ -150,9 +153,12 @@ def get_match_meta_data(request, meta):
         deaths = 1 if deaths < 1 else deaths
         assists = part.stats.assists
         minutes = match.game_duration / 60
-        dpm = part.stats.total_damage_dealt_to_champions / minutes
+        dpm = 0
+        vspm = 0
+        if minutes:
+            dpm = part.stats.total_damage_dealt_to_champions / minutes
+            vspm = part.stats.vision_score / minutes
         kda = (kills + assists) / deaths
-        vspm = part.stats.vision_score / minutes
         queue = QUEUE_DICT.get(match.queue_id, None)
         queue = queue['description'].strip('games').strip() if queue is not None else '?'
         champion = part.get_champion()
