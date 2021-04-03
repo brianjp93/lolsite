@@ -331,7 +331,6 @@ def get_summoner_page(request, format=None):
 
             match_query = match_query[start:end]
 
-            # matches = serialize_matches(match_query, summoner.account_id)
             matches = BasicMatchSerializer(match_query, account_id=summoner.account_id, many=True).data
 
             data = {
