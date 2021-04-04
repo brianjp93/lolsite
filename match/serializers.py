@@ -153,7 +153,7 @@ class FullParticipantSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def __init__(self, instance=None, extra=None, **kwargs):
-        self.extra = {}
+        self.extra = extra or {}
         if extra is None:
             match_qs = None
             if isinstance(instance, QuerySet):
@@ -195,7 +195,7 @@ class FullTeamSerializer(serializers.ModelSerializer):
 
 
 class FullMatchSerializer(serializers.ModelSerializer):
-    participants = FullParticipantSerializer(many=True, read_only=True)
+    participants = serializers.SerializerMethodField()
     teams = FullTeamSerializer(many=True, read_only=True)
 
     class Meta:
@@ -209,6 +209,28 @@ class FullMatchSerializer(serializers.ModelSerializer):
                 'participants__timelines',
             )
         return super().__new__(cls, instance, *args, **kwargs)
+
+    def __init__(self, instance=None, **kwargs):
+        self.extra = {}
+        match_qs = None
+        if hasattr(instance, 'major'):
+            match_qs = Match.objects.filter(id=instance.id)
+        if match_qs:
+            self.extra = match_qs.get_related()
+        super().__init__(instance, **kwargs)
+
+    def get_participants(self, obj):
+        return FullParticipantSerializer(obj.participants.all(), many=True, extra=self.extra).data
+
+    def to_representation(self, instance):
+        """Override to use cache
+        """
+        cache_key = f'fullmatch/{instance.id}'
+        data = cache.get(cache_key)
+        if not data:
+            data = super().to_representation(instance)
+            cache.set(cache_key, data, CACHE_TIME)
+        return data
 
 
 class ParticipantFrameSerializer(serializers.ModelSerializer):
@@ -262,6 +284,14 @@ class AdvancedTimelineSerializer(serializers.ModelSerializer):
 
     def get_frames(self, obj):
         return FrameSerializer(obj.frames.all(), many=True).data
+
+    def to_representation(self, instance):
+        cache_key = f'advancedtimeline/{instance.id}'
+        data = cache.get(cache_key)
+        if not data:
+            data = super().to_representation(instance)
+            cache.set(cache_key, data, CACHE_TIME)
+        return data
 
 
 class BasicStatsSerializer(serializers.ModelSerializer):

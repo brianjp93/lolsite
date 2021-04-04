@@ -17,7 +17,7 @@ from data.models import Champion
 
 from .serializers import (
     MatchSerializer, FullParticipantSerializer,
-    AdvancedTimelineSerializer,
+    AdvancedTimelineSerializer, FullMatchSerializer,
 )
 
 from player.serializers import RankPositionSerializer
@@ -25,7 +25,6 @@ from player.serializers import RankPositionSerializer
 from multiprocessing.dummy import Pool as ThreadPool
 
 from django.shortcuts import get_object_or_404
-from django.core.cache import cache
 
 
 @api_view(["POST"])
@@ -46,28 +45,17 @@ def get_match_timeline(request, format=None):
     """
     data = {}
     status_code = 200
-    cache_seconds = 60 * 60 * 2
-    api = get_riot_api()
-    if api:
-        match_id = request.data.get("match_id", None)
-        if request.method == "POST":
-            match = Match.objects.get(_id=match_id)
-            try:
-                timeline = match.advancedtimeline
-            except:
-                mt.import_advanced_timeline(match.id)
-                match.refresh_from_db()
-                timeline = match.advancedtimeline
+    match_id = request.data.get("match_id", None)
+    if request.method == "POST":
+        match = Match.objects.get(_id=match_id)
+        try:
+            timeline = match.advancedtimeline
+        except:
+            mt.import_advanced_timeline(match.id)
+            match.refresh_from_db()
+            timeline = match.advancedtimeline
 
-            cache_key = f"match/{match._id}/timeline"
-            cache_data = cache.get(cache_key)
-            if cache_data:
-                data = cache_data["data"]
-                status_code = cache_data["status"]
-            else:
-                data = {'data': AdvancedTimelineSerializer(timeline).data.get('frames', {})}
-                cache_data = {'data': data, 'status': status_code}
-                cache.set(cache_key, cache_data, cache_seconds)
+        data = {'data': AdvancedTimelineSerializer(timeline).data.get('frames', {})}
     return Response(data, status=status_code)
 
 
@@ -150,14 +138,16 @@ class ParticipantsView(ListAPIView):
         self.qs = self.match.participants.all().select_related('stats')
         return self.qs
 
-    @query_debugger
     def get(self, *args, **kwargs):
         self.get_queryset()
         data = {}
         status_code = 200
         if self.apply_ranks:
             mt.apply_player_ranks(self.match, threshold_days=1)
-        participants = FullParticipantSerializer(self.qs, many=True).data
+
+        # I am using the FullMatchSerializer here because it's mostly the participants
+        # and it is being cached
+        participants = FullMatchSerializer(self.match).data['participants']
         data = {"data": participants}
         return Response(data, status=status_code)
 
