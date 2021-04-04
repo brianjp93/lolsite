@@ -312,6 +312,8 @@ class BasicStatsSerializer(serializers.ModelSerializer):
             "champ_level", "total_damage_dealt_to_champions", "vision_score",
             "total_damage_taken", "damage_dealt_to_objectives", "damage_dealt_to_turrets",
             "gold_earned", "total_heal", "time_ccing_others",
+            "item_0", "item_1", "item_2",
+            "item_3", "item_4", "item_5", "item_6",
             'item_0_image', 'item_1_image', 'item_2_image',
             'item_3_image', 'item_4_image', 'item_5_image',
             'item_6_image', 'perk_0_image_url', 'perk_sub_style_image_url',
