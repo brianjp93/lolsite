@@ -168,7 +168,7 @@ export function MapEvents(props) {
                                     width: 25, borderRadius: '50%',
                                     border: `2px solid ${border_color}`
                                 }}
-                                src={player.part.champion?.thumbs?.file_30}
+                                src={player.part.champion?.image?.file_30}
                                 alt="participant bubble" />
                         </div>
                     )
@@ -275,7 +275,7 @@ function EventBubble(props) {
                                 {ev.killer_id !== 0 &&
                                     <img
                                         style={img_style}
-                                        src={part_dict[ev.killer_id].champion?.thumbs?.file_40} alt="" />
+                                        src={part_dict[ev.killer_id].champion?.image?.file_40} alt="" />
                                 }
                                 <div
                                     style={{
@@ -290,7 +290,7 @@ function EventBubble(props) {
                                 </div>
                                 <img
                                     style={img_style}
-                                    src={part_dict[ev.victim_id].champion?.thumbs?.file_40} alt="" />
+                                    src={part_dict[ev.victim_id].champion?.image?.file_40} alt="" />
                             </div>
                         }
 
@@ -301,7 +301,7 @@ function EventBubble(props) {
                                     <React.Fragment>
                                         <img
                                             style={img_style}
-                                            src={part_dict[ev.killer_id].champion?.thumbs?.file_40} alt="" />
+                                            src={part_dict[ev.killer_id].champion?.image?.file_40} alt="" />
                                                 <div style={{display: 'inline-block', margin: '0px 8px'}}> killed </div>
                                                 <span>{ev.monster_type}</span>
                                     </React.Fragment>
@@ -320,7 +320,7 @@ function EventBubble(props) {
                                 {ev.killer_id !== 0 &&
                                     <img
                                         style={img_style}
-                                        src={part_dict[ev.killer_id].champion?.thumbs?.file_40} alt="" />
+                                        src={part_dict[ev.killer_id].champion?.image?.file_40} alt="" />
                                 }
                                 {!ev.killer_id &&
                                     <div style={{display: 'inline-block'}}>minions</div>

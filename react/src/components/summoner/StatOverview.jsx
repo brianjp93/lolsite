@@ -265,7 +265,7 @@ class StatOverview extends Component {
                         var heights = (bargraph_height - 40) / parts.length
                         return (
                             <div key={`${match._id}-${part._id}`} style={{height:heights, width:30}}>
-                                <img title={part.summoner_name} style={{height:20}} src={part.champion.thumbs.file_30} alt={part.champion.name}/>
+                                <img title={part.summoner_name} style={{height:20}} src={part.champion.image.file_30} alt={part.champion.name}/>
                             </div>
                         )
                     })}

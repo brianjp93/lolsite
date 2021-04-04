@@ -132,12 +132,12 @@ class RunePage extends Component {
                             NA
                         </div>
                     )}
-                    {part.champion.image_url !== '' && (
+                    {part.champion.image.file_30 !== '' && (
                         <img
                             title={part.summoner_name}
                             onClick={() => this.setState({ selected_part: part })}
                             style={{ ...select_style }}
-                            src={part.champion.thumbs?.file_30}
+                            src={part.champion.image.file_30}
                             alt=""
                         />
                     )}

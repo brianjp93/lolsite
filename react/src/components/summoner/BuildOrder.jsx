@@ -341,13 +341,14 @@ function ChampionImage(props) {
     }
 
     let vert_align = {}
-    if (props.participant.champion?.thumbs?.file_30 === undefined) {
+    let champ_image = props.participant.champion?.image?.file_30
+    if (champ_image === undefined) {
         vert_align.verticalAlign = 'top'
     }
 
     return (
         <div style={{ display: 'inline-block', paddingRight: props.padding_pixels, ...vert_align }}>
-            {props.participant.champion?.thumbs?.file_30 === undefined && (
+            {champ_image === undefined && (
                 <div
                     onClick={props.handleClick}
                     style={{ display: 'inline-block', ...image_style }}
@@ -355,14 +356,14 @@ function ChampionImage(props) {
                     NA
                 </div>
             )}
-            {props.participant.champion?.thumbs?.file_30 !== undefined && (
+            {champ_image !== undefined && (
                 <img
                     onClick={props.handleClick}
                     style={{
                         ...image_style,
                     }}
                     aria-label={props.participant.champion.name}
-                    src={props.participant.champion?.thumbs?.file_30}
+                    src={props.participant.champion?.image?.file_30}
                     alt=""
                 />
             )}

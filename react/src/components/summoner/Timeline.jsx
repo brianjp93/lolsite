@@ -360,13 +360,13 @@ function Timeline(props) {
                             <div style={{width:35, verticalAlign: 'top', display: 'inline-block', marginLeft: 5}} className={`${props.theme} muted`}>
                                 {Math.floor(event.timestamp / 1000 / 60)}:{numeral((event.timestamp / 1000) % 60).format('00')}
                             </div>{' '}
-                            
+
                             <span style={{verticalAlign: 'top'}}>
                                 {event._type === 'CHAMPION_KILL' &&
                                     <span>
                                         <span>
                                             {part1 !== null &&
-                                                <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                <img style={{height:15}} src={part1.champion.image?.file_30} alt=""/>
                                             }
                                             {part1 === null &&
                                                 <span>minions</span>
@@ -376,7 +376,7 @@ function Timeline(props) {
                                             <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>killed</span>
                                         </span>{' '}
                                         <span>
-                                            <img style={{height:15}} src={part2.champion.image_url} alt=""/>
+                                            <img style={{height:15}} src={part2.champion.image?.file_30} alt=""/>
                                         </span>
                                     </span>
                                 }
@@ -385,7 +385,7 @@ function Timeline(props) {
                                     <span>
                                         <span>
                                             {part1 !== null &&
-                                                <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                <img style={{height:15}} src={part1.champion.image?.file_30} alt=""/>
                                             }
                                             {part1 === null &&
                                                 <span>minions</span>
@@ -413,7 +413,7 @@ function Timeline(props) {
                                     <span>
                                         <span>
                                             {part1 !== null &&
-                                                <img style={{height:15}} src={part1.champion.image_url} alt=""/>
+                                                <img style={{height:15}} src={part1.champion.image?.file_30} alt=""/>
                                             }
                                             {part1 === null &&
                                                 <span>minions</span>

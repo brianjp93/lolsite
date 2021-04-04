@@ -116,18 +116,18 @@ function MatchCardModal(props) {
                     <div>
                         <img
                             style={{ height: 40, display: 'inline' }}
-                            src={part.champion.thumbs?.file_40}
+                            src={part.champion.image?.file_40}
                             alt=""
                         />
                         <div style={{ display: 'inline-block', paddingLeft: 4 }}>
                             <img
                                 style={{ height: 20, display: 'block' }}
-                                src={part.spell_1_image_url}
+                                src={part.spell_1_image}
                                 alt=""
                             />
                             <img
                                 style={{ height: 20, display: 'block' }}
-                                src={part.spell_2_image_url}
+                                src={part.spell_2_image}
                                 alt=""
                             />
                         </div>
@@ -149,7 +149,7 @@ function MatchCardModal(props) {
                             marginLeft: 4,
                             borderRadius: 5,
                         }}
-                        src={part.stats.item_6_thumbs?.file_30}
+                        src={part.stats.item_6_image?.file_30}
                         alt=""
                     />
                 </div>

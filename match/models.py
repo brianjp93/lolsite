@@ -140,6 +140,29 @@ class MatchQuerySet(models.QuerySet):
         qs = qs.order_by('_id', '-major', '-minor').distinct('_id')
         return {x._id: x.image_url() for x in qs}
 
+    def get_runes(self):
+        all_runes = set()
+        for match in self.prefetch_related('participants'):
+            for part in match.participants.all():
+                for _i in range(6):
+                    all_runes.add(getattr(part.stats, f'perk_{_i}'))
+
+        rune_data = ReforgedRune.objects.filter(
+            _id__in=all_runes,
+        ).order_by(
+            '_id', '-reforgedtree__major', 'reforgedtree__minor'
+        ).distinct('_id')
+        return {x._id: x for x in rune_data}
+
+    def get_related(self):
+        return {
+            'items': self.get_items(),
+            'runes': self.get_runes(),
+            'perk_substyles': self.get_perk_substyles(),
+            'champs': self.get_champs(),
+            'spell_images': self.get_spell_images(),
+        }
+
 
 class Match(VersionedModel):
     _id = models.BigIntegerField(unique=True, db_index=True)
