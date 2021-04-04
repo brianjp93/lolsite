@@ -25,10 +25,10 @@ from player.serializers import RankPositionSerializer
 from multiprocessing.dummy import Pool as ThreadPool
 
 from django.shortcuts import get_object_or_404
+from django.core.cache import cache
 
 
 @api_view(["POST"])
-@query_debugger
 def get_match_timeline(request, format=None):
     """Gets match timeline from Riot's API.
 
@@ -46,6 +46,7 @@ def get_match_timeline(request, format=None):
     """
     data = {}
     status_code = 200
+    cache_seconds = 60 * 60 * 2
     api = get_riot_api()
     if api:
         match_id = request.data.get("match_id", None)
@@ -57,7 +58,16 @@ def get_match_timeline(request, format=None):
                 mt.import_advanced_timeline(match.id)
                 match.refresh_from_db()
                 timeline = match.advancedtimeline
-            data = {'data': AdvancedTimelineSerializer(timeline).data.get('frames', {})}
+
+            cache_key = f"match/{match._id}/timeline"
+            cache_data = cache.get(cache_key)
+            if cache_data:
+                data = cache_data["data"]
+                status_code = cache_data["status"]
+            else:
+                data = {'data': AdvancedTimelineSerializer(timeline).data.get('frames', {})}
+                cache_data = {'data': data, 'status': status_code}
+                cache.set(cache_key, cache_data, cache_seconds)
     return Response(data, status=status_code)
 
 
@@ -140,6 +150,7 @@ class ParticipantsView(ListAPIView):
         self.qs = self.match.participants.all().select_related('stats')
         return self.qs
 
+    @query_debugger
     def get(self, *args, **kwargs):
         self.get_queryset()
         data = {}

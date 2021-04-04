@@ -247,6 +247,7 @@ class Match(VersionedModel):
         """
         query = self.participants.filter(
             Q(summoner_id=summoner._id) | Q(account_id__in=summoner.account_id)
+            | Q(current_account_id=summoner.account_id)
         )
         return query.exists()
 

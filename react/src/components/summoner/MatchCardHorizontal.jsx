@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useCallback } from 'react'
+import { Fragment, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import api from '../../api/api'

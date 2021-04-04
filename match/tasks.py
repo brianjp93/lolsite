@@ -807,6 +807,7 @@ def import_advanced_timeline(match_id=None, overwrite=False):
             timestamp = _frame["timestamp"]
             frame = Frame(timeline=at, timestamp=timestamp)
             frame.save()
+            pframes = []
             for i, p_frame in _frame["participantFrames"].items():
 
                 p_frame_data = {
@@ -825,9 +826,10 @@ def import_advanced_timeline(match_id=None, overwrite=False):
                 if pos is not None:
                     p_frame_data["x"] = pos["x"]
                     p_frame_data["y"] = pos["y"]
-                participant_frame = ParticipantFrame(**p_frame_data)
-                participant_frame.save()
+                pframes.append(ParticipantFrame(**p_frame_data))
+            ParticipantFrame.objects.bulk_create(pframes)
 
+            events = []
             for _event in _frame["events"]:
                 participant_id = _event.get("participantId", None)
                 if participant_id is None:
@@ -855,8 +857,8 @@ def import_advanced_timeline(match_id=None, overwrite=False):
                     "team_id": _event.get("teamId", None),
                     "tower_type": _event.get("towerType", None),
                 }
-                event = Event(**event_data)
-                event.save()
+                events.append(Event(**event_data))
+            Event.objects.bulk_create(events)
 
 
 def import_spectate_from_data(data, region):
