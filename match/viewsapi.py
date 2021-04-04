@@ -211,7 +211,6 @@ class ParticipantsView(ListAPIView):
         self.qs = self.match.participants.all().select_related('stats')
         return self.qs
 
-    @query_debugger
     def get(self, *args, **kwargs):
         self.get_queryset()
         data = {}
