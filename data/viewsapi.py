@@ -131,7 +131,6 @@ def all_items(request, format=None):
     data = {}
     status_code = 200
     # 120 minute cache
-    cache_seconds = 60 * 60 * 10
 
     major = request.data.get("major", None)
     minor = request.data.get("minor", None)
@@ -147,19 +146,13 @@ def all_items(request, format=None):
     else:
         version = f"{major}.{minor}.1"
 
-    cache_key = f"items/{version}"
-    cache_data = cache.get(cache_key)
-    if cache_data:
-        data = cache_data
+    query = Item.objects.filter(version=version)
+    items = ItemSerializer(query, many=True).data
+    if items:
+        data = {"data": items, "version": version}
     else:
-        query = Item.objects.filter(version=version)
-        items = ItemSerializer(query, many=True).data
-        if items:
-            data = {"data": items, "version": version}
-            cache.set(cache_key, data, cache_seconds)
-        else:
-            status_code = 404
-            data = {"message": "No items found for the version given."}
+        status_code = 404
+        data = {"message": "No items found for the version given."}
 
     return Response(data, status=status_code)
 
