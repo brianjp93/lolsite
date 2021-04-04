@@ -12,6 +12,10 @@ from data.serializers import (
 )
 
 from django.db.models import QuerySet
+from django.core.cache import cache
+
+
+CACHE_TIME = 60 * 60 * 48
 
 
 class MatchSerializer(serializers.ModelSerializer):
@@ -402,8 +406,7 @@ class BasicMatchSerializer(serializers.ModelSerializer):
         )
         return super().__new__(cls, instance, *args, **kwargs)
 
-    def __init__(self, instance=None, account_id=None, **kwargs):
-        self.account_id = account_id
+    def __init__(self, instance=None, **kwargs):
         self.extra = None
         if isinstance(instance, QuerySet):
             self.extra = instance.get_related()
@@ -412,3 +415,11 @@ class BasicMatchSerializer(serializers.ModelSerializer):
     def get_participants(self, obj):
         parts = mt.get_sorted_participants(obj, participants=obj.participants.all())
         return BasicParticipantSerializer(parts, many=True, extra=self.extra).data
+
+    def to_representation(self, instance):
+        cache_key = f'basicmatch/{instance.id}'
+        data = cache.get(cache_key)
+        if not data:
+            data = super().to_representation(instance)
+            cache.set(cache_key, data, CACHE_TIME)
+        return data
