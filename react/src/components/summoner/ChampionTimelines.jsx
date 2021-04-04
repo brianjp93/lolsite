@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts'
 import numeral from 'numeral'
@@ -47,7 +47,7 @@ function ChampionTimelines(props) {
                         participant={participant}
                         padding_pixels={padding_pixels}
                         theme={props.theme}
-                        handleClick={event => {
+                        handleClick={_ => {
                             let new_selection = [...participant_selection]
                             if (participant_selection.indexOf(participant._id) >= 0) {
                                 new_selection = new_selection.filter(id => id !== participant._id)
@@ -147,7 +147,7 @@ function ChampionTimelines(props) {
                     <Tooltip
                         itemSorter={item => -item.value}
                         wrapperStyle={{ zIndex: 10 }}
-                        formatter={(value, name, props) => {
+                        formatter={(value, _, _) => {
                             let output
                             if (graph_type === 'total_gold') {
                                 output = `${numeral(value).format('0,0')} gold`
@@ -251,7 +251,7 @@ function ChampionImage(props) {
     }
 
     let vert_align = {}
-    if (props.participant.champion.image_url === '') {
+    if (props.participant.champion?.image?.file_30) {
         vert_align.verticalAlign = 'top'
     }
 
@@ -262,12 +262,12 @@ function ChampionImage(props) {
                     NA
                 </div>
             )}
-            {props.participant.champion.image_url !== '' && (
+            {props.participant?.champion?.image?.file_30 && (
                 <img
                     onClick={props.handleClick}
                     style={{ ...image_style }}
                     aria-label={props.participant.champion.name}
-                    src={props.participant.champion.thumbs.file_30}
+                    src={props.participant.champion.image.file_30}
                     alt=""
                 />
             )}

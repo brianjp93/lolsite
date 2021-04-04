@@ -421,12 +421,12 @@ function MatchCard(props) {
                             <div style={{ display: 'inline-block', paddingLeft: 4 }}>
                                 <img
                                     style={{ height: 20, display: 'block' }}
-                                    src={mypart.spell_1_image_url}
+                                    src={mypart.spell_1_image}
                                     alt=""
                                 />
                                 <img
                                     style={{ height: 20, display: 'block' }}
-                                    src={mypart.spell_2_image_url}
+                                    src={mypart.spell_2_image}
                                     alt=""
                                 />
                             </div>
@@ -448,7 +448,7 @@ function MatchCard(props) {
                                 marginLeft: 4,
                                 borderRadius: 5,
                             }}
-                            src={mypart.stats.item_6_thumbs?.file_30}
+                            src={mypart.stats.item_6_image?.file_30}
                             alt=""
                         />
                     </div>

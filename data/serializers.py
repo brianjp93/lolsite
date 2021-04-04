@@ -4,7 +4,7 @@ from .models import (
     ProfileIcon, Item, ItemGold, ItemStat,
     ReforgedRune, Champion, ChampionSpell,
     ItemMap, ChampionStats, ChampionSpellVar,
-    ItemImage, ChampionImage,
+    ItemImage, ChampionImage, SummonerSpellImage,
 )
 
 
@@ -159,3 +159,9 @@ class BasicChampionWithImageSerializer(serializers.ModelSerializer):
             instance = instance.select_related('image')
         return super().__new__(cls, instance, *args, **kwargs)
 
+
+class SummonerSpellImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SummonerSpellImage
+        fields = ['image_url']

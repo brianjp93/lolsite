@@ -15,9 +15,9 @@ from .models import sort_positions
 
 from player.models import Summoner, simplify
 
-from data.models import Champion, ReforgedRune
+from data.models import Champion
 
-from .serializers import MatchSerializer
+from .serializers import MatchSerializer, FullParticipantSerializer
 
 from player.serializers import RankPositionSerializer
 
@@ -211,142 +211,15 @@ class ParticipantsView(ListAPIView):
         self.qs = self.match.participants.all().select_related('stats')
         return self.qs
 
+    @query_debugger
     def get(self, *args, **kwargs):
         self.get_queryset()
         data = {}
         status_code = 200
-        cache_seconds = 60 * 60 * 24
-        cache_key = f"match/{self.match._id}/participants"
-        cache_data = cache.get(cache_key)
-        if cache_data:
-            data = cache_data["data"]
-            status_code = cache_data["status"]
-        else:
-            if self.apply_ranks:
-                mt.apply_player_ranks(self.match, threshold_days=1)
-            participants = []
-
-            part_query = mt.get_sorted_participants(self.match, participants=self.qs)
-            if len(part_query) != len(self.qs):
-                part_query = self.qs
-
-            champ_data = self.match_qs.get_champs()
-            item_data = self.match_qs.get_items()
-            spell_images = self.match_qs.get_spell_images()
-            perk_substyles = self.match_qs.get_perk_substyles()
-
-            all_runes = set()
-            for part in part_query:
-                for _i in range(6):
-                    all_runes.add(getattr(part.stats, f'perk_{_i}'))
-
-            rune_data = ReforgedRune.objects.filter(
-                _id__in=all_runes,
-            ).order_by(
-                '_id', '-reforgedtree__major', 'reforgedtree__minor'
-            ).distinct('_id')
-            rune_data = {x._id: x for x in rune_data}
-
-            for part in part_query:
-                p = {
-                    "id": part.id,
-                    "_id": part._id,
-                    "account_id": part.account_id,
-                    "current_account_id": part.current_account_id,
-                    "summoner_id": part.summoner_id,
-                    "current_platform_id": part.current_platform_id,
-                    "platform_id": part.platform_id,
-                    "summoner_name": part.summoner_name,
-                    "highest_achieved_season_tier": part.highest_achieved_season_tier,
-                    "spell_1_id": part.spell_1_id,
-                    "spell_1_image_url": spell_images.get(part.spell_1_id),
-                    "spell_2_id": part.spell_2_id,
-                    "spell_2_image_url": spell_images.get(part.spell_2_id),
-                    "team_id": part.team_id,
-                    "lane": part.lane,
-                    "role": part.role,
-                    "tier": part.tier,
-                    "rank": part.rank,
-                }
-                champion = champ_data[part.champion_id]
-                p["champion"] = {
-                    "_id": champion._id if champion is not None else 'NA',
-                    "name": champion.name if champion is not None else 'NA',
-                    "key": champion.key if champion is not None else 'NA',
-                    "image_url": champion.image.image_url() if champion is not None else '',
-                    "thumbs": champion.image.thumbs() if champion is not None else '',
-                }
-                try:
-                    stats = part.stats
-                except:
-                    stats = None
-                else:
-                    p["stats"] = {
-                        "champ_level": stats.champ_level,
-                        "assists": stats.assists,
-                        "damage_dealt_to_objectives": stats.damage_dealt_to_objectives,
-                        "damage_dealt_to_turrets": stats.damage_dealt_to_turrets,
-                        "damage_self_mitigated": stats.damage_self_mitigated,
-                        "deaths": stats.deaths,
-                        "gold_earned": stats.gold_earned,
-                        "kills": stats.kills,
-                        "largest_multi_kill": stats.largest_multi_kill,
-                        "magic_damage_dealt": stats.magic_damage_dealt,
-                        "magic_damage_dealt_to_champions": stats.magic_damage_dealt_to_champions,
-                        "magical_damage_taken": stats.magical_damage_taken,
-                        "neutral_minions_killed": stats.neutral_minions_killed,
-                        "neutral_minions_killed_enemy_jungle": stats.neutral_minions_killed_enemy_jungle,
-                        "neutral_minions_killed_team_jungle": stats.neutral_minions_killed_team_jungle,
-                        "perk_primary_style": stats.perk_primary_style,
-                        "perk_sub_style": stats.perk_sub_style,
-                        "perk_sub_style_image_url": perk_substyles.get(stats.perk_sub_style),
-                        "stat_perk_0": stats.stat_perk_0,
-                        "stat_perk_1": stats.stat_perk_1,
-                        "stat_perk_2": stats.stat_perk_2,
-                        "physical_damage_dealt_to_champions": stats.physical_damage_dealt_to_champions,
-                        "physical_damage_taken": stats.physical_damage_taken,
-                        "time_ccing_others": stats.time_ccing_others,
-                        "total_damage_dealt_to_champions": stats.total_damage_dealt_to_champions,
-                        "total_damage_taken": stats.total_damage_taken,
-                        "total_heal": stats.total_heal,
-                        "total_minions_killed": stats.total_minions_killed,
-                        "total_time_crowd_control_dealt": stats.total_time_crowd_control_dealt,
-                        "total_units_healed": stats.total_units_healed,
-                        "true_damage_dealt_to_champions": stats.true_damage_dealt_to_champions,
-                        "true_damage_taken": stats.true_damage_taken,
-                        "vision_score": stats.vision_score,
-                        "vision_wards_bought_in_game": stats.vision_wards_bought_in_game,
-                        "wards_killed": stats.wards_killed,
-                        "wards_placed": stats.wards_placed,
-                    }
-
-                    # items
-                    for _i in range(7):
-                        key = f'item_{_i}'
-                        item_id = getattr(stats, key)
-                        p['stats'][key] = item_id
-                        item = item_data.get(item_id)
-                        p['stats'][f'{key}_image_url'] = item.image.image_url() if item else None
-                        p['stats'][f'{key}_thumbs'] = item.image.thumbs() if item else None
-
-                    # runes
-                    for _i in range(6):
-                        key = f'perk_{_i}'
-                        perk_id = getattr(stats, key)
-                        p['stats'][key] = perk_id
-                        rune = rune_data.get(perk_id)
-                        p['stats'][f'{key}'] = perk_id
-                        p['stats'][f'{key}_image_url'] = rune.image_url() if rune else None
-                        for _j in range(1, 4):
-                            var = f'{key}_var_{_j}'
-                            p['stats'][var] = getattr(stats, var)
-
-                participants.append(p)
-
-            data = {"data": participants}
-
-            new_cache = {"data": data, "status": status_code}
-            cache.set(cache_key, new_cache, cache_seconds)
+        if self.apply_ranks:
+            mt.apply_player_ranks(self.match, threshold_days=1)
+        participants = FullParticipantSerializer(self.qs, many=True).data
+        data = {"data": participants}
         return Response(data, status=status_code)
 
 
