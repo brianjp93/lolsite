@@ -330,7 +330,7 @@ def get_summoner_page(request, format=None):
 
             match_query = match_query[start:end]
 
-            matches = BasicMatchSerializer(match_query, account_id=summoner.account_id, many=True).data
+            matches = BasicMatchSerializer(match_query, many=True).data
 
             data = {
                 "matches": matches,
