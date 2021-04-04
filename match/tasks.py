@@ -157,14 +157,15 @@ def import_match_from_data(data, refresh=False, region=""):
             raise error
 
         # TIMELINES
+        timelines = []
         for _t_data in timelines_data:
             _t_data["participant"] = participant_model
-            timeline_model = Timeline(**_t_data)
-            try:
-                timeline_model.save()
-            except Exception as error:
-                match_model.delete()
-                raise error
+            timelines.append(Timeline(**_t_data))
+        try:
+            Timeline.objects.bulk_create(timelines)
+        except Exception as error:
+            match_model.delete()
+            raise error
 
         # STATS
         stats_data["participant"] = participant_model
@@ -185,18 +186,17 @@ def import_match_from_data(data, refresh=False, region=""):
         try:
             team_model.save()
         except Exception as error:
-            team_model.delete()
             raise error
 
         # BANS
+        bans = []
         for _ban_data in bans:
             _ban_data["team"] = team_model
-            ban_model = Ban(**_ban_data)
-            try:
-                ban_model.save()
-            except Exception as error:
-                ban_model.delete()
-                raise error
+            bans.append(Ban(**_ban_data))
+        try:
+            Ban.objects.bulk_create(bans)
+        except Exception as error:
+            raise error
 
 
 def parse_match(data):
