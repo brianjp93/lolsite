@@ -35,4 +35,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 CELERY_BROKER_URL = "redis://localhost"
 
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
+CACHES = {
+    "default": {
+        # "BACKEND": "django.core.cache.backends.dummy.DummyCache"
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "lolsite-dev-cache",
+    }
+}

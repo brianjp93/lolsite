@@ -182,7 +182,6 @@ def match_filter(request, account_id=None):
 
 
 @api_view(["POST"])
-@query_debugger
 def get_summoner_page(request, format=None):
     """Get the basic information needed to render the summoner page.
 
