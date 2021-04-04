@@ -147,7 +147,7 @@ function ChampionTimelines(props) {
                     <Tooltip
                         itemSorter={item => -item.value}
                         wrapperStyle={{ zIndex: 10 }}
-                        formatter={(value, _, _) => {
+                        formatter={(value) => {
                             let output
                             if (graph_type === 'total_gold') {
                                 output = `${numeral(value).format('0,0')} gold`
