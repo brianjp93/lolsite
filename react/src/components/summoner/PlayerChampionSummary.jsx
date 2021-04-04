@@ -220,7 +220,7 @@ class PlayerChampionSummary extends Component {
                     {champ !== undefined && (
                         <img
                             style={{ maxHeight: 30, display: 'inline-block', borderRadius: '50%' }}
-                            src={champ.thumbs?.file_30}
+                            src={champ.image?.file_30}
                             alt=""
                         />
                     )}
