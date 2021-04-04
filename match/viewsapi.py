@@ -9,25 +9,26 @@ from lolsite.helpers import query_debugger
 from match import tasks as mt
 from player import tasks as pt
 
-from .models import Match, Participant
-
-from .models import sort_positions
+from .models import Match, Participant, sort_positions
 
 from player.models import Summoner, simplify
 
 from data.models import Champion
 
-from .serializers import MatchSerializer, FullParticipantSerializer
+from .serializers import (
+    MatchSerializer, FullParticipantSerializer,
+    AdvancedTimelineSerializer,
+)
 
 from player.serializers import RankPositionSerializer
 
 from multiprocessing.dummy import Pool as ThreadPool
 
-from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 
 
 @api_view(["POST"])
+@query_debugger
 def get_match_timeline(request, format=None):
     """Gets match timeline from Riot's API.
 
@@ -45,7 +46,6 @@ def get_match_timeline(request, format=None):
     """
     data = {}
     status_code = 200
-    cache_seconds = 60 * 60 * 2
     api = get_riot_api()
     if api:
         match_id = request.data.get("match_id", None)
@@ -57,78 +57,7 @@ def get_match_timeline(request, format=None):
                 mt.import_advanced_timeline(match.id)
                 match.refresh_from_db()
                 timeline = match.advancedtimeline
-
-            cache_key = f"match/{match._id}/timeline"
-            cache_data = cache.get(cache_key)
-            if cache_data:
-                data = cache_data["data"]
-                status_code = cache_data["status"]
-            else:
-                timeline_data = []
-                for frame in (
-                    timeline.frames.all()
-                    .prefetch_related(
-                        "participantframes", "events", "events__assistingparticipants"
-                    )
-                    .order_by("timestamp")
-                ):
-                    frame_data = {
-                        "timestamp": frame.timestamp,
-                    }
-                    participantframes = []
-                    for pframe in frame.participantframes.all():
-                        pframe = {
-                            "participant_id": pframe.participant_id,
-                            "current_gold": pframe.current_gold,
-                            # 'dominion_score': pframe.dominion_score,
-                            "jungle_minions_killed": pframe.jungle_minions_killed,
-                            "level": pframe.level,
-                            "minions_killed": pframe.minions_killed,
-                            "x": pframe.x,
-                            "y": pframe.y,
-                            "team_score": pframe.team_score,
-                            "total_gold": pframe.total_gold,
-                            "xp": pframe.xp,
-                        }
-                        participantframes.append(pframe)
-
-                    events = []
-                    for event in frame.events.all():
-                        event_data = {
-                            "_type": event._type,
-                            "participant_id": event.participant_id,
-                            "timestamp": event.timestamp,
-                            "item_id": event.item_id,
-                            "level_up_type": event.level_up_type,
-                            "skill_slot": event.skill_slot,
-                            "ward_type": event.ward_type,
-                            "before_id": event.before_id,
-                            "after_id": event.after_id,
-                            "killer_id": event.killer_id,
-                            "victim_id": event.victim_id,
-                            "x": event.x,
-                            "y": event.y,
-                            "monster_type": event.monster_type,
-                            "monster_sub_type": event.monster_sub_type,
-                            "building_type": event.building_type,
-                            "lane_type": event.lane_type,
-                            "team_id": event.team_id,
-                            "tower_type": event.tower_type,
-                            "assistingparticipants": [
-                                x.participant_id
-                                for x in event.assistingparticipants.all()
-                            ],
-                        }
-                        events.append(event_data)
-
-                    frame_data["participantframes"] = participantframes
-                    frame_data["events"] = events
-                    timeline_data.append(frame_data)
-                data = {"data": timeline_data}
-
-                new_cache = {"data": data, "status": status_code}
-                cache.set(cache_key, new_cache, cache_seconds)
-
+            data = {'data': AdvancedTimelineSerializer(timeline).data.get('frames', {})}
     return Response(data, status=status_code)
 
 

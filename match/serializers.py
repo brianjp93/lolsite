@@ -200,28 +200,9 @@ class FullMatchSerializer(serializers.ModelSerializer):
         return super().__new__(cls, instance, *args, **kwargs)
 
 
-# ADVANCED TIMELINE
-class AdvancedTimelineSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AdvancedTimeline
-        fields = "__all__"
-
-
-class FrameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Frame
-        fields = "__all__"
-
-
 class ParticipantFrameSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParticipantFrame
-        fields = "__all__"
-
-
-class EventSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Event
         fields = "__all__"
 
 
@@ -229,6 +210,47 @@ class AssistingParticipantsSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssistingParticipants
         fields = "__all__"
+
+
+class EventSerializer(serializers.ModelSerializer):
+    assistingparticipants = AssistingParticipantsSerializer(many=True)
+
+    class Meta:
+        model = Event
+        fields = "__all__"
+
+    def __new__(cls, instance=None, *args, **kwargs):
+        if isinstance(instance, QuerySet):
+            instance = instance.prefetch_related('assistingparticipants')
+        return super().__new__(cls, instance, *args, **kwargs)
+
+
+class FrameSerializer(serializers.ModelSerializer):
+    participantframes = ParticipantFrameSerializer(many=True)
+    events = EventSerializer(many=True)
+
+    class Meta:
+        model = Frame
+        fields = "__all__"
+
+    def __new__(cls, instance=None, *args, **kwargs):
+        if isinstance(instance, QuerySet):
+            instance = instance.prefetch_related(
+                "participantframes", "events", "events__assistingparticipants"
+            ).order_by('timestamp')
+        return super().__new__(cls, instance, *args, **kwargs)
+
+
+# ADVANCED TIMELINE
+class AdvancedTimelineSerializer(serializers.ModelSerializer):
+    frames = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AdvancedTimeline
+        fields = "__all__"
+
+    def get_frames(self, obj):
+        return FrameSerializer(obj.frames.all(), many=True).data
 
 
 class BasicStatsSerializer(serializers.ModelSerializer):
