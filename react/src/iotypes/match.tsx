@@ -1,5 +1,6 @@
 import * as t from 'io-ts';
 import { ItemImage, BasicChampionWithImage } from './data'
+import { Position } from './player'
 import { optional } from './base'
 
 export const BasicStats = t.type({
@@ -283,3 +284,47 @@ export const FullMatch = t.type({
     teams: t.array(FullTeam),
 })
 export type FullMatchType = t.TypeOf<typeof FullMatch>
+
+export const BannedChampion = t.type({
+    championId: t.number,
+    teamId: t.number,
+    pickTurn: t.number,
+})
+export type BannedChampionType = t.TypeOf<typeof BannedChampion>
+
+export const SpectateParticipant = t.type({
+    bot: t.boolean,
+    champion: BasicChampionWithImage,
+    championId: t.number,
+    gameCustomizationObjects: t.array(t.unknown),
+    perks: t.type({
+        perkIds: t.array(t.number),
+        perkStyle: t.number,
+        perkSubStyle: t.number,
+    }),
+    positions: t.array(Position),
+    profileIconId: t.number,
+    spell1Id: t.number,
+    spell2Id: t.number,
+    summonerId: t.string,
+    summonerName: t.string,
+    teamId: t.number,
+})
+export type SpectateParticipantType = t.TypeOf<typeof SpectateParticipant>
+
+export const SpectateMatch = t.type({
+    bannedChampions: t.array(BannedChampion),
+    gameId: t.number,
+    gameLength: t.number,
+    gameMode: t.string,
+    gameQueueConfigId: t.number,
+    gameStartTime: t.number,
+    gameType: t.string,
+    mapId: t.number,
+    observers: t.type({
+        encryptionKey: t.string,
+    }),
+    participants: t.array(SpectateParticipant),
+    platformId: t.string,
+})
+export type SpectateMatchType = t.TypeOf<typeof SpectateMatch>

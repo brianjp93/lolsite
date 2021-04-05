@@ -5,7 +5,7 @@ Count lines in all project files, excluding external libraries.
 """
 import pathlib
 
-EXTENSIONS = ["py", "js", "jsx", "html", "css"]
+EXTENSIONS = ["py", "js", "jsx", 'ts', 'tsx', "html", "css"]
 
 total = 0
 for ext in EXTENSIONS:
@@ -20,6 +20,7 @@ for ext in EXTENSIONS:
                 "lolsite" in rpath_str and "static" in rpath_str,
             )
         ):
+            print(f)
             with open(f) as fdata:
                 total += len(fdata.readlines())
 

@@ -14,9 +14,10 @@ from .models import Match, Participant, sort_positions
 from player.models import Summoner, simplify
 
 from data.models import Champion
+from data.serializers import BasicChampionWithImageSerializer
 
 from .serializers import (
-    MatchSerializer, FullParticipantSerializer,
+    MatchSerializer,
     AdvancedTimelineSerializer, FullMatchSerializer,
 )
 
@@ -198,11 +199,7 @@ def get_spectate(request, format=None):
                 )
                 if query.exists():
                     champion = query.first()
-                    part["champion"] = {
-                        "name": champion.name,
-                        "image_url": champion.image_url(),
-                        "thumbs": champion.image.thumbs(),
-                    }
+                    part['champion'] = BasicChampionWithImageSerializer(champion).data
 
             data = {"data": spectate_data}
 

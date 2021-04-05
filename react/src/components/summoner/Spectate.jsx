@@ -44,13 +44,13 @@ class Spectate extends Component {
         api.match
             .getSpectate(data)
             .then((response) => {
-                this.setState({ spectate_data: response.data.data }, () => {
+                this.setState({ spectate_data: response.data }, () => {
                     if (callback !== undefined) {
                         callback()
                     }
                 })
             })
-            .catch((error) => {
+            .catch((_) => {
                 if (callback !== undefined) {
                     callback()
                 }
@@ -82,7 +82,7 @@ class Spectate extends Component {
                     <div style={{ display: 'inline-block' }}>
                         <img
                             style={{ height: 40, borderRadius: 4 }}
-                            src={champion.thumbs?.file_40}
+                            src={champion.image?.file_40}
                             alt=""
                         />
                         <div>

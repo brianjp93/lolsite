@@ -6,6 +6,7 @@ export {
     FullMatch,
     FullParticipant,
     BasicParticipant,
+    SpectateMatch,
 } from './iotypes/match'
 
 
@@ -13,5 +14,8 @@ export function unwrap<T>(x : t.Validation<T>) {
     if (isRight(x)) {
         return x.right
     }
+    console.error('There was an error with the request.')
+    const errors = reporter.report(x).join('\n')
+    console.error(errors)
     throw new Error(reporter.report(x).join('\n'));
 }

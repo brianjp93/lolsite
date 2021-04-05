@@ -133,7 +133,7 @@ export function MapEvents(props) {
                         height: image_size,
                         borderRadius: 10,
                     }}
-                    src="https://i.imgur.com/6178wnB.png"
+                    src={`${store.state.static}general/map.png`}
                     alt="League Map" />
 
                 {Object.keys(buildings).map(key => {
