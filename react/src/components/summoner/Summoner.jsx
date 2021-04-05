@@ -171,7 +171,7 @@ class Summoner extends Component {
             positions: [],
         }
         this.setState(defaults, () => {
-            if (callback !== undefined) {
+            if (typeof callback === 'function') {
                 callback()
             }
         })
@@ -265,11 +265,12 @@ class Summoner extends Component {
                     this.getPositions()
                     this.setState({ last_refresh: new Date().getTime() })
                     this.getCommentCount()
-                    if (callback !== undefined) {
+                    if (typeof callback === 'function') {
                         try {
                             callback()
                         } catch (error) {
                             console.log('Caught error in reloadMatches method in Summoner.jsx.')
+                            console.error(error);
                         }
                     }
                 })
