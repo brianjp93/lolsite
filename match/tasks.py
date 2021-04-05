@@ -31,7 +31,7 @@ import joblib
 
 
 ROLES = ["top", "jg", "mid", "adc", "sup"]
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class RateLimitError(Exception):
@@ -619,7 +619,7 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
             riot_match_request_time = time.time()
             r = api.match.filter(account_id, region=region, **kwargs)
             riot_match_request_time = time.time() - riot_match_request_time
-            # print(f'Riot API match filter request time : {riot_match_request_time}')
+            logger.info(f'Riot API match filter request time : {riot_match_request_time}')
             try:
                 if r.status_code == 404:
                     matches = []
@@ -637,10 +637,9 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
                 existing_ids = [x._id for x in Match.objects.filter(_id__in=game_ids)]
                 # new_matches = [x for x in matches if not Match.objects.filter(_id=x['gameId']).exists()]
                 new_matches = list(set(game_ids) - set(existing_ids))
-                vals = pool.map(
+                pool.map(
                     lambda x: import_match(x, region, close=True), new_matches
                 )
-                # print(vals)
             else:
                 has_more = False
             index += size

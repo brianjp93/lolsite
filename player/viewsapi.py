@@ -38,6 +38,11 @@ from .serializers import (
 
 import time
 import random
+import logging
+import traceback
+
+
+logger = logging.getLogger('django')
 
 
 @api_view(["POST"])
@@ -149,7 +154,6 @@ def match_filter(request, account_id=None):
         summoner_get_time = time.time()
         summoner = query[0]
         summoner_get_time = time.time() - summoner_get_time
-        # print(f'Summoner get time in match_filter() : {summoner_get_time}.')
         account_id = summoner.account_id
 
     matches = Match.objects.filter(participants__current_account_id=account_id)
@@ -254,8 +258,8 @@ def get_summoner_page(request, format=None):
             update = False
             try:
                 pt.import_summoner(region, name=name)
-            except Exception as error:
-                print(error)
+            except Exception:
+                logger.exception(traceback.format_exc())
                 data = {"message": "The summoner could not be found."}
                 status_code = 404
                 summoner = None
@@ -406,8 +410,8 @@ def get_positions(request, format=None):
             pos_data = sort_positions(pos_data)
             data = {"data": pos_data}
             status_code = 200
-        except Exception as error:
-            print(error)
+        except Exception:
+            logger.exception(traceback.format_exc())
             data = {"data": []}
             status_code = 200
     else:
