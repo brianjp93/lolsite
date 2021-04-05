@@ -1,7 +1,8 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import {
-    FullParticipant,
     unwrap,
+    FullParticipant,
+    SpectateMatch,
 } from '../types'
 import * as t from 'io-ts'
 
@@ -29,10 +30,14 @@ async function participants(data: ParticipantsData) {
     return {data: unwrap(t.array(FullParticipant).decode(response.data.data))}
 }
 
-async function getSpectate(data: any) {
+interface GetSpectateData extends AxiosRequestConfig {
+    region: string,
+    summoner_id: string,
+}
+async function getSpectate(data: GetSpectateData) {
     var url = `/api/${version}/match/get-spectate/`
     const response = await axios.post(url, data)
-    return response
+    return {data: unwrap(SpectateMatch.decode(response.data.data))}
 }
 
 async function checkForLiveGame(data: any) {

@@ -375,7 +375,7 @@ class Summoner extends Component {
         api.match
             .getSpectate(data)
             .then(response => {
-                this.setState({ spectate: response.data.data })
+                this.setState({ spectate: response.data })
             })
             .catch(error => {
                 console.log(error)
