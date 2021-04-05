@@ -27,6 +27,10 @@ from . import constants
 from celery import task
 from lolsite.tasks import get_riot_api
 import json
+import logging
+
+
+logger = logging.getLogger('django')
 
 
 @task(name="data.tasks.import_missing")
@@ -92,7 +96,7 @@ def import_all(version, language="en_US", overwrite=False, api_only=False):
 
     """
     # import from data.constants.py
-    print(f"Importing data for version {version}")
+    logger.info(f"Importing data for version {version}")
     if not api_only:
         import_seasons()
         import_maps()
@@ -720,7 +724,6 @@ def import_all_champion_advanced(version, language="en_US", overwrite=False):
         if champion.lore:
             has_lore = True
         if not has_lore or overwrite:
-            # print(f'Importing data for {champion._id}.')
             import_champion_advanced(champion.id, overwrite)
 
 

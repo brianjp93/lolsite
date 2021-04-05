@@ -42,3 +42,24 @@ CACHES = {
         "LOCATION": "lolsite-dev-cache",
     }
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '[{asctime}][{levelname}] {filename}:{funcName}:{lineno} :: {message}',
+            'style': "{",
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}

@@ -13,6 +13,10 @@ from .models import Pro
 from . import constants
 
 from lolsite.tasks import get_riot_api
+import logging
+
+
+logger = logging.getLogger('django')
 
 
 def import_pros(overwrite=False):
@@ -74,7 +78,6 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
             raise Exception(f"The request returned a {r.status_code} status.")
 
         data = r.json()
-        # print(data)
 
         model_data = {
             "_id": data["id"],
@@ -89,13 +92,11 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         query = Summoner.objects.filter(region=region.lower(), _id=data["id"])
         if query.exists():
             summoner_model = query.first()
-            # print(summoner_model)
 
             for attr, val in model_data.items():
                 setattr(summoner_model, attr, val)
         else:
             summoner_model = Summoner(**model_data)
-        # print(summoner_model.profile_icon_id)
         summoner_model.save()
         return summoner_model.id
 
@@ -147,9 +148,9 @@ def import_positions(summoner, threshold_days=None, close=False):
                         ),
                     }
                     rankcheckpoint.positions.get(**attrs)
-                    print("Nothing has changed, not creating a new checkpoint")
+                    logger.info("Nothing has changed, not creating a new checkpoint")
                 except:
-                    print("Change detected.")
+                    logger.info("Change detected.")
                     create_new = True
         else:
             create_new = True
