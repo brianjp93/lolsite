@@ -14,7 +14,9 @@ from data.serializers import (
 from django.db.models import QuerySet
 from django.core.cache import cache
 
+import logging
 
+logger = logging.getLogger(__name__)
 CACHE_TIME = 60 * 60 * 48
 
 
@@ -220,7 +222,8 @@ class FullMatchSerializer(serializers.ModelSerializer):
         super().__init__(instance, **kwargs)
 
     def get_participants(self, obj):
-        return FullParticipantSerializer(obj.participants.all(), many=True, extra=self.extra).data
+        parts = mt.get_sorted_participants(obj, participants=obj.participants.all())
+        return FullParticipantSerializer(parts, many=True, extra=self.extra).data
 
     def to_representation(self, instance):
         """Override to use cache
@@ -229,7 +232,10 @@ class FullMatchSerializer(serializers.ModelSerializer):
         data = cache.get(cache_key)
         if not data:
             data = super().to_representation(instance)
+            logger.info('Caching FullMatchSerializer data.')
             cache.set(cache_key, data, CACHE_TIME)
+        else:
+            logger.info('Found cached data for FullMatchSerializer.')
         return data
 
 
