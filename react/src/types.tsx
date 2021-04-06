@@ -7,6 +7,15 @@ export {
     FullParticipant,
     BasicParticipant,
     SpectateMatch,
+    TimelineEvent,
+    AdvancedTimeline,
+    Frame,
+} from './iotypes/match'
+
+export type {
+    TimelineEventType,
+    FrameType,
+    FullParticipantType,
 } from './iotypes/match'
 
 

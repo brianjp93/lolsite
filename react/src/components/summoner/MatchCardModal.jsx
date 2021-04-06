@@ -243,8 +243,8 @@ function MatchCardModal(props) {
                 let parts = rankParticipants(response.data)
                 setParticipants(parts)
             })
-            getTimeline().then(response => {
-                setTimeline(response.data.data)
+            getTimeline().then(data => {
+                setTimeline(data)
             })
         }
     }, [match_id, getMatch, getParticipants, getTimeline])

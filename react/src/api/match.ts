@@ -3,6 +3,7 @@ import {
     unwrap,
     FullParticipant,
     SpectateMatch,
+    Frame,
 } from '../types'
 import * as t from 'io-ts'
 
@@ -17,7 +18,7 @@ interface TimelineData extends AxiosRequestConfig {
 async function timeline(data: TimelineData) {
     var url = `/api/${version}/match/timeline/`
     const response = await axios.post(url, data)
-    return response
+    return unwrap(t.array(Frame).decode(response.data.data))
 }
 
 interface ParticipantsData extends AxiosRequestConfig {
