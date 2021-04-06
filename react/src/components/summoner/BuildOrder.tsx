@@ -15,13 +15,13 @@ interface PurchaseHistory {
 }
 
 function BuildOrder(props: {
-    timeline?: Array<FrameType> | null
-    theme: string
-    expanded_width: number
-    participants: Array<FullParticipantType>
-    summoner: any
-    my_part: any
-    match_id: string
+    timeline?: Array<FrameType> | null,
+    theme: string,
+    expanded_width: number,
+    participants: Array<FullParticipantType>,
+    summoner: any,
+    my_part: any,
+    match_id: string,
 }) {
     const [participant_selection, setParticipantSelection] = useState(props.my_part._id)
     const [purchase_history, setPurchaseHistory] = useState<PurchaseHistory>({})
@@ -266,9 +266,8 @@ function BuildOrder(props: {
                             <span key={`${props.match_id}-${key}`}>
                                 <div style={div_style}></div>
                                 <div style={{ display: 'inline-block' }} key={key}>
-                                    {Object.values(group).filter(
-                                        (x) => x._type !== 'ITEM_UNDO',
-                                    ).length > 0 && (
+                                    {Object.values(group).filter((x) => x._type !== 'ITEM_UNDO')
+                                        .length > 0 && (
                                         <div style={{ display: 'block', color: 'grey', width: 50 }}>
                                             {minutes}:{numeral(seconds).format('00')}
                                         </div>
