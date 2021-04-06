@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { optional, maybe } from './base'
+import { optional } from './base'
 
 
 export const ItemImage = t.type({

@@ -328,3 +328,70 @@ export const SpectateMatch = t.type({
     platformId: t.string,
 })
 export type SpectateMatchType = t.TypeOf<typeof SpectateMatch>
+
+export const ParticipantFrame = t.type({
+    id: t.number,
+    frame: t.number,
+    participant_id: t.number,
+    current_gold: t.number,
+    dominion_score: optional(t.number),
+    jungle_minions_killed: t.number,
+    level: t.number,
+    minions_killed: t.number,
+    team_score: t.number,
+    total_gold: t.number,
+    xp: t.number,
+    x: t.number,
+    y: t.number,
+})
+export type ParticipantFrameType = t.TypeOf<typeof ParticipantFrame>
+
+export const AssistingParticipant = t.type({
+    id: t.number,
+    event: t.number,
+    participant_id: t.number,
+})
+export type AssistingParticipantType = t.TypeOf<typeof AssistingParticipant>
+
+export const TimelineEvent = t.type({
+    id: t.number,
+    frame: optional(t.number),
+    _type: t.string,
+    participant_id: optional(t.number),
+    timestamp: t.number,
+    item_id: optional(t.number),
+    level_up_type: optional(t.string),
+    skill_slot: optional(t.number),
+    ward_type: optional(t.string),
+    before_id: optional(t.number),
+    after_id: optional(t.number),
+    killer_id: optional(t.number),
+    victim_id: optional(t.number),
+    x: optional(t.number),
+    y: optional(t.number),
+    monster_type: optional(t.string),
+    monster_sub_type: optional(t.string),
+    building_type: optional(t.string),
+    lane_type: optional(t.string),
+    team_id: optional(t.number),
+    tower_type: optional(t.string),
+    assistingparticipants: t.array(AssistingParticipant),
+})
+export type TimelineEventType = t.TypeOf<typeof TimelineEvent>
+
+export const Frame = t.type({
+    id: t.number,
+    timeline: t.number,
+    timestamp: t.number,
+    participantframes: t.array(ParticipantFrame),
+    events: t.array(TimelineEvent),
+})
+export type FrameType = t.TypeOf<typeof Frame>
+
+export const AdvancedTimeline = t.type({
+    id: t.number,
+    match: t.number,
+    frame_interval: t.number,
+    frames: t.array(Frame),
+})
+export type AdvancedTimelineType = t.TypeOf<typeof AdvancedTimeline>

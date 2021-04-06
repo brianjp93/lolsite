@@ -1,15 +1,32 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import numeral from 'numeral'
-import ReactTooltip from 'react-tooltip'
 import api from '../../api/api'
 import toastr from 'toastr'
+import type { FrameType, FullParticipantType, TimelineEventType } from '../../types'
+const ReactTooltip: any = require('react-tooltip')
 
-function BuildOrder(props) {
+interface EventWithCount extends TimelineEventType {
+    count?: number
+}
+
+interface PurchaseHistory {
+    [key: number]: { [key: number]: EventWithCount[] }
+}
+
+function BuildOrder(props: {
+    timeline?: Array<FrameType> | null
+    theme: string
+    expanded_width: number
+    participants: Array<FullParticipantType>
+    summoner: any
+    my_part: any
+    match_id: string
+}) {
     const [participant_selection, setParticipantSelection] = useState(props.my_part._id)
-    const [purchase_history, setPurchaseHistory] = useState({})
-    const [skills, setSkillsHistory] = useState({})
-    const [items, setItems] = useState({})
+    const [purchase_history, setPurchaseHistory] = useState<PurchaseHistory>({})
+    const [skills, setSkillsHistory] = useState<any>({})
+    const [items, setItems] = useState<any>({})
 
     // build or skill
     const [display_page, setDisplayPage] = useState('build')
@@ -19,8 +36,8 @@ function BuildOrder(props) {
     const available_width = usable_width - props.participants.length * image_width
     const padding_pixels = available_width / props.participants.length
     const participants = [
-        ...props.participants.filter(participant => participant.team_id === 100),
-        ...props.participants.filter(participant => participant.team_id === 200),
+        ...props.participants.filter((participant) => participant.team_id === 100),
+        ...props.participants.filter((participant) => participant.team_id === 200),
     ]
 
     const participant_data = useMemo(() => {
@@ -32,41 +49,100 @@ function BuildOrder(props) {
         return null
     }, [props.participants, participant_selection])
 
+    // remove items which were purchased/sold and the player hit UNDO
+    const remove_undos = (purchase_groups: { [key: string]: EventWithCount }[]) => {
+        for (let i in purchase_groups) {
+            let frame = purchase_groups[i]
+            let remove_items: { [key: number]: number } = {}
+            for (let key in frame) {
+                let event = frame[key]
+                if (event._type === 'ITEM_UNDO') {
+                    if (event.after_id === 0) {
+                        let id = event.before_id
+                        if (remove_items[id] === undefined) {
+                            remove_items[id] = 0
+                        }
+                        remove_items[id]++
+                    } else if (event.before_id === 0) {
+                        let id = event.after_id
+                        if (remove_items[id] === undefined) {
+                            remove_items[id] = 0
+                        }
+                        remove_items[id]--
+                    }
+                }
+            }
+
+            // attempt to remove items which were either
+            // purchased and undo or sold and undo
+            for (let key in frame) {
+                let event = frame[key]
+                if (event._type === 'ITEM_PURCHASED') {
+                    let id = event.item_id
+                    if (remove_items[id] > 0) {
+                        if (event.count !== undefined) {
+                            event.count--
+                        }
+                        remove_items[id]--
+                    }
+                } else if (event._type === 'ITEM_SOLD') {
+                    let id = event.item_id
+                    if (remove_items[id] < 0) {
+                        if (event.count !== undefined) {
+                            event.count++
+                        }
+                    }
+                    remove_items[id]++
+                }
+            }
+
+            let framecopy = { ...frame }
+            for (let key in frame) {
+                let event = frame[key]
+                if (event.count !== undefined && event.count <= 0) {
+                    delete framecopy[key]
+                }
+            }
+            purchase_groups[i] = framecopy
+        }
+        return purchase_groups
+    }
+
     const participant_groups = useMemo(() => {
         let groups = []
         if (purchase_history[participant_selection] !== undefined) {
             for (let i in purchase_history[participant_selection]) {
                 let group = purchase_history[participant_selection][i]
-                group.count = 1
                 groups.push(group)
             }
         }
 
         let groups_with_count = []
         for (let group of groups) {
-            let group_count = {}
+            let group_count: { [key: string]: EventWithCount } = {}
             for (let event of group) {
-                let key = `${event.item_id}-${event._type}`
+                let key = `${event.item_id}-${event.before_id}-${event.after_id}-${event._type}`
                 if (group_count[key] === undefined) {
                     event.count = 1
                     group_count[key] = event
                 } else {
-                    group_count[key].count++
+                    group_count[key].count = (group_count[key].count || 1) + 1
                 }
             }
             groups_with_count.push(group_count)
         }
+        groups_with_count = remove_undos(groups_with_count)
         return groups_with_count
     }, [purchase_history, participant_selection])
 
     // PURCHASE HISTORY EFFECT
     useEffect(() => {
-        let purchase = {}
-        if ([null, undefined].indexOf(props.timeline) < 0) {
+        let purchase: any = {}
+        if (props.timeline) {
             for (let i = 0; i < props.timeline.length; i++) {
                 let frame = props.timeline[i]
                 for (let event of frame.events) {
-                    if (['ITEM_PURCHASED', 'ITEM_SOLD'].indexOf(event._type) >= 0) {
+                    if (['ITEM_PURCHASED', 'ITEM_SOLD', 'ITEM_UNDO'].indexOf(event._type) >= 0) {
                         if (purchase[event.participant_id] === undefined) {
                             purchase[event.participant_id] = {}
                         }
@@ -83,8 +159,8 @@ function BuildOrder(props) {
 
     // SKILL LEVEL UP HISTORY
     useEffect(() => {
-        let skills = {}
-        if ([null, undefined].indexOf(props.timeline) < 0) {
+        let skills: any = {}
+        if (props.timeline) {
             for (let i = 0; i < props.timeline.length; i++) {
                 let frame = props.timeline[i]
                 for (let event of frame.events) {
@@ -106,15 +182,15 @@ function BuildOrder(props) {
         for (let i in purchase_history[participant_selection]) {
             let group = purchase_history[participant_selection][i]
             for (let event of group) {
-                if (items[event.item_id] === undefined) {
+                if (items[event.item_id] === undefined && typeof event.item_id === 'number') {
                     item_set.add(event.item_id)
                 }
             }
         }
         let item_list = [...item_set]
         if (item_list.length > 0) {
-            api.data.getItem({ item_list: item_list }).then(response => {
-                let new_items = { ...items }
+            api.data.getItem({ item_list: item_list }).then((response) => {
+                let new_items: any = { ...items }
                 for (let item of response.data.data) {
                     new_items[item._id] = item
                 }
@@ -127,7 +203,7 @@ function BuildOrder(props) {
     let lines = 1
     return (
         <div style={{ marginLeft: 30 }}>
-            {participants.map((participant, index) => {
+            {participants.map((participant, _) => {
                 return (
                     <ChampionImage
                         key={`${participant._id}-champion-image`}
@@ -137,7 +213,7 @@ function BuildOrder(props) {
                         participant={participant}
                         padding_pixels={padding_pixels}
                         theme={props.theme}
-                        handleClick={event => {
+                        handleClick={(_: any) => {
                             if (participant._id !== participant_selection) {
                                 setParticipantSelection(participant._id)
                             }
@@ -181,7 +257,7 @@ function BuildOrder(props) {
                         let minutes = Math.floor(total_seconds / 60)
                         let seconds = Math.floor(total_seconds % 60)
                         count++
-                        let div_style = { display: 'inline-block' }
+                        let div_style: any = { display: 'inline-block' }
                         if (count > lines * 9) {
                             lines++
                             div_style = { display: 'block' }
@@ -190,9 +266,13 @@ function BuildOrder(props) {
                             <span key={`${props.match_id}-${key}`}>
                                 <div style={div_style}></div>
                                 <div style={{ display: 'inline-block' }} key={key}>
-                                    <div style={{ display: 'block', color: 'grey', width: 50 }}>
-                                        {minutes}:{numeral(seconds).format('00')}
-                                    </div>
+                                    {Object.values(group).filter(
+                                        (x) => x._type !== 'ITEM_UNDO',
+                                    ).length > 0 && (
+                                        <div style={{ display: 'block', color: 'grey', width: 50 }}>
+                                            {minutes}:{numeral(seconds).format('00')}
+                                        </div>
+                                    )}
                                     <div>
                                         {Object.values(group).map((event, sub_key) => {
                                             // let event = group[item_id]
@@ -262,7 +342,7 @@ function BuildOrder(props) {
                                                                 src={item_data.image.file_30}
                                                                 alt=""
                                                             />
-                                                            {event.count > 1 && (
+                                                            {(event.count || 1) > 1 && (
                                                                 <div
                                                                     style={{
                                                                         position: 'absolute',
@@ -285,13 +365,16 @@ function BuildOrder(props) {
                                             }
                                             return null
                                         })}
-                                        {key < participant_groups.length - 1 && (
-                                            <span>
-                                                <i className="small material-icons">
-                                                    arrow_forward
-                                                </i>
-                                            </span>
-                                        )}
+                                        {key < participant_groups.length - 1 &&
+                                            Object.values(participant_groups[key + 1]).filter(
+                                                (x) => x._type !== 'ITEM_UNDO',
+                                            ).length > 0 && (
+                                                <span>
+                                                    <i className="small material-icons">
+                                                        arrow_forward
+                                                    </i>
+                                                </span>
+                                            )}
                                     </div>
                                 </div>
                             </span>
@@ -320,8 +403,8 @@ BuildOrder.propTypes = {
     match_id: PropTypes.any,
 }
 
-function ChampionImage(props) {
-    let image_style = {
+function ChampionImage(props: any) {
+    let image_style: any = {
         cursor: 'pointer',
         width: 30,
         height: 30,
@@ -340,7 +423,7 @@ function ChampionImage(props) {
         }
     }
 
-    let vert_align = {}
+    let vert_align: any = {}
     let champ_image = props.participant.champion?.image?.file_30
     if (champ_image === undefined) {
         vert_align.verticalAlign = 'top'
@@ -371,22 +454,24 @@ function ChampionImage(props) {
     )
 }
 ChampionImage.propTypes = {
+    is_me: PropTypes.bool,
     is_selected: PropTypes.bool,
     participant: PropTypes.object,
     image_width: PropTypes.number,
     padding_pixels: PropTypes.number,
     theme: PropTypes.string,
+    handleClick: PropTypes.any,
 }
 
-function SkillLevelUp(props) {
-    const [spells, setSpells] = useState({})
+function SkillLevelUp(props: any) {
+    const [spells, setSpells] = useState<any>({})
 
     useEffect(() => {
         let params = { champion_id: props.selected_participant.champion._id }
         api.data
             .getChampionSpells(params)
-            .then(response => {
-                let output = {}
+            .then((response) => {
+                let output: any = {}
                 let data = response.data.data
                 for (let i = 0; i < data.length; i++) {
                     let spell = data[i]
@@ -396,7 +481,7 @@ function SkillLevelUp(props) {
                 }
                 setSpells(output)
             })
-            .catch(error => {
+            .catch((_) => {
                 toastr.error('Error while getting champion abilities.')
             })
     }, [props.selected_participant])
@@ -406,13 +491,13 @@ function SkillLevelUp(props) {
     return (
         <div>
             {props.skills !== undefined &&
-                [...Array(19).keys()].map(num => {
+                [...Array(19).keys()].map((num) => {
                     let skill = props.skills[num - 1]
                     return (
                         <div key={num} style={{ display: 'inline-block' }}>
                             {['lvl', 'q', 'w', 'e', 'r'].map((skill_num, key) => {
-                                let output = '.'
-                                let div_style = {
+                                let output: any = '.'
+                                let div_style: any = {
                                     height: div_height,
                                     width: div_width,
                                     borderStyle: 'solid',
