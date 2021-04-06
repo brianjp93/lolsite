@@ -48,7 +48,7 @@ jmespath==0.9.4
 joblib==0.15.1
 jsonschema==2.6.0
 kombu==4.3.0
-lolwrapper==1.4
+lolwrapper==1.4.1
 Markdown==3.1.1
 mccabe==0.6.1
 model-mommy==1.6.0

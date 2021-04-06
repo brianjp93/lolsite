@@ -31,7 +31,7 @@ import joblib
 
 
 ROLES = ["top", "jg", "mid", "adc", "sup"]
-logger = logging.getLogger('django')
+logger = logging.getLogger(__name__)
 
 
 class RateLimitError(Exception):
@@ -792,10 +792,8 @@ def import_advanced_timeline(match_id=None, overwrite=False):
         pass
     api = get_riot_api()
     if api:
-        region = match.platform_id
-        alpha = "abcdefghijklmnopqrstuvwxyz"
-        region = region.lower()
-        region = "".join([x for x in region if x in alpha])
+        region = match.platform_id.lower()
+        logger.info(f'Requesting info for match {match.id} in region {region}')
         r = api.match.timeline(match._id, region=region)
         data = r.json()
         frame_interval = data["frameInterval"]
