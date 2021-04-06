@@ -64,6 +64,7 @@
     "singleQuote": true,
     "trailingComma": "es5",
     "printWidth": 100,
-    "bracketSpacing": false
+    "bracketSpacing": false,
+    "parser": "typescript"
   }
 }
