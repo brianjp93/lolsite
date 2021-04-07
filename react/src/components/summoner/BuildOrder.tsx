@@ -21,7 +21,7 @@ function BuildOrder(props: {
     participants: Array<FullParticipantType>,
     summoner: any,
     my_part: any,
-    match_id: string,
+    match_id: number,
 }) {
     const [participant_selection, setParticipantSelection] = useState(props.my_part._id)
     const [purchase_history, setPurchaseHistory] = useState<PurchaseHistory>({})
@@ -137,7 +137,7 @@ function BuildOrder(props: {
 
     // PURCHASE HISTORY EFFECT
     useEffect(() => {
-        let purchase: any = {}
+        let purchase: {[key: number]: {[key: number]: Array<EventWithCount>}} = {}
         if (props.timeline) {
             for (let i = 0; i < props.timeline.length; i++) {
                 let frame = props.timeline[i]
@@ -213,7 +213,7 @@ function BuildOrder(props: {
                         participant={participant}
                         padding_pixels={padding_pixels}
                         theme={props.theme}
-                        handleClick={(_: any) => {
+                        handleClick={() => {
                             if (participant._id !== participant_selection) {
                                 setParticipantSelection(participant._id)
                             }
@@ -256,8 +256,8 @@ function BuildOrder(props: {
                         let total_seconds = Object.values(group)[0].timestamp / 1000
                         let minutes = Math.floor(total_seconds / 60)
                         let seconds = Math.floor(total_seconds % 60)
-                        count++
-                        let div_style: any = { display: 'inline-block' }
+                        count++;
+                        let div_style: Record<string, any> = { display: 'inline-block' }
                         if (count > lines * 9) {
                             lines++
                             div_style = { display: 'block' }
@@ -392,17 +392,16 @@ function BuildOrder(props: {
         </div>
     )
 }
-BuildOrder.propTypes = {
-    theme: PropTypes.string,
-    my_part: PropTypes.object,
-    timeline: PropTypes.array,
-    participants: PropTypes.array,
-    summoner: PropTypes.object,
-    expanded_width: PropTypes.number,
-    match_id: PropTypes.any,
-}
 
-function ChampionImage(props: any) {
+function ChampionImage(props: {
+    is_me: boolean,
+    is_selected: boolean,
+    participant: FullParticipantType,
+    image_width: number,
+    padding_pixels: number,
+    theme: string,
+    handleClick: () => void,
+}) {
     let image_style: any = {
         cursor: 'pointer',
         width: 30,
@@ -427,7 +426,6 @@ function ChampionImage(props: any) {
     if (champ_image === undefined) {
         vert_align.verticalAlign = 'top'
     }
-
     return (
         <div style={{ display: 'inline-block', paddingRight: props.padding_pixels, ...vert_align }}>
             {champ_image === undefined && (
@@ -452,15 +450,6 @@ function ChampionImage(props: any) {
         </div>
     )
 }
-ChampionImage.propTypes = {
-    is_me: PropTypes.bool,
-    is_selected: PropTypes.bool,
-    participant: PropTypes.object,
-    image_width: PropTypes.number,
-    padding_pixels: PropTypes.number,
-    theme: PropTypes.string,
-    handleClick: PropTypes.any,
-}
 
 function SkillLevelUp(props: any) {
     const [spells, setSpells] = useState<any>({})
@@ -475,7 +464,6 @@ function SkillLevelUp(props: any) {
                 for (let i = 0; i < data.length; i++) {
                     let spell = data[i]
                     let letter = ['q', 'w', 'e', 'r'][i]
-                    // let letter = spell._id[spell._id.length - 1].toLowerCase()
                     output[letter] = spell
                 }
                 setSpells(output)
