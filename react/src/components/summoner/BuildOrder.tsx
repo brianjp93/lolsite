@@ -308,7 +308,7 @@ function BuildOrder(props: {
                                                                 id={`${props.match_id}-${item_data._id}-${key}-${sub_key}-tt`}
                                                                 effect="solid"
                                                             >
-                                                                <h4 style={{ marginBottom: 0 }}>
+                                                                <h4 style={{ marginBottom: 0, marginTop: 0 }}>
                                                                     {item_data.name}
                                                                 </h4>
 
@@ -323,6 +323,7 @@ function BuildOrder(props: {
                                                                         maxWidth: 500,
                                                                         wordBreak: 'normal',
                                                                         whiteSpace: 'normal',
+                                                                        marginBottom: 0,
                                                                     }}
                                                                     dangerouslySetInnerHTML={{
                                                                         __html:
