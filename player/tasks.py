@@ -16,7 +16,7 @@ from lolsite.tasks import get_riot_api
 import logging
 
 
-logger = logging.getLogger('django')
+logger = logging.getLogger(__name__)
 
 
 def import_pros(overwrite=False):
