@@ -17,6 +17,7 @@ from .models import Spectate
 
 from data.models import Champion, SummonerSpell
 from lolsite.tasks import get_riot_api
+from lolsite.helpers import query_debugger
 
 from player.models import Summoner
 from player import tasks as pt
@@ -38,6 +39,7 @@ class RateLimitError(Exception):
     pass
 
 
+# @query_debugger
 def import_match(match_id, region, refresh=False, close=False):
     """Import a match by its ID.
 
@@ -68,12 +70,12 @@ def import_match(match_id, region, refresh=False, close=False):
         connection.close()
 
 
-def import_summoner_from_participant(part, region):
+def import_summoner_from_participant(participants, region):
     """Import a summoner using participant data.
 
     Parameters
     ----------
-    part : dict
+    participants : dict[]
     region : str
 
     Returns
@@ -81,23 +83,17 @@ def import_summoner_from_participant(part, region):
     None
 
     """
-    if part["summoner_id"]:
-        query = Summoner.objects.filter(region=region, _id=part["summoner_id"])
-        if query.exists():
-            # don't need to create it again
-            pass
-        else:
+    sums = []
+    for part in participants:
+        if part["summoner_id"]:
             account_id = part["current_account_id"]
             name = part["summoner_name"]
             _id = part["summoner_id"]
             summoner = Summoner(
                 _id=_id, name=name, account_id=account_id, region=region.lower()
             )
-            try:
-                summoner.save()
-            except IntegrityError:
-                # probably already saved it in a separate thread
-                pass
+            sums.append(summoner)
+    Summoner.objects.bulk_create(sums, ignore_conflicts=True)
 
 
 def import_match_from_data(data, refresh=False, region=""):
@@ -135,14 +131,13 @@ def import_match_from_data(data, refresh=False, region=""):
             raise error
 
     participants_data = parsed.pop("participants")
+    try:
+        import_summoner_from_participant(participants_data, region)
+    except IntegrityError as error:
+        match_model.delete()
+        raise error
+
     for _p_data in participants_data:
-
-        try:
-            import_summoner_from_participant(_p_data, region)
-        except IntegrityError as error:
-            match_model.delete()
-            raise error
-
         timelines_data = _p_data.pop("timelines")
         stats_data = _p_data.pop("stats")
 
