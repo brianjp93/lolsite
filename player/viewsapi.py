@@ -655,9 +655,9 @@ def get_rank_history(request, format=None):
             checkpoint__summoner__id=summoner_id, queue_type=queue
         )
         if start is not None:
-            query = query.filter(created_date__gte=start)
+            query = query.filter(checkpoint__created_date__gte=start)
         if end is not None:
-            query = query.filter(created_date__lte=end)
+            query = query.filter(checkpoint__created_date__lte=end)
 
         if group_by is not None:
             query = query.annotate(

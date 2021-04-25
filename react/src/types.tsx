@@ -18,6 +18,16 @@ export type {
     FullParticipantType,
 } from './iotypes/match'
 
+export {
+    Summoner,
+    PositionBin,
+} from './iotypes/player'
+
+export type {
+    SummonerType,
+    PositionBinType,
+} from './iotypes/player'
+
 
 export function unwrap<T>(x : t.Validation<T>) {
     if (isRight(x)) {

@@ -1,51 +1,53 @@
-import axios from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
+import * as t from 'io-ts'
+import { PositionBin, unwrap } from '../types'
 
-var version = 'v1'
+let version = 'v1'
 
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 axios.defaults.xsrfCookieName = 'csrftoken'
 
-function getSummoner(data) {
+function getSummoner(data: any) {
     let url = `/api/${version}/player/summoner/`
     return axios.post(url, data)
 }
 
-function getSummoners(data) {
+function getSummoners(data: any) {
     let url = `/api/${version}/player/summoners/`
     return axios.post(url, data)
 }
 
-function getSummonerPage(data) {
+function getSummonerPage(data: any) {
     let url = `/api/${version}/player/summoner-page/`
     return axios.post(url, data)
 }
 
-function getPositions(data) {
+function getPositions(data: any) {
     let url = `/api/${version}/player/positions/`
     return axios.post(url, data)
 }
 
-function signUp(data) {
+function signUp(data: any) {
     let url = `/api/${version}/player/sign-up/`
     return axios.post(url, data)
 }
 
-function login(data) {
+function login(data: any) {
     let url = `/api/${version}/player/login/`
     return axios.post(url, data)
 }
 
-function verify(data) {
+function verify(data: any) {
     let url = `/api/${version}/player/verify/`
     return axios.post(url, data)
 }
 
-function getChampionsOverview(data) {
+function getChampionsOverview(data: any) {
     let url = `/api/${version}/player/champions-overview/`
     return axios.post(url, data)
 }
 
-function summonerSearch(data) {
+function summonerSearch(data: any) {
     let url = `/api/${version}/player/summoner-search/`
     return axios.post(url, data)
 }
@@ -55,9 +57,17 @@ function isLoggedIn() {
     return axios.post(url)
 }
 
-function getRankHistory(data) {
+interface GetRankHistoryData extends AxiosRequestConfig {
+    id: number,
+    queue: string,
+    group_by?: 'day'|'month'|'week',
+    start?: string|null,
+    end?: string|null,
+}
+async function getRankHistory(data: GetRankHistoryData) {
     let url = `/api/${version}/player/rank-history/`
-    return axios.post(url, data)
+    const response = await axios.post(url, data)
+    return unwrap(t.array(PositionBin).decode(response.data.data))
 }
 
 function getFavorites() {
@@ -65,22 +75,22 @@ function getFavorites() {
     return axios.get(url)
 }
 
-function Favorite(data) {
+function Favorite(data: any) {
     let url = `/api/${version}/player/favorites/`
     return axios.post(url, data)
 }
 
-function generateCode(data) {
+function generateCode(data: any) {
     let url = `/api/${version}/player/generate-code/`
     return axios.post(url, data)
 }
 
-function connectAccount(data) {
+function connectAccount(data: any) {
     let url = `/api/${version}/player/connect-account/`
     return axios.post(url, data)
 }
 
-function connectAccountWithProfileIcon(data) {
+function connectAccountWithProfileIcon(data: any) {
     let url = `/api/${version}/player/connect-account-with-profile-icon/`
     return axios.post(url, data)
 }
@@ -90,52 +100,52 @@ function getConnectedAccounts() {
     return axios.post(url)
 }
 
-function changePassword(data) {
+function changePassword(data: any) {
     let url = `/api/${version}/player/change-password/`
     return axios.post(url, data)
 }
 
-function getTopPlayedWith(data) {
+function getTopPlayedWith(data: any) {
     let url = `/api/${version}/player/get-top-played-with/`
     return axios.post(url, data)
 }
 
-function getComments(data) {
+function getComments(data: any) {
     let url = `/api/${version}/player/comment/`
     return axios.get(url, { params: data })
 }
 
-function getReplies(data) {
+function getReplies(data: any) {
     let url = `/api/${version}/player/comment/replies/`
     return axios.get(url, { params: data })
 }
 
-function createComment(data) {
+function createComment(data: any) {
     let url = `/api/${version}/player/comment/`
     return axios.post(url, data)
 }
 
-function deleteComment(data) {
+function deleteComment(data: any) {
     let url = `/api/${version}/player/comment/`
     return axios.delete(url, {data})
 }
 
-function likeComment(data) {
+function likeComment(data: any) {
     let url = `/api/${version}/player/comment/like/`
     return axios.put(url, data)
 }
 
-function dislikeComment(data) {
+function dislikeComment(data: any) {
     let url = `/api/${version}/player/comment/dislike/`
     return axios.put(url, data)
 }
 
-function getCommentCount(data) {
+function getCommentCount(data: any) {
     let url = `/api/${version}/player/comment/count/`
     return axios.get(url, { params: data })
 }
 
-function editDefaultSummoner(data) {
+function editDefaultSummoner(data: any) {
     let url = `/api/${version}/player/default-summoner/`
     return axios.post(url, data)
 }
