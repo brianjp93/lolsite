@@ -53,6 +53,7 @@
     "@types/react-modal": "^3.12.0",
     "@types/react-router-dom": "^5.1.7",
     "@types/react-tooltip": "^4.2.4",
+    "@types/recharts": "^1.8.19",
     "@types/toastr": "^2.1.38",
     "eslint-plugin-react-hooks": "^1.7.0",
     "prettier": "2.0.5",
@@ -62,7 +63,7 @@
     "tabWidth": 4,
     "semi": false,
     "singleQuote": true,
-    "trailingComma": "es5",
+    "trailingComma": "all",
     "printWidth": 100,
     "bracketSpacing": false,
     "parser": "typescript"
