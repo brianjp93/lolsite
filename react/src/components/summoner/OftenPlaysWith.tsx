@@ -1,13 +1,14 @@
-import React, {useCallback} from 'react'
-import {useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import api from '../../api/api'
-import {useEffect} from 'react'
-
 import numeral from 'numeral'
+import {TopPlayedWithPlayerType, SummonerType} from '../../types'
 
-export function OftenPlaysWith(props) {
-    const [players, setPlayers] = useState([])
-    const [player_names, setPlayerNames] = useState([])
+interface AugmentedTopPlayedWithPlayerType extends TopPlayedWithPlayerType {
+    name?: string
+}
+
+export function OftenPlaysWith(props: {region: string; summoner_id: number}) {
+    const [player_names, setPlayerNames] = useState<AugmentedTopPlayedWithPlayerType[]>([])
 
     const queue_id = null
     const season_id = null
@@ -19,7 +20,7 @@ export function OftenPlaysWith(props) {
     const summoner_id = props.summoner_id
     const region = props.region
 
-    const getSummonerPageUrl = (name) => {
+    const getSummonerPageUrl = (name: string) => {
         return `/${region}/${encodeURIComponent(name)}/`
     }
 
@@ -39,33 +40,30 @@ export function OftenPlaysWith(props) {
     useEffect(() => {
         if (summoner_id) {
             getTopPlayedWith().then((data) => {
-                setPlayers(data)
-            })
-        }
-    }, [getTopPlayedWith, summoner_id])
-
-    useEffect(() => {
-        if (players.length > 0) {
-            let data = {
-                account_ids: players.map((item) => item.account_id),
-                region: region,
-            }
-            api.player.getSummoners(data).then((response) => {
-                let modified = {}
-                for (let summoner of response.data.data) {
-                    modified[summoner.account_id] = summoner
-                }
-                let new_players = []
-                for (let summoner of players) {
-                    if (modified[summoner.account_id]) {
-                        summoner.name = modified[summoner.account_id].name
-                        new_players.push(summoner)
+                const players: AugmentedTopPlayedWithPlayerType[] = [...data]
+                if (players.length > 0) {
+                    let data = {
+                        account_ids: players.map((item) => item.account_id),
+                        region: region,
                     }
+                    api.player.getSummoners(data).then((summoners) => {
+                        let modified: Record<string, SummonerType> = {}
+                        for (let summoner of summoners) {
+                            modified[summoner.account_id] = summoner
+                        }
+                        let new_players = []
+                        for (let summoner of players) {
+                            if (modified[summoner.account_id]) {
+                                summoner.name = modified[summoner.account_id].name
+                                new_players.push(summoner)
+                            }
+                        }
+                        setPlayerNames(new_players)
+                    })
                 }
-                setPlayerNames(new_players)
             })
         }
-    }, [players, region])
+    }, [region, getTopPlayedWith, summoner_id])
 
     return (
         <div>
@@ -81,8 +79,8 @@ export function OftenPlaysWith(props) {
                 <tbody>
                     {player_names.map((player) => {
                         if (player.name) {
-                            let win_perc = (player.wins / player.count) * 100
-                            win_perc = numeral(win_perc).format('0.0')
+                            const win_perc = (player.wins / player.count) * 100
+                            const win_perc_string = numeral(win_perc).format('0.0')
                             return (
                                 <tr key={player.account_id}>
                                     <td>
@@ -91,7 +89,7 @@ export function OftenPlaysWith(props) {
                                         </a>
                                     </td>
                                     <td>
-                                        {player.wins} <small>{win_perc}%</small>
+                                        {player.wins} <small>{win_perc_string}%</small>
                                     </td>
                                     <td>{player.count}</td>
                                 </tr>
