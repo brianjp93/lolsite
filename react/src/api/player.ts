@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios'
 import * as t from 'io-ts'
-import { PositionBin, unwrap } from '../types'
+import { PositionBin, unwrap, TopPlayedWithPlayer } from '../types'
 
 let version = 'v1'
 
@@ -105,9 +105,21 @@ function changePassword(data: any) {
     return axios.post(url, data)
 }
 
-function getTopPlayedWith(data: any) {
+interface GetTopPlayedWithData extends AxiosRequestConfig {
+    summoner_id?: number | null,
+    account_id?: string | null,
+    group_by?: 'summoner_name' | 'account_id' | null,
+    season_id?: number | null,
+    queue_id?: number | null,
+    recent?: number | null,
+    recent_days?: number | null,
+    start?: number | null,
+    end?: number | null,
+}
+async function getTopPlayedWith(data: GetTopPlayedWithData) {
     let url = `/api/${version}/player/get-top-played-with/`
-    return axios.post(url, data)
+    const r = await axios.post(url, data)
+    return unwrap(t.array(TopPlayedWithPlayer).decode(r.data.data))
 }
 
 function getComments(data: any) {
