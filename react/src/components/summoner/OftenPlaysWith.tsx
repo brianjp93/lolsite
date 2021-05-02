@@ -42,11 +42,10 @@ export function OftenPlaysWith(props: {region: string; summoner_id: number}) {
             getTopPlayedWith().then((data) => {
                 const players: AugmentedTopPlayedWithPlayerType[] = [...data]
                 if (players.length > 0) {
-                    let data = {
+                    api.player.getSummoners({
                         account_ids: players.map((item) => item.account_id),
                         region: region,
-                    }
-                    api.player.getSummoners(data).then((summoners) => {
+                    }).then((summoners) => {
                         let modified: Record<string, SummonerType> = {}
                         for (let summoner of summoners) {
                             modified[summoner.account_id] = summoner
