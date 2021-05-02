@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios'
 import * as t from 'io-ts'
-import { PositionBin, unwrap, TopPlayedWithPlayer, Summoner } from '../types'
+import { PositionBin, unwrap, TopPlayedWithPlayer, Summoner, Regions } from '../types'
 
 let version = 'v1'
 
@@ -12,7 +12,11 @@ function getSummoner(data: any) {
     return axios.post(url, data)
 }
 
-async function getSummoners(data: any) {
+interface GetSummonersData extends AxiosRequestConfig {
+    account_ids: string[],
+    region: string,
+}
+async function getSummoners(data: GetSummonersData) {
     const url = `/api/${version}/player/summoners/`
     const r = await axios.post(url, data)
     return unwrap(t.array(Summoner).decode(r.data.data))

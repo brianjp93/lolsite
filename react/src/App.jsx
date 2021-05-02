@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import { Switch, Route, withRouter } from 'react-router-dom'
 
 import ReactGA from 'react-ga'
