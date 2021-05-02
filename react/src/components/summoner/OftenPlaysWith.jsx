@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react'
-import { useState } from 'react'
+import React, {useCallback} from 'react'
+import {useState} from 'react'
 import api from '../../api/api'
-import { useEffect } from 'react'
+import {useEffect} from 'react'
 
 import numeral from 'numeral'
 
@@ -19,8 +19,12 @@ export function OftenPlaysWith(props) {
     const summoner_id = props.summoner_id
     const region = props.region
 
+    const getSummonerPageUrl = (name) => {
+        return `/${region}/${encodeURIComponent(name)}/`
+    }
+
     const getTopPlayedWith = useCallback(() => {
-        let data = {
+        return api.player.getTopPlayedWith({
             queue_id,
             season_id,
             recent,
@@ -29,47 +33,44 @@ export function OftenPlaysWith(props) {
             end,
             summoner_id,
             group_by: 'account_id',
-        }
-        return api.player.getTopPlayedWith(data)
+        })
     }, [summoner_id])
 
     useEffect(() => {
         if (summoner_id) {
-            getTopPlayedWith()
-                .then(response => {
-                    setPlayers(response.data.data)
-                })
+            getTopPlayedWith().then((data) => {
+                setPlayers(data)
+            })
         }
     }, [getTopPlayedWith, summoner_id])
 
     useEffect(() => {
         if (players.length > 0) {
             let data = {
-                account_ids: players.map(item => item.account_id),
+                account_ids: players.map((item) => item.account_id),
                 region: region,
             }
-            api.player.getSummoners(data)
-                .then(response => {
-                    let modified = {}
-                    for (let summoner of response.data.data) {
-                        modified[summoner.account_id] = summoner
+            api.player.getSummoners(data).then((response) => {
+                let modified = {}
+                for (let summoner of response.data.data) {
+                    modified[summoner.account_id] = summoner
+                }
+                let new_players = []
+                for (let summoner of players) {
+                    if (modified[summoner.account_id]) {
+                        summoner.name = modified[summoner.account_id].name
+                        new_players.push(summoner)
                     }
-                    let new_players = []
-                    for (let summoner of players) {
-                        if (modified[summoner.account_id]) {
-                            summoner.name = modified[summoner.account_id].name
-                            new_players.push(summoner)
-                        }
-                    }
-                    setPlayerNames(new_players)
-                })
+                }
+                setPlayerNames(new_players)
+            })
         }
     }, [players, region])
 
     return (
         <div>
             <small>Over the past {recent_days} days.</small>
-            <table className='table'>
+            <table className="table">
                 <thead>
                     <tr>
                         <th>name</th>
@@ -78,21 +79,24 @@ export function OftenPlaysWith(props) {
                     </tr>
                 </thead>
                 <tbody>
-                    {player_names.map(player => {
+                    {player_names.map((player) => {
                         if (player.name) {
                             let win_perc = (player.wins / player.count) * 100
                             win_perc = numeral(win_perc).format('0.0')
                             return (
                                 <tr key={player.account_id}>
-                                    <td> {player.name} </td>
+                                    <td>
+                                        <a className="dark" href={getSummonerPageUrl(player.name)}>
+                                            {player.name}
+                                        </a>
+                                    </td>
                                     <td>
                                         {player.wins} <small>{win_perc}%</small>
                                     </td>
-                                    <td> {player.count} </td>
+                                    <td>{player.count}</td>
                                 </tr>
                             )
-                        }
-                        else {
+                        } else {
                             return null
                         }
                     })}

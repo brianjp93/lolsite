@@ -21,11 +21,13 @@ export type {
 export {
     Summoner,
     PositionBin,
+    TopPlayedWithPlayer,
 } from './iotypes/player'
 
 export type {
     SummonerType,
     PositionBinType,
+    TopPlayedWithPlayerType,
 } from './iotypes/player'
 
 

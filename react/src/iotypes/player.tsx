@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { optional } from './base'
+import { optional, maybe } from './base'
 
 
 export const Position = t.type({
@@ -45,7 +45,7 @@ export const Summoner = t.type({
     created_date: t.string,
     full_import_count: t.number,
     id: t.number,
-    last_summoner_page_import: t.string,
+    last_summoner_page_import: optional(t.string),
     name: t.string,
     pro: optional(t.number),
     profile_icon_id: t.number,
@@ -59,3 +59,11 @@ export const Summoner = t.type({
     _id: t.string,
 })
 export type SummonerType = t.TypeOf<typeof Summoner>
+
+export const TopPlayedWithPlayer = t.type({
+    account_id: maybe(t.string),
+    summoner_name: maybe(t.string),
+    wins: t.number,
+    count: t.number,
+})
+export type TopPlayedWithPlayerType = t.TypeOf<typeof TopPlayedWithPlayer>
