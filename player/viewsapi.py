@@ -10,6 +10,7 @@ from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.db.models.functions import Extract
 from django.db.models import Max, Min, F
+from django.shortcuts import get_object_or_404
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
@@ -238,7 +239,6 @@ def get_summoner_page(request, format=None):
         page = int(request.data.get("page", 1))
         count = int(request.data.get("count", 20))
         order_by = request.data.get("order_by", "-game_creation")
-        trigger_import = request.data.get("trigger_import", False)
         after_index = request.data.get("after_index", None)
         if count > 100:
             count = 100
@@ -301,49 +301,61 @@ def get_summoner_page(request, format=None):
                 profile_icon_data = {}
 
             # check for new games
-            if trigger_import:
-                kwargs = {}
-                start_index = 0
-                if champion_key is not None:
-                    kwargs["champion"] = champion_key
-                if queue is not None:
-                    kwargs["queue"] = queue
-                if after_index is not None:
-                    start_index = after_index
-                elif page is not None:
-                    start_index = (page - 1) * count
-                end_index = start_index + count
-
-                mt.import_recent_matches(
-                    start_index, end_index, summoner.account_id, region, **kwargs
-                )
-                mt.import_recent_matches.delay(
-                    end_index, end_index + 30, summoner.account_id, region,
-                )
-
-                if queue is None and after_index in [None, 0]:
-                    summoner.last_summoner_page_import = timezone.now()
-                    summoner.save()
-
-            match_query = match_filter(request, account_id=summoner.account_id)
+            kwargs = {}
+            start_index = 0
+            if champion_key is not None:
+                kwargs["champion"] = champion_key
+            if queue is not None:
+                kwargs["queue"] = queue
+            if after_index is not None:
+                start_index = after_index
+            elif page is not None:
+                start_index = (page - 1) * count
+            end_index = start_index + count
 
             start = (page - 1) * count
             end = page * count
-            match_query = match_query.order_by(order_by)
+            qs = match_filter(request, account_id=summoner.account_id)
+            if qs.count() - start < count:
+                mt.import_recent_matches(
+                    start_index, end_index, summoner.account_id, region, **kwargs
+                )
+                qs = match_filter(request, account_id=summoner.account_id)
+            else:
+                mt.import_recent_matches.delay(
+                    start_index, end_index, summoner.account_id, region, **kwargs
+                )
 
-            match_query = match_query[start:end]
+            if queue is None and after_index in [None, 0]:
+                summoner.last_summoner_page_import = timezone.now()
+                summoner.save()
 
-            matches = BasicMatchSerializer(match_query, many=True).data
-
+            qs = qs.order_by(order_by)
+            qs = qs[start:end]
+            matches = BasicMatchSerializer(qs, many=True).data
             data = {
                 "matches": matches,
-                # 'match_count': match_count,
                 "profile_icon": profile_icon_data,
                 "summoner": summoner_data,
                 "positions": rank_positions,
             }
 
     return Response(data, status=status_code)
+
+
+@api_view(['POST'])
+def match_import(request, format=None):
+    count = request.data.get('count', 10)
+    region = request.data.get("region", None)
+    name = request.data.get("summoner_name", None)
+    if name:
+        name = pt.simplify(name)
+    summoner = get_object_or_404(Summoner, simple_name=name, region=region)
+    if count > 100:
+        logger.warning('Cannot import more than 100 matches at a time.  Importing 100 matches.')
+        count = 100
+    imported = mt.import_recent_matches(0, count, summoner.account_id, region)
+    return Response({'count': imported})
 
 
 def participant_sort(part):

@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios'
 import * as t from 'io-ts'
-import { PositionBin, unwrap, TopPlayedWithPlayer, Summoner, Regions } from '../types'
+import { PositionBin, unwrap, TopPlayedWithPlayer, Summoner } from '../types'
 
 let version = 'v1'
 
@@ -167,6 +167,17 @@ function editDefaultSummoner(data: any) {
     return axios.post(url, data)
 }
 
+interface ImportMatchesData extends AxiosRequestConfig {
+    count: number,
+    summoner_name: string,
+    region: string,
+}
+async function importMatches(data: ImportMatchesData) {
+    const url = `/api/${version}/player/match-import/`
+    const r = await axios.post(url, data)
+    return unwrap(t.type({count: t.number}).decode(r.data))
+}
+
 export default {
     getSummoner,
     getSummoners,
@@ -195,4 +206,5 @@ export default {
     dislikeComment,
     getCommentCount,
     editDefaultSummoner,
+    importMatches,
 }

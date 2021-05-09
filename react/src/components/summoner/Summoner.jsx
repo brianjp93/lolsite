@@ -1,5 +1,5 @@
-import { Component, Fragment } from 'react'
-import { Link } from 'react-router-dom'
+import {Component, Fragment} from 'react'
+import {Link} from 'react-router-dom'
 import ReactGA from 'react-ga'
 import Orbit from '../general/spinners/orbit'
 import PropTypes from 'prop-types'
@@ -15,29 +15,7 @@ import api from '../../api/api'
 import Footer from '../general/Footer'
 import Modal from 'react-modal'
 import MatchCardModal from './MatchCardModal'
-import { OftenPlaysWith } from './OftenPlaysWith'
-
-function convertVerticalScroll(event) {
-    var elt = event.currentTarget
-    var delta = Math.abs(event.deltaX) < Math.abs(event.deltaY) ? event.deltaY : event.deltaX
-
-    if (delta < 0) {
-        if (elt.scrollLeft === 0) {
-            // comment out to revert to vertical scroll when we hit the left edge
-            elt.scrollLeft += delta
-        } else {
-            elt.scrollLeft += delta
-        }
-    } else {
-        if (elt.scrollLeft + elt.clientWidth === elt.scrollWidth) {
-            // comment out to revert to vertical scroll when we hit the right edge
-            elt.scrollLeft += delta
-        } else {
-            elt.scrollLeft += delta
-        }
-    }
-    event.preventDefault()
-}
+import {OftenPlaysWith} from './OftenPlaysWith'
 
 export let MODALSTYLE = {
     overlay: {
@@ -94,13 +72,12 @@ class Summoner extends Component {
         this.reloadMatches = this.reloadMatches.bind(this)
         this.getSpectate = this.getSpectate.bind(this)
         this.checkForLiveGame = this.checkForLiveGame.bind(this)
-        this.handleWheel = this.handleWheel.bind(this)
         this.getFilterParams = this.getFilterParams.bind(this)
-        this.isTriggerImport = this.isTriggerImport.bind(this)
         this.pagination = this.pagination.bind(this)
         this.getPage = this.getPage.bind(this)
         this.closeModal = this.closeModal.bind(this)
         this.getCommentCount = this.getCommentCount.bind(this)
+        this.hasNewGames = this.hasNewGames.bind(this)
     }
     componentDidMount() {
         ReactGA.event({
@@ -112,10 +89,11 @@ class Summoner extends Component {
             this.getPositions()
             this.checkForLiveGame()
             let now = new Date().getTime()
-            this.setState({ last_refresh: now })
+            this.setState({last_refresh: now})
             this.getCommentCount()
         })
         this.setQueueDict()
+        this.hasNewGames()
     }
     componentDidUpdate(prevProps) {
         // new summoner
@@ -124,30 +102,25 @@ class Summoner extends Component {
                 prevProps.route.match.params.summoner_name ||
             this.props.region !== prevProps.region
         ) {
-            this.setState({ match_filters: {}, page: 1 }, () => {
+            this.setState({match_filters: {}, page: 1}, () => {
                 this.getSummonerPage(() => {
                     this.getPositions()
                     this.checkForLiveGame()
                     let now = new Date().getTime()
-                    this.setState({ last_refresh: now })
+                    this.setState({last_refresh: now})
                     this.getCommentCount()
                 })
             })
+            this.hasNewGames().then(response => {
+                if (response.count > 0) {
+                    this.getSummonerPage()
+                }
+            })
         }
     }
-    componentWillUnmount() {
-        try {
-            this.match_list.removeEventListener('wheel', this.handleWheel)
-        } catch (error) {
-            console.log('Attempted to remove event listener but got an error.')
-        }
-    }
-    handleWheel(event) {
-        if (!this.props.store.state.ignore_horizontal) {
-            return convertVerticalScroll(event)
-        } else {
-            return event
-        }
+    hasNewGames() {
+        const name = this.props.route.match.params.summoner_name
+        return api.player.importMatches({summoner_name: name, region: this.props.region})
     }
     setDefaults(callback) {
         var defaults = {
@@ -174,10 +147,10 @@ class Summoner extends Component {
         })
     }
     getCommentCount() {
-        let data = { match_ids: this.state.matches.map(x => x.id) }
+        let data = {match_ids: this.state.matches.map((x) => x.id)}
         api.player
             .getCommentCount(data)
-            .then(response => this.setState({ comment_counts: response.data.data }))
+            .then((response) => this.setState({comment_counts: response.data.data}))
     }
     getFilterParams() {
         let params = this.props.route.match.params
@@ -196,38 +169,24 @@ class Summoner extends Component {
         }
         return data
     }
-    isTriggerImport() {
-        // whether or not to check for new matches,
-        // or just get matches from our DB
-        let is_trigger_import = true
-        let filters = this.state.match_filters
-        if (filters.summoner_filter !== undefined && filters.summoner_filter.length > 0) {
-            is_trigger_import = false
-        }
-        return is_trigger_import
-    }
     getSummonerPage(callback) {
         if (!this.state.is_reloading_matches) {
-            this.setState({ is_requesting_page: true })
+            this.setState({is_requesting_page: true})
         }
 
         let data = this.getFilterParams()
         data.update = true
 
-        if (this.isTriggerImport()) {
-            data.trigger_import = true
-        }
-
         api.player
             .getSummonerPage(data)
-            .then(response => {
+            .then((response) => {
                 this.setState(
                     {
                         summoner: response.data.summoner,
                         region: this.props.region,
                         icon: response.data.profile_icon,
                         matches: response.data.matches,
-                        match_ids: new Set(response.data.matches.map(x => x.id)),
+                        match_ids: new Set(response.data.matches.map((x) => x.id)),
                         positions: response.data.positions,
                     },
                     () => {
@@ -237,10 +196,10 @@ class Summoner extends Component {
                     },
                 )
             })
-            .catch(error => {
+            .catch((error) => {
                 console.log(error)
                 // window.alert('No summoner with that name was found.')
-                this.setState({ summoner: false })
+                this.setState({summoner: false})
             })
             .then(() => {
                 this.setState({
@@ -258,24 +217,31 @@ class Summoner extends Component {
                 is_reloading_matches: true,
             },
             () => {
-                this.getSummonerPage(() => {
-                    this.getPositions()
-                    this.setState({ last_refresh: new Date().getTime() })
-                    this.getCommentCount()
-                    if (typeof callback === 'function') {
-                        try {
-                            callback()
-                        } catch (error) {
-                            console.log('Caught error in reloadMatches method in Summoner.jsx.')
-                            console.error(error);
-                        }
+                this.hasNewGames().then(response => {
+                    if (response.count > 0) {
+                        this.getSummonerPage(() => {
+                            this.getPositions()
+                            this.setState({last_refresh: new Date().getTime()})
+                            this.getCommentCount()
+                            if (typeof callback === 'function') {
+                                try {
+                                    callback()
+                                } catch (error) {
+                                    console.log('Caught error in reloadMatches method in Summoner.jsx.')
+                                    console.error(error)
+                                }
+                            }
+                        })
+                    }
+                    else {
+                        this.setState({is_reloading_matches: false})
                     }
                 })
             },
         )
     }
     getNextPage() {
-        this.setState({ is_requesting_next_page: true })
+        this.setState({is_requesting_next_page: true})
 
         let data = this.getFilterParams()
         data.update = false
@@ -283,7 +249,7 @@ class Summoner extends Component {
         data.after_index = this.state.matches.length
         data.page = this.state.next_page
 
-        api.player.getSummonerPage(data).then(response => {
+        api.player.getSummonerPage(data).then((response) => {
             var new_matches = []
             var new_match_ids = this.state.match_ids
             for (var m of response.data.matches) {
@@ -305,7 +271,7 @@ class Summoner extends Component {
         })
     }
     getPage() {
-        this.setState({ is_requesting_next_page: true })
+        this.setState({is_requesting_next_page: true})
 
         let data = this.getFilterParams()
         data.update = false
@@ -314,7 +280,7 @@ class Summoner extends Component {
 
         api.player
             .getSummonerPage(data)
-            .then(response => {
+            .then((response) => {
                 this.setState(
                     {
                         summoner: response.data.summoner,
@@ -326,11 +292,11 @@ class Summoner extends Component {
                     this.getCommentCount,
                 )
             })
-            .catch(_ => {})
+            .catch((_) => {})
     }
     pagination() {
         const theme = this.props.store.state.theme
-        let disabled = { disabled: false }
+        let disabled = {disabled: false}
         if (this.state.is_requesting_next_page) {
             disabled.disabled = true
         }
@@ -342,7 +308,7 @@ class Summoner extends Component {
                         let page = this.state.page
                         page = page - 1
                         if (page >= 1) {
-                            this.setState({ page }, this.getPage)
+                            this.setState({page}, this.getPage)
                         }
                     }}
                     className={`${theme} btn-small`}
@@ -351,17 +317,17 @@ class Summoner extends Component {
                 </button>
                 <button
                     {...disabled}
-                    style={{ marginLeft: 8 }}
+                    style={{marginLeft: 8}}
                     onClick={() => {
                         let page = this.state.page
                         page = page + 1
-                        this.setState({ page }, this.getPage)
+                        this.setState({page}, this.getPage)
                     }}
                     className={`${theme} btn-small`}
                 >
                     <i className="material-icons">chevron_right</i>
                 </button>
-                <div style={{ display: 'inline-block', marginLeft: 8 }}>{this.state.page}</div>
+                <div style={{display: 'inline-block', marginLeft: 8}}>{this.state.page}</div>
             </div>
         )
     }
@@ -372,10 +338,10 @@ class Summoner extends Component {
         }
         api.match
             .getSpectate(data)
-            .then(response => {
-                this.setState({ spectate: response.data })
+            .then((response) => {
+                this.setState({spectate: response.data})
             })
-            .catch(error => {
+            .catch((error) => {
                 console.log(error)
             })
     }
@@ -386,13 +352,13 @@ class Summoner extends Component {
         }
         api.match
             .checkForLiveGame(data)
-            .then(_ => {
-                this.setState({ is_live_game: true })
+            .then((_) => {
+                this.setState({is_live_game: true})
             })
-            .catch(error => {
+            .catch((error) => {
                 if (error.response !== undefined) {
                     if (error.response.status === 404) {
-                        this.setState({ is_live_game: false })
+                        this.setState({is_live_game: false})
                     }
                 }
             })
@@ -404,8 +370,8 @@ class Summoner extends Component {
         }
         api.player
             .getPositions(data)
-            .then(response => this.setState({ positions: response.data.data }))
-            .catch(_ => {})
+            .then((response) => this.setState({positions: response.data.data}))
+            .catch((_) => {})
     }
     setQueueDict() {
         var queue_elt = document.getElementById('queues')
@@ -415,7 +381,7 @@ class Summoner extends Component {
             q.description = q.description.replace('games', '').trim()
             qdict[q._id] = q
         }
-        this.setState({ queues: qdict })
+        this.setState({queues: qdict})
     }
     closeModal() {
         let pathname = window.location.pathname.split(/match\/\d+/)[0]
@@ -432,7 +398,7 @@ class Summoner extends Component {
         }
         return (
             <div>
-                <div style={{ minHeight: 1000 }}>
+                <div style={{minHeight: 1000}}>
                     <NavBar store={this.props.store} region={this.props.region} />
                     {this.state.is_requesting_page && (
                         <div>
@@ -442,7 +408,7 @@ class Summoner extends Component {
                                     marginTop: 100,
                                 }}
                             >
-                                <Orbit size={300} style={{ margin: 'auto' }} />
+                                <Orbit size={300} style={{margin: 'auto'}} />
                             </div>
                         </div>
                     )}
@@ -469,7 +435,7 @@ class Summoner extends Component {
                                     />
                                 </Modal>
                             )}
-                            <div className="row" style={{ marginBottom: 0 }}>
+                            <div className="row" style={{marginBottom: 0}}>
                                 <div className="col l10 offset-l1">
                                     <div
                                         style={{
@@ -538,12 +504,12 @@ class Summoner extends Component {
                                 </div>
                             </div>
 
-                            <div className="row" style={{ visibility: 'visibile' }}>
+                            <div className="row" style={{visibility: 'visibile'}}>
                                 <div className="col l10 offset-l1 m12 s12">
-                                    <div style={{ display: 'inline-block' }}>
+                                    <div style={{display: 'inline-block'}}>
                                         {this.pagination()}
                                         {this.state.is_requesting_next_page && (
-                                            <div style={{ width: 600 }}>
+                                            <div style={{width: 600}}>
                                                 <Orbit
                                                     size={200}
                                                     style={{
@@ -578,7 +544,7 @@ class Summoner extends Component {
                                                 marginLeft: 8,
                                             }}
                                         >
-                                            <h5 style={{ marginBottom: 3 }}>Often Plays With</h5>
+                                            <h5 style={{marginBottom: 3}}>Often Plays With</h5>
                                             <OftenPlaysWith
                                                 region={this.props.region}
                                                 store={this.props.store}
@@ -702,7 +668,7 @@ class SummonerCard extends Component {
                 this.refresh_time.innerHTML = 'a moment ago'
             }
             if (!this.state.has_been_set) {
-                this.setState({ has_been_set: true })
+                this.setState({has_been_set: true})
             }
         }
     }
@@ -781,8 +747,8 @@ class SummonerCard extends Component {
         } else {
             data.verb = 'set'
         }
-        api.player.Favorite(data).then(response => {
-            this.props.store.setState({ favorites: response.data.data })
+        api.player.Favorite(data).then((response) => {
+            this.props.store.setState({favorites: response.data.data})
         })
     }
     isFavorite() {
@@ -800,7 +766,7 @@ class SummonerCard extends Component {
         if (keys.length === 0) {
             data = {summoner_id: this.props.summoner.id}
         }
-        api.player.editDefaultSummoner(data).then(response => {
+        api.player.editDefaultSummoner(data).then((response) => {
             if (response.data.status === 'success') {
                 let user = {...this.props.store.state.user}
                 user.default_summoner = response.data.default_summoner
@@ -817,10 +783,7 @@ class SummonerCard extends Component {
         let store = this.props.store
         return (
             <span>
-                <div
-                    style={{ position: 'relative', padding: 18 }}
-                    className={`card-panel ${theme}`}
-                >
+                <div style={{position: 'relative', padding: 18}} className={`card-panel ${theme}`}>
                     {this.props.icon.image_url !== undefined && (
                         <span
                             style={{
@@ -908,7 +871,7 @@ class SummonerCard extends Component {
                         </Spectate.SpectateModal>
                     </div>
 
-                    <span style={{ position: 'absolute', right: 2, top: 2 }}>
+                    <span style={{position: 'absolute', right: 2, top: 2}}>
                         <small
                             className="unselectable"
                             style={{
@@ -926,10 +889,10 @@ class SummonerCard extends Component {
                         >
                             {pageStore.last_refresh !== null && <span>Last Refresh: </span>}
                             <span
-                                ref={elt => {
+                                ref={(elt) => {
                                     this.refresh_time = elt
                                 }}
-                                style={{ fontWeight: 'bold' }}
+                                style={{fontWeight: 'bold'}}
                             ></span>
                         </small>
                         <button
@@ -971,8 +934,8 @@ class SummonerCard extends Component {
 
                     {this.soloPositions().length > 0 && <hr />}
 
-                    <div style={{ paddingTop: 10 }}>
-                        {this.props.positions.map(pos => {
+                    <div style={{paddingTop: 10}}>
+                        {this.props.positions.map((pos) => {
                             if (pos.queue_type === 'RANKED_SOLO_5x5') {
                                 var gen_positions = ['NONE', 'APEX']
                                 return (
@@ -990,14 +953,14 @@ class SummonerCard extends Component {
                                                             pos.position,
                                                             pos.tier,
                                                         )}
-                                                        style={{ height: 40 }}
+                                                        style={{height: 40}}
                                                         alt=""
                                                     />
                                                 )}
                                                 {gen_positions.indexOf(pos.position) >= 0 && (
                                                     <img
                                                         src={this.generalRankImage(pos.tier)}
-                                                        style={{ height: 40 }}
+                                                        style={{height: 40}}
                                                         alt=""
                                                     />
                                                 )}
@@ -1031,14 +994,10 @@ class SummonerCard extends Component {
                                                     right: 18,
                                                 }}
                                             >
-                                                <small
-                                                    className={`${theme} pill`}
-                                                >
+                                                <small className={`${theme} pill`}>
                                                     {this.queueName(pos.queue_type)}
                                                 </small>{' '}
-                                                <span
-                                                    className={`${theme} pill`}
-                                                >
+                                                <span className={`${theme} pill`}>
                                                     {pos.league_points} LP
                                                 </span>
                                                 {pos.series_progress && (
@@ -1057,7 +1016,7 @@ class SummonerCard extends Component {
                             }
                             return null
                         })}
-                        {this.props.positions.map(pos => {
+                        {this.props.positions.map((pos) => {
                             if (pos.queue_type !== 'RANKED_SOLO_5x5') {
                                 return (
                                     <div
@@ -1073,7 +1032,7 @@ class SummonerCard extends Component {
                                             >
                                                 <img
                                                     src={this.generalRankImage(pos.tier)}
-                                                    style={{ height: 40 }}
+                                                    style={{height: 40}}
                                                     alt=""
                                                 />
                                             </div>
@@ -1106,14 +1065,10 @@ class SummonerCard extends Component {
                                                     right: 18,
                                                 }}
                                             >
-                                                <small
-                                                    className={`${theme} pill`}
-                                                >
+                                                <small className={`${theme} pill`}>
                                                     {this.queueName(pos.queue_type)}
                                                 </small>{' '}
-                                                <span
-                                                    className={`${theme} pill`}
-                                                >
+                                                <span className={`${theme} pill`}>
                                                     {pos.league_points} LP
                                                 </span>
                                                 {pos.series_progress && (
@@ -1134,26 +1089,24 @@ class SummonerCard extends Component {
                         })}
                     </div>
 
-                    {store.state.user.email !== undefined &&
+                    {store.state.user.email !== undefined && (
                         <div>
                             <button
                                 onClick={this.toggleDefault}
                                 style={{width: '100%'}}
-                                className={`${theme} btn-small`}>
-                                {store.state.user.default_summoner.id === pageStore.state.summoner.id &&
-                                    <Fragment>
-                                        Remove as Default Profile
-                                    </Fragment>
-                                }
-                                {store.state.user.default_summoner.id !== pageStore.state.summoner.id &&
-                                    <Fragment>
-                                        Set as Default Profile
-                                    </Fragment>
-                                }
+                                className={`${theme} btn-small`}
+                            >
+                                {store.state.user.default_summoner.id ===
+                                    pageStore.state.summoner.id && (
+                                    <Fragment>Remove as Default Profile</Fragment>
+                                )}
+                                {store.state.user.default_summoner.id !==
+                                    pageStore.state.summoner.id && (
+                                    <Fragment>Set as Default Profile</Fragment>
+                                )}
                             </button>
                         </div>
-                    }
-
+                    )}
                 </div>
             </span>
         )
@@ -1230,14 +1183,14 @@ class RecentlyPlayedWith extends Component {
                 </div>{' '}
                 <small>{this.props.matches.length} games</small>
                 <br />
-                <div className="quiet-scroll" style={{ overflowY: 'scroll', maxHeight: '85%' }}>
+                <div className="quiet-scroll" style={{overflowY: 'scroll', maxHeight: '85%'}}>
                     <table>
-                        {this.sortPlayers().map(data => {
-                            var td_style = { padding: '3px 5px' }
+                        {this.sortPlayers().map((data) => {
+                            var td_style = {padding: '3px 5px'}
                             return (
                                 <tbody
                                     key={`row-for-${data.summoner_name}`}
-                                    style={{ fontSize: 'small' }}
+                                    style={{fontSize: 'small'}}
                                 >
                                     <tr>
                                         <td style={td_style}>
