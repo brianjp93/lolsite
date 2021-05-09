@@ -42,7 +42,7 @@ import logging
 import traceback
 
 
-logger = logging.getLogger('django')
+logger = logging.getLogger(__name__)
 
 
 @api_view(["POST"])
@@ -317,7 +317,6 @@ def get_summoner_page(request, format=None):
                 mt.import_recent_matches(
                     start_index, end_index, summoner.account_id, region, **kwargs
                 )
-                # import 50 recent matches in the background
                 mt.import_recent_matches.delay(
                     end_index, end_index + 30, summoner.account_id, region,
                 )
