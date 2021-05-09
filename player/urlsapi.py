@@ -7,6 +7,7 @@ urlpatterns = [
     path("summoners/", player_views.get_summoners),
     path("summoner-search/", player_views.summoner_search),
     path("summoner-page/", player_views.get_summoner_page),
+    path("match-import/", player_views.match_import),
     path("champions-overview/", player_views.get_summoner_champions_overview),
     path("positions/", player_views.get_positions),
     path("sign-up/", player_views.sign_up),
