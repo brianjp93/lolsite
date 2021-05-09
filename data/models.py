@@ -100,6 +100,13 @@ class ReforgedTree(VersionedModel):
     class Meta:
         unique_together = ("_id", "language", "version")
 
+    def save(self, *args, **kwargs):
+        # I don't know how it happens, but sometimes we get the wrong url?
+        if '.dds' in self.icon:
+            self.icon = self.icon.replace('.dds', '.png')
+            self.icon = self.icon.replace('ASSETS/Perks', 'perk-images')
+        return super().save(*args, **kwargs)
+
     def __str__(self):
         return f'ReforgedTree(_id={self._id}, language="{self.language}", version="{self.version}")'
 
