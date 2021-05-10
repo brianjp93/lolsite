@@ -6,6 +6,7 @@ urlpatterns = [
     path("profile-icon/", data_views.get_profile_icon),
     path("item/", data_views.get_item),
     path("items/", data_views.all_items),
+    path("item-history/<slug:_id>/", data_views.get_item_history),
     path("reforged-runes/", data_views.get_reforged_runes),
     path("get-current-season/", data_views.get_current_season),
     path("champions/", data_views.get_champions),

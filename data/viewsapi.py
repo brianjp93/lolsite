@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from .models import ProfileIcon, ReforgedRune, ReforgedTree
-from .models import Champion
+from .models import Champion, Item
 
 from match.models import Match, Item
 
@@ -12,6 +12,7 @@ from .serializers import ChampionSpellSerializer
 
 from lolsite.helpers import query_debugger
 from django.core.cache import cache
+from django.shortcuts import get_object_or_404
 
 
 @api_view(["POST"])
@@ -106,6 +107,29 @@ def get_item(request, format=None):
         data["data"] = serialized_items
 
     return Response(data, status=status_code)
+
+
+@api_view(['GET'])
+def get_item_history(request, _id, format=None):
+    """Get the stat history of an item.
+    """
+    item = Item.objects.filter(_id=_id).order_by('_id', '-major', '-minor').distinct('_id').first()
+    item_history = []
+    while item:
+        version = item.last_changed
+        if version and version != item.version:
+            item = Item.objects.get(_id=_id, version=version)
+            item_history.append(item)
+        else:
+            break
+    qs = Item.objects.filter(_id=_id, major__lte=item.major, minor__lte=item.minor).order_by(
+        '-major', '-minor',
+    )
+    if qs.count() > 1:
+        item = qs[1]
+        item_history.append(item)
+    data = ItemSerializer(item_history, many=True).data
+    return Response(data)
 
 
 @api_view(["POST"])
