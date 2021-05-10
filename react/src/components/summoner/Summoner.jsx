@@ -111,7 +111,7 @@ class Summoner extends Component {
                     this.getCommentCount()
                 })
             })
-            this.hasNewGames().then(response => {
+            this.hasNewGames().then((response) => {
                 if (response.count > 0) {
                     this.getSummonerPage()
                 }
@@ -208,7 +208,7 @@ class Summoner extends Component {
                 })
             })
     }
-    reloadMatches(callback) {
+    reloadMatches(callback, {force = false}) {
         this.setState(
             {
                 match_ids: new Set(),
@@ -217,26 +217,43 @@ class Summoner extends Component {
                 is_reloading_matches: true,
             },
             () => {
-                this.hasNewGames().then(response => {
-                    if (response.count > 0) {
-                        this.getSummonerPage(() => {
-                            this.getPositions()
-                            this.setState({last_refresh: new Date().getTime()})
-                            this.getCommentCount()
-                            if (typeof callback === 'function') {
-                                try {
-                                    callback()
-                                } catch (error) {
-                                    console.log('Caught error in reloadMatches method in Summoner.jsx.')
-                                    console.error(error)
-                                }
+                if (force) {
+                    this.getSummonerPage(() => {
+                        this.getPositions()
+                        this.setState({last_refresh: new Date().getTime()})
+                        this.getCommentCount()
+                        if (typeof callback === 'function') {
+                            try {
+                                callback()
+                            } catch (error) {
+                                console.log('Caught error in reloadMatches method in Summoner.jsx.')
+                                console.error(error)
                             }
-                        })
-                    }
-                    else {
-                        this.setState({is_reloading_matches: false})
-                    }
-                })
+                        }
+                    })
+                } else {
+                    this.hasNewGames().then((response) => {
+                        if (response.count > 0) {
+                            this.getSummonerPage(() => {
+                                this.getPositions()
+                                this.setState({last_refresh: new Date().getTime()})
+                                this.getCommentCount()
+                                if (typeof callback === 'function') {
+                                    try {
+                                        callback()
+                                    } catch (error) {
+                                        console.log(
+                                            'Caught error in reloadMatches method in Summoner.jsx.',
+                                        )
+                                        console.error(error)
+                                    }
+                                }
+                            })
+                        } else {
+                            this.setState({is_reloading_matches: false})
+                        }
+                    })
+                }
             },
         )
     }
