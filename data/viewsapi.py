@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework import exceptions
 
 from .models import ProfileIcon, ReforgedRune, ReforgedTree
 from .models import Champion, Item
@@ -114,6 +115,8 @@ def get_item_history(request, _id, format=None):
     """Get the stat history of an item.
     """
     item = Item.objects.filter(_id=_id).order_by('_id', '-major', '-minor').distinct('_id').first()
+    if item is None:
+        raise exceptions.NotFound(f'Could not find item with id {_id}')
     item_history = []
     while item:
         version = item.last_changed
