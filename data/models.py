@@ -200,7 +200,7 @@ class Item(VersionedModel):
             else:
                 stat_diffs[key] = False
         diffs = {
-            "description": self.description == other.description,
+            # "description": self.description == other.description,
             "gold__total": self.gold.total == other.gold.total,
             "gold__sell": self.gold.total == other.gold.total,
         }
