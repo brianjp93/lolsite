@@ -1,10 +1,10 @@
-import React, { Component } from 'react'
+import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import Modal from 'react-modal'
 import ReactTooltip from 'react-tooltip'
 import api from '../../api/api'
 import toastr from 'toastr'
-import { MODALSTYLE } from './Summoner'
+import {MODALSTYLE} from './Summoner'
 import Datetime from 'react-datetime'
 import 'react-datetime/css/react-datetime.css'
 
@@ -71,10 +71,10 @@ class MatchFilter extends Component {
         }
         api.data
             .getChampions(data)
-            .then(response => {
-                this.setState({ champions: response.data.data })
+            .then((response) => {
+                this.setState({champions: response.data.data})
             })
-            .catch(error => {})
+            .catch((error) => {})
             .then(() => {})
     }
     setDefaults(callback) {
@@ -95,7 +95,7 @@ class MatchFilter extends Component {
     handleOutsideClick(event) {
         if (this.champ_card.current && !this.champ_card.current.contains(event.target)) {
             if (this.state.is_champion_card_open) {
-                this.setState({ is_champion_card_open: false })
+                this.setState({is_champion_card_open: false})
             }
         }
     }
@@ -138,7 +138,7 @@ class MatchFilter extends Component {
         let parent_filters = this.props.parent.state.match_filters
         let this_filters = this.getFilterParams()
         if (JSON.stringify(parent_filters) !== JSON.stringify(this_filters)) {
-            this.props.parent.setState({ match_filters: this_filters }, () => {
+            this.props.parent.setState({match_filters: this_filters}, () => {
                 if (callback !== undefined) {
                     callback()
                 }
@@ -151,19 +151,22 @@ class MatchFilter extends Component {
     }
     apply() {
         if (!this.state.is_applying) {
-            this.setState({ is_applying: true })
+            this.setState({is_applying: true})
             this.updateParent(() => {
-                this.props.parent.reloadMatches(() => {
-                    this.setState({ is_applying: false })
-                })
+                this.props.parent.reloadMatches(
+                    () => {
+                        this.setState({is_applying: false})
+                    },
+                    {force: true},
+                )
             })
-            this.setState({ is_modal_open: false })
+            this.setState({is_modal_open: false})
         } else {
             toastr.error('Already applying some filters')
         }
     }
     openModal() {
-        this.setState({ is_modal_open: true }, () => {
+        this.setState({is_modal_open: true}, () => {
             // this.summoner_filter_input.focus()
         })
     }
@@ -177,11 +180,11 @@ class MatchFilter extends Component {
     getChampionMatches() {
         let out = []
         if (this.state.champion.length > 0) {
-            let reg = this.state.champion.split('').map(l => `${l}(.*)+`)
+            let reg = this.state.champion.split('').map((l) => `${l}(.*)+`)
             reg[reg.length - 1] = this.state.champion[this.state.champion.length - 1]
             reg = reg.join('')
             reg = RegExp(reg, 'i')
-            out = this.state.champions.filter(champ => {
+            out = this.state.champions.filter((champ) => {
                 return champ.name.match(reg) !== null
             })
         } else {
@@ -192,17 +195,17 @@ class MatchFilter extends Component {
     handleChampionKeyDown(event) {
         if (event.key === 'Enter') {
             if (this.state.champion.length === 0) {
-                this.setState({ is_champion_card_open: false })
+                this.setState({is_champion_card_open: false})
                 this.apply()
             } else {
                 let matches = this.getChampionMatches()
                 if (matches.length > 0) {
                     this.setState(
-                        { champion: matches[0].name, is_champion_card_open: false },
+                        {champion: matches[0].name, is_champion_card_open: false},
                         this.apply,
                     )
                 } else {
-                    this.setState({ is_champion_card_open: false })
+                    this.setState({is_champion_card_open: false})
                     toastr.error('No matches for this string.')
                 }
             }
@@ -231,22 +234,19 @@ class MatchFilter extends Component {
         return (
             <div>
                 <div>
-                    <div style={{ marginBottom: 0 }} className="row">
+                    <div style={{marginBottom: 0}} className="row">
                         <div className="col s6">
                             <div className={`input-field ${theme}`}>
                                 <select
-                                    ref={elt => {
+                                    ref={(elt) => {
                                         this.queue_select = elt
                                     }}
-                                    onChange={elt => {
-                                        this.setState(
-                                            { queue_filter: elt.target.value },
-                                            this.apply,
-                                        )
+                                    onChange={(elt) => {
+                                        this.setState({queue_filter: elt.target.value}, this.apply)
                                     }}
                                     value={this.state.queue_filter}
                                 >
-                                    {[{ name: 'any', id: '' }]
+                                    {[{name: 'any', id: ''}]
                                         .concat(queuefilter)
                                         .map((queue, key) => {
                                             return (
@@ -259,10 +259,10 @@ class MatchFilter extends Component {
                                 <label>Queue</label>
                             </div>
                         </div>
-                        <div style={{ position: 'relative' }} className="col s6">
+                        <div style={{position: 'relative'}} className="col s6">
                             <div className={`input-field ${theme}`}>
                                 <input
-                                    ref={elt => {
+                                    ref={(elt) => {
                                         this.champion_select = elt
                                     }}
                                     autoComplete="off"
@@ -270,11 +270,11 @@ class MatchFilter extends Component {
                                     className={`${theme}`}
                                     type="text"
                                     value={this.state.champion}
-                                    onChange={event =>
-                                        this.setState({ champion: event.target.value })
+                                    onChange={(event) =>
+                                        this.setState({champion: event.target.value})
                                     }
-                                    onClick={() => this.setState({ is_champion_card_open: true })}
-                                    onFocus={() => this.setState({ is_champion_card_open: true })}
+                                    onClick={() => this.setState({is_champion_card_open: true})}
+                                    onFocus={() => this.setState({is_champion_card_open: true})}
                                     onKeyDown={this.handleChampionKeyDown}
                                 />
                                 <label htmlFor="champ-input-selection">Champion</label>
@@ -293,16 +293,16 @@ class MatchFilter extends Component {
                                     <div className="row">
                                         <button
                                             onClick={() =>
-                                                this.setState({ is_champion_card_open: false })
+                                                this.setState({is_champion_card_open: false})
                                             }
-                                            style={{ width: '100%' }}
+                                            style={{width: '100%'}}
                                             className={`${theme} btn-small`}
                                         >
                                             close
                                         </button>
                                     </div>
                                     <div
-                                        style={{ height: 300, overflow: 'scroll', marginBottom: 0 }}
+                                        style={{height: 300, overflow: 'scroll', marginBottom: 0}}
                                         className="row"
                                     >
                                         {this.getChampionMatches().map((champ, key) => {
@@ -362,7 +362,7 @@ class MatchFilter extends Component {
                             {this.isFiltersApplied() && (
                                 <span
                                     className={`${theme} success-bordered`}
-                                    style={{ fontSize: 'small', padding: 7 }}
+                                    style={{fontSize: 'small', padding: 7}}
                                 >
                                     Filters are applied
                                 </span>
@@ -373,7 +373,7 @@ class MatchFilter extends Component {
 
                 <Modal
                     isOpen={this.state.is_modal_open}
-                    onRequestClose={() => this.setState({ is_modal_open: false })}
+                    onRequestClose={() => this.setState({is_modal_open: false})}
                     style={MODALSTYLE}
                 >
                     <div
@@ -385,14 +385,14 @@ class MatchFilter extends Component {
                         }}
                     >
                         <button
-                            onClick={() => this.setState({ is_modal_open: false })}
+                            onClick={() => this.setState({is_modal_open: false})}
                             className={`btn-floating btn-large red`}
                         >
                             <i className="material-icons">close</i>
                         </button>
                     </div>
-                    <div style={{ width: '100%' }}>
-                        <div className="row" style={{ marginTop: 40 }}>
+                    <div style={{width: '100%'}}>
+                        <div className="row" style={{marginTop: 40}}>
                             <div className="col s12">
                                 <ReactTooltip id={`summoner-filter-tooltip`} effect="solid">
                                     <span>
@@ -406,13 +406,13 @@ class MatchFilter extends Component {
                                     className="input-field"
                                 >
                                     <input
-                                        ref={elt => {
+                                        ref={(elt) => {
                                             this.summoner_filter_input = elt
                                         }}
                                         id="summoner_filter_field"
                                         value={this.state.summoner_filter}
-                                        onChange={event =>
-                                            this.setState({ summoner_filter: event.target.value })
+                                        onChange={(event) =>
+                                            this.setState({summoner_filter: event.target.value})
                                         }
                                         onKeyDown={this.handleKeyDown}
                                         type="text"
@@ -434,7 +434,7 @@ class MatchFilter extends Component {
                                 >
                                     <Datetime
                                         value={this.state.start_date}
-                                        onChange={val => this.setState({ start_date: val })}
+                                        onChange={(val) => this.setState({start_date: val})}
                                         inputProps={{
                                             className: `${theme}`,
                                             id: 'start-datetime-input',
@@ -455,7 +455,7 @@ class MatchFilter extends Component {
                                 >
                                     <Datetime
                                         value={this.state.end_date}
-                                        onChange={val => this.setState({ end_date: val })}
+                                        onChange={(val) => this.setState({end_date: val})}
                                         inputProps={{
                                             className: `${theme}`,
                                             id: 'end-datetime-input',
