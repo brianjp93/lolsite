@@ -915,7 +915,7 @@ class SummonerCard extends Component {
                         <button
                             {...reload_attrs}
                             className="dark btn-small"
-                            onClick={this.props.pageStore.reloadMatches}
+                            onClick={() => this.props.pageStore.reloadMatches(null, {force: true})}
                         >
                             <i className="material-icons">autorenew</i>
                         </button>
