@@ -93,7 +93,13 @@ class Summoner extends Component {
       this.getCommentCount()
     })
     this.setQueueDict()
-    this.hasNewGames()
+    this.hasNewGames().then(response => {
+      if (response.count > 0) {
+        this.getSummonerPage()
+        this.getPositions()
+        this.getCommentCount()
+      }
+    })
   }
   componentDidUpdate(prevProps) {
     // new summoner
