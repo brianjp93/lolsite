@@ -158,6 +158,7 @@ def match_filter(request, account_id=None):
         account_id = summoner.account_id
 
     matches = Match.objects.filter(participants__current_account_id=account_id)
+    matches = matches.filter(is_fully_imported=True)
     if queue_in:
         matches = matches.filter(queue_id__in=queue_in)
     if queue:

@@ -176,6 +176,7 @@ class Match(VersionedModel):
     season_id = models.IntegerField()
     game_version = models.CharField(max_length=32, default="", blank=True)
     build = models.IntegerField()
+    is_fully_imported = models.BooleanField(default=False, blank=True, db_index=True)
 
     objects = MatchQuerySet.as_manager()
 

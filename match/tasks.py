@@ -193,6 +193,10 @@ def import_match_from_data(data, refresh=False, region=""):
         except Exception as error:
             raise error
 
+    # set is_fully_imported after finished
+    match_model.is_fully_imported = True
+    match_model.save()
+
 
 def parse_match(data):
     """Parse match data to be saved into models.
