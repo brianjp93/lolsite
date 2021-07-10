@@ -77,7 +77,6 @@ class Summoner extends Component {
     this.getPage = this.getPage.bind(this)
     this.closeModal = this.closeModal.bind(this)
     this.getCommentCount = this.getCommentCount.bind(this)
-    this.hasNewGames = this.hasNewGames.bind(this)
   }
   componentDidMount() {
     ReactGA.event({
@@ -110,10 +109,6 @@ class Summoner extends Component {
         })
       })
     }
-  }
-  hasNewGames() {
-    const name = this.props.route.match.params.summoner_name
-    return api.player.importMatches({summoner_name: name, region: this.props.region})
   }
   setDefaults(callback) {
     var defaults = {
