@@ -93,13 +93,6 @@ class Summoner extends Component {
       this.getCommentCount()
     })
     this.setQueueDict()
-    this.hasNewGames().then(response => {
-      if (response.count > 0) {
-        this.getSummonerPage()
-        this.getPositions()
-        this.getCommentCount()
-      }
-    })
   }
   componentDidUpdate(prevProps) {
     // new summoner
@@ -115,11 +108,6 @@ class Summoner extends Component {
           this.setState({last_refresh: now})
           this.getCommentCount()
         })
-      })
-      this.hasNewGames().then((response) => {
-        if (response.count > 0) {
-          this.getSummonerPage()
-        }
       })
     }
   }
@@ -236,25 +224,20 @@ class Summoner extends Component {
             }
           })
         } else {
-          this.hasNewGames().then((response) => {
-            if (response.count > 0) {
-              this.getSummonerPage(() => {
-                this.getPositions()
-                this.setState({last_refresh: new Date().getTime()})
-                this.getCommentCount()
-                if (typeof callback === 'function') {
-                  try {
-                    callback()
-                  } catch (error) {
-                    console.log('Caught error in reloadMatches method in Summoner.jsx.')
-                    console.error(error)
-                  }
-                }
-              })
-            } else {
-              this.setState({is_reloading_matches: false})
+          this.getSummonerPage(() => {
+            this.getPositions()
+            this.setState({last_refresh: new Date().getTime()})
+            this.getCommentCount()
+            if (typeof callback === 'function') {
+              try {
+                callback()
+              } catch (error) {
+                console.log('Caught error in reloadMatches method in Summoner.jsx.')
+                console.error(error)
+              }
             }
           })
+          this.setState({is_reloading_matches: false})
         }
       },
     )
