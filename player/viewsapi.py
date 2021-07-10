@@ -316,16 +316,10 @@ def get_summoner_page(request, format=None):
 
             start = (page - 1) * count
             end = page * count
+            mt.import_recent_matches(
+                start_index, end_index, summoner.account_id, region, **kwargs
+            )
             qs = match_filter(request, account_id=summoner.account_id)
-            if qs.count() - start < count:
-                mt.import_recent_matches(
-                    start_index, end_index, summoner.account_id, region, **kwargs
-                )
-                qs = match_filter(request, account_id=summoner.account_id)
-            else:
-                mt.import_recent_matches.delay(
-                    start_index, end_index, summoner.account_id, region, **kwargs
-                )
 
             if queue is None and after_index in [None, 0]:
                 summoner.last_summoner_page_import = timezone.now()
