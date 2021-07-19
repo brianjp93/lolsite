@@ -8,7 +8,7 @@ export function HomeV2({store}: {store: any}) {
   const [message, setMessage] = useState<any>()
   const quote = useRef<HTMLElement>(null)
   const FADETIME = 1500
-  const MESSAGE_TIME = 10
+  const MESSAGE_TIME = 20
 
   const quoteFadeIn = (callback?: () => void) => {
     if (quote.current) {
