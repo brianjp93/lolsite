@@ -5,6 +5,14 @@ react/node_modules
 react/start.bat
 react/build/*
 
+react/.yarn/*
+!react/.yarn/patches
+!react/.yarn/plugins
+!react/.yarn/releases
+!react/.yarn/sdks
+!react/.yarn/versions
+react/.pnp.*
+
 tags
 gitbuild
 
