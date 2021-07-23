@@ -21,7 +21,7 @@ import api from './api/api'
 const trackingId = 'UA-153444087-1'
 ReactGA.initialize(trackingId)
 
-window.$(document).ready(function () {
+document.addEventListener('DOMContentLoaded', function() {
   const user_data = JSON.parse(document.getElementById('user-data').innerHTML)
   ReactGA.set({
     user_id: user_data.id,

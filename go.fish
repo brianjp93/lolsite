@@ -12,5 +12,5 @@ tmux new-session -d -s lolsite
 tmux send-keys "$environ && python manage.py rundev" C-m
 tmux split-window -h
 tmux send-keys "$environ && python manage.py celery" C-m
-tmux split-window -c "./react/" -v 'npm run start'
+tmux split-window -c "./react/" -v 'yarn start'
 tmux a -t lolsite
