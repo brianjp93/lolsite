@@ -138,3 +138,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 DEFAULT_FROM_EMAIL = "brianjp93@gmail.com"
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

@@ -146,7 +146,7 @@ def get_summoner_champions_overview(
         ]
     ):
         annotation_kwargs["minutes"] = ExpressionWrapper(
-            Sum("participant__match__game_duration") / 60.0, output_field=FloatField()
+            Sum("participant__match__game_duration") / 60, output_field=FloatField()
         )
     if annotation_kwargs:
         query = query.annotate(**annotation_kwargs)
@@ -157,12 +157,12 @@ def get_summoner_champions_overview(
             ExpressionWrapper(
                 F("kills_sum") + F("assists_sum"), output_field=FloatField()
             )
-            / Case(When(deaths_sum=0, then=Value(1.0)), default=F("deaths_sum")),
+            / Case(When(deaths_sum=0.0, then=Value(1.0)), default=F("deaths_sum"), output_field=FloatField()),
             output_field=FloatField(),
         )
     if all_fields or "cspm" in fields:
         annotation_kwargs["cspm"] = ExpressionWrapper(
-            (Sum("total_minions_killed") + Sum("neutral_minions_killed"))
+            (Sum(F("total_minions_killed") + F("neutral_minions_killed"), output_field=FloatField()))
             / F("minutes"),
             output_field=FloatField(),
         )
@@ -191,7 +191,7 @@ def get_summoner_champions_overview(
     if all_fields or "dtpd" in fields:
         annotation_kwargs["dtpd"] = ExpressionWrapper(
             F("total_damage_taken_sum")
-            / Case(When(deaths_sum=0, then=Value(1.0)), default=F("deaths_sum")),
+            / Case(When(deaths_sum=0, then=Value(1.0)), default=F("deaths_sum"), output_field=FloatField()),
             output_field=FloatField(),
         )
     if all_fields or "gpm" in fields:
