@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import { Link, Redirect } from 'react-router-dom'
 import ReactGA from 'react-ga'
 import PropTypes from 'prop-types'

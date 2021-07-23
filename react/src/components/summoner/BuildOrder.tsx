@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import PropTypes from 'prop-types'
 import numeral from 'numeral'
+import ReactTooltip from 'react-tooltip'
 import api from '../../api/api'
 import toastr from 'toastr'
 import type { FrameType, FullParticipantType, TimelineEventType } from '../../types'
-const ReactTooltip: any = require('react-tooltip')
 
 interface EventWithCount extends TimelineEventType {
     count?: number

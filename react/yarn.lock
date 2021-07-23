@@ -2518,7 +2518,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^17.0.3":
+"@types/react@npm:*, @types/react@npm:^17.0.14":
   version: 17.0.14
   resolution: "@types/react@npm:17.0.14"
   dependencies:
@@ -2583,7 +2583,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/toastr@npm:^2.1.38":
+"@types/toastr@npm:^2.1.39":
   version: 2.1.39
   resolution: "@types/toastr@npm:2.1.39"
   dependencies:
@@ -9616,12 +9616,12 @@ fsevents@^1.2.7:
     "@types/node": ^14.14.37
     "@types/numeral": ^2.0.1
     "@types/prop-types": ^15.7.4
-    "@types/react": ^17.0.3
+    "@types/react": ^17.0.14
     "@types/react-dom": ^17.0.3
     "@types/react-modal": ^3.12.0
     "@types/react-router-dom": ^5.1.7
     "@types/recharts": ^1.8.19
-    "@types/toastr": ^2.1.38
+    "@types/toastr": ^2.1.39
     axios: ^0.21.1
     eslint-plugin-react-hooks: ^1.7.0
     fp-ts: ^2.9.5
@@ -9649,7 +9649,7 @@ fsevents@^1.2.7:
     react-router-dom: ^5.2.0
     react-scripts: ^4.0.3
     react-tiny-popover: ^3.4.5
-    react-tooltip: ^3.11.1
+    react-tooltip: ^4.2.21
     recharts: ^1.8.5
     toastr: ^2.1.4
     typescript: ^4.2.3
@@ -12811,15 +12811,16 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-tooltip@npm:^3.11.1":
-  version: 3.11.6
-  resolution: "react-tooltip@npm:3.11.6"
+"react-tooltip@npm:^4.2.21":
+  version: 4.2.21
+  resolution: "react-tooltip@npm:4.2.21"
   dependencies:
-    prop-types: ^15.6.0
+    prop-types: ^15.7.2
+    uuid: ^7.0.3
   peerDependencies:
-    react: "*"
-    react-dom: "*"
-  checksum: 9a7dc397d0d5dc6b6b318ca59ec98deebfc9283171baed703d12fbe5b0db992d1b4c02b870ac2e10c2bee0a9dd6ea4e63af196246855581617aaef5ead812f8a
+    react: ">=16.0.0"
+    react-dom: ">=16.0.0"
+  checksum: 2dab4ae832b336b709ab48d2e17208ae5dffbb62565be13ec428944a9f66e5605027ae2f5d3658e0752c49332d1e73a3b317495235ffd9d0dcae6dde9dcc24a7
   languageName: node
   linkType: hard
 
@@ -15316,6 +15317,15 @@ typescript@^4.2.3:
   bin:
     uuid: ./bin/uuid
   checksum: 1ce3f37e214d6d0dc94a6a9663a0365013ace66bc3fd5b203e6f5d2eeb978aaee1192367222386345d30b4c6a447928c501121aa84c637724bf105ef57284949
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^7.0.3":
+  version: 7.0.3
+  resolution: "uuid@npm:7.0.3"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: a56be8a5bbf2bae755d749d0693637274935b5ae250dfaaaf79241391cf1a7c142a202492196363ec62ec51a476e5e3fc4de2944d854abf2e9b35a33e0e31d4c
   languageName: node
   linkType: hard
 
