@@ -4,20 +4,60 @@
 #
 #    pip-compile dev.in
 #
+attrs==21.2.0
+    # via jsonschema
+awsebcli==3.20.0
+    # via -r dev.in
 backcall==0.2.0
     # via ipython
+bcrypt==3.2.0
+    # via paramiko
+blessed==1.18.1
+    # via awsebcli
+botocore==1.20.112
+    # via awsebcli
+cached-property==1.5.2
+    # via docker-compose
+cement==2.8.2
+    # via awsebcli
+certifi==2021.5.30
+    # via requests
+cffi==1.14.6
+    # via
+    #   bcrypt
+    #   cryptography
+    #   pynacl
+charset-normalizer==2.0.3
+    # via requests
 click==8.0.1
     # via pip-tools
+colorama==0.4.3
+    # via awsebcli
+cryptography==3.4.7
+    # via paramiko
 decorator==5.0.9
     # via
     #   ipython
     #   traitlets
+docker[ssh]==4.4.4
+    # via docker-compose
+docker-compose==1.25.5
+    # via awsebcli
+dockerpty==0.4.1
+    # via docker-compose
+docopt==0.6.2
+    # via docker-compose
 flake8==3.9.2
     # via -r dev.in
+future==0.16.0
+    # via awsebcli
+idna==3.2
+    # via requests
 importlib-metadata==4.6.1
     # via
     #   click
     #   flake8
+    #   jsonschema
     #   pep517
 ipython==7.16.1
     # via -r dev.in
@@ -27,10 +67,18 @@ jedi==0.18.0
     # via
     #   -r dev.in
     #   ipython
+jmespath==0.10.0
+    # via botocore
+jsonschema==3.2.0
+    # via docker-compose
 mccabe==0.6.1
     # via flake8
+paramiko==2.7.2
+    # via docker
 parso==0.8.2
     # via jedi
+pathspec==0.5.9
+    # via awsebcli
 pep517==0.11.0
     # via pip-tools
 pexpect==4.8.0
@@ -45,20 +93,68 @@ ptyprocess==0.7.0
     # via pexpect
 pycodestyle==2.7.0
     # via flake8
+pycparser==2.20
+    # via cffi
 pyflakes==2.3.1
     # via flake8
 pygments==2.9.0
     # via ipython
-six==1.16.0
-    # via traitlets
+pynacl==1.4.0
+    # via paramiko
+pyrsistent==0.18.0
+    # via jsonschema
+python-dateutil==2.8.2
+    # via
+    #   awsebcli
+    #   botocore
+pyyaml==5.4.1
+    # via
+    #   awsebcli
+    #   docker-compose
+requests==2.26.0
+    # via
+    #   awsebcli
+    #   docker
+    #   docker-compose
+semantic_version==2.8.5
+    # via awsebcli
+six==1.14.0
+    # via
+    #   awsebcli
+    #   bcrypt
+    #   blessed
+    #   docker
+    #   docker-compose
+    #   dockerpty
+    #   jsonschema
+    #   pynacl
+    #   python-dateutil
+    #   traitlets
+    #   websocket-client
+termcolor==1.1.0
+    # via awsebcli
+texttable==1.6.4
+    # via docker-compose
 tomli==1.1.0
     # via pep517
 traitlets==4.3.3
     # via ipython
 typing-extensions==3.10.0.0
     # via importlib-metadata
-wcwidth==0.2.5
-    # via prompt-toolkit
+urllib3==1.25.11
+    # via
+    #   awsebcli
+    #   botocore
+    #   requests
+wcwidth==0.1.9
+    # via
+    #   awsebcli
+    #   blessed
+    #   prompt-toolkit
+websocket-client==0.59.0
+    # via
+    #   docker
+    #   docker-compose
 wheel==0.36.2
     # via pip-tools
 zipp==3.5.0
