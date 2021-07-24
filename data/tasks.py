@@ -888,9 +888,11 @@ def compute_changes(index, language="en_US"):
 
     """
     item = Item.objects.all().order_by("-major", "-minor").first()
-    if item.last_changed is None:
+    qs = Item.objects.filter(major=item.major, minor=item.minor, last_changed__isnull=False)
+    if not qs.exists():
         compute_item_last_change(index=index, language=language)
 
     champion = Champion.objects.all().order_by("-major", "-minor").first()
-    if champion.last_changed is None:
+    qs = Champion.objects.filter(major=champion.major, minor=champion.minor, last_changed__isnull=False)
+    if not qs.exists():
         compute_champion_last_change(index=index, language=language)
