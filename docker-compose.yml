@@ -1,0 +1,29 @@
+version: "3.3"
+
+services:
+  db:
+    restart: always
+    image: postgres:13.3
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  web:
+    restart: always
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    expose:
+      - "8000"
+    links:
+      - db:db
+    env_file: .env
+    depends_on:
+      - db
+      - react
+  react:
+    build: ./react/
+    command: yarn start
+    expose:
+      - "3000"
