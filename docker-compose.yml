@@ -3,27 +3,44 @@ version: "3.3"
 services:
   db:
     restart: always
-    image: postgres:13.3
+    image: postgres:13.3-alpine
     volumes:
       - ./data/db:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    env_file: .docker_env
   web:
     restart: always
     build: .
     command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
     volumes:
       - .:/code
-    expose:
-      - "8000"
     links:
       - db:db
-    env_file: .env
+      - react:react
+    env_file: .docker_env
+    depends_on:
+      - db
+      - react
+  worker:
+    restart: always
+    build: .
+    command: python manage.py celery
+    volumes:
+      - .:/code
+    links:
+      - db:db
+      - react:react
+    env_file: .docker_env
     depends_on:
       - db
       - react
   react:
-    build: ./react/
+    build:
+      context: ./react
+      dockerfile: ../DockerfileReact
     command: yarn start
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"

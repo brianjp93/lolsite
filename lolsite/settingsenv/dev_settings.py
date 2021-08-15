@@ -6,7 +6,7 @@ from decouple import config
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-REACT_DEV = False
+REACT_DEV = config('REACT_DEV', False, cast=bool)
 DEV = False
 DEBUG = True
 
@@ -31,6 +31,8 @@ STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+REACT_URL = config('REACT_URL', 'localhost')
+REACT_PORT = config('REACT_PORT', '3000')
 
 
 CELERY_BROKER_URL = "redis://localhost"

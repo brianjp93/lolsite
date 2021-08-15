@@ -5,6 +5,9 @@ import os
 from django.conf import settings
 import socket
 import requests
+import logging
+
+logger = logging.getLogger(__file__)
 
 BASE_DIR = settings.BASE_DIR
 
@@ -30,14 +33,19 @@ def get_paths():
 
 
 def react_data_processor(request):
+    logger.info({'settings.REACT_DEV': settings.REACT_DEV})
     if settings.REACT_DEV:
-        try:
-            ip = get_ip()
-        except:
-            print(
-                "Could not find your ip address.  React components will only work on the local machine."
-            )
-            ip = "localhost"
+        # try:
+        #     ip = get_ip()
+        # except:
+        #     print(
+        #         "Could not find your ip address.  React components will only work on the local machine."
+        #     )
+        #     ip = "localhost"
+        # ip = 'localhost'
+        ip = settings.REACT_URL
+
+        logger.info(f'IP ADDRESS: {ip}')
 
         # get all the scripts from the react-dev server and load them into our base.html page
         r = requests.get(f"http://{ip}:3000")
