@@ -26,6 +26,7 @@ gitbuild
 .vscode/
 .vim/
 .env
+.docker_env
 settings.ini
 vim-markdown-preview.html
 

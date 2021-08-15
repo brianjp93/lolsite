@@ -54,14 +54,14 @@ def react_data_processor(request):
         soup = BeautifulSoup(r.content, features="html.parser")
         scripts = []
         for sc in soup.find_all("script"):
-            sc["src"] = f'http://{ip}:3000{sc["src"]}'
+            sc["src"] = f'http://localhost:3000{sc["src"]}'
             scripts.append(str(sc))
         scripts = "".join(scripts)
 
         react_data = {
             "react_dev": {
                 "scripts": scripts,
-                "css": f"http://{ip}:3000/static/css/bundle.css",
+                "css": f"http://localhost:3000/static/css/bundle.css",
             }
         }
     else:

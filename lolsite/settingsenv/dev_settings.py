@@ -35,7 +35,8 @@ REACT_URL = config('REACT_URL', 'localhost')
 REACT_PORT = config('REACT_PORT', '3000')
 
 
-CELERY_BROKER_URL = "redis://localhost"
+REDIS_URL = config('REDIS_URL', 'localhost')
+CELERY_BROKER_URL = f"redis://{REDIS_URL}"
 
 CACHES = {
     "default": {

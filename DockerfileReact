@@ -1,5 +1,5 @@
 FROM node:14-alpine
-COPY ./ /code/react
-WORKDIR /code/react
+WORKDIR /react
+COPY . .
 RUN yarn install
-COPY ./ /code/react
+COPY . .
