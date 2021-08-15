@@ -46,7 +46,7 @@ services:
   react:
     build:
       context: ./react
-      dockerfile: ../DockerfileReact
+      dockerfile: ../docker/local/DockerfileReact
     command: yarn start
     ports:
       - "3000:3000"
