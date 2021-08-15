@@ -3,3 +3,4 @@ ipython
 jedi
 flake8
 pip-tools
+hypothesis
