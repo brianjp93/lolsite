@@ -8,13 +8,15 @@ amqp==2.6.1
     # via kombu
 asgiref==3.4.1
     # via django
+attrs==21.2.0
+    # via hypothesis
 beautifulsoup4==4.7.1
     # via -r requirements.in
 billiard==3.5.0.5
     # via celery
 boto3==1.18
     # via -r requirements.in
-botocore==1.21.6
+botocore==1.21.21
     # via
     #   boto3
     #   s3transfer
@@ -26,9 +28,9 @@ certifi==2021.5.30
     # via
     #   requests
     #   sentry-sdk
-charset-normalizer==2.0.3
+charset-normalizer==2.0.4
     # via requests
-django==3.2.5
+django==3.2.6
     # via
     #   -r requirements.in
     #   django-storages
@@ -40,9 +42,11 @@ django-storages==1.9.1
     # via -r requirements.in
 djangorestframework==3.11.2
     # via -r requirements.in
+hypothesis==6.14.7
+    # via -r requirements.in
 idna==3.2
     # via requests
-importlib-metadata==4.6.1
+importlib-metadata==4.6.4
     # via kombu
 jmespath==0.10.0
     # via
@@ -92,6 +96,8 @@ six==1.16.0
     # via
     #   model-mommy
     #   python-dateutil
+sortedcontainers==2.4.0
+    # via hypothesis
 soupsieve==2.2.1
     # via beautifulsoup4
 sqlparse==0.4.1

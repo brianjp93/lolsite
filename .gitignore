@@ -19,6 +19,7 @@ gitbuild
 /static/
 /media/
 .hypothesis/
+/data/db
 
 .DS_Store
 .ipynb_checkpoints/*
@@ -26,6 +27,7 @@ gitbuild
 .vscode/
 .vim/
 .env
+.docker_env
 settings.ini
 vim-markdown-preview.html
 

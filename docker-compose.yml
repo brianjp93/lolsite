@@ -1,0 +1,56 @@
+version: "3.3"
+
+services:
+  db:
+    restart: always
+    image: postgres:13.3-alpine
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    env_file: .docker_env
+  web:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/local/Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    links:
+      - db:db
+      - react:react
+      - redis:redis
+    env_file: .docker_env
+    depends_on:
+      - db
+      - react
+      - redis
+  worker:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/local/Dockerfile
+    command: python manage.py celery
+    volumes:
+      - .:/code
+    links:
+      - db:db
+      - react:react
+      - redis:redis
+    env_file: .docker_env
+    depends_on:
+      - db
+      - react
+      - redis
+  redis:
+    image: redis
+  react:
+    build:
+      context: ./react
+      dockerfile: ../docker/local/DockerfileReact
+    command: yarn start
+    ports:
+      - "3000:3000"
