@@ -5,7 +5,9 @@
 #    pip-compile dev.in
 #
 attrs==21.2.0
-    # via jsonschema
+    # via
+    #   hypothesis
+    #   jsonschema
 awsebcli==3.20.0
     # via -r dev.in
 backcall==0.2.0
@@ -27,7 +29,7 @@ cffi==1.14.6
     #   bcrypt
     #   cryptography
     #   pynacl
-charset-normalizer==2.0.3
+charset-normalizer==2.0.4
     # via requests
 click==8.0.1
     # via pip-tools
@@ -51,9 +53,11 @@ flake8==3.9.2
     # via -r dev.in
 future==0.16.0
     # via awsebcli
+hypothesis==6.14.7
+    # via -r dev.in
 idna==3.2
     # via requests
-importlib-metadata==4.6.1
+importlib-metadata==4.6.4
     # via
     #   click
     #   flake8
@@ -131,11 +135,13 @@ six==1.14.0
     #   python-dateutil
     #   traitlets
     #   websocket-client
+sortedcontainers==2.4.0
+    # via hypothesis
 termcolor==1.1.0
     # via awsebcli
 texttable==1.6.4
     # via docker-compose
-tomli==1.1.0
+tomli==1.2.1
     # via pep517
 traitlets==4.3.3
     # via ipython
@@ -155,7 +161,7 @@ websocket-client==0.59.0
     # via
     #   docker
     #   docker-compose
-wheel==0.36.2
+wheel==0.37.0
     # via pip-tools
 zipp==3.5.0
     # via

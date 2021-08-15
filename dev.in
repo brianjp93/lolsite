@@ -1,5 +1,6 @@
-awsebcli
+awsebcli==3.20.0
 ipython
 jedi
 flake8
 pip-tools
+hypothesis
