@@ -1,22 +1,13 @@
 """lolsite/context_processors.py
 """
-
 import os
 from django.conf import settings
-import socket
 import requests
 import logging
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 BASE_DIR = settings.BASE_DIR
-
-
-def get_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    ip = s.getsockname()[0]
-    return ip
 
 
 def get_paths():
@@ -35,33 +26,25 @@ def get_paths():
 def react_data_processor(request):
     logger.info({'settings.REACT_DEV': settings.REACT_DEV})
     if settings.REACT_DEV:
-        # try:
-        #     ip = get_ip()
-        # except:
-        #     print(
-        #         "Could not find your ip address.  React components will only work on the local machine."
-        #     )
-        #     ip = "localhost"
-        # ip = 'localhost'
         ip = settings.REACT_URL
 
         logger.info(f'IP ADDRESS: {ip}')
 
         # get all the scripts from the react-dev server and load them into our base.html page
-        r = requests.get(f"http://{ip}:3000")
+        r = requests.get(f"http://{ip}")
         from bs4 import BeautifulSoup
 
         soup = BeautifulSoup(r.content, features="html.parser")
         scripts = []
         for sc in soup.find_all("script"):
-            sc["src"] = f'http://localhost:3000{sc["src"]}'
+            sc["src"] = f'http://{ip}/{sc["src"]}'
             scripts.append(str(sc))
         scripts = "".join(scripts)
 
         react_data = {
             "react_dev": {
                 "scripts": scripts,
-                "css": f"http://localhost:3000/static/css/bundle.css",
+                "css": f"http://{ip}/static/css/bundle.css",
             }
         }
     else:

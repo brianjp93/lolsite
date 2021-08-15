@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import pathlib
 from decouple import config
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 SECRET_KEY = config(
@@ -20,10 +24,13 @@ SECRET_KEY = config(
 
 if config("LOLSITE_HOST", None) == "dev":
     from lolsite.settingsenv.dev_settings import *
+    print('Using local dev settings.')
 elif config("ENVNAME", None) == "circleci":
     from lolsite.settingsenv.circleci_settings import *
+    print('Using circle ci settings.')
 else:
     from lolsite.settingsenv.aws_settings import *
+    print('Using aws settings.')
 
 GIT_BUILD = 0
 try:
@@ -121,8 +128,13 @@ USE_TZ = True
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "lolsite", "static"),
-    os.path.join(BASE_DIR, "react", "build", "static"),
 ]
+try:
+    STATICFILES_DIRS += [
+        os.path.join(BASE_DIR, "react", "build", "static"),
+    ]
+except:
+    logger.warning('Could not add react/build/static to staticfilesdirs.')
 
 
 CELERY_ACCEPT_CONTENT = ["json"]

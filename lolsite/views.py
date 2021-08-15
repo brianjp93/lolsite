@@ -34,6 +34,7 @@ def home(request, path=""):
     """Return basic home address and let react render the rest.
     """
     # some tasks that need to run
+    logger.info('Loading home page.')
     dt.import_missing.delay()
     dt.compute_changes.delay(5)
     nt.delete_old_notifications.delay()
