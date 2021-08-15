@@ -1,5 +1,12 @@
 # Installation
 
+### Docker
+
+1. `cp .docker_env.example .docker_env`
+2. `docker-compose up`
+3. `docker exec <web container> python manage.py migrate`
+4. `docker exec <web container> python manage.py settoken <riot api token>`
+
 > Instructions for running the django project locally.
 
 1. Download [Postgres](https://www.postgresql.org/).

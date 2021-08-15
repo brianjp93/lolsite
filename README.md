@@ -14,8 +14,6 @@
 
 Another league of legends match history and stats site.
 
-# 
-
 # Ideas
 
 * [ ] Add user comments to matches.
