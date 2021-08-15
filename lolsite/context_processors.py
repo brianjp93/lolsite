@@ -27,17 +27,19 @@ def react_data_processor(request):
     logger.info({'settings.REACT_DEV': settings.REACT_DEV})
     if settings.REACT_DEV:
         ip = settings.REACT_URL
+        docker_link = settings.DOCKER_REACT_LINK
 
-        logger.info(f'IP ADDRESS: {ip}')
+        logger.info(f'DOCKER_REACT_LINK: {docker_link}')
+        logger.info(f'REACT_URL: {ip}')
 
         # get all the scripts from the react-dev server and load them into our base.html page
-        r = requests.get(f"http://{ip}")
+        r = requests.get(f"http://{docker_link}")
         from bs4 import BeautifulSoup
 
         soup = BeautifulSoup(r.content, features="html.parser")
         scripts = []
         for sc in soup.find_all("script"):
-            sc["src"] = f'http://{ip}/{sc["src"]}'
+            sc["src"] = f'http://{ip}{sc["src"]}'
             scripts.append(str(sc))
         scripts = "".join(scripts)
 

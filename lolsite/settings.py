@@ -92,7 +92,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "lolsite.context_processors.react_data_processor",
                 "lolsite.context_processors.version_processor",
             ],
         },

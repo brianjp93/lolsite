@@ -32,6 +32,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 REACT_URL = config('REACT_URL', None)
+DOCKER_REACT_LINK = config('DOCKER_REACT_LINK', REACT_URL)
 
 
 REDIS_URL = config('REDIS_URL', 'localhost')

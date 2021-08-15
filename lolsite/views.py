@@ -7,6 +7,8 @@ from django.templatetags.static import static
 from player.serializers import FavoriteSerializer, SummonerSerializer
 from player.models import Summoner, simplify
 
+from lolsite.context_processors import react_data_processor
+
 from match.models import Match
 
 from data import tasks as dt
@@ -213,4 +215,5 @@ def get_base_react_context(request):
         "user": json.dumps(user_data),
         "favorites": json.dumps(favorite_data),
     }
+    data.update(react_data_processor(request))
     return data
