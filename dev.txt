@@ -5,9 +5,7 @@
 #    pip-compile dev.in
 #
 attrs==21.2.0
-    # via
-    #   hypothesis
-    #   jsonschema
+    # via jsonschema
 awsebcli==3.20.0
     # via -r dev.in
 backcall==0.2.0
@@ -53,8 +51,6 @@ flake8==3.9.2
     # via -r dev.in
 future==0.16.0
     # via awsebcli
-hypothesis==6.14.7
-    # via -r dev.in
 idna==3.2
     # via requests
 importlib-metadata==4.6.4
@@ -135,8 +131,6 @@ six==1.14.0
     #   python-dateutil
     #   traitlets
     #   websocket-client
-sortedcontainers==2.4.0
-    # via hypothesis
 termcolor==1.1.0
     # via awsebcli
 texttable==1.6.4
