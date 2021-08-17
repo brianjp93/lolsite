@@ -18,9 +18,9 @@ def restart_celery():
         win_cmd = "celery worker -A lolsite -l info -P gevent"
         subprocess.call(win_cmd, shell=True)
     elif platform in ["darwin", "linux"]:
-        cmd = "pkill -f celery\ worker"
+        cmd = "pkill -f celery worker"
         subprocess.call(shlex.split(cmd))
-        cmd = "celery worker -A lolsite -l info"
+        cmd = "celery worker -A lolsite -l info --uid=nobody --gid=nogroup"
         subprocess.call(shlex.split(cmd))
     else:
         print(f"Autoreloading celery for platform {platform} not yet configured.")
