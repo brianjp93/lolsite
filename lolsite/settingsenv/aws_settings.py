@@ -89,7 +89,7 @@ if "RDS_DB_NAME" in os.environ or ENVNAME in ["lolsite", "lolsite-beat"]:
 
 CACHES = {
     "default": {
-        "BACKEND": "django_elastipymemcache.memcached.ElastiPyMemCache",
+        "BACKEND": "django_elastipymemcache.backend.ElastiPymemcache",
         "LOCATION": "lolsite.zcb1mj.cfg.usw2.cache.amazonaws.com:11211",
     }
 }
