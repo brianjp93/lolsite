@@ -9653,6 +9653,7 @@ fsevents@^1.2.7:
     "@types/recharts": ^1.8.19
     "@types/toastr": ^2.1.39
     axios: ^0.21.1
+    eslint-config-react-app: ^6.0.0
     eslint-plugin-react-hooks: ^1.7.0
     fp-ts: ^2.9.5
     fuzzysearch: ^1.0.3
@@ -9676,7 +9677,7 @@ fsevents@^1.2.7:
     react-lazyload: ^2.6.8
     react-markdown-editor-lite: ^1.1.5
     react-modal: ^3.11.2
-    react-query: ^3.19.0
+    react-query: ^3.22.0
     react-router-dom: ^5.2.0
     react-scripts: ^4.0.3
     react-tiny-popover: ^3.4.5
@@ -12714,9 +12715,9 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-query@npm:^3.19.0":
-  version: 3.19.0
-  resolution: "react-query@npm:3.19.0"
+"react-query@npm:^3.22.0":
+  version: 3.22.0
+  resolution: "react-query@npm:3.22.0"
   dependencies:
     "@babel/runtime": ^7.5.5
     broadcast-channel: ^3.4.1
@@ -12728,7 +12729,7 @@ fsevents@^1.2.7:
       optional: true
     react-native:
       optional: true
-  checksum: 8dd756272d422f98d7f6ac2fda7702529188214bc4c37a9bb99268c33007e79dd7fdb1321e7f3a1d841571acf3f7432967f50f6ff542aa1f4e04149807ac442e
+  checksum: fdcd8a9ea34da58c95945b7bdb12a4cba7504b6f9e774656c30fb37bcb29719ae0c9eb9ee45249d4e4fb38509c3c43c2bfd098880b70f0f3be3cc1f5eac5e558
   languageName: node
   linkType: hard
 

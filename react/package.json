@@ -2,6 +2,11 @@
   "name": "lol",
   "version": "0.1.0",
   "private": true,
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
   "dependencies": {
     "axios": "^0.21.1",
     "fp-ts": "^2.9.5",
@@ -25,7 +30,7 @@
     "react-lazyload": "^2.6.8",
     "react-markdown-editor-lite": "^1.1.5",
     "react-modal": "^3.11.2",
-    "react-query": "^3.19.0",
+    "react-query": "^3.22.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.3",
     "react-tiny-popover": "^3.4.5",
@@ -58,6 +63,7 @@
     "@types/react-router-dom": "^5.1.7",
     "@types/recharts": "^1.8.19",
     "@types/toastr": "^2.1.39",
+    "eslint-config-react-app": "^6.0.0",
     "eslint-plugin-react-hooks": "^1.7.0",
     "prettier": "2.0.5"
   },

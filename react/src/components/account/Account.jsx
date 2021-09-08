@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import NavBar from '../general/NavBar'
+import {NavBar} from '../general/NavBar'
 import api from '../../api/api'
 import Footer from '../general/Footer'
 

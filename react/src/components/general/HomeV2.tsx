@@ -35,11 +35,11 @@ export function HomeV2({store}: {store: any}) {
         quoteFadeIn()
       })
     })
-  }, [message])
+  }, [])
 
   useEffect(() => {
     getInspirationalMessage()
-  }, [])
+  }, [getInspirationalMessage])
 
   // set and clear interval
   useEffect(() => {

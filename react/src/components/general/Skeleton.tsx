@@ -1,5 +1,5 @@
 import React from 'react'
-import NavBar from './NavBar'
+import {NavBar} from './NavBar'
 import Footer from './Footer'
 
 export default function Skeleton(props: {store: any, children: any}) {

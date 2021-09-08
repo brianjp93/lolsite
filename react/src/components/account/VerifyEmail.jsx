@@ -1,10 +1,10 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import { Link } from 'react-router-dom'
 import queryString from 'query-string'
 import Orbit from '../general/spinners/orbit'
 
 import api from '../../api/api'
-import NavBar from '../general/NavBar'
+import {NavBar} from '../general/NavBar'
 import Footer from '../general/Footer'
 
 
@@ -55,7 +55,7 @@ class VerifyEmail extends Component {
         return (
             <div>
                 <NavBar store={store} />
-                
+
                 <div style={{height: 130}}></div>
                 <div className="row">
                     <div

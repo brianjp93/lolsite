@@ -1,11 +1,11 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import { Link } from 'react-router-dom'
 import ReactGA from 'react-ga'
 import PropTypes from 'prop-types'
 import ReactTooltip from 'react-tooltip'
 import toastr from 'toastr'
 
-import NavBar from '../general/NavBar'
+import {NavBar} from '../general/NavBar'
 import api from '../../api/api'
 import Footer from '../general/Footer'
 
