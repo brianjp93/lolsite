@@ -47,7 +47,7 @@ export function HomeV2({store}: {store: any}) {
     return () => {
       window.clearInterval(interval)
     }
-  }, [])
+  }, [getInspirationalMessage])
 
   return (
     <Skeleton store={store}>

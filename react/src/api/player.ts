@@ -178,7 +178,7 @@ async function importMatches(data: ImportMatchesData) {
     return unwrap(t.type({count: t.number}).decode(r.data))
 }
 
-export default {
+const exports = {
     getSummoner,
     getSummoners,
     getSummonerPage,
@@ -208,3 +208,4 @@ export default {
     editDefaultSummoner,
     importMatches,
 }
+export default exports

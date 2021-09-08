@@ -24,6 +24,7 @@ export function ItemPopover(props: any) {
   const [isOpen, setIsOpen] = useState(false)
   const [isAttemptedGet, setIsAttemptedGet] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const {item_id, major, minor, store, item, getItem} = props
 
   const handleOutsideClick = useCallback((event) => {
     if (ref?.current) {
@@ -36,22 +37,22 @@ export function ItemPopover(props: any) {
 
   const toggle = useCallback(() => {
     setIsOpen((state) => !state)
-    if (props.item === null && !isAttemptedGet) {
-      if (props.item_id) {
-        props.getItem(props.item_id, props.major, props.minor, props.store)
+    if (item === null && !isAttemptedGet) {
+      if (item_id) {
+        getItem(item_id, major, minor, store)
         setIsAttemptedGet(true)
       }
     }
-  }, [isAttemptedGet, props.item, props.item_id])
+  }, [isAttemptedGet, item, item_id, major, minor, store, getItem])
 
   useEffect(() => {
-    if (props.item_id) {
+    if (item_id) {
       window.addEventListener('mousedown', handleOutsideClick);
       return () => {
         window.removeEventListener('mousedown', handleOutsideClick);
       }
     }
-  }, [handleOutsideClick])
+  }, [handleOutsideClick, item_id])
 
   if (props.item_id) {
     return (

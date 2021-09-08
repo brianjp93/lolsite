@@ -10,6 +10,7 @@ function getInspirationalMessage(data) {
     return axios.post(url, data)
 }
 
-export default {
+const exports = {
     getInspirationalMessage,
 }
+export default exports

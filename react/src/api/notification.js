@@ -15,7 +15,8 @@ function markNotifications(data) {
     return axios.put(url, data)
 }
 
-export default {
+const exports = {
     getNotifications,
     markNotifications,
 }
+export default exports

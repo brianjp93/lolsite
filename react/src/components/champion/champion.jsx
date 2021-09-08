@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
 import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
 import fuzzysearch from 'fuzzysearch'
@@ -117,12 +117,12 @@ export function ChampionGrid(props) {
 
 export function ChampionCard(props) {
     const champion = props.champion
-    // const label_style = { borderRadius: 4, padding: '0px 4px', display: 'inline-block' }
     const card_height = 300
     const sidepad = 10
     const theme = props.theme
 
-    const stat_list = [
+  const stat_list = useMemo(() => {
+    return [
         { key: 'attack_damage', shortname: 'AD', longname: 'Attack Damage' },
         { key: 'attack_damage_per_level', shortname: 'AD/lvl', longname: 'Attack Damage / Level' },
         { key: 'attack_speed', shortname: 'AS', longname: 'Attack Speed' },
@@ -143,6 +143,7 @@ export function ChampionCard(props) {
         { key: 'armor', shortname: 'Armor', longname: 'Armor' },
         { key: 'armor_per_level', shortname: 'Armor/lvl', longname: 'Armor / Level' },
     ]
+  }, [])
 
     const data = useMemo(() => {
         let out = []

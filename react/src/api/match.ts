@@ -61,7 +61,7 @@ async function getLatestUnlabeled(data: any) {
     return await axios.post(url, data)
 }
 
-export default {
+const exports = {
     timeline,
     participants,
     getSpectate,
@@ -70,3 +70,5 @@ export default {
     setRole,
     getLatestUnlabeled,
 }
+
+export default exports

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import api from '../../api/api'
 import ReactTooltip from 'react-tooltip'
 import toastr from 'toastr'
@@ -164,7 +164,9 @@ export function Comment(props) {
     const comment_id = props.comment_id
     const tab_size = 15
     const hide_action_bar = props.hide_action_bar === undefined ? false : props.hide_action_bar
-    const summoners = props.summoners !== undefined ? props.summoners : []
+    const summoners = useMemo(() => {
+      return props.summoners !== undefined ? props.summoners : []
+    }, [props.summoners])
 
     // get page and set page to page + 1
     const getReplyPage = useCallback((comment_id, reply_list, page) => {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import MdEditor from 'react-markdown-editor-lite'
 import 'react-markdown-editor-lite/lib/index.css'
 import { mdParser } from '../../constants/mdparser'
@@ -33,7 +33,9 @@ export function CreateComment(props) {
     const setView = props.setView
     const match = props.match
     const theme = props.theme
-    const reply_to = props.reply_to === undefined ? {} : props.reply_to
+    const reply_to = useMemo(() => {
+      return props.reply_to === undefined ? {} : props.reply_to
+    }, [props.reply_to])
 
     const createComment = useCallback(
         (match_id, markdown) => {

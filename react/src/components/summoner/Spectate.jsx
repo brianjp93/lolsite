@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import { Link } from 'react-router-dom'
 import Modal from 'react-modal'
 import numeral from 'numeral'
@@ -247,5 +247,5 @@ class SpectateModal extends Component {
         )
     }
 }
-
-export default { Spectate, SpectateModal }
+const exports = { Spectate, SpectateModal }
+export default exports

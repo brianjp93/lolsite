@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts'
 import numeral from 'numeral'
@@ -14,10 +14,12 @@ function ChampionTimelines(props) {
     const usable_width = props.expanded_width - 30
     const available_width = usable_width - props.participants.length * image_width
     const padding_pixels = available_width / props.participants.length
-    const participants = [
+  const participants = useMemo(() => {
+    return [
         ...props.participants.filter(participant => participant.team_id === 100),
         ...props.participants.filter(participant => participant.team_id === 200),
     ]
+  }, [props.participants])
     const participant_ids = participants.map(participant => participant._id)
     const colors = [
         '#d94630',

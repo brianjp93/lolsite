@@ -11,6 +11,7 @@ function demoLogin(data) {
     return axios.post(url, data)
 }
 
-export default {
+const exports = {
     demoLogin,
 }
+export default exports

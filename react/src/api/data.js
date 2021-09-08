@@ -41,7 +41,7 @@ function getChampionSpells(data) {
     return axios.post(url, data)
 }
 
-export default {
+const exports = {
     getProfileIcon,
     getItem,
     getRunes,
@@ -50,3 +50,4 @@ export default {
     getChampions,
     getChampionSpells,
 }
+export default exports

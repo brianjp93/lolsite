@@ -5,7 +5,7 @@ import match from './match'
 import general from './general'
 import notification from './notification'
 
-export default {
+const exports = {
     fun,
     player,
     data,
@@ -13,3 +13,4 @@ export default {
     general,
     notification,
 }
+export default exports

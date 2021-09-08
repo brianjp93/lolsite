@@ -1,5 +1,4 @@
 import {useState, useEffect, useMemo, useRef, useCallback} from 'react'
-import { useQuery } from 'react-query';
 import { useDebounce } from '../../hooks'
 import {Link, useHistory} from 'react-router-dom'
 import {NotificationBell} from '../notification/notificationbell'
@@ -24,7 +23,7 @@ export function NavBar(props: any) {
   const userDropdownRef = useRef<HTMLDivElement>(null)
   const user = props.store.state.user
   const theme = props.store.state.theme
-  const ignore_hotkeys = props.ignore_hotkeys || []
+  const ignore_hotkeys = useMemo(() => props.ignore_hotkeys || [], [props.ignore_hotkeys])
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -72,16 +71,17 @@ export function NavBar(props: any) {
       }
       return event
     },
-    [highlightIndex, summonerName, summonerSearch],
+    [highlightIndex, summonerName, summonerSearch, history, props.store.state.region_selected],
   )
 
-  const handleKeyListener = (event: KeyboardEvent) => {
+  const handleKeyListener = useCallback((event: KeyboardEvent) => {
     if (ignore_hotkeys.indexOf(event.key.toLowerCase()) >= 0) {
       return
     } else {
       const target = event.target as HTMLElement
       if (props.store.state.ignore_tags.has(target.tagName.toLowerCase())) {
         if (['escape'].indexOf(event.key.toLowerCase()) >= 0) {
+          target.blur();
           event.preventDefault()
           event.stopPropagation()
         }
@@ -94,7 +94,7 @@ export function NavBar(props: any) {
         }
       }
     }
-  }
+  }, [ignore_hotkeys, props.store.state.ignore_tags])
 
   const handleSearchOutsideClick = useCallback((event: MouseEvent) => {
     const target = event.target as HTMLElement
@@ -112,7 +112,7 @@ export function NavBar(props: any) {
 
   const isLoggedIn = useMemo(() => {
     return user.email !== undefined
-  }, [props.store.state.user])
+  }, [user])
 
   const simplifyName = (name: string) => {
     return name.split(' ').join('').toLowerCase()
@@ -185,7 +185,7 @@ export function NavBar(props: any) {
         </div>
       )
     },
-    [summonerName, highlightIndex],
+    [highlightIndex],
   )
 
   useEffect(() => {
@@ -200,7 +200,7 @@ export function NavBar(props: any) {
       window.removeEventListener('mousedown', handleSearchOutsideClick)
       window.removeEventListener('mousedown', handleUserDropdownOutsideClick)
     }
-  }, [])
+  }, [handleKeyListener, handleUserDropdownOutsideClick, handleSearchOutsideClick])
 
     useEffect(() => {
       doSearch()
