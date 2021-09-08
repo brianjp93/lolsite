@@ -14,7 +14,7 @@ import api from '../../api/api'
 import {
     formatDatetimeFull,
     getTeam,
-    participantItems,
+    ParticipantItems,
     convertTier,
     convertRank,
 } from '../../constants/general'
@@ -154,7 +154,7 @@ function MatchCardModal(props) {
                     />
                 </div>
 
-                {participantItems(part, match, store)}
+                <ParticipantItems part={part} match={match} store={store} />
 
                 <div
                     style={{

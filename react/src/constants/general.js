@@ -1,6 +1,5 @@
-import React from 'react'
 import moment from 'moment'
-import Item from '../components/data/Item'
+import { ItemPopover } from '../components/data/Item'
 import api from '../api/api'
 
 export function formatDatetime(epoch) {
@@ -87,10 +86,10 @@ function retrieveItem(item_id, major, minor, store) {
     return item
 }
 
-function item(id, image_url, match, store) {
+export function item(id, image_url, match, store) {
     const item_data = retrieveItem(id, match.major, match.minor, store)
     return (
-        <Item.ItemPopover
+        <ItemPopover
             style={{
                 display: 'inline-block',
                 height: 28,
@@ -123,11 +122,11 @@ function item(id, image_url, match, store) {
                     alt=""
                 />
             </div>
-        </Item.ItemPopover>
+        </ItemPopover>
     )
 }
 
-export function participantItems(part, match, store) {
+export function ParticipantItems({part, match, store}) {
     return (
         <div
             style={{
@@ -136,14 +135,14 @@ export function participantItems(part, match, store) {
             }}
         >
             <div style={{ width: 100 }}>
-                <span>{item(part.stats.item_0, part.stats.item_0_image?.file_30, match, store)}</span>
-                <span>{item(part.stats.item_1, part.stats.item_1_image?.file_30, match, store)}</span>
-                <span>{item(part.stats.item_2, part.stats.item_2_image?.file_30, match, store)}</span>
+                <span>{item(part.stats?.item_0, part.stats?.item_0_image?.file_30, match, store)}</span>
+                <span>{item(part.stats?.item_1, part.stats?.item_1_image?.file_30, match, store)}</span>
+                <span>{item(part.stats?.item_2, part.stats?.item_2_image?.file_30, match, store)}</span>
             </div>
             <div style={{ width: 100 }}>
-                <span>{item(part.stats.item_3, part.stats.item_3_image?.file_30, match, store)}</span>
-                <span>{item(part.stats.item_4, part.stats.item_4_image?.file_30, match, store)}</span>
-                <span>{item(part.stats.item_5, part.stats.item_5_image?.file_30, match, store)}</span>
+                <span>{item(part.stats?.item_3, part.stats?.item_3_image?.file_30, match, store)}</span>
+                <span>{item(part.stats?.item_4, part.stats?.item_4_image?.file_30, match, store)}</span>
+                <span>{item(part.stats?.item_5, part.stats?.item_5_image?.file_30, match, store)}</span>
             </div>
         </div>
     )

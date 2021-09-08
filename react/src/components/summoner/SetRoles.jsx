@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
 import { useEffect, useCallback } from 'react'
 
-import { participantItems } from '../../constants/general'
+import { ParticipantItems } from '../../constants/general'
 
 
 function SetRoles(props) {
@@ -169,7 +169,7 @@ function SetRoles(props) {
                     </h5>
                 </div>
 
-                {participantItems(part, match, props.store)}
+                <ParticipantItems part={part} match={match} store={props.store} />
 
             </div>
         )

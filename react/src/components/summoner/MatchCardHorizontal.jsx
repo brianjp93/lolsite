@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import api from '../../api/api'
 import numeral from 'numeral'
-import Item from '../data/Item'
+import { ParticipantItems } from '../../constants/general';
 import { rankParticipants } from './rankparticipants'
 import { Comments } from '../comment/comments'
 import { useEffect } from 'react'
@@ -53,18 +53,6 @@ function MatchCard(props) {
     const store = props.store
     const pageStore = props.pageStore
     const account_id = props.pageStore.state.summoner.account_id
-    const retrieveItem = (item_id, major, minor) => {
-        // get item from store
-        let version = `${major}.${minor}`
-        let item = null
-        let items = store.state.items
-        if (items[version] !== undefined) {
-            if (items[version][item_id] !== undefined) {
-                item = items[version][item_id]
-            }
-        }
-        return item
-    }
 
     const getParticipantRanks = useCallback(() => {
         let participants = rankParticipants(match.participants)
@@ -81,74 +69,6 @@ function MatchCard(props) {
     const vision_score_per_minute = mypart.stats.vision_score / game_time
     // const damage_taken_per_minute = mypart.stats.total_damage_taken / game_time
     // const csm = (mypart.stats.total_minions_killed + mypart.stats.neutral_minions_killed) / game_time
-    const getItem = (item_id, major, minor) => {
-        // request item info if it isn't in the store
-        let version = `${major}.${minor}`
-        let store = props.store
-        let item = null
-        let items = store.state.items
-
-        // if the item already exists, set item equal to it
-        if (items[version] !== undefined) {
-            if (items[version][item_id] !== undefined) {
-                item = items[version][item_id]
-            }
-        }
-        // if the item doesn't exists yet, get it
-        if (item === null) {
-            let data = {
-                item_id,
-                major,
-                minor,
-            }
-            api.data.getItem(data).then((response) => {
-                if (items[version] === undefined) {
-                    items[version] = {}
-                }
-                items[version][item_id] = response.data.data
-                store.setState({ items: items })
-            })
-        }
-        return item
-    }
-    const item = (id, image_url) => {
-        const item_data = retrieveItem(id, match.major, match.minor)
-        return (
-            <Item.ItemPopover
-                style={{
-                    display: 'inline-block',
-                    height: 28,
-                    width: 28,
-                    margin: '0px 2px',
-                }}
-                item={item_data}
-                tooltip_style={store.state.tooltip_style}
-                getItem={getItem}
-                item_id={id}
-                major={match.major}
-                minor={match.minor}
-            >
-                <div
-                    style={{
-                        display: 'inline-block',
-                        height: 28,
-                        width: 28,
-                        borderRadius: 10,
-                        margin: '0px 2px',
-                        borderStyle: 'solid',
-                        borderColor: '#2d2e31',
-                        borderWidth: 1,
-                    }}
-                >
-                    <img
-                        style={{ height: '100%', borderRadius: 10, display: 'inline-block' }}
-                        src={image_url}
-                        alt=""
-                    />
-                </div>
-            </Item.ItemPopover>
-        )
-    }
     const isLoss = () => {
         let part = mypart
         let team_id = part.team_id
@@ -460,16 +380,7 @@ function MatchCard(props) {
                             paddingTop: TOPPAD,
                         }}
                     >
-                        <div style={{ width: 100 }}>
-                            <span>{item(mypart.stats.item_0, mypart.stats.item_0_image?.file_30)}</span>
-                            <span>{item(mypart.stats.item_1, mypart.stats.item_1_image?.file_30)}</span>
-                            <span>{item(mypart.stats.item_2, mypart.stats.item_2_image?.file_30)}</span>
-                        </div>
-                        <div style={{ width: 100 }}>
-                            <span>{item(mypart.stats.item_3, mypart.stats.item_3_image?.file_30)}</span>
-                            <span>{item(mypart.stats.item_4, mypart.stats.item_4_image?.file_30)}</span>
-                            <span>{item(mypart.stats.item_5, mypart.stats.item_5_image?.file_30)}</span>
-                        </div>
+                      <ParticipantItems part={mypart} match={match} store={store} />
                     </span>
 
                     <div
