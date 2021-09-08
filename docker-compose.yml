@@ -48,9 +48,10 @@ services:
   redis:
     image: redis
   react:
-    build:
-      context: ./react
-      dockerfile: ../docker/local/DockerfileReact
-    command: yarn start
+    image: node:14-alpine
+    working_dir: /code
+    command: sh -c "yarn install && yarn start"
+    volumes:
+      - ./react:/code
     ports:
       - "3000:3000"
