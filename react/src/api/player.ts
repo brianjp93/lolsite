@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios'
 import * as t from 'io-ts'
-import { PositionBin, unwrap, TopPlayedWithPlayer, Summoner } from '../types'
+import { PositionBin, unwrap, TopPlayedWithPlayer, Summoner, SummonerSearch } from '../types'
 
 let version = 'v1'
 
@@ -52,9 +52,10 @@ function getChampionsOverview(data: any) {
     return axios.post(url, data)
 }
 
-function summonerSearch(data: any) {
+async function summonerSearch(data: any) {
     let url = `/api/${version}/player/summoner-search/`
-    return axios.post(url, data)
+    const r = await axios.post(url, data)
+    return unwrap(t.array(SummonerSearch).decode(r.data.data))
 }
 
 function isLoggedIn() {

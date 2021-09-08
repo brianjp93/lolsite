@@ -1,5 +1,6 @@
 import {useState, useEffect, useMemo, useRef, useCallback} from 'react'
-import { useDebounce } from '../../hooks'
+import { useQuery } from 'react-query'
+import {useDebounce} from '../../hooks'
 import {Link, useHistory} from 'react-router-dom'
 import {NotificationBell} from '../notification/notificationbell'
 import api from '../../api/api'
@@ -12,7 +13,6 @@ declare let window: Win
 export function NavBar(props: any) {
   const [summonerName, setSummonerName] = useState('')
   const debouncedSummonerName = useDebounce(summonerName, 300)
-  const [summonerSearch, setSummonerSearch] = useState<Record<string, string>[]>([])
   const [isQuicksearchOpen, setIsQuickSearchOpen] = useState(false)
   const [highlightIndex, setHighlightIndex] = useState<number | null>(0)
   const [isShowUserDropdown, setIsShowUserDropdown] = useState(false)
@@ -25,15 +25,32 @@ export function NavBar(props: any) {
   const theme = props.store.state.theme
   const ignore_hotkeys = useMemo(() => props.ignore_hotkeys || [], [props.ignore_hotkeys])
 
+  const searchQuery = useQuery(
+    ['quicksearch', debouncedSummonerName, props.store.state.region_selected],
+    async () => {
+      const region = props.store.state.region_selected
+      const name = simplifyName(debouncedSummonerName)
+      const data = {
+        simple_name__icontains: name,
+        region: region,
+        order_by: 'simple_name',
+        start: 0,
+        end: 15,
+        fields: ['name', 'summoner_level'],
+      }
+      return api.player.summonerSearch(data)
+    },
+    {retry: false, staleTime: 60_000, enabled: debouncedSummonerName.length >= 3}
+  )
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (event.key === 'Enter') {
         let name = summonerName
         if (highlightIndex !== null && highlightIndex >= 0) {
-          try {
-            name = summonerSearch[highlightIndex]?.name
-          } catch (error) {
-            name = summonerName
+          const x = searchQuery?.data?.[highlightIndex]?.name
+          if (x) {
+            name = x
           }
         }
         if (name.length > 0) {
@@ -47,7 +64,7 @@ export function NavBar(props: any) {
         event.preventDefault()
         event.stopPropagation()
         let index = highlightIndex || 0
-        let top_index = summonerSearch.length - 1
+        let top_index = (searchQuery.data?.length || 0) - 1
         if (highlightIndex === null) {
           if (event.key === 'ArrowUp') {
             index = top_index
@@ -71,44 +88,56 @@ export function NavBar(props: any) {
       }
       return event
     },
-    [highlightIndex, summonerName, summonerSearch, history, props.store.state.region_selected],
+    [highlightIndex, summonerName, searchQuery.data, history, props.store.state.region_selected],
   )
 
-  const handleKeyListener = useCallback((event: KeyboardEvent) => {
-    if (ignore_hotkeys.indexOf(event.key.toLowerCase()) >= 0) {
-      return
-    } else {
-      const target = event.target as HTMLElement
-      if (props.store.state.ignore_tags.has(target.tagName.toLowerCase())) {
-        if (['escape'].indexOf(event.key.toLowerCase()) >= 0) {
-          target.blur();
-          event.preventDefault()
-          event.stopPropagation()
-        }
+  const handleKeyListener = useCallback(
+    (event: KeyboardEvent) => {
+      if (ignore_hotkeys.indexOf(event.key.toLowerCase()) >= 0) {
+        return
       } else {
-        if (['/', 's'].indexOf(event.key.toLowerCase()) >= 0) {
-          input.current?.focus()
-          input.current?.select()
-          event.preventDefault()
-          event.stopPropagation()
+        const target = event.target as HTMLElement
+        if (props.store.state.ignore_tags.has(target.tagName.toLowerCase())) {
+          if (['escape'].indexOf(event.key.toLowerCase()) >= 0) {
+            target.blur()
+            setIsQuickSearchOpen(false)
+            event.preventDefault()
+            event.stopPropagation()
+          }
+        } else {
+          if (['/', 's'].indexOf(event.key.toLowerCase()) >= 0) {
+            input.current?.focus()
+            input.current?.select()
+            event.preventDefault()
+            event.stopPropagation()
+          }
         }
       }
-    }
-  }, [ignore_hotkeys, props.store.state.ignore_tags])
+    },
+    [ignore_hotkeys, props.store.state.ignore_tags],
+  )
 
-  const handleSearchOutsideClick = useCallback((event: MouseEvent) => {
-    const target = event.target as HTMLElement
-    if (searchRef.current && !searchRef.current.contains(target)) {
-      setIsQuickSearchOpen(false)
-    }
-  }, [searchRef])
+  const handleSearchOutsideClick = useCallback(
+    (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!searchRef.current?.contains(target)) {
+        if (!input.current?.contains(target)) {
+          setIsQuickSearchOpen(false)
+        }
+      }
+    },
+    [searchRef],
+  )
 
-  const handleUserDropdownOutsideClick = useCallback((event: MouseEvent) => {
-    const target = event.target as HTMLElement
-    if (!userDropdownRef.current?.contains(target)) {
-      setIsShowUserDropdown(false)
-    }
-  }, [userDropdownRef])
+  const handleUserDropdownOutsideClick = useCallback(
+    (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!userDropdownRef.current?.contains(target)) {
+        setIsShowUserDropdown(false)
+      }
+    },
+    [userDropdownRef],
+  )
 
   const isLoggedIn = useMemo(() => {
     return user.email !== undefined
@@ -117,28 +146,6 @@ export function NavBar(props: any) {
   const simplifyName = (name: string) => {
     return name.split(' ').join('').toLowerCase()
   }
-
-  const doSearch = useCallback(() => {
-    if (debouncedSummonerName.length >= 3) {
-      let region = props.store.state.region_selected
-      const name = simplifyName(debouncedSummonerName)
-      let data = {
-        simple_name__icontains: name,
-        region: region,
-        order_by: 'simple_name',
-        start: 0,
-        end: 10,
-        fields: ['name', 'summoner_level'],
-      }
-      api.player.summonerSearch(data).then((response) => {
-        if (name === simplifyName(debouncedSummonerName)) {
-          setSummonerSearch(response.data.data)
-        }
-      })
-    } else {
-      setSummonerSearch([])
-    }
-  }, [debouncedSummonerName, props.store.state.region_selected])
 
   const quickSearchLine = useCallback(
     (data: any, key: number) => {
@@ -202,10 +209,6 @@ export function NavBar(props: any) {
     }
   }, [handleKeyListener, handleUserDropdownOutsideClick, handleSearchOutsideClick])
 
-    useEffect(() => {
-      doSearch()
-    }, [doSearch])
-
   return (
     <span>
       <ul id="dropdown1" className="dropdown-content">
@@ -247,7 +250,7 @@ export function NavBar(props: any) {
                   window.$(elt).formSelect()
                 }}
                 onChange={(event) => {
-                  props.store.setState({region_selected: event.target.value}, doSearch)
+                  props.store.setState({region_selected: event.target.value})
                 }}
                 value={props.store.state.region_selected}
               >
@@ -309,7 +312,7 @@ export function NavBar(props: any) {
                       close
                     </button>
                   </div>
-                  {summonerSearch.length === 0 && (
+                  {(searchQuery.data === undefined || searchQuery.data.length === 0) && (
                     <div
                       style={{padding: '10px 10px', lineHeight: '30px'}}
                       className="error-bordered"
@@ -319,7 +322,7 @@ export function NavBar(props: any) {
                       Please provide at least 3 characters.
                     </div>
                   )}
-                  {summonerSearch.map((data, key) => {
+                  {searchQuery.data && searchQuery.data.map((data: any, key: number) => {
                     return quickSearchLine(data, key)
                   })}
                 </div>

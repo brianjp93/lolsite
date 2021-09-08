@@ -14,9 +14,9 @@ export {
 
 export type {TimelineEventType, FrameType, FullParticipantType} from './iotypes/match'
 
-export {Summoner, PositionBin, TopPlayedWithPlayer} from './iotypes/player'
+export {Summoner, PositionBin, TopPlayedWithPlayer, SummonerSearch} from './iotypes/player'
 
-export type {SummonerType, PositionBinType, TopPlayedWithPlayerType} from './iotypes/player'
+export type {SummonerType, PositionBinType, TopPlayedWithPlayerType, SummonerSearchType} from './iotypes/player'
 
 export function unwrap<T>(x: t.Validation<T>) {
     if (isRight(x)) {

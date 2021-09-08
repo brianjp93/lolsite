@@ -15,11 +15,14 @@ import {ItemsPage} from './components/item/items'
 import {ItemStatPage} from './components/item/itemstats'
 import {ChampionsPage} from './components/champion/champion'
 import {NotificationPage} from './components/notification/notification'
+import { QueryClient, QueryClientProvider } from 'react-query'
 
 import api from './api/api'
 
 const trackingId = 'UA-153444087-1'
 ReactGA.initialize(trackingId)
+
+const queryClient = new QueryClient()
 
 document.addEventListener('DOMContentLoaded', function() {
   const user_data = JSON.parse(document.getElementById('user-data').innerHTML)
@@ -160,7 +163,9 @@ class App extends Component {
   render() {
     return (
       <div id="background-div">
-        <Routes store={this} />
+        <QueryClientProvider client={queryClient}>
+          <Routes store={this} />
+        </QueryClientProvider>
       </div>
     )
   }
