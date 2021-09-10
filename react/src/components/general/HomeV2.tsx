@@ -1,11 +1,15 @@
-import {useState, useEffect, useRef, useCallback} from 'react'
+import {useRef} from 'react'
 import {fadeIn, fadeOut} from '../general/helpers'
+import { useQuery } from 'react-query';
 import api from '../../api/api'
 import Skeleton from '../general/Skeleton'
 import SummonerSearchField from '../summoner/SummonerSearchField'
 
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export function HomeV2({store}: {store: any}) {
-  const [message, setMessage] = useState<any>()
   const quote = useRef<HTMLElement>(null)
   const FADETIME = 1500
   const MESSAGE_TIME = 20
@@ -28,26 +32,16 @@ export function HomeV2({store}: {store: any}) {
     }
   }
 
-  const getInspirationalMessage = useCallback(() => {
-    api.fun.getInspirationalMessage({random: true}).then((response) => {
-      quoteFadeOut(() => {
-        setMessage(response.data.message)
-        quoteFadeIn()
-      })
-    })
-  }, [])
-
-  useEffect(() => {
-    getInspirationalMessage()
-  }, [getInspirationalMessage])
-
-  // set and clear interval
-  useEffect(() => {
-    let interval = window.setInterval(getInspirationalMessage, MESSAGE_TIME * 1000)
-    return () => {
-      window.clearInterval(interval)
-    }
-  }, [getInspirationalMessage])
+  const quoteQuery = useQuery(
+    ['inspirational-quote'],
+    () => api.fun.getInspirationalMessage({random: true}).then(async (response) => {
+      quoteFadeOut()
+      await sleep(FADETIME)
+      quoteFadeIn()
+      return response.data.message
+    }),
+    {refetchInterval: MESSAGE_TIME * 1000, refetchOnWindowFocus: false}
+  )
 
   return (
     <Skeleton store={store}>
@@ -62,16 +56,16 @@ export function HomeV2({store}: {store: any}) {
         <div style={{height: 100, display: 'flex'}} className="col m3 offset-m4">
           <span style={{marginTop: 'auto', marginBottom: 'auto'}}>
             <blockquote
-              title={message?.hidden_message}
+              title={quoteQuery.data?.hidden_message}
               style={{marginTop: 0, marginBottom: 0}}
               ref={quote}
               className={`${store.state.theme}`}
             >
-              <span>{message?.message}</span>
-              {['', undefined].indexOf(message?.author) === -1 && (
+              <span>{quoteQuery.data?.message}</span>
+              {['', undefined].indexOf(quoteQuery.data?.author) === -1 && (
                 <span>
                   <br />
-                  <small>- {message?.author}</small>
+                  <small>- {quoteQuery.data?.author}</small>
                 </span>
               )}
             </blockquote>
