@@ -122,6 +122,7 @@ class ChampionAdmin(admin.ModelAdmin):
 class ChampionImageAdmin(admin.ModelAdmin):
     list_display = ("champion", "full", "image_url", "splash_url", "loading_art_url")
     raw_id_fields = ("champion",)
+    list_filter = ("champion__major", "champion__minor")
 
 
 class ChampionInfoAdmin(admin.ModelAdmin):
