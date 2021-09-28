@@ -307,7 +307,7 @@ class Participant(models.Model):
         """Get spell 1 image URL.
         """
         url = ""
-        query = SummonerSpell.objects.filter(key=self.spell_1_id)
+        query = SummonerSpell.objects.filter(key=self.summoner_1_id)
         if query.exists():
             spell = query.first()
             url = spell.image_url()
@@ -317,7 +317,7 @@ class Participant(models.Model):
         """Get spell 2 image URL.
         """
         url = ""
-        query = SummonerSpell.objects.filter(key=self.spell_2_id)
+        query = SummonerSpell.objects.filter(key=self.summoner_2_id)
         if query.exists():
             spell = query.first()
             url = spell.image_url()

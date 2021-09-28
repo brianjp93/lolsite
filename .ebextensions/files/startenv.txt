@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-. /opt/python/run/venv/bin/activate && . /opt/python/current/env && cd /opt/python/current/app
+. /var/app/venv/*/bin/activate && . /opt/elasticbeanstalk/deployment/env && cd /var/app/current
