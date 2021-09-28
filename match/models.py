@@ -1,7 +1,7 @@
 """match.models
 """
 from django.db import models
-from django.db.models import Q
+from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
 
 import pytz
@@ -96,11 +96,11 @@ def lp_sort(position):
 
 class MatchQuerySet(models.QuerySet):
 
-    def get_items(self, account_id=None):
+    def get_items(self, puuid=None):
         item_ids = set()
         qs = Stats.objects.filter(participant__match__in=self)
-        if account_id is not None:
-            qs = qs.filter(participant__current_account_id=account_id)
+        if puuid is not None:
+            qs = qs.filter(participant__puuid=puuid)
         for stat in qs:
             for i in range(7):
                 key = f'item_{i}'
@@ -120,12 +120,12 @@ class MatchQuerySet(models.QuerySet):
         qs = qs.order_by('key', '-major', '-minor').distinct('key').select_related('image')
         return {x.key: x for x in qs}
 
-    def get_spell_images(self, account_id=None):
+    def get_spell_images(self):
         spell_ids = set()
         for match in self.prefetch_related('participants'):
             for part in match.participants.all():
-                spell_ids.add(part.spell_1_id)
-                spell_ids.add(part.spell_2_id)
+                spell_ids.add(part.summoner_1_id)
+                spell_ids.add(part.summoner_2_id)
         qs = SummonerSpellImage.objects.filter(spell__key__in=spell_ids)
         qs = qs.select_related('spell')
         qs = qs.order_by('spell___id', '-spell__major', '-spell__minor').distinct('spell___id')
@@ -165,7 +165,7 @@ class MatchQuerySet(models.QuerySet):
 
 
 class Match(VersionedModel):
-    _id = models.BigIntegerField(unique=True, db_index=True)
+    _id = models.CharField(unique=True, db_index=True, max_length=32)
     game_creation = models.BigIntegerField(db_index=True)
     game_duration = models.IntegerField()
     game_mode = models.CharField(max_length=32, default="", blank=True)
@@ -173,7 +173,7 @@ class Match(VersionedModel):
     map_id = models.IntegerField()
     platform_id = models.CharField(max_length=16, default="", blank=True)
     queue_id = models.IntegerField(db_index=True)
-    season_id = models.IntegerField()
+    season_id = models.IntegerField(null=True)
     game_version = models.CharField(max_length=32, default="", blank=True)
     build = models.IntegerField()
     is_fully_imported = models.BooleanField(default=False, blank=True, db_index=True)
@@ -246,10 +246,7 @@ class Match(VersionedModel):
     def is_summoner_in_game(self, summoner):
         """Find if a summoner is in the game.
         """
-        query = self.participants.filter(
-            Q(summoner_id=summoner._id) | Q(account_id__in=summoner.account_id)
-            | Q(current_account_id=summoner.account_id)
-        )
+        query = self.participants.filter(puuid=summoner.puuid)
         return query.exists()
 
 
@@ -259,34 +256,30 @@ class Participant(models.Model):
     )
     _id = models.IntegerField(db_index=True)  # participantID
 
-    account_id = models.CharField(max_length=128, default="", blank=True, db_index=True)
-    current_account_id = models.CharField(
-        max_length=128, default="", blank=True, db_index=True
-    )
-    current_platform_id = models.CharField(
-        max_length=16, default="", blank=True, db_index=True
-    )
-    platform_id = models.CharField(max_length=16, default="", blank=True)
-    match_history_uri = models.CharField(max_length=128, default="", blank=True)
     summoner_id = models.CharField(
         max_length=128, default="", blank=True, null=True, db_index=True
     )
+    puuid = models.CharField(max_length=128, default=None, db_index=True, null=True)
     summoner_name = models.CharField(max_length=256, default="", blank=True)
     summoner_name_simplified = models.CharField(
         max_length=128, default="", blank=True, db_index=True
     )
 
     champion_id = models.IntegerField(db_index=True)
-    highest_achieved_season_tier = models.CharField(
-        max_length=64, default="", blank=True
-    )
-    spell_1_id = models.IntegerField()
-    spell_2_id = models.IntegerField()
+    champ_experience = models.IntegerField(default=None, null=True, blank=True)
+    summoner_1_id = models.IntegerField()
+    summoner_1_casts = models.IntegerField(default=0)
+    summoner_2_id = models.IntegerField()
+    summoner_2_casts = models.IntegerField(default=0)
     team_id = models.IntegerField()
 
     # from timeline
     lane = models.CharField(max_length=64, default="", blank=True)
     role = models.CharField(max_length=64, default="", blank=True)
+    individual_position = models.CharField(
+        max_length=16, default=None, null=True, blank=True
+    )
+    team_position = models.CharField(max_length=16, null=True, default=None, blank=True)
 
     # custom added fields.
     rank = models.CharField(max_length=32, default="", blank=True, null=True)
@@ -342,8 +335,8 @@ class Participant(models.Model):
         lane[convert_lane[self.lane]] = 1
 
         spells = [0] * max_spell
-        spells[self.spell_1_id] = 1
-        spells[self.spell_2_id] = 1
+        spells[self.summoner_1_id] = 1
+        spells[self.summoner_2_id] = 1
 
         champions = [0] * max_champ
         champions[self.champion_id] = 1
@@ -375,7 +368,6 @@ class Stats(models.Model):
 
     assists = models.IntegerField(default=0, blank=True)
     champ_level = models.IntegerField(default=0, null=True, blank=True)
-    combat_player_score = models.IntegerField(default=0, blank=True)
     damage_dealt_to_objectives = models.IntegerField(default=0, blank=True)
     damage_dealt_to_turrets = models.IntegerField(default=0, blank=True)
     damage_self_mitigated = models.IntegerField(default=0, blank=True)
@@ -409,7 +401,6 @@ class Stats(models.Model):
     neutral_minions_killed = models.IntegerField(default=0, blank=True)
     neutral_minions_killed_enemy_jungle = models.IntegerField(default=0, blank=True)
     neutral_minions_killed_team_jungle = models.IntegerField(default=0, blank=True)
-    objective_player_score = models.IntegerField(default=0, blank=True)
     penta_kills = models.IntegerField(default=0, blank=True)
 
     perk_0 = models.IntegerField(default=0, blank=True)
@@ -448,17 +439,6 @@ class Stats(models.Model):
     physical_damage_dealt_to_champions = models.IntegerField(default=0, blank=True)
     physical_damage_taken = models.IntegerField(default=0, blank=True)
 
-    player_score_0 = models.IntegerField(default=0, blank=True)
-    player_score_1 = models.IntegerField(default=0, blank=True)
-    player_score_2 = models.IntegerField(default=0, blank=True)
-    player_score_3 = models.IntegerField(default=0, blank=True)
-    player_score_4 = models.IntegerField(default=0, blank=True)
-    player_score_5 = models.IntegerField(default=0, blank=True)
-    player_score_6 = models.IntegerField(default=0, blank=True)
-    player_score_7 = models.IntegerField(default=0, blank=True)
-    player_score_8 = models.IntegerField(default=0, blank=True)
-    player_score_9 = models.IntegerField(default=0, blank=True)
-
     quadra_kills = models.IntegerField(default=0, blank=True)
     sight_wards_bought_in_game = models.IntegerField(default=0, blank=True)
 
@@ -466,14 +446,19 @@ class Stats(models.Model):
     stat_perk_1 = models.IntegerField(default=0, blank=True)
     stat_perk_2 = models.IntegerField(default=0, blank=True)
 
+    spell_1_casts = models.IntegerField(default=0, blank=True)
+    spell_2_casts = models.IntegerField(default=0, blank=True)
+    spell_3_casts = models.IntegerField(default=0, blank=True)
+    spell_4_casts = models.IntegerField(default=0, blank=True)
+
     time_ccing_others = models.IntegerField(default=0, blank=True)
     total_damage_dealt = models.IntegerField(default=0, blank=True)
     total_damage_dealt_to_champions = models.IntegerField(default=0, blank=True)
     total_damage_taken = models.IntegerField(default=0, blank=True)
     total_heal = models.IntegerField(default=0, blank=True)
+    total_heals_on_teammates = models.IntegerField(default=0, blank=True)
+    total_damage_shielded_on_teammates = models.IntegerField(default=0)
     total_minions_killed = models.IntegerField(default=0, blank=True)
-    total_player_score = models.IntegerField(default=0, blank=True)
-    total_score_rank = models.IntegerField(default=0, blank=True)
     total_time_crowd_control_dealt = models.IntegerField(default=0, blank=True)
     total_units_healed = models.IntegerField(default=0, blank=True)
     triple_kills = models.IntegerField(default=0, blank=True)
@@ -486,6 +471,7 @@ class Stats(models.Model):
     vision_wards_bought_in_game = models.IntegerField(default=0, blank=True)
     wards_killed = models.IntegerField(default=0, blank=True)
     wards_placed = models.IntegerField(default=0, blank=True)
+    detector_wards_placed = models.IntegerField(default=0, blank=True)
     win = models.BooleanField(default=False, blank=True)
 
     def __str__(self):
@@ -597,19 +583,6 @@ class Stats(models.Model):
         return self.get_item_image_url(6, major=major, minor=minor)
 
 
-class Timeline(models.Model):
-    participant = models.ForeignKey(
-        "Participant", on_delete=models.CASCADE, related_name="timelines"
-    )
-    key = models.CharField(max_length=256, default="", blank=True)
-    value = models.FloatField(default=0, blank=True)
-    start = models.IntegerField()
-    end = models.IntegerField()
-
-    class Meta:
-        unique_together = ("participant", "key", "start")
-
-
 class Team(models.Model):
     match = models.ForeignKey("Match", on_delete=models.CASCADE, related_name="teams")
     _id = models.IntegerField()
@@ -629,7 +602,6 @@ class Team(models.Model):
     vilemaw_kills = models.IntegerField(default=0, blank=True)
     # this is a string field in the api but it should be a boolean?
     win = models.BooleanField(default=False, blank=True)
-    win_str = models.CharField(default="", blank=True, max_length=128)
 
     def __str__(self):
         return f"Team(match={self.match._id}, _id={self._id})"
@@ -670,15 +642,57 @@ class ParticipantFrame(models.Model):
     )
     participant_id = models.IntegerField(default=0, blank=True)
     current_gold = models.IntegerField(default=0, blank=True)
-    dominion_score = models.IntegerField(null=True, blank=True)
+    gold_per_second = models.IntegerField(default=0, blank=True)
     jungle_minions_killed = models.IntegerField(default=0, blank=True)
     level = models.IntegerField(default=1, blank=True)
     minions_killed = models.IntegerField(default=0, blank=True)
     team_score = models.IntegerField(default=0, blank=True)
     total_gold = models.IntegerField(default=0, blank=True)
+    time_enemy_spent_controlled = models.IntegerField(default=0, blank=True)
     xp = models.IntegerField(default=0, blank=True)
     x = models.IntegerField(default=0, blank=True)
     y = models.IntegerField(default=0, blank=True)
+
+    # champion stats
+    ability_haste = models.IntegerField(default=0, blank=True)
+    ability_power = models.IntegerField(default=0, blank=True)
+    armor = models.IntegerField(default=0, blank=True)
+    armor_pen = models.IntegerField(default=0, blank=True)
+    armor_pen_percent = models.IntegerField(default=0, blank=True)
+    attack_damage = models.IntegerField(default=0, blank=True)
+    attack_speed = models.IntegerField(default=0, blank=True)
+    bonus_armor_pen_percent = models.IntegerField(default=0, blank=True)
+    bonus_magic_pen_percent = models.IntegerField(default=0, blank=True)
+    cc_reduction = models.IntegerField(default=0, blank=True)
+    cooldown_reduction = models.IntegerField(default=0, blank=True)
+    health = models.IntegerField(default=0, blank=True)
+    health_max = models.IntegerField(default=0, blank=True)
+    health_regen = models.IntegerField(default=0, blank=True)
+    lifesteal = models.IntegerField(default=0, blank=True)
+    magic_pen = models.IntegerField(default=0, blank=True)
+    magic_pen_percent = models.IntegerField(default=0, blank=True)
+    magic_resist = models.IntegerField(default=0, blank=True)
+    movement_speed = models.IntegerField(default=0, blank=True)
+    omnivamp = models.IntegerField(default=0, blank=True)
+    physical_vamp = models.IntegerField(default=0, blank=True)
+    power = models.IntegerField(default=0, blank=True)
+    power_max = models.IntegerField(default=0, blank=True)
+    power_regen = models.IntegerField(default=0, blank=True)
+    spell_vamp = models.IntegerField(default=0, blank=True)
+
+    # damage stats
+    magic_damage_done = models.IntegerField(default=0, blank=True)
+    magic_damage_done_to_champions = models.IntegerField(default=0, blank=True)
+    magic_damage_taken = models.IntegerField(default=0, blank=True)
+    physical_damage_done = models.IntegerField(default=0, blank=True)
+    physical_damage_done_to_champions = models.IntegerField(default=0, blank=True)
+    physical_damage_taken = models.IntegerField(default=0, blank=True)
+    total_damage_done = models.IntegerField(default=0, blank=True)
+    total_damage_done_to_champions = models.IntegerField(default=0, blank=True)
+    total_damage_taken = models.IntegerField(default=0, blank=True)
+    true_damage_done = models.IntegerField(default=0, blank=True)
+    true_damage_done_to_champions = models.IntegerField(default=0, blank=True)
+    true_damage_taken = models.IntegerField(default=0, blank=True)
 
     def __str__(self):
         return (
@@ -688,57 +702,131 @@ class ParticipantFrame(models.Model):
 
 
 class Event(models.Model):
-    frame = models.ForeignKey("Frame", related_name="events", on_delete=models.CASCADE)
-    _type = models.CharField(max_length=128, default="", blank=True)
-    participant_id = models.IntegerField(null=True, blank=True)
+    frame = models.ForeignKey("Frame", on_delete=models.CASCADE)
     timestamp = models.IntegerField(default=0, blank=True)
 
-    # ITEM_PURCHASED, ITEM_DESTROYED, ITEM_SOLD
-    item_id = models.IntegerField(null=True, blank=True)
-
-    # SKILL_LEVEL_UP
-    level_up_type = models.CharField(max_length=128, null=True, blank=True)
-    skill_slot = models.IntegerField(null=True, blank=True)
-
-    # WARD_PLACED
-    ward_type = models.CharField(max_length=128, null=True, blank=True)
-
-    # ITEM_UNDO
-    before_id = models.IntegerField(null=True, blank=True)
-    after_id = models.IntegerField(null=True, blank=True)
-
-    # CHAMPION_KILL
-    killer_id = models.IntegerField(null=True, blank=True)
-    victim_id = models.IntegerField(null=True, blank=True)
-    x = models.IntegerField(null=True, blank=True)
-    y = models.IntegerField(null=True, blank=True)
-
-    # ELITE_MONSTER_KILL
-    monster_type = models.CharField(max_length=128, null=True, blank=True)
-    monster_sub_type = models.CharField(max_length=128, null=True, blank=True)
-
-    # BUILDING_KILL
-    building_type = models.CharField(max_length=128, null=True, blank=True)
-    lane_type = models.CharField(max_length=32, null=True, blank=True)
-    team_id = models.IntegerField(null=True, blank=True)
-    tower_type = models.CharField(max_length=128, null=True, blank=True)
-
-    def __str__(self):
-        return (
-            f"Event(_type={self._type}, "
-            + "participant_id={self.participant_id},"
-            + " timestamp={self.timestamp})"
-        )
+    class Meta:
+        abstract = True
 
 
-class AssistingParticipants(models.Model):
-    event = models.ForeignKey(
-        "Event", on_delete=models.CASCADE, related_name="assistingparticipants"
-    )
-    participant_id = models.IntegerField(default=0, blank=True)
+class WardKillEvent(Event):
+    killer_id = models.PositiveSmallIntegerField()
+    ward_type = models.CharField(max_length=32)
 
-    def __str__(self):
-        return f"AssistingParticipants(participant_id={self.participant_id})"
+
+class WardPlacedEvent(Event):
+    creator_id = models.PositiveSmallIntegerField()
+    ward_type = models.CharField(max_length=32)
+
+
+class LevelUpEvent(Event):
+    level = models.PositiveSmallIntegerField()
+    participant_id = models.PositiveSmallIntegerField()
+
+
+class SkillLevelUpEvent(Event):
+    level_up_type = models.CharField(max_length=32)
+    participant_id = models.PositiveSmallIntegerField()
+    skill_slot = models.PositiveSmallIntegerField()
+
+
+class ItemPurchasedEvent(Event):
+    item_id = models.PositiveSmallIntegerField()
+    participant_id = models.PositiveSmallIntegerField()
+
+
+class ItemDestroyedEvent(Event):
+    item_id = models.PositiveSmallIntegerField()
+    participant_id = models.PositiveSmallIntegerField()
+
+
+class ItemSoldEvent(Event):
+    item_id = models.PositiveSmallIntegerField()
+    participant_id = models.PositiveSmallIntegerField()
+
+
+class ItemUndoEvent(Event):
+    participant_id = models.PositiveSmallIntegerField()
+    before_id = models.PositiveSmallIntegerField()
+    after_id = models.PositiveSmallIntegerField()
+    gold_gain = models.SmallIntegerField()
+
+
+class TurretPlateDestroyedEvent(Event):
+    killer_id = models.PositiveSmallIntegerField()
+    lane_type = models.CharField(max_length=16)
+    x = models.PositiveIntegerField()
+    y = models.PositiveIntegerField()
+    team_id = models.PositiveSmallIntegerField()
+
+
+class EliteMonsterKillEvent(Event):
+    killer_id = models.PositiveSmallIntegerField()
+    assisting_participant_ids = ArrayField(models.PositiveSmallIntegerField(), blank=True, null=True)
+    killer_team_id = models.PositiveSmallIntegerField()
+    monster_type = models.CharField(max_length=64)
+    monster_sub_type = models.CharField(max_length=64, null=True)
+    x = models.PositiveIntegerField()
+    y = models.PositiveIntegerField()
+
+
+class ChampionSpecialKillEvent(Event):
+    assisting_participant_ids = ArrayField(models.PositiveSmallIntegerField(), null=True)
+    kill_type = models.CharField(max_length=32)
+    killer_id = models.PositiveSmallIntegerField()
+    multi_kill_length = models.PositiveSmallIntegerField(default=None, null=True)
+    x = models.PositiveIntegerField()
+    y = models.PositiveIntegerField()
+
+
+class BuildingKillEvent(Event):
+    assisting_participant_ids = ArrayField(models.PositiveSmallIntegerField(), null=True)
+    building_type = models.CharField(max_length=32)
+    killer_id = models.PositiveSmallIntegerField()
+    lane_type = models.CharField(max_length=32)
+    x = models.PositiveIntegerField()
+    y = models.PositiveIntegerField()
+    team_id = models.PositiveSmallIntegerField()
+    tower_type = models.CharField(max_length=32, null=True)
+
+
+class GameEndEvent(Event):
+    game_id = models.PositiveBigIntegerField()
+    real_timestamp = models.PositiveBigIntegerField()
+    winning_team = models.PositiveSmallIntegerField()
+
+
+class ChampionKillEvent(Event):
+    bounty = models.PositiveSmallIntegerField()
+    kill_streak_length = models.PositiveSmallIntegerField()
+    killer_id = models.PositiveSmallIntegerField()
+    victim_id = models.PositiveSmallIntegerField()
+    x = models.PositiveIntegerField()
+    y = models.PositiveIntegerField()
+
+
+class VictimDamage(models.Model):
+    championkillevent = models.ForeignKey(ChampionKillEvent, on_delete=models.CASCADE)
+    basic = models.BooleanField(default=False)
+    magic_damage = models.PositiveSmallIntegerField()
+    name = models.CharField(max_length=32)
+    participant_id = models.PositiveSmallIntegerField()
+    physical_damage = models.PositiveSmallIntegerField()
+    spell_name = models.CharField(max_length=64)
+    spell_slot = models.SmallIntegerField()
+    true_damage = models.PositiveSmallIntegerField()
+    type = models.CharField(max_length=32)
+
+    class Meta:
+        abstract = True
+
+
+class VictimDamageReceived(VictimDamage):
+    pass
+
+
+class VictimDamageDealt(VictimDamage):
+    pass
 
 
 # END ADVANCED TIMELINE MODELS

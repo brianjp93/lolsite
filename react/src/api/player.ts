@@ -13,7 +13,7 @@ function getSummoner(data: any) {
 }
 
 interface GetSummonersData extends AxiosRequestConfig {
-    account_ids: string[],
+    puuids: string[],
     region: string,
 }
 async function getSummoners(data: GetSummonersData) {
@@ -114,7 +114,7 @@ function changePassword(data: any) {
 interface GetTopPlayedWithData extends AxiosRequestConfig {
     summoner_id?: number | null,
     account_id?: string | null,
-    group_by?: 'summoner_name' | 'account_id' | null,
+    group_by?: 'summoner_name' | 'puuid' | null,
     season_id?: number | null,
     queue_id?: number | null,
     recent?: number | null,

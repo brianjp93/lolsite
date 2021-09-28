@@ -310,7 +310,7 @@ class StatOverview extends Component {
                                 <Bar key={`${key}-bar`} dataKey={key} >
                                     {this.getData().map(part => {
                                         let mypart = this.props.mypart
-                                        if (part.account_id === mypart.account_id) {
+                                        if (part.puuid === mypart.puuid) {
                                             return <Cell key={`${match.id}-${part._id}-cell`} fill='#a7bed0' />
                                         }
                                         else if (part.team_id === mypart.team_id) {

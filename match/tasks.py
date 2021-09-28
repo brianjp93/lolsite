@@ -8,10 +8,17 @@ from django.db import connection
 from django.utils import timezone
 
 from .models import Match, Participant, Stats
-from .models import Timeline, Team, Ban
+from .models import Team, Ban
 
 from .models import AdvancedTimeline, Frame, ParticipantFrame
-from .models import Event
+from .models import WardKillEvent, WardPlacedEvent
+from .models import LevelUpEvent, SkillLevelUpEvent
+from .models import ItemPurchasedEvent, ItemDestroyedEvent, ItemSoldEvent
+from .models import ItemUndoEvent, TurretPlateDestroyedEvent
+from .models import EliteMonsterKillEvent, ChampionSpecialKillEvent
+from .models import BuildingKillEvent, GameEndEvent
+from .models import ChampionKillEvent
+from .models import VictimDamageDealt, VictimDamageReceived
 
 from .models import Spectate
 
@@ -29,6 +36,9 @@ from multiprocessing.dummy import Pool as ThreadPool
 import time
 from sklearn import svm
 import joblib
+
+from functools import partial
+from typing import Optional
 
 
 ROLES = ["top", "jg", "mid", "adc", "sup"]
@@ -86,11 +96,14 @@ def import_summoner_from_participant(participants, region):
     sums = []
     for part in participants:
         if part["summoner_id"]:
-            account_id = part["current_account_id"]
+            puuid = part["puuid"]
             name = part["summoner_name"]
             _id = part["summoner_id"]
             summoner = Summoner(
-                _id=_id, name=name, account_id=account_id, region=region.lower()
+                _id=_id,
+                name=name,
+                region=region.lower(),
+                puuid=puuid,
             )
             sums.append(summoner)
     Summoner.objects.bulk_create(sums, ignore_conflicts=True)
@@ -113,7 +126,7 @@ def import_match_from_data(data, refresh=False, region=""):
     None, or False if failed.
 
     """
-    game_mode = data["gameMode"]
+    game_mode = data['info']["gameMode"]
     if "tutorial" in game_mode.lower():
         return False
 
@@ -138,7 +151,6 @@ def import_match_from_data(data, refresh=False, region=""):
         raise error
 
     for _p_data in participants_data:
-        timelines_data = _p_data.pop("timelines")
         stats_data = _p_data.pop("stats")
 
         _p_data["match"] = match_model
@@ -147,17 +159,6 @@ def import_match_from_data(data, refresh=False, region=""):
         participant_model = Participant(**_p_data)
         try:
             participant_model.save()
-        except Exception as error:
-            match_model.delete()
-            raise error
-
-        # TIMELINES
-        timelines = []
-        for _t_data in timelines_data:
-            _t_data["participant"] = participant_model
-            timelines.append(Timeline(**_t_data))
-        try:
-            Timeline.objects.bulk_create(timelines)
         except Exception as error:
             match_model.delete()
             raise error
@@ -212,6 +213,9 @@ def parse_match(data):
         formatted data to be saved into match models
 
     """
+    metadata = data['metadata']
+    match_id = metadata['matchId']
+    data = data['info']
     out = {
         "match": {},
         "participants": [],
@@ -224,7 +228,7 @@ def parse_match(data):
         print(data)
         raise error
     match = {
-        "_id": data["gameId"],
+        "_id": match_id,
         "game_creation": data["gameCreation"],
         "game_duration": data["gameDuration"],
         "game_mode": data["gameMode"],
@@ -237,164 +241,132 @@ def parse_match(data):
         "build": version.get(3, ""),
         "platform_id": data["platformId"],
         "queue_id": data["queueId"],
-        "season_id": data["seasonId"],
     }
     out["match"] = match
 
     participants = []
-    for pi in data["participantIdentities"]:
-        player = pi["player"]
-
-        p = None
-        for _p in data["participants"]:
-            if _p["participantId"] == pi["participantId"]:
-                p = _p
-                break
-
-        timeline = p.get("timeline", {})
-        tls = []
-        for t_key, t_val in timeline.items():
-            if "deltas" in t_key.lower():
-                tl = {"key": t_key}
-                for time_key, time_value in t_val.items():
-                    tl["start"] = time_key.split("-")[0]
-                    tl["end"] = time_key.split("-")[1]
-                    tl["value"] = round(time_value, 1)
-                tls.append(dict(tl))
-
-        try:
-            _s = p["stats"]
-        except KeyError:
-            raise KeyError(
-                f'Could not parse stats for region {data["platformId"]} gameId {data["gameId"]}.'
-            )
+    for part in data["participants"]:
         stats = {
-            "assists": _s["assists"],
-            "champ_level": _s["champLevel"],
-            "combat_player_score": _s["combatPlayerScore"],
-            "damage_dealt_to_objectives": _s["damageDealtToObjectives"],
-            "damage_dealt_to_turrets": _s["damageDealtToTurrets"],
-            "damage_self_mitigated": _s["damageSelfMitigated"],
-            "deaths": _s["deaths"],
-            "double_kills": _s["doubleKills"],
-            "first_blood_assist": _s.get("firstBloodAssist", False),
-            "first_blood_kill": _s.get("firstBloodKill", False),
-            "first_inhibitor_assist": _s.get("firstInhibitorAssist", False),
-            "first_inhibitor_kill": _s.get("firstInhibitorKill", False),
-            "first_tower_assist": _s.get("firstTowerAssist", False),
-            "first_tower_kill": _s.get("firstTowerKill", False),
-            "gold_earned": _s["goldEarned"],
-            "gold_spent": _s["goldSpent"],
-            "inhibitor_kills": _s.get("inhibitorKills", 0),
-            "item_0": _s["item0"],
-            "item_1": _s["item1"],
-            "item_2": _s["item2"],
-            "item_3": _s["item3"],
-            "item_4": _s["item4"],
-            "item_5": _s["item5"],
-            "item_6": _s["item6"],
-            "killing_sprees": _s["killingSprees"],
-            "kills": _s["kills"],
-            "largest_critical_strike": _s["largestCriticalStrike"],
-            "largest_killing_spree": _s["largestKillingSpree"],
-            "largest_multi_kill": _s["largestMultiKill"],
-            "longest_time_spent_living": _s["longestTimeSpentLiving"],
-            "magic_damage_dealt": _s["magicDamageDealt"],
-            "magic_damage_dealt_to_champions": _s["magicDamageDealtToChampions"],
-            "magical_damage_taken": _s["magicalDamageTaken"],
-            "neutral_minions_killed": _s["neutralMinionsKilled"],
-            "neutral_minions_killed_enemy_jungle": _s.get(
+            "assists": part["assists"],
+            "champ_level": part["champLevel"],
+            "damage_dealt_to_objectives": part["damageDealtToObjectives"],
+            "damage_dealt_to_turrets": part["damageDealtToTurrets"],
+            "damage_self_mitigated": part["damageSelfMitigated"],
+            "deaths": part["deaths"],
+            "double_kills": part["doubleKills"],
+            "first_blood_assist": part.get("firstBloodAssist", False),
+            "first_blood_kill": part.get("firstBloodKill", False),
+            "first_inhibitor_assist": part.get("firstInhibitorAssist", False),
+            "first_inhibitor_kill": part.get("firstInhibitorKill", False),
+            "first_tower_assist": part.get("firstTowerAssist", False),
+            "first_tower_kill": part.get("firstTowerKill", False),
+            "gold_earned": part["goldEarned"],
+            "gold_spent": part["goldSpent"],
+            "inhibitor_kills": part.get("inhibitorKills", 0),
+            "item_0": part["item0"],
+            "item_1": part["item1"],
+            "item_2": part["item2"],
+            "item_3": part["item3"],
+            "item_4": part["item4"],
+            "item_5": part["item5"],
+            "item_6": part["item6"],
+            "killing_sprees": part["killingSprees"],
+            "kills": part["kills"],
+            "largest_critical_strike": part["largestCriticalStrike"],
+            "largest_killing_spree": part["largestKillingSpree"],
+            "largest_multi_kill": part["largestMultiKill"],
+            "longest_time_spent_living": part["longestTimeSpentLiving"],
+            "magic_damage_dealt": part["magicDamageDealt"],
+            "magic_damage_dealt_to_champions": part["magicDamageDealtToChampions"],
+            "magical_damage_taken": part["magicDamageTaken"],
+            "neutral_minions_killed": part["neutralMinionsKilled"],
+            "neutral_minions_killed_enemy_jungle": part.get(
                 "neutralMinionsKilledEnemyJungle", 0
             ),
-            "neutral_minions_killed_team_jungle": _s.get(
+            "neutral_minions_killed_team_jungle": part.get(
                 "neutralMinionsKilledTeamJungle", 0
             ),
-            "objective_player_score": _s["objectivePlayerScore"],
-            "penta_kills": _s["pentaKills"],
-            "perk_0": _s.get("perk0", 0),
-            "perk_0_var_1": _s.get("perk0Var1", 0),
-            "perk_0_var_2": _s.get("perk0Var2", 0),
-            "perk_0_var_3": _s.get("perk0Var3", 0),
-            "perk_1": _s.get("perk1", 0),
-            "perk_1_var_1": _s.get("perk1Var1", 0),
-            "perk_1_var_2": _s.get("perk1Var2", 0),
-            "perk_1_var_3": _s.get("perk1Var3", 0),
-            "perk_2": _s.get("perk2", 0),
-            "perk_2_var_1": _s.get("perk2Var1", 0),
-            "perk_2_var_2": _s.get("perk2Var2", 0),
-            "perk_2_var_3": _s.get("perk2Var3", 0),
-            "perk_3": _s.get("perk3", 0),
-            "perk_3_var_1": _s.get("perk3Var1", 0),
-            "perk_3_var_2": _s.get("perk3Var2", 0),
-            "perk_3_var_3": _s.get("perk3Var3", 0),
-            "perk_4": _s.get("perk4", 0),
-            "perk_4_var_1": _s.get("perk4Var1", 0),
-            "perk_4_var_2": _s.get("perk4Var2", 0),
-            "perk_4_var_3": _s.get("perk4Var3", 0),
-            "perk_5": _s.get("perk5", 0),
-            "perk_5_var_1": _s.get("perk5Var1", 0),
-            "perk_5_var_2": _s.get("perk5Var2", 0),
-            "perk_5_var_3": _s.get("perk5Var3", 0),
-            "perk_primary_style": _s.get("perkPrimaryStyle", 0),
-            "perk_sub_style": _s.get("perkSubStyle", 0),
-            "physical_damage_dealt": _s["physicalDamageDealt"],
-            "physical_damage_dealt_to_champions": _s["physicalDamageDealtToChampions"],
-            "physical_damage_taken": _s["physicalDamageTaken"],
-            "player_score_0": _s["playerScore0"],
-            "player_score_1": _s["playerScore1"],
-            "player_score_2": _s["playerScore2"],
-            "player_score_3": _s["playerScore3"],
-            "player_score_4": _s["playerScore4"],
-            "player_score_5": _s["playerScore5"],
-            "player_score_6": _s["playerScore6"],
-            "player_score_7": _s["playerScore7"],
-            "player_score_8": _s["playerScore8"],
-            "player_score_9": _s["playerScore9"],
-            "quadra_kills": _s["quadraKills"],
-            "sight_wards_bought_in_game": _s["sightWardsBoughtInGame"],
-            "stat_perk_0": _s.get("statPerk0", 0),
-            "stat_perk_1": _s.get("statPerk1", 0),
-            "stat_perk_2": _s.get("statPerk2", 0),
-            "time_ccing_others": _s["timeCCingOthers"],
-            "total_damage_dealt": _s["totalDamageDealt"],
-            "total_damage_dealt_to_champions": _s["totalDamageDealtToChampions"],
-            "total_damage_taken": _s["totalDamageTaken"],
-            "total_heal": _s["totalHeal"],
-            "total_minions_killed": _s["totalMinionsKilled"],
-            "total_player_score": _s["totalPlayerScore"],
-            "total_score_rank": _s["totalScoreRank"],
-            "total_time_crowd_control_dealt": _s["totalTimeCrowdControlDealt"],
-            "total_units_healed": _s["totalUnitsHealed"],
-            "triple_kills": _s["tripleKills"],
-            "true_damage_dealt": _s["trueDamageDealt"],
-            "true_damage_dealt_to_champions": _s["trueDamageDealtToChampions"],
-            "true_damage_taken": _s["trueDamageTaken"],
-            "turret_kills": _s.get("turretKills", 0),
-            "unreal_kills": _s["unrealKills"],
-            "vision_score": _s["visionScore"],
-            "vision_wards_bought_in_game": _s["visionWardsBoughtInGame"],
-            "wards_killed": _s.get("wardsKilled", 0),
-            "wards_placed": _s.get("wardsPlaced", 0),
-            "win": _s["win"],
+            "penta_kills": part["pentaKills"],
+            "perk_0": part.get("perk0", 0),
+            "perk_0_var_1": part.get("perk0Var1", 0),
+            "perk_0_var_2": part.get("perk0Var2", 0),
+            "perk_0_var_3": part.get("perk0Var3", 0),
+            "perk_1": part.get("perk1", 0),
+            "perk_1_var_1": part.get("perk1Var1", 0),
+            "perk_1_var_2": part.get("perk1Var2", 0),
+            "perk_1_var_3": part.get("perk1Var3", 0),
+            "perk_2": part.get("perk2", 0),
+            "perk_2_var_1": part.get("perk2Var1", 0),
+            "perk_2_var_2": part.get("perk2Var2", 0),
+            "perk_2_var_3": part.get("perk2Var3", 0),
+            "perk_3": part.get("perk3", 0),
+            "perk_3_var_1": part.get("perk3Var1", 0),
+            "perk_3_var_2": part.get("perk3Var2", 0),
+            "perk_3_var_3": part.get("perk3Var3", 0),
+            "perk_4": part.get("perk4", 0),
+            "perk_4_var_1": part.get("perk4Var1", 0),
+            "perk_4_var_2": part.get("perk4Var2", 0),
+            "perk_4_var_3": part.get("perk4Var3", 0),
+            "perk_5": part.get("perk5", 0),
+            "perk_5_var_1": part.get("perk5Var1", 0),
+            "perk_5_var_2": part.get("perk5Var2", 0),
+            "perk_5_var_3": part.get("perk5Var3", 0),
+            "perk_primary_style": part.get("perkPrimaryStyle", 0),
+            "perk_sub_style": part.get("perkSubStyle", 0),
+            "physical_damage_dealt": part["physicalDamageDealt"],
+            "physical_damage_dealt_to_champions": part["physicalDamageDealtToChampions"],
+            "physical_damage_taken": part["physicalDamageTaken"],
+            "quadra_kills": part["quadraKills"],
+            "sight_wards_bought_in_game": part["sightWardsBoughtInGame"],
+            "stat_perk_0": part.get("statPerk0", 0),
+            "stat_perk_1": part.get("statPerk1", 0),
+            "stat_perk_2": part.get("statPerk2", 0),
+            "spell_1_casts": part.get("spell1Casts", 0),
+            "spell_2_casts": part.get("spell2Casts", 0),
+            "spell_3_casts": part.get("spell3Casts", 0),
+            "spell_4_casts": part.get("spell4Casts", 0),
+            "time_ccing_others": part["timeCCingOthers"],
+            "total_damage_dealt": part["totalDamageDealt"],
+            "total_damage_dealt_to_champions": part["totalDamageDealtToChampions"],
+            "total_damage_taken": part["totalDamageTaken"],
+            "total_damage_shielded_on_teammates": part["totalDamageShieldedOnTeammates"],
+            "total_heal": part["totalHeal"],
+            "total_heals_on_teammates": part["totalHealsOnTeammates"],
+            "total_minions_killed": part["totalMinionsKilled"],
+            "total_time_crowd_control_dealt": part["totalTimeCCDealt"],
+            "total_units_healed": part["totalUnitsHealed"],
+            "triple_kills": part["tripleKills"],
+            "true_damage_dealt": part["trueDamageDealt"],
+            "true_damage_dealt_to_champions": part["trueDamageDealtToChampions"],
+            "true_damage_taken": part["trueDamageTaken"],
+            "turret_kills": part.get("turretKills", 0),
+            "unreal_kills": part["unrealKills"],
+            "vision_score": part["visionScore"],
+            "vision_wards_bought_in_game": part["visionWardsBoughtInGame"],
+            "wards_killed": part.get("wardsKilled", 0),
+            "wards_placed": part.get("wardsPlaced", 0),
+            "detector_wards_placed": part.get("detectorWardsPlaced", 0),
+            "win": part["win"],
         }
 
         participant = {
-            "_id": pi["participantId"],
-            "account_id": player["accountId"],
-            "current_account_id": player["currentAccountId"],
-            "current_platform_id": player["currentPlatformId"],
-            "match_history_uri": player["matchHistoryUri"],
-            "platform_id": player["platformId"],
-            "summoner_id": player.get("summonerId", None),
-            "summoner_name": player["summonerName"],
-            "champion_id": p["championId"],
-            "highest_achieved_season_tier": p.get("highestAchievedSeasonTier", ""),
-            "spell_1_id": p["spell1Id"],
-            "spell_2_id": p["spell2Id"],
-            "team_id": p["teamId"],
-            "lane": timeline.get("lane", ""),
-            "role": timeline.get("role", ""),
-            "timelines": list(tls),
+            "_id": part["participantId"],
+            "summoner_id": part.get("summonerId", None),
+            "puuid": part.get("puuid", None),
+            "summoner_name": part["summonerName"],
+            "champion_id": part["championId"],
+            "champ_experience": part["champExperience"],
+
+            "summoner_1_id": part["summoner1Id"],
+            "summoner_1_casts": part["summoner1Casts"],
+            "summoner_2_id": part["summoner2Id"],
+            "summoner_2_casts": part["summoner2Casts"],
+
+            "team_id": part["teamId"],
+            "lane": part.get("lane", ""),
+            "role": part.get("role", ""),
+            "individual_position": part["individualPosition"],
+            "team_position": part["teamPosition"],
             "stats": dict(stats),
         }
         participants.append(dict(participant))
@@ -411,24 +383,21 @@ def parse_match(data):
                 {"champion_id": _ban["championId"], "pick_turn": _ban["pickTurn"],}
             )
 
-        win = _team.get('win', 'Fail') == 'Win'
+        objectives = _team["objectives"]
         team = {
             "_id": _team["teamId"],
-            "baron_kills": _team["baronKills"],
-            "dominion_victory_score": _team["dominionVictoryScore"],
-            "dragon_kills": _team["dragonKills"],
-            "first_baron": _team["firstBaron"],
-            "first_blood": _team["firstBlood"],
-            "first_dragon": _team["firstDragon"],
-            "first_inhibitor": _team["firstInhibitor"],
-            "first_rift_herald": _team["firstRiftHerald"],
-            "first_tower": _team["firstTower"],
-            "inhibitor_kills": _team["inhibitorKills"],
-            "rift_herald_kills": _team["riftHeraldKills"],
-            "tower_kills": _team["towerKills"],
-            "vilemaw_kills": _team["vilemawKills"],
-            "win": win,
-            "win_str": _team.get("win", "Fail"),
+            "baron_kills": objectives["baron"]["kills"],
+            "first_baron": objectives["baron"]["first"],
+            "dragon_kills": objectives["dragon"]["kills"],
+            "first_blood": objectives["champion"]["first"],
+            "first_dragon": objectives["dragon"]["first"],
+            "first_inhibitor": objectives["inhibitor"]["first"],
+            "first_rift_herald": objectives["riftHerald"]["first"],
+            "first_tower": objectives["tower"]["first"],
+            "inhibitor_kills": objectives["inhibitor"]["kills"],
+            "rift_herald_kills": objectives["riftHerald"]["kills"],
+            "tower_kills": objectives["tower"]["kills"],
+            "win": _team.get("win", False),
             "bans": list(bans),
         }
         teams.append(dict(team))
@@ -436,60 +405,7 @@ def parse_match(data):
     return out
 
 
-def import_season_matches(season_id, account_id, region, **kwargs):
-    """Get season matches for a specific account_id.
-
-    Parameters
-    ----------
-    season_id : ID
-    account_id : ID
-        the encrypted account ID
-    queue : int
-
-    Returns
-    -------
-    None
-
-    """
-    has_more = True
-    api = get_riot_api()
-    if api:
-        index = 0
-        size = 100
-        while has_more:
-            kwargs["beginIndex"] = index
-            print("getting list")
-            r = api.match.filter(account_id, region=region, season=season_id, **kwargs)
-            try:
-                matches = r.json()["matches"]
-            except Exception:
-                print(r.content)
-                print(r.headers)
-                r = api.match.filter(
-                    account_id, region=region, season=season_id, **kwargs
-                )
-                matches = r.json()["matches"]
-            if len(matches) > 0:
-                for match in r.json()["matches"]:
-                    match_id = match["gameId"]
-                    query = Match.objects.filter(_id=match_id)
-                    # if it doesn't exist, import it
-                    if not query.exists():
-                        print(f"importing {match_id}")
-                        try:
-                            import_match(match_id, region)
-                        except KeyError:
-                            print("Waiting...")
-                            time.sleep(10)
-                            import_match(match_id, region)
-                    else:
-                        print(f"skipping {match_id}")
-            else:
-                has_more = False
-            index += size
-
-
-def full_import(name=None, account_id=None, region=None, **kwargs):
+def full_import(name=None, puuid=None, region=None, **kwargs):
     """Import only unimported games for a summoner.
 
     Looks at summoner.full_import_count to determine how many
@@ -500,8 +416,7 @@ def full_import(name=None, account_id=None, region=None, **kwargs):
     name : str
     region : str
     season_id : ID
-    account_id : ID
-        the encrypted account ID
+    puuid : ID
     queue : int
     beginTime : Epoch in ms
     endTime : Epoch in ms
@@ -516,34 +431,36 @@ def full_import(name=None, account_id=None, region=None, **kwargs):
     if name is not None:
         summoner_id = pt.import_summoner(region, name=name)
         summoner = Summoner.objects.get(id=summoner_id, region=region)
-        account_id = summoner.account_id
-    elif account_id is not None:
-        summoner = Summoner.objects.get(account_id=account_id, region=region)
+        puuid = summoner.puuid
+    elif puuid is not None:
+        summoner = Summoner.objects.get(puuid=puuid, region=region)
     else:
-        raise Exception("name or account_id must be provided.")
+        raise Exception("name or puuid must be provided.")
 
     old_import_count = summoner.full_import_count
-    total = get_total_matches(account_id, region, **kwargs)
+    # TODO: implement get_total_matches
+    # total = get_total_matches(puuid, region, **kwargs)
+    total = 100
 
     new_import_count = total - old_import_count
     if new_import_count > 0:
         logger.info(f"Importing {new_import_count} matches for {summoner.name}.")
-        is_finished = import_recent_matches(0, new_import_count, account_id, region)
+        is_finished = import_recent_matches(0, new_import_count, puuid, region)
         if is_finished:
             summoner.full_import_count = total
             summoner.save()
 
 
-def ranked_import(name=None, account_id=None, region=None, **kwargs):
+def ranked_import(name=None, puuid=None, region=None, **kwargs):
     """Same as full_import except it only pulls from the 3 ranked queues.
 
     Parameters
     ----------
     name : str
-    account_id : ID
+    puuid : ID
     region : str
     season_id : ID
-    account_id : ID
+    puuid : ID
         the encrypted account ID
     queue : int
     beginTime : Epoch in ms
@@ -561,20 +478,22 @@ def ranked_import(name=None, account_id=None, region=None, **kwargs):
     if name is not None:
         summoner_id = pt.import_summoner(region, name=name)
         summoner = Summoner.objects.get(id=summoner_id, region=region)
-        account_id = summoner.account_id
-    elif account_id is not None:
-        summoner = Summoner.objects.get(account_id=account_id, region=region)
+        puuid = summoner.puuid
+    elif puuid is not None:
+        summoner = Summoner.objects.get(puuid=puuid, region=region)
     else:
-        raise Exception("name or account_id must be provided.")
+        raise Exception("name or puuid must be provided.")
 
     old_import_count = summoner.ranked_import_count
-    total = get_total_matches(account_id, region, **kwargs)
+    # TODO
+    # total = get_total_matches(account_id, region, **kwargs)
+    total = 100
 
     new_import_count = total - old_import_count
     if new_import_count > 0:
         print(f"Importing {new_import_count} ranked matches for {summoner.name}.")
         is_finished = import_recent_matches(
-            0, new_import_count, account_id, region, **kwargs
+            0, new_import_count, puuid, region, **kwargs
         )
         if is_finished:
             summoner.ranked_import_count = total
@@ -582,18 +501,26 @@ def ranked_import(name=None, account_id=None, region=None, **kwargs):
 
 
 @task(name="match.tasks.import_recent_matches")
-def import_recent_matches(start, end, account_id, region, **kwargs):
-    """Import recent matches for an account_id.
+def import_recent_matches(
+    start: int,
+    end: int,
+    puuid: str,
+    region: str,
+    queue: Optional[int] = None,
+    startTime: Optional[int] = None,
+    endTime: Optional[int] = None,
+):
+    """Import recent matches for a puuid.
 
     Parameters
     ----------
     start : int
     end : int
     season_id : ID
-    account_id : ID
+    puuid : ID
         the encrypted account ID
     queue : int
-    beginTime : Epoch in ms
+    startTime : Epoch in ms
     endTime : Epoch in ms
 
     Returns
@@ -601,7 +528,6 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
     int
 
     """
-    is_finished = False
     has_more = True
     api = get_riot_api()
     pool = ThreadPool(10)
@@ -611,32 +537,36 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
         size = 100
         please_continue = True
         while has_more and please_continue:
-            kwargs["beginIndex"] = index
-            end_index = index + size
-            if end_index > end:
-                end_index = end
-            kwargs["endIndex"] = end_index
             riot_match_request_time = time.time()
-            r = api.match.filter(account_id, region=region, **kwargs)
+
+            apicall = partial(
+                api.match.filter,
+                puuid,
+                region=region,
+                start=index,
+                count=size,
+                startTime=startTime,
+                endTime=endTime,
+                queue=queue,
+            )
+            r = apicall()
             riot_match_request_time = time.time() - riot_match_request_time
             logger.info(f'Riot API match filter request time : {riot_match_request_time}')
             try:
                 if r.status_code == 404:
                     matches = []
                 else:
-                    matches = r.json()["matches"]
+                    matches = r.json()
             except Exception:
                 time.sleep(10)
-                r = api.match.filter(account_id, region=region, **kwargs)
+                r = apicall()
                 if r.status_code == 404:
                     matches = []
                 else:
-                    matches = r.json()["matches"]
+                    matches = r.json()
             if len(matches) > 0:
-                game_ids = [x["gameId"] for x in matches]
-                existing_ids = [x._id for x in Match.objects.filter(_id__in=game_ids)]
-                # new_matches = [x for x in matches if not Match.objects.filter(_id=x['gameId']).exists()]
-                new_matches = list(set(game_ids) - set(existing_ids))
+                existing_ids = [x._id for x in Match.objects.filter(_id__in=matches)]
+                new_matches = list(set(matches) - set(existing_ids))
                 import_count += len(new_matches)
                 pool.map(
                     lambda x: import_match(x, region, close=True), new_matches
@@ -646,39 +576,7 @@ def import_recent_matches(start, end, account_id, region, **kwargs):
             index += size
             if index >= end:
                 please_continue = False
-        is_finished = True
     return import_count
-
-
-def get_total_matches(account_id, region, **kwargs):
-    """Get the total number of matches for a certain summoner.
-
-    Parameters
-    ----------
-    start : int
-    end : int
-    season_id : ID
-    account_id : ID
-        the encrypted account ID
-    queue : int
-    beginTime : Epoch in ms
-    endTime : Epoch in ms
-
-    Returns
-    -------
-    Integer
-
-    """
-    kwargs["beginIndex"] = 5000
-    kwargs["endIndex"] = 5001
-    api = get_riot_api()
-    r = api.match.filter(account_id, region=region, **kwargs)
-    total = None
-    try:
-        total = r.json()["totalGames"]
-    except:
-        pass
-    return total
 
 
 def get_top_played_with(
@@ -734,10 +632,10 @@ def get_top_played_with(
         p = p.filter(match__game_creation__gt=start_time)
 
     # get all participants that were in a match with the given summoner
-    p = p.filter(match__participants__current_account_id=summoner.account_id)
+    p = p.filter(match__participants__puuid=summoner.puuid)
 
     # exclude the summoner
-    p = p.exclude(current_account_id=summoner.account_id)
+    p = p.exclude(puuid=summoner.puuid)
 
     # I could include and `if team` condition, but I am assuming the top
     # values will be the same as the totals
@@ -746,7 +644,7 @@ def get_top_played_with(
             team_id=Subquery(
                 Participant.objects.filter(
                     match__participants__id=OuterRef("id"),
-                    current_account_id=summoner.account_id,
+                    puuid=summoner.puuid,
                 ).values("team_id")[:1]
             )
         )
@@ -755,7 +653,7 @@ def get_top_played_with(
             team_id=Subquery(
                 Participant.objects.filter(
                     match__participants__id=OuterRef("id"),
-                    current_account_id=summoner.account_id,
+                    puuid=summoner.puuid,
                 ).values("team_id")[:1]
             )
         )
@@ -767,6 +665,149 @@ def get_top_played_with(
     p = p.order_by("-count")
 
     return p
+
+
+def get_frame_event_types():
+    return {
+        'WARD_KILL': {
+            'model': WardKillEvent,
+            'events': [],
+            'mapping': {
+                'killer_id': 'killerId',
+                'ward_type': 'wardType',
+            }
+        },
+        'WARD_PLACED': {
+            'model': WardPlacedEvent,
+            'events': [],
+            'mapping': {
+                'creator_id': 'creatorId',
+                'ward_type': 'wardType',
+            },
+        },
+        'LEVEL_UP': {
+            'model': LevelUpEvent,
+            'events': [],
+            'mapping': {
+                'level': 'level',
+                'participant_id': 'participantId',
+            },
+        },
+        'SKILL_LEVEL_UP': {
+            'model': SkillLevelUpEvent,
+            'events': [],
+            'mapping': {
+                'level_up_type': 'levelUpType',
+                'participant_id': 'participantId',
+                'skill_slot': 'skillSlot',
+            },
+        },
+        'ITEM_PURCHASED': {
+            'model': ItemPurchasedEvent,
+            'events': [],
+            'mapping': {
+                'item_id': 'itemId',
+                'participant_id': 'participantId',
+            },
+        },
+        'ITEM_DESTROYED': {
+            'model': ItemDestroyedEvent,
+            'events': [],
+            'mapping': {
+                'item_id': 'itemId',
+                'participant_id': 'participantId',
+            },
+        },
+        'ITEM_SOLD': {
+            'model': ItemSoldEvent,
+            'events': [],
+            'mapping': {
+                'item_id': 'itemId',
+                'participant_id': 'participantId',
+            },
+        },
+        'ITEM_UNDO': {
+            'model': ItemUndoEvent,
+            'events': [],
+            'mapping': {
+                'participant_id': 'participantId',
+                'before_id': 'beforeId',
+                'after_id': 'afterId',
+                'gold_gain': 'goldGain',
+            },
+        },
+        'TURRET_PLATE_DESTROYED': {
+            'model': TurretPlateDestroyedEvent,
+            'events': [],
+            'mapping': {
+                'killer_id': 'killerId',
+                'lane_type': 'laneType',
+                'x': 'position__x',
+                'y': 'position__y',
+                'team_id': 'teamId',
+            },
+        },
+        'ELITE_MONSTER_KILL': {
+            'model': EliteMonsterKillEvent,
+            'events': [],
+            'mapping': {
+                'killer_id': 'killerId',
+                'assisting_participant_ids': 'assistingParticipantIds',
+                'killer_team_id': 'killerTeamId',
+                'monster_type': 'monsterType',
+                'monster_sub_type': 'monsterSubType',
+                'x': 'position__x',
+                'y': 'position__y',
+            },
+        },
+        'CHAMPION_SPECIAL_KILL': {
+            'model': ChampionSpecialKillEvent,
+            'events': [],
+            'mapping': {
+                'assisting_participant_ids': 'assistingParticipantIds',
+                'kill_type': 'killType',
+                'killer_id': 'killerId',
+                'multi_kill_length': 'multiKillLength',
+                'x': 'position__x',
+                'y': 'position__y',
+            }
+        },
+        'BUILDING_KILL': {
+            'model': BuildingKillEvent,
+            'events': [],
+            'mapping': {
+                'assisting_participant_ids': 'assistingParticipantIds',
+                'building_type': 'buildingType',
+                'killer_id': 'killerId',
+                'lane_type': 'laneType',
+                'team_id': 'teamId',
+                'tower_type': 'towerType',
+                'x': 'position__x',
+                'y': 'position__y',
+            }
+        },
+        'GAME_END': {
+            'model': GameEndEvent,
+            'events': [],
+            'mapping': {
+                'game_id': 'gameId',
+                'real_timestamp': 'realTimestamp',
+                'winning_team': 'winningTeam',
+            }
+        },
+        'CHAMPION_KILL': {
+            'model': ChampionKillEvent,
+            'events': [],
+            'mapping': {
+                'bounty': 'bounty',
+                'kill_streak_length': 'killStreakLength',
+                'killer_id': 'killerId',
+                'victim_id': 'victimId',
+                'x': 'position__x',
+                'y': 'position__y',
+            }
+        },
+    }
 
 
 @task(name="match.tasks.import_advanced_timeline")
@@ -797,6 +838,8 @@ def import_advanced_timeline(match_id=None, overwrite=False):
         logger.info(f'Requesting info for match {match.id} in region {region}')
         r = api.match.timeline(match._id, region=region)
         data = r.json()
+        _data = data
+        data = data['info']
         frame_interval = data["frameInterval"]
         at = AdvancedTimeline(match=match, frame_interval=frame_interval)
         at.save()
@@ -808,55 +851,133 @@ def import_advanced_timeline(match_id=None, overwrite=False):
             pframes = []
             for i, p_frame in _frame["participantFrames"].items():
 
+                pos = p_frame.get("position", {})
+                stats = p_frame.get('championStats', {})
+                dmg_stats = p_frame.get('damageStats', {})
                 p_frame_data = {
                     "frame": frame,
                     "participant_id": p_frame["participantId"],
                     "current_gold": p_frame["currentGold"],
-                    "dominion_score": p_frame.get("dominionScore", None),
                     "jungle_minions_killed": p_frame["jungleMinionsKilled"],
+                    "gold_per_second": p_frame["goldPerSecond"],
                     "level": p_frame["level"],
                     "minions_killed": p_frame["minionsKilled"],
+                    "time_enemy_spent_controlled": p_frame["timeEnemySpentControlled"],
                     "team_score": p_frame.get("teamScore", 0),
                     "total_gold": p_frame.get("totalGold", 0),
                     "xp": p_frame.get("xp", 0),
+                    "x": pos.get('x'),
+                    'y': pos.get('y'),
+
+                    'ability_haste': stats.get('abilityHaste'),
+                    'ability_power': stats.get('abilityPower'),
+                    'armor': stats.get('armor'),
+                    'armor_pen': stats.get('armorPen'),
+                    'armor_pen_percent': stats.get('armorPenPercent'),
+                    'attack_damage': stats.get('attackDamage'),
+                    'attack_speed': stats.get('attackSpeed'),
+                    'bonus_armor_pen_percent': stats.get('bonusArmorPenPercent'),
+                    'bonus_magic_pen_percent': stats.get('bonusMagicPenPercent'),
+                    'cc_reduction': stats.get('ccReduction'),
+                    'cooldown_reduction': stats.get('cooldownReduction'),
+                    'health': stats.get('health'),
+                    'health_max': stats.get('healthMax'),
+                    'health_regen': stats.get('healthRegen'),
+                    'lifesteal': stats.get('lifesteal'),
+                    'magic_pen': stats.get('magicPen'),
+                    'magic_pen_percent': stats.get('magicPenPercent'),
+                    'magic_resist': stats.get('magicResist'),
+                    'movement_speed': stats.get('movementSpeed'),
+                    'omnivamp': stats.get('omnivamp'),
+                    'physical_vamp': stats.get('physicalVamp'),
+                    'power': stats.get('power'),
+                    'power_max': stats.get('powerMax'),
+                    'power_regen': stats.get('powerRegen'),
+                    'spell_vamp': stats.get('spellVamp'),
+
+                    'magic_damage_done': dmg_stats.get('magicDamageDone'),
+                    'magic_damage_done_to_champions': dmg_stats.get('magicDamageDoneToChampions'),
+                    'magic_damage_taken': dmg_stats.get('magicDamageTaken'),
+                    'physical_damage_done': dmg_stats.get('physicalDamageDone'),
+                    'physical_damage_done_to_champions': dmg_stats.get('physicalDamageDoneToChampions'),
+                    'physical_damage_taken': dmg_stats.get('physicalDamageTaken'),
+                    'total_damage_done': dmg_stats.get('totalDamageDone'),
+                    'total_damage_done_to_champions': dmg_stats.get('totalDamageDoneToChampions'),
+                    'total_damage_taken': dmg_stats.get('totalDamageTaken'),
+                    'true_damage_done': dmg_stats.get('trueDamageDone'),
+                    'true_damage_done_to_champions': dmg_stats.get('trueDamageDoneToChampions'),
+                    'true_damage_taken': dmg_stats.get('trueDamageTaken'),
+
                 }
-                pos = p_frame.get("position", None)
-                if pos is not None:
-                    p_frame_data["x"] = pos["x"]
-                    p_frame_data["y"] = pos["y"]
                 pframes.append(ParticipantFrame(**p_frame_data))
+
             ParticipantFrame.objects.bulk_create(pframes)
 
-            events = []
+            victim_damage_received_events = []
+            victim_damage_dealt_events = []
+            events = get_frame_event_types()
             for _event in _frame["events"]:
                 participant_id = _event.get("participantId", None)
                 if participant_id is None:
                     participant_id = _event.get("creatorId", None)
                 pos = _event.get("position", {})
-                event_data = {
-                    "frame": frame,
-                    "_type": _event["type"],
-                    "participant_id": participant_id,
-                    "timestamp": _event.get("timestamp", None),
-                    "item_id": _event.get("itemId", None),
-                    "level_up_type": _event.get("levelUpType", None),
-                    "skill_slot": _event.get("skillSlot", None),
-                    "ward_type": _event.get("wardType", None),
-                    "before_id": _event.get("beforeId", None),
-                    "after_id": _event.get("afterId", None),
-                    "killer_id": _event.get("killerId", None),
-                    "victim_id": _event.get("victimId", None),
-                    "x": pos.get("x", None),
-                    "y": pos.get("y", None),
-                    "monster_type": _event.get("monsterType", None),
-                    "monster_sub_type": _event.get("monsterSubType", None),
-                    "building_type": _event.get("buildingType", None),
-                    "lane_type": _event.get("laneType", None),
-                    "team_id": _event.get("teamId", None),
-                    "tower_type": _event.get("towerType", None),
-                }
-                events.append(Event(**event_data))
-            Event.objects.bulk_create(events)
+                event_type = _event['type']
+
+                for temp_event_type, val in events.items():
+                    if temp_event_type == event_type:
+                        kwargs = {}
+                        for _key, _val in val['mapping'].items():
+                            _data = _event
+                            for lookup in _val.split('__'):
+                                _data = _data.get(lookup, {})
+                                if _data == {}:
+                                    _data = None
+                            kwargs[_key] = _data
+                        created_model = val['model'](
+                            frame=frame,
+                            timestamp=_event['timestamp'],
+                            **kwargs,
+                        )
+                        val['events'].append(created_model)
+                        if temp_event_type == 'CHAMPION_KILL':
+                            for item in _event.get('victimDamageDealt', []):
+                                kwargs = {
+                                    'championkillevent': created_model,
+                                    'basic': item['basic'],
+                                    'magic_damage': item['magicDamage'],
+                                    'name': item['name'],
+                                    'participant_id': item['participantId'],
+                                    'physical_damage': item['physicalDamage'],
+                                    'spell_name': item['spellName'],
+                                    'spell_slot': item['spellSlot'],
+                                    'true_damage': item['trueDamage'],
+                                    'type': item['type'],
+                                }
+                                victim_damage_dealt_events.append(
+                                    VictimDamageDealt(**kwargs),
+                                )
+                            for item in _event.get('victimDamageReceived', []):
+                                kwargs = {
+                                    'championkillevent': created_model,
+                                    'basic': item['basic'],
+                                    'magic_damage': item['magicDamage'],
+                                    'name': item['name'],
+                                    'participant_id': item['participantId'],
+                                    'physical_damage': item['physicalDamage'],
+                                    'spell_name': item['spellName'],
+                                    'spell_slot': item['spellSlot'],
+                                    'true_damage': item['trueDamage'],
+                                    'type': item['type'],
+                                }
+                                victim_damage_received_events.append(
+                                    VictimDamageReceived(**kwargs),
+                                )
+
+            for val in events.values():
+                model = val['model']
+                model.objects.bulk_create(val['events'])
+            VictimDamageDealt.objects.bulk_create(victim_damage_dealt_events)
+            VictimDamageReceived.objects.bulk_create(victim_damage_received_events)
 
 
 def import_spectate_from_data(data, region):
@@ -941,16 +1062,16 @@ def apply_player_ranks(match, threshold_days=1):
         parts = match.participants.all()
         q = Q()
         for part in parts:
-            q |= Q(_id=part.summoner_id, account_id=part.account_id)
+            q |= Q(_id=part.summoner_id, puuid=part.puuid)
         summoner_qs = Summoner.objects.filter(q)
         summoner_list = [x for x in summoner_qs]
-        summoners = {x.account_id: x for x in summoner_qs}
+        summoners = {x.puuid: x for x in summoner_qs}
         get_player_ranks(summoner_list, threshold_days=threshold_days)
 
         for part in parts:
             if not part.tier:
                 # only applying if it is not already applied
-                summoner = summoners.get(part.account_id)
+                summoner = summoners.get(part.puuid)
                 if summoner:
                     checkpoint = summoner.get_newest_rank_checkpoint()
                     if checkpoint:

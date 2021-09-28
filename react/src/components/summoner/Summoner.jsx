@@ -1098,9 +1098,9 @@ class RecentlyPlayedWith extends Component {
     var count = {}
     for (var match of this.props.matches) {
       for (var p of match.participants) {
-        if (p.account_id === this.props.summoner.account_id) {
+        if (p.puuid === this.props.summoner.puuid) {
           // ignore self
-        } else if ([0, '0'].indexOf(p.account_id) >= 0) {
+        } else if ([0, '0'].indexOf(p.puuid) >= 0) {
           // ignore bots
         } else {
           if (count[p.summoner_name] === undefined) {

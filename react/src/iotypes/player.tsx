@@ -66,7 +66,7 @@ export const SummonerSearch = t.type({
 export type SummonerSearchType = t.TypeOf<typeof SummonerSearch>
 
 export const TopPlayedWithPlayer = t.type({
-  account_id: maybe(t.string),
+  puuid: maybe(t.string),
   summoner_name: maybe(t.string),
   wins: t.number,
   count: t.number,

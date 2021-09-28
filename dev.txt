@@ -12,7 +12,7 @@ backcall==0.2.0
     # via ipython
 bcrypt==3.2.0
     # via paramiko
-blessed==1.18.1
+blessed==1.19.0
     # via awsebcli
 botocore==1.20.112
     # via awsebcli
@@ -27,7 +27,7 @@ cffi==1.14.6
     #   bcrypt
     #   cryptography
     #   pynacl
-charset-normalizer==2.0.4
+charset-normalizer==2.0.6
     # via requests
 click==8.0.1
     # via pip-tools
@@ -35,7 +35,7 @@ colorama==0.4.3
     # via awsebcli
 cryptography==3.4.8
     # via paramiko
-decorator==5.0.9
+decorator==5.1.0
     # via
     #   ipython
     #   traitlets
@@ -85,7 +85,7 @@ pexpect==4.8.0
     # via ipython
 pickleshare==0.7.5
     # via ipython
-pip-tools==6.2.0
+pip-tools==6.3.0
     # via -r dev.in
 prompt-toolkit==3.0.20
     # via ipython

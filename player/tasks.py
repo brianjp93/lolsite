@@ -179,33 +179,10 @@ def import_positions(summoner, threshold_days=None, close=False):
 
 
 def simplify_email(email):
-    """Remove whitespace and make lowercase.
-
-    Parameters
-    ----------
-    email : str
-
-    Returns
-    -------
-    str
-
-    """
     return email.strip().lower()
 
 
-def is_new_email_valid(email, password):
-    """Check to see if an email and password are valid.
-
-    Parameters
-    ----------
-    email : str
-    password : str
-
-    Returns
-    -------
-    bool
-
-    """
+def is_new_email_valid(email: str, password: str) -> bool:
     simplified_email = simplify_email(email)
     query = User.objects.filter(email__iexact=simplified_email)
     valid = True

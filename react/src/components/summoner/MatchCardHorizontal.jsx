@@ -51,7 +51,7 @@ function MatchCard(props) {
     const match = props.match
     const store = props.store
     const pageStore = props.pageStore
-    const account_id = props.pageStore.state.summoner.account_id
+    const puuid = props.pageStore.state.summoner.puuid
 
     const getParticipantRanks = useCallback(() => {
         let participants = rankParticipants(match.participants)
@@ -62,24 +62,21 @@ function MatchCard(props) {
     if (participants.length > 0) {
         _parts = participants
     }
-    const mypart = getMyPart(_parts, account_id)
-    const game_time = match.game_duration / 60
-    const dpm = mypart.stats.total_damage_dealt_to_champions / (match.game_duration / 60)
+    const mypart = getMyPart(_parts, puuid)
+    const game_time = match.game_duration / 1000 / 60
+    const dpm = mypart.stats.total_damage_dealt_to_champions / game_time
     const vision_score_per_minute = mypart.stats.vision_score / game_time
     // const damage_taken_per_minute = mypart.stats.total_damage_taken / game_time
     // const csm = (mypart.stats.total_minions_killed + mypart.stats.neutral_minions_killed) / game_time
     const isLoss = () => {
         let part = mypart
         let team_id = part.team_id
-        let seconds = match.game_duration
-        if (seconds / 60 < 5) {
+        if (game_time < 5) {
             return false
         }
         for (let team of match.teams) {
             if (team._id === team_id) {
-                if (team.win_str === 'Fail') {
-                    return true
-                }
+                return !team.win
             }
         }
         return false
@@ -87,15 +84,12 @@ function MatchCard(props) {
     const isVictory = () => {
         let part = mypart
         let team_id = part.team_id
-        let seconds = match.game_duration
-        if (seconds / 60 < 5) {
+        if (game_time < 5) {
             return false
         }
         for (let team of match.teams) {
             if (team._id === team_id) {
-                if (team.win_str === 'Win') {
-                    return true
-                }
+                return team.win
             }
         }
         return false
@@ -211,7 +205,7 @@ function MatchCard(props) {
                     if (wid < 0) {
                         wid = 0
                     }
-                    let is_me = part.account_id === mypart.account_id
+                    let is_me = part.puuid === mypart.puuid
 
                     return (
                         <div key={`${match.id}-${part._id}`} style={{ position: 'relative' }}>
@@ -268,7 +262,7 @@ function MatchCard(props) {
                                 )}
                                 {!is_me && (
                                     <small>
-                                        {part.account_id !== '0' && (
+                                        {part.puuid !== '0' && (
                                             <Link
                                                 target="_blank"
                                                 title={part.summoner_name}
@@ -278,7 +272,7 @@ function MatchCard(props) {
                                                 {formatName(part.summoner_name)}
                                             </Link>
                                         )}
-                                        {part.account_id === '0' && (
+                                        {part.puuid === '0' && (
                                             <span title={part.summoner_name}>
                                                 {formatName(part.summoner_name)}
                                             </span>
@@ -449,8 +443,8 @@ function MatchCard(props) {
                             {formatDatetime(match.game_creation)}
                         </small>
                         <small style={{ lineHeight: 1, display: 'inline-block', paddingLeft: 10 }}>
-                            {`${Math.floor(match.game_duration / 60)}:${numeral(
-                                match.game_duration % 60,
+                            {`${Math.floor(game_time)}:${numeral(
+                                (match.game_duration / 1000) % 60,
                             ).format('00')}`}
                         </small>
                     </div>

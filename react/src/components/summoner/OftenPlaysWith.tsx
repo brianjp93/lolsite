@@ -33,7 +33,7 @@ export function OftenPlaysWith(props: {region: string; summoner_id: number}) {
             start,
             end,
             summoner_id,
-            group_by: 'account_id',
+            group_by: 'puuid',
         })
     }, [summoner_id])
 
@@ -43,17 +43,17 @@ export function OftenPlaysWith(props: {region: string; summoner_id: number}) {
                 const players: AugmentedTopPlayedWithPlayerType[] = [...data]
                 if (players.length > 0) {
                     api.player.getSummoners({
-                        account_ids: players.map((item) => item.account_id),
+                        puuids: players.map((item) => item.puuid),
                         region: region,
                     }).then((summoners) => {
                         let modified: Record<string, SummonerType> = {}
                         for (let summoner of summoners) {
-                            modified[summoner.account_id] = summoner
+                            modified[summoner.puuid] = summoner
                         }
                         let new_players = []
                         for (let summoner of players) {
-                            if (modified[summoner.account_id]) {
-                                summoner.name = modified[summoner.account_id].name
+                            if (modified[summoner.puuid]) {
+                                summoner.name = modified[summoner.puuid].name
                                 new_players.push(summoner)
                             }
                         }
@@ -81,7 +81,7 @@ export function OftenPlaysWith(props: {region: string; summoner_id: number}) {
                             const win_perc = (player.wins / player.count) * 100
                             const win_perc_string = numeral(win_perc).format('0.0')
                             return (
-                                <tr key={player.account_id}>
+                                <tr key={player.puuid}>
                                     <td>
                                         <a className="dark" href={getSummonerPageUrl(player.name)}>
                                             {player.name}

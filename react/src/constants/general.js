@@ -148,9 +148,9 @@ export function ParticipantItems({part, match, store}) {
     )
 }
 
-export function getMyPart(participants, account_id) {
+export function getMyPart(participants, puuid) {
     for (let part of participants) {
-        if (part.current_account_id === account_id || part.account_id === account_id) {
+        if (part.puuid === puuid) {
             return part
         }
     }

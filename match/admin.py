@@ -2,10 +2,9 @@ from django.contrib import admin
 from player.admin import CachedCountPaginator
 
 from .models import Match, Participant, Stats
-from .models import Timeline, Team, Ban
+from .models import Team, Ban
 
 from .models import AdvancedTimeline, Frame, ParticipantFrame
-from .models import Event, AssistingParticipants
 
 
 class MatchAdmin(admin.ModelAdmin):
@@ -34,14 +33,6 @@ class StatsAdmin(admin.ModelAdmin):
     list_display = ("participant",)
     raw_id_fields = ("participant",)
     search_fields = ("participant__match___id", "participant__summoner_name")
-    show_full_result_count = False
-    list_per_page = 30
-    paginator = CachedCountPaginator
-
-
-class TimelineAdmin(admin.ModelAdmin):
-    list_display = ("key", "start", "end", "value")
-    raw_id_fields = ("participant",)
     show_full_result_count = False
     list_per_page = 30
     paginator = CachedCountPaginator
@@ -94,30 +85,11 @@ class ParticipantFrameAdmin(admin.ModelAdmin):
     paginator = CachedCountPaginator
 
 
-class EventAdmin(admin.ModelAdmin):
-    list_display = ("_type", "participant_id", "timestamp")
-    raw_id_fields = ("frame",)
-    show_full_result_count = False
-    list_per_page = 30
-    paginator = CachedCountPaginator
-
-
-class AssistingParticipantsAdmin(admin.ModelAdmin):
-    list_display = ("participant_id",)
-    raw_id_fields = ("event",)
-    show_full_result_count = False
-    list_per_page = 30
-    paginator = CachedCountPaginator
-
-
 admin.site.register(Match, MatchAdmin)
 admin.site.register(Participant, ParticipantAdmin)
 admin.site.register(Stats, StatsAdmin)
-admin.site.register(Timeline, TimelineAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(Ban, BanAdmin)
 admin.site.register(AdvancedTimeline, AdvancedTimelineAdmin)
 admin.site.register(Frame, FrameAdmin)
 admin.site.register(ParticipantFrame, ParticipantFrameAdmin)
-admin.site.register(Event, EventAdmin)
-admin.site.register(AssistingParticipants, AssistingParticipantsAdmin)

@@ -75,11 +75,11 @@ def get_summoner_meta_data(request, meta):
         if qs:
             summoner = qs[0]
             matches = Match.objects.filter(
-                participants__account_id=summoner.account_id,
+                participants__puuid=summoner.puuid,
                 game_duration__gt=600,
             ).order_by('-game_creation')[:20]
             for match in matches:
-                part = match.participants.get(account_id=summoner.account_id)
+                part = match.participants.get(puuid=summoner.puuid)
                 is_win = part.stats.win
                 kills += part.stats.kills
                 deaths += part.stats.deaths
@@ -147,7 +147,7 @@ def get_match_meta_data(request, meta):
             logger.exception('Could not find match.')
             return
         try:
-            part = match.participants.get(account_id=summoner.account_id)
+            part = match.participants.get(puuid=summoner.puuid)
         except ObjectDoesNotExist:
             logger.exception('Could not find participant in match.')
             return

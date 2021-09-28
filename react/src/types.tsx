@@ -1,21 +1,35 @@
 import * as t from 'io-ts'
 import {isRight} from 'fp-ts/Either'
 import reporter from 'io-ts-reporters'
+
+// MATCH
 export {
     BasicMatch,
     FullMatch,
     FullParticipant,
     BasicParticipant,
     SpectateMatch,
-    TimelineEvent,
     AdvancedTimeline,
     Frame,
 } from './iotypes/match'
+export type {
+    FullMatchType,
+    FrameType,
+    FullParticipantType,
+    BuildingKillEventType,
+    ChampionKillEventType,
+    EliteMonsterKillEventType,
+    TurretPlateDestroyedEventType,
+    VictimDamageType,
+    ItemPurchasedEventType,
+    ItemUndoEventType,
+    ItemDestroyedEventType,
+    ItemSoldEventType,
+    SimpleMatchType,
+} from './iotypes/match'
 
-export type {TimelineEventType, FrameType, FullParticipantType} from './iotypes/match'
-
+// PLAYER
 export {Summoner, PositionBin, TopPlayedWithPlayer, SummonerSearch} from './iotypes/player'
-
 export type {SummonerType, PositionBinType, TopPlayedWithPlayerType, SummonerSearchType} from './iotypes/player'
 
 export function unwrap<T>(x: t.Validation<T>) {

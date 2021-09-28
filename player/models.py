@@ -79,7 +79,11 @@ class Summoner(models.Model):
     name = models.CharField(max_length=32, default="", blank=True)
     simple_name = models.CharField(max_length=32, default="", blank=True, db_index=True)
     profile_icon_id = models.IntegerField(default=0)
-    puuid = models.CharField(max_length=256, default="", blank=True)
+    puuid = models.CharField(
+        max_length=128,
+        unique=True,
+        db_index=True,
+    )
     revision_date = models.BigIntegerField(default=0)
     summoner_level = models.IntegerField(default=0)
     pro = models.ForeignKey("Pro", null=True, on_delete=models.SET_NULL, blank=True)

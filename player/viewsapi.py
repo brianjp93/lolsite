@@ -53,7 +53,7 @@ def get_summoner(request, format=None):
     POST Parameters
     ---------------
     name : str
-    account_id : str
+    puuid : str
     region : str
     update : bool
         Whether or not to check riot for update first
@@ -67,13 +67,13 @@ def get_summoner(request, format=None):
     status_code = 200
     if request.method == "POST":
         name = request.data.get("name", "")
-        account_id = request.data.get("account_id", "")
+        puuid = request.data.get("puuid", "")
         region = request.data.get("region")
         if name:
             name = pt.simplify(name)
             query = Summoner.objects.filter(simple_name=name, region=region)
-        elif account_id:
-            query = Summoner.objects.filter(account_id=account_id, region=region)
+        elif puuid:
+            query = Summoner.objects.filter(puuid=puuid, region=region)
         else:
             query = None
 
@@ -93,7 +93,7 @@ def get_summoners(request, format=None):
 
     Parameters
     ----------
-    account_ids : [ID]
+    puuids : [ID]
     region : str
 
     Returns
@@ -104,22 +104,22 @@ def get_summoners(request, format=None):
     data = {}
     status_code = 200
     if request.method == "POST":
-        account_ids = request.data["account_ids"]
-        account_ids = account_ids[:100]
+        puuids = request.data["puuids"]
+        puuids = puuids[:100]
         region = request.data["region"]
-        query = Summoner.objects.filter(account_id__in=account_ids, region=region)
+        query = Summoner.objects.filter(puuid__in=puuids, region=region)
         serializer = SummonerSerializer(query, many=True)
         data = {"data": serializer.data}
     return Response(data, status=status_code)
 
 
-def match_filter(request, account_id=None):
+def match_filter(request, puuid=None):
     """Helper function for other views.
 
     Parameters
     ----------
     request : Request
-    account_id : str
+    puuid : str
         Include this arg to avoid making a database call
 
     POST Parameters
@@ -138,36 +138,26 @@ def match_filter(request, account_id=None):
     """
     region = request.data.get("region", None)
     name = request.data.get("summoner_name", None)
-    account_id = request.data.get("account_id", None)
+    puuid = request.data.get("puuid", None)
     queue_in = request.data.get("queue_in", [])
     queue = request.data.get("queue", None)
     with_names = request.data.get("with_names", [])
-    champion_key = request.data.get("champion_key", None)
     start_date = request.data.get("start_date", None)
     end_date = request.data.get("end_date", None)
 
-    if account_id is None:
-        if name:
-            simplified = pt.simplify(name)
-            query = Summoner.objects.filter(simple_name=simplified, region=region)
-        elif account_id:
-            query = Summoner.objects.filter(account_id=account_id, region=region)
-        summoner_get_time = time.time()
-        summoner = query[0]
-        summoner_get_time = time.time() - summoner_get_time
-        account_id = summoner.account_id
+    if puuid is None and name:
+        simplified = pt.simplify(name)
+        query = Summoner.objects.filter(simple_name=simplified, region=region)
+        puuid = query[0].puuid
+    else:
+        raise Exception('Must provide a puuid or name.')
 
-    matches = Match.objects.filter(participants__current_account_id=account_id)
+    matches = Match.objects.filter(participants__puuid=puuid)
     matches = matches.filter(is_fully_imported=True)
     if queue_in:
         matches = matches.filter(queue_id__in=queue_in)
     if queue:
         matches = matches.filter(queue_id=queue)
-    if champion_key is not None:
-        matches = matches.filter(
-            participants__current_account_id=account_id,
-            participants__champion_id=champion_key,
-        )
     if start_date:
         start_epoch = int(parse_datetime(start_date).timestamp() * 1000)
         matches = matches.filter(game_creation__gte=start_epoch)
@@ -198,7 +188,6 @@ def get_summoner_page(request, format=None):
     summoner_name : str
     account_id : str
     region : str
-    champion_key : int
     update : bool
         Whether or not to check riot for update first
     language : str
@@ -233,9 +222,8 @@ def get_summoner_page(request, format=None):
         update = request.data.get("update", False)
         region = request.data.get("region", None)
         name = request.data.get("summoner_name", None)
-        account_id = request.data.get("account_id", None)
+        puuid = request.data.get("puuid", None)
         # language = request.data.get("language", "en_US")
-        champion_key = request.data.get("champion_key", None)
         queue = request.data.get("queue", None)
         page = int(request.data.get("page", 1))
         count = int(request.data.get("count", 20))
@@ -247,8 +235,8 @@ def get_summoner_page(request, format=None):
         if name:
             simplified = pt.simplify(name)
             query = Summoner.objects.filter(simple_name=simplified, region=region)
-        elif account_id:
-            query = Summoner.objects.filter(account_id=account_id, region=region)
+        elif puuid:
+            query = Summoner.objects.filter(puuid=puuid, region=region)
         elif _id:
             query = Summoner.objects.filter(id=_id, region=region)
 
@@ -302,12 +290,7 @@ def get_summoner_page(request, format=None):
                 profile_icon_data = {}
 
             # check for new games
-            kwargs = {}
             start_index = 0
-            if champion_key is not None:
-                kwargs["champion"] = champion_key
-            if queue is not None:
-                kwargs["queue"] = queue
             if after_index is not None:
                 start_index = after_index
             elif page is not None:
@@ -317,9 +300,9 @@ def get_summoner_page(request, format=None):
             start = (page - 1) * count
             end = page * count
             mt.import_recent_matches(
-                start_index, end_index, summoner.account_id, region, **kwargs
+                start_index, end_index, summoner.puuid, region, queue=queue,
             )
-            qs = match_filter(request, account_id=summoner.account_id)
+            qs = match_filter(request, puuid=summoner.puuid)
 
             if queue is None and after_index in [None, 0]:
                 summoner.last_summoner_page_import = timezone.now()
@@ -349,7 +332,7 @@ def match_import(request, format=None):
     if count > 100:
         logger.warning('Cannot import more than 100 matches at a time.  Importing 100 matches.')
         count = 100
-    imported = mt.import_recent_matches(0, count, summoner.account_id, region)
+    imported = mt.import_recent_matches(0, count, summoner.puuid, region)
     return Response({'count': imported})
 
 
@@ -1093,9 +1076,9 @@ def get_top_played_with(request, format=None):
     Parameters
     ----------
     summoner_id : internal ID for Summoner
-    account_id : RIOT account ID
+    puuid : RIOT PUUID
         If `id` is not provided
-    group_by : ['summoner_name', 'account_id']
+    group_by : ['summoner_name', 'puuid']
     season_id : int
     queue_id : int
     recent : int
@@ -1114,7 +1097,7 @@ def get_top_played_with(request, format=None):
 
     if request.method == "POST":
         _id = request.data.get("summoner_id", None)
-        account_id = request.data.get("account_id", None)
+        puuid = request.data.get("puuid", None)
         group_by = request.data.get("group_by", None)
         season_id = request.data.get("season_id", None)
         queue_id = request.data.get("queue_id", None)
@@ -1129,10 +1112,10 @@ def get_top_played_with(request, format=None):
         summoner_id = None
         if _id is not None:
             summoner_id = _id
-        elif account_id is not None:
-            summoner_id = Summoner.objects.get(account_id=account_id).id
+        elif puuid is not None:
+            summoner_id = Summoner.objects.get(puuid=puuid).id
         else:
-            data = {"message": "Must provide id or account_id."}
+            data = {"message": "Must provide id or puuid."}
             status_code = 400
 
         if summoner_id:

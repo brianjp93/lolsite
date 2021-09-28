@@ -40,8 +40,8 @@ CELERY_BROKER_URL = f"redis://{REDIS_URL}"
 
 CACHES = {
     "default": {
-        # "BACKEND": "django.core.cache.backends.dummy.DummyCache"
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        # "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "lolsite-dev-cache",
     }
 }
