@@ -18,3 +18,6 @@ f_avg = FSUM / P
 for p in players:
     total_impact = sum((F / f_avg) * W for F in features)
 ```
+
+There's a lot of pseudo math going on here it isn't very scientific. How can
+we improve it?

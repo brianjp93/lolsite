@@ -16,10 +16,10 @@ Another league of legends match history and stats site.
 
 # Ideas
 
-* [ ] Add user comments to matches.
-    * [ ] Allow any user to comment, but highlight comments from
+* [x] Add user comments to matches.
+    * [x] Allow any user to comment, but highlight comments from
     users that actually played in the game.
-    * [ ] This will most likely welcome post game toxicity, but I think it will be fun, too.
+    * [x] This will most likely welcome post game toxicity, but I think it will be fun, too.
     * [x] Need to add verified user accounts to allow this to become a reality.
 
 - [x] Open summoner page links in a new tab.
@@ -34,8 +34,7 @@ Another league of legends match history and stats site.
 - [ ] Add task queue and separate server for consuming periodic and delayed tasks
     * [x] Add task queue
     * [x] Add workers
-    * [ ] Add beat
-    * this will be a larger addition and will require more money to be spent. I definitely want to do this at some point but not sure when :l
+    * [ ] Add beat (periodic task capability)
 
 - [ ] Show changes of items and champions over patches.  Diff their data to check for changes.
 
