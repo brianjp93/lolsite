@@ -164,5 +164,10 @@ Similarly, Rune data is stored in **App.jsx** (store).  They are accessible from
 this.props.store.state.runes[version][rune_id]
 ```
 
+# dumb
+
+All this caching stuff is dumb and complicated and requires passing the store prop through all the components
+and it's annoying.  Try to replace it with useQuery.
+
 Opening a Rune submenu in any of the match cards will trigger a request for all runes with the same version as the match being looked at.
 Again, if the Runes already exist, the request will not be sent.
