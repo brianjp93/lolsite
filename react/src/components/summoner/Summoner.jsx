@@ -381,7 +381,7 @@ class Summoner extends Component {
     this.setState({queues: qdict})
   }
   closeModal() {
-    let pathname = window.location.pathname.split(/match\/\d+/)[0]
+    let pathname = window.location.pathname.split(/match\/\w+/)[0]
     this.props.route.history.push(pathname)
   }
   render() {

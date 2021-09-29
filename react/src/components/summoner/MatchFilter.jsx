@@ -260,25 +260,27 @@ class MatchFilter extends Component {
                             </div>
                         </div>
                         <div style={{position: 'relative'}} className="col s6">
-                            <div className={`input-field ${theme}`}>
-                                <input
-                                    ref={(elt) => {
-                                        this.champion_select = elt
-                                    }}
-                                    autoComplete="off"
-                                    id="champ-input-selection"
-                                    className={`${theme}`}
-                                    type="text"
-                                    value={this.state.champion}
-                                    onChange={(event) =>
-                                        this.setState({champion: event.target.value})
-                                    }
-                                    onClick={() => this.setState({is_champion_card_open: true})}
-                                    onFocus={() => this.setState({is_champion_card_open: true})}
-                                    onKeyDown={this.handleChampionKeyDown}
-                                />
-                                <label htmlFor="champ-input-selection">Champion</label>
-                            </div>
+                            {/*
+                              <div className={`input-field ${theme}`}>
+                                  <input
+                                      ref={(elt) => {
+                                          this.champion_select = elt
+                                      }}
+                                      autoComplete="off"
+                                      id="champ-input-selection"
+                                      className={`${theme}`}
+                                      type="text"
+                                      value={this.state.champion}
+                                      onChange={(event) =>
+                                          this.setState({champion: event.target.value})
+                                      }
+                                      onClick={() => this.setState({is_champion_card_open: true})}
+                                      onFocus={() => this.setState({is_champion_card_open: true})}
+                                      onKeyDown={this.handleChampionKeyDown}
+                                  />
+                                  <label htmlFor="champ-input-selection">Champion</label>
+                              </div>
+                            */}
                             {this.state.is_champion_card_open && (
                                 <div
                                     ref={this.champ_card}

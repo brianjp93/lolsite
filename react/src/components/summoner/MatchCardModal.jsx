@@ -120,8 +120,8 @@ function MatchCardModal(props) {
               alt=""
             />
             <div style={{display: 'inline-block', paddingLeft: 4}}>
-              <img style={{height: 20, display: 'block'}} src={part.spell_1_image} alt="" />
-              <img style={{height: 20, display: 'block'}} src={part.spell_2_image} alt="" />
+              <img style={{height: 20, display: 'block'}} src={part.summoner_1_image} alt="" />
+              <img style={{height: 20, display: 'block'}} src={part.summoner_2_image} alt="" />
             </div>
           </div>
           <img
@@ -374,7 +374,6 @@ function MatchCardModal(props) {
                   <div style={comp_style}>
                     <div style={{marginLeft: 30, marginRight: 8}}>
                       <h5 style={header_style}>Champion Timelines</h5>
-                      {/*
                       <ChampionTimelines
                         theme={store.state.theme}
                         my_part={mypart}
@@ -383,12 +382,10 @@ function MatchCardModal(props) {
                         timeline={timeline}
                         expanded_width={500}
                       />
-                      */}
                     </div>
                   </div>
                   <div style={comp_style}>
                     <h5 style={header_style}>Champion Stats</h5>
-                    {/*
                     <StatOverview
                       participants={participants}
                       match={match}
@@ -397,7 +394,6 @@ function MatchCardModal(props) {
                       mypart={mypart}
                       is_expanded={true}
                     />
-                    */}
                   </div>
                   <div style={{...comp_style, alignSelf: 'baseline'}}>
                     <h5 style={header_style}>Build Order</h5>
@@ -413,7 +409,6 @@ function MatchCardModal(props) {
                   </div>
                   <div style={{...comp_style, alignSelf: 'baseline'}}>
                     <h5 style={header_style}>Runes</h5>
-                    {/*
                     <RunePage
                       mypart={mypart}
                       participants={participants}
@@ -421,7 +416,6 @@ function MatchCardModal(props) {
                       store={props.store}
                       pageStore={props.pageStore}
                     />
-                    */}
                   </div>
                 </div>
               </React.Fragment>

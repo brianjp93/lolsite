@@ -323,45 +323,6 @@ class Participant(models.Model):
             url = spell.image_url()
         return url
 
-    def as_data_row(self, max_spell=70, max_champ=1000, team=None):
-        convert_lane = {
-            "NONE": 0,
-            "TOP": 1,
-            "JUNGLE": 2,
-            "MIDDLE": 3,
-            "BOTTOM": 4,
-        }
-        lane = [0] * 5
-        lane[convert_lane[self.lane]] = 1
-
-        spells = [0] * max_spell
-        spells[self.summoner_1_id] = 1
-        spells[self.summoner_2_id] = 1
-
-        champions = [0] * max_champ
-        champions[self.champion_id] = 1
-
-        max_vs = 1
-        max_dmg = 1
-        max_gold = 1
-        if team is None:
-            team = self.match.participants.filter(team_id=self.team_id).select_related('stats')
-        for part in team:
-            if part.stats.vision_score > max_vs:
-                max_vs = part.stats.vision_score
-            if part.stats.total_damage_dealt_to_champions > max_dmg:
-                max_dmg = part.stats.total_damage_dealt_to_champions
-            if part.stats.gold_earned > max_gold:
-                max_gold = part.stats.gold_earned
-        stat_data = [
-            self.stats.vision_score / max_vs,
-            self.stats.total_damage_dealt_to_champions / max_dmg,
-            self.stats.gold_earned / max_gold,
-        ]
-
-        data = lane + spells + champions + stat_data
-        return data
-
 
 class Stats(models.Model):
     participant = models.OneToOneField("Participant", on_delete=models.CASCADE)
@@ -808,13 +769,13 @@ class ChampionKillEvent(Event):
 class VictimDamage(models.Model):
     championkillevent = models.ForeignKey(ChampionKillEvent, on_delete=models.CASCADE)
     basic = models.BooleanField(default=False)
-    magic_damage = models.PositiveSmallIntegerField()
+    magic_damage = models.IntegerField()
     name = models.CharField(max_length=32)
     participant_id = models.PositiveSmallIntegerField()
-    physical_damage = models.PositiveSmallIntegerField()
+    physical_damage = models.IntegerField()
     spell_name = models.CharField(max_length=64)
-    spell_slot = models.SmallIntegerField()
-    true_damage = models.PositiveSmallIntegerField()
+    spell_slot = models.IntegerField()
+    true_damage = models.IntegerField()
     type = models.CharField(max_length=32)
 
     class Meta:

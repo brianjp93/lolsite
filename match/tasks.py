@@ -22,20 +22,16 @@ from .models import VictimDamageDealt, VictimDamageReceived
 
 from .models import Spectate
 
-from data.models import Champion, SummonerSpell
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
 from player.models import Summoner
 from player import tasks as pt
-from player.constants import CLF
 
 from celery import task
 import logging
 from multiprocessing.dummy import Pool as ThreadPool
 import time
-from sklearn import svm
-import joblib
 
 from functools import partial
 from typing import Optional
@@ -246,6 +242,8 @@ def parse_match(data):
 
     participants = []
     for part in data["participants"]:
+        perks = {x['description']: x for x in part['perks']['styles']}
+        stat_perks = part['perks']['statPerks']
         stats = {
             "assists": part["assists"],
             "champ_level": part["champLevel"],
@@ -287,40 +285,14 @@ def parse_match(data):
                 "neutralMinionsKilledTeamJungle", 0
             ),
             "penta_kills": part["pentaKills"],
-            "perk_0": part.get("perk0", 0),
-            "perk_0_var_1": part.get("perk0Var1", 0),
-            "perk_0_var_2": part.get("perk0Var2", 0),
-            "perk_0_var_3": part.get("perk0Var3", 0),
-            "perk_1": part.get("perk1", 0),
-            "perk_1_var_1": part.get("perk1Var1", 0),
-            "perk_1_var_2": part.get("perk1Var2", 0),
-            "perk_1_var_3": part.get("perk1Var3", 0),
-            "perk_2": part.get("perk2", 0),
-            "perk_2_var_1": part.get("perk2Var1", 0),
-            "perk_2_var_2": part.get("perk2Var2", 0),
-            "perk_2_var_3": part.get("perk2Var3", 0),
-            "perk_3": part.get("perk3", 0),
-            "perk_3_var_1": part.get("perk3Var1", 0),
-            "perk_3_var_2": part.get("perk3Var2", 0),
-            "perk_3_var_3": part.get("perk3Var3", 0),
-            "perk_4": part.get("perk4", 0),
-            "perk_4_var_1": part.get("perk4Var1", 0),
-            "perk_4_var_2": part.get("perk4Var2", 0),
-            "perk_4_var_3": part.get("perk4Var3", 0),
-            "perk_5": part.get("perk5", 0),
-            "perk_5_var_1": part.get("perk5Var1", 0),
-            "perk_5_var_2": part.get("perk5Var2", 0),
-            "perk_5_var_3": part.get("perk5Var3", 0),
-            "perk_primary_style": part.get("perkPrimaryStyle", 0),
-            "perk_sub_style": part.get("perkSubStyle", 0),
             "physical_damage_dealt": part["physicalDamageDealt"],
             "physical_damage_dealt_to_champions": part["physicalDamageDealtToChampions"],
             "physical_damage_taken": part["physicalDamageTaken"],
             "quadra_kills": part["quadraKills"],
             "sight_wards_bought_in_game": part["sightWardsBoughtInGame"],
-            "stat_perk_0": part.get("statPerk0", 0),
-            "stat_perk_1": part.get("statPerk1", 0),
-            "stat_perk_2": part.get("statPerk2", 0),
+            "stat_perk_0": stat_perks.get('offense', 0),
+            "stat_perk_1": stat_perks.get("flex", 0),
+            "stat_perk_2": stat_perks.get("defense", 0),
             "spell_1_casts": part.get("spell1Casts", 0),
             "spell_2_casts": part.get("spell2Casts", 0),
             "spell_3_casts": part.get("spell3Casts", 0),
@@ -348,6 +320,15 @@ def parse_match(data):
             "detector_wards_placed": part.get("detectorWardsPlaced", 0),
             "win": part["win"],
         }
+        all_perks = perks['primaryStyle']['selections'] + perks['subStyle']['selections']
+        for i, perk in enumerate(all_perks):
+            print(i, perk)
+            stats[f"perk_{i}"] = perk.get("perk", 0)
+            stats[f"perk_{i}_var_1"] = perk.get("var1", 0)
+            stats[f"perk_{i}_var_2"] = perk.get("var2", 0)
+            stats[f"perk_{i}_var_3"] = perk.get("var3", 0)
+        stats["perk_primary_style"] = perks['primaryStyle']['style']
+        stats["perk_sub_style"] = perks["subStyle"]['style']
 
         participant = {
             "_id": part["participantId"],
@@ -1087,83 +1068,25 @@ def apply_player_ranks(match, threshold_days=1):
                 return
 
 
-def create_role_model_fit(recent_days=None, max_entries=10_000):
-    """
-    """
-    query = Participant.objects.filter(role_label__isnull=False)
-    if recent_days:
-        now = timezone.now()
-        start = now - timezone.timedelta(days=recent_days)
-        start = start.timestamp() * 1000
-        start = int(start)
-        query = query.filter(match__game_creation__gt=start)
-        query = query.order_by("-match__game_creation")
-    query = query[:max_entries]
-
-    x_input = [x.as_data_row() for x in query]
-    y_output = [y.role_label for y in query]
-
-    clf = svm.SVC(decision_function_shape="ovr")
-    clf.fit(x_input, y_output)
-    joblib.dump(clf, "role_predict.svc")
+PARTICIPANT_ROLE_KEYS = {
+    'TOP': 0,
+    'JUNGLE': 5,
+    'MIDDLE': 10,
+    'BOTTOM': 15,
+    'UTILITY': 20,
+}
 
 
-def predict_role(participant, classifier_file="role_predict.svc", number=False, team=None):
-    """
-
-    Parameters
-    ----------
-    participant : Participant Model
-    classifier_file : str
-        file of saved classifier instance using joblib
-    """
-    convert = ["top", "jg", "mid", "adc", "sup"]
-    guess = CLF.predict([participant.as_data_row(team=team)])[0]
-    if number:
-        out = guess
-    else:
-        out = convert[guess]
-    return out
-
-
-def guess_roles():
-    query = Participant.objects.filter(
-        lane="NONE", role_label__isnull=True, match__queue_id=420
-    )
-    for p in query[:50]:
-        guess = predict_role(p)
-        champ = Champion.objects.filter(key=p.champion_id).first()
-        spell1 = SummonerSpell.objects.filter(key=p.spell_1_id).first()
-        spell2 = SummonerSpell.objects.filter(key=p.spell_2_id).first()
-        lane = guess
-        print(
-            f"Guessing {champ.name:15} {p.lane:10} {spell1.name:10} + {spell2.name:10} == {lane.upper():5}"
-        )
+def participant_key(participant: Participant):
+    """Use riot's `team_position` variable and order from top to sup."""
+    return (participant.team_id, PARTICIPANT_ROLE_KEYS.get(participant.team_position, 25))
 
 
 def get_sorted_participants(match, participants=None):
-    """Use ML classifier to guess lane/role
-    """
-    ordered = []
     if not participants:
         participants = match.participants.all().select_related('stats')
     if len(participants) == 10:
-        for team_id in [100, 200]:
-            allowed = set(list(range(5)))
-            team = [""] * 5
-            unknown = []
-            team_parts = [x for x in participants if x.team_id == team_id]
-            for p in team_parts:
-                role = predict_role(p, number=True, team=team_parts)
-                if role in allowed:
-                    team[role] = p
-                    allowed.remove(role)
-                else:
-                    unknown.append(p)
-            for p in unknown:
-                index = team.index("")
-                team[index] = p
-            ordered += team
+        ordered = sorted(list(participants), key=participant_key)
     else:
         ordered = list(participants)
     return ordered

@@ -305,6 +305,8 @@ function MatchCard(props) {
     const TOPPAD = 20
     const CARDHEIGHT = 130
     const RIGHT_SPLIT = 70
+    console.log(mypart.summoner_1_image)
+    console.log(mypart.summoner_2_image)
 
     if (mypart !== undefined) {
         return (
@@ -334,12 +336,12 @@ function MatchCard(props) {
                             <div style={{ display: 'inline-block', paddingLeft: 4 }}>
                                 <img
                                     style={{ height: 20, display: 'block' }}
-                                    src={mypart.spell_1_image}
+                                    src={mypart.summoner_1_image}
                                     alt=""
                                 />
                                 <img
                                     style={{ height: 20, display: 'block' }}
-                                    src={mypart.spell_2_image}
+                                    src={mypart.summoner_2_image}
                                     alt=""
                                 />
                             </div>

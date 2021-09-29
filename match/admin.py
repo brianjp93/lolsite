@@ -21,8 +21,9 @@ class MatchAdmin(admin.ModelAdmin):
 
 
 class ParticipantAdmin(admin.ModelAdmin):
-    list_display = ("_id", "summoner_name_simplified", "champion_id", "team_id")
+    list_display = ("_id", "summoner_name_simplified", "champion_id", "team_position", "team_id")
     raw_id_fields = ("match",)
+    list_filter = ('team_position',)
     search_fields = ("summoner_name_simplified", "match___id")
     show_full_result_count = False
     list_per_page = 30

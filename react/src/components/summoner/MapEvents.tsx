@@ -114,7 +114,7 @@ export function MapEvents(props: {
       }
       setBuildings(new_buildings)
     }
-  }, [index, timeline, buildings, setOuterTimelineIndex])
+  }, [index, timeline, buildings, setOuterTimelineIndex, slice.buildingkillevents])
 
   const stepBackward = useCallback(() => {
     let newindex = index - 1
@@ -136,7 +136,7 @@ export function MapEvents(props: {
       }
       setBuildings(new_buildings)
     }
-  }, [index, timeline, buildings, setOuterTimelineIndex])
+  }, [index, buildings, setOuterTimelineIndex, slice.buildingkillevents])
 
   const getPlayers = useCallback(
     function () {

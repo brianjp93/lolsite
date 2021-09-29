@@ -246,7 +246,59 @@ class FullMatchSerializer(serializers.ModelSerializer):
 class ParticipantFrameSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParticipantFrame
-        fields = "__all__"
+        fields = [
+            'participant_id',
+            'current_gold',
+            'gold_per_second',
+            'jungle_minions_killed',
+            'level',
+            'minions_killed',
+            'team_score',
+            'total_gold',
+            'time_enemy_spent_controlled',
+            'xp',
+            'x',
+            'y',
+
+            'ability_haste',
+            'ability_power',
+            'armor',
+            'armor_pen',
+            'armor_pen_percent',
+            'attack_damage',
+            'attack_speed',
+            'bonus_armor_pen_percent',
+            'bonus_magic_pen_percent',
+            'cc_reduction',
+            'cooldown_reduction',
+            'health',
+            'health_max',
+            'health_regen',
+            'lifesteal',
+            'magic_pen',
+            'magic_pen_percent',
+            'magic_resist',
+            'movement_speed',
+            'omnivamp',
+            'physical_vamp',
+            'power',
+            'power_max',
+            'power_regen',
+            'spell_vamp',
+
+            'magic_damage_done',
+            'magic_damage_done_to_champions',
+            'magic_damage_taken',
+            'physical_damage_done',
+            'physical_damage_done_to_champions',
+            'physical_damage_taken',
+            'total_damage_done',
+            'total_damage_done_to_champions',
+            'total_damage_taken',
+            'true_damage_done',
+            'true_damage_done_to_champions',
+            'true_damage_taken',
+        ]
 
 
 class WardKillEventSerializer(serializers.ModelSerializer):

@@ -52,7 +52,8 @@ class ReforgedTreeAdmin(admin.ModelAdmin):
 
 
 class ReforgedRuneAdmin(admin.ModelAdmin):
-    list_display = ("key", "reforgedtree", "row", "sort_int")
+    list_display = ("key", "_id", "reforgedtree", "row", "sort_int")
+    search_fields = ('_id', 'key')
     list_filter = ("reforgedtree__version", "reforgedtree__language")
     raw_id_fields = ("reforgedtree",)
 
