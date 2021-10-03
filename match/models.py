@@ -597,6 +597,9 @@ class Frame(models.Model):
     )
     timestamp = models.IntegerField(null=True, blank=True, db_index=True)
 
+    class Meta:
+        ordering = ['timestamp']
+
     def __str__(self):
         return f"Frame(match={self.timeline.match._id}, timestamp={self.timestamp})"
 
