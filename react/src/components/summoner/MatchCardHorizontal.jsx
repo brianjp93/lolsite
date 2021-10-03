@@ -305,8 +305,6 @@ function MatchCard(props) {
     const TOPPAD = 20
     const CARDHEIGHT = 130
     const RIGHT_SPLIT = 70
-    console.log(mypart.summoner_1_image)
-    console.log(mypart.summoner_2_image)
 
     if (mypart !== undefined) {
         return (

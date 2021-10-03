@@ -322,7 +322,6 @@ def parse_match(data):
         }
         all_perks = perks['primaryStyle']['selections'] + perks['subStyle']['selections']
         for i, perk in enumerate(all_perks):
-            print(i, perk)
             stats[f"perk_{i}"] = perk.get("perk", 0)
             stats[f"perk_{i}_var_1"] = perk.get("var1", 0)
             stats[f"perk_{i}_var_2"] = perk.get("var2", 0)

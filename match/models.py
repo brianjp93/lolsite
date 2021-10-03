@@ -19,8 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 def sort_positions(positions):
-    """Uses tier_sort, rank_sort and lp_sort to sort positions by descending rank.
-    """
+    """Uses tier_sort, rank_sort and lp_sort to sort positions by descending rank."""
     return sorted(positions, key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
 
 
@@ -95,7 +94,6 @@ def lp_sort(position):
 
 
 class MatchQuerySet(models.QuerySet):
-
     def get_items(self, puuid=None):
         item_ids = set()
         qs = Stats.objects.filter(participant__match__in=self)
@@ -103,64 +101,72 @@ class MatchQuerySet(models.QuerySet):
             qs = qs.filter(participant__puuid=puuid)
         for stat in qs:
             for i in range(7):
-                key = f'item_{i}'
+                key = f"item_{i}"
                 item_id = getattr(stat, key)
                 item_ids.add(item_id)
         qs = Item.objects.filter(_id__in=item_ids)
-        qs = qs.order_by('_id', '-major', '-minor')
-        qs = qs.distinct('_id').select_related('image')
+        qs = qs.order_by("_id", "-major", "-minor")
+        qs = qs.distinct("_id").select_related("image")
         return {x._id: x for x in qs}
 
     def get_champs(self):
         champ_ids = set()
-        for match in self.prefetch_related('participants'):
+        for match in self.prefetch_related("participants"):
             for part in match.participants.all():
                 champ_ids.add(part.champion_id)
-        qs = Champion.objects.filter(key__in=champ_ids, language='en_US')
-        qs = qs.order_by('key', '-major', '-minor').distinct('key').select_related('image')
+        qs = Champion.objects.filter(key__in=champ_ids, language="en_US")
+        qs = (
+            qs.order_by("key", "-major", "-minor")
+            .distinct("key")
+            .select_related("image")
+        )
         return {x.key: x for x in qs}
 
     def get_spell_images(self):
         spell_ids = set()
-        for match in self.prefetch_related('participants'):
+        for match in self.prefetch_related("participants"):
             for part in match.participants.all():
                 spell_ids.add(part.summoner_1_id)
                 spell_ids.add(part.summoner_2_id)
         qs = SummonerSpellImage.objects.filter(spell__key__in=spell_ids)
-        qs = qs.select_related('spell')
-        qs = qs.order_by('spell___id', '-spell__major', '-spell__minor').distinct('spell___id')
+        qs = qs.select_related("spell")
+        qs = qs.order_by("spell___id", "-spell__major", "-spell__minor").distinct(
+            "spell___id"
+        )
         return {x.spell.key: x.image_url() for x in qs}
 
     def get_perk_substyles(self):
         substyles = set()
-        for match in self.prefetch_related('participants'):
-            for part in match.participants.all().select_related('stats'):
+        for match in self.prefetch_related("participants"):
+            for part in match.participants.all().select_related("stats"):
                 substyles.add(part.stats.perk_sub_style)
         qs = ReforgedTree.objects.filter(_id__in=substyles)
-        qs = qs.order_by('_id', '-major', '-minor').distinct('_id')
+        qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
         return {x._id: x.image_url() for x in qs}
 
     def get_runes(self):
         all_runes = set()
-        for match in self.prefetch_related('participants'):
+        for match in self.prefetch_related("participants"):
             for part in match.participants.all():
                 for _i in range(6):
-                    all_runes.add(getattr(part.stats, f'perk_{_i}'))
+                    all_runes.add(getattr(part.stats, f"perk_{_i}"))
 
-        rune_data = ReforgedRune.objects.filter(
-            _id__in=all_runes,
-        ).order_by(
-            '_id', '-reforgedtree__major', 'reforgedtree__minor'
-        ).distinct('_id')
+        rune_data = (
+            ReforgedRune.objects.filter(
+                _id__in=all_runes,
+            )
+            .order_by("_id", "-reforgedtree__major", "reforgedtree__minor")
+            .distinct("_id")
+        )
         return {x._id: x for x in rune_data}
 
     def get_related(self):
         return {
-            'items': self.get_items(),
-            'runes': self.get_runes(),
-            'perk_substyles': self.get_perk_substyles(),
-            'champs': self.get_champs(),
-            'spell_images': self.get_spell_images(),
+            "items": self.get_items(),
+            "runes": self.get_runes(),
+            "perk_substyles": self.get_perk_substyles(),
+            "champs": self.get_champs(),
+            "spell_images": self.get_spell_images(),
         }
 
 
@@ -214,14 +220,12 @@ class Match(VersionedModel):
         return url
 
     def get_creation(self):
-        """Get creation as datetime
-        """
+        """Get creation as datetime"""
         dt = timezone.datetime.fromtimestamp(self.game_creation // 1000, tz=pytz.utc)
         return dt
 
     def tier_average(self):
-        """Compute tier average.
-        """
+        """Compute tier average."""
         major = self.major
         try:
             tiers = getattr(DATA_CONSTANTS, f"TIERS_{major}")
@@ -244,8 +248,7 @@ class Match(VersionedModel):
         return self.comments.all().count()
 
     def is_summoner_in_game(self, summoner):
-        """Find if a summoner is in the game.
-        """
+        """Find if a summoner is in the game."""
         query = self.participants.filter(puuid=summoner.puuid)
         return query.exists()
 
@@ -301,11 +304,14 @@ class Participant(models.Model):
         )
 
     def get_champion(self):
-        return Champion.objects.filter(key=self.champion_id).order_by('-major', '-minor').first()
+        return (
+            Champion.objects.filter(key=self.champion_id)
+            .order_by("-major", "-minor")
+            .first()
+        )
 
     def spell_1_image_url(self):
-        """Get spell 1 image URL.
-        """
+        """Get spell 1 image URL."""
         url = ""
         query = SummonerSpell.objects.filter(key=self.summoner_1_id)
         if query.exists():
@@ -314,8 +320,7 @@ class Participant(models.Model):
         return url
 
     def spell_2_image_url(self):
-        """Get spell 2 image URL.
-        """
+        """Get spell 2 image URL."""
         url = ""
         query = SummonerSpell.objects.filter(key=self.summoner_2_id)
         if query.exists():
@@ -439,8 +444,7 @@ class Stats(models.Model):
         return f"Stats(participant={self.participant.summoner_name})"
 
     def perk_primary_style_image_url(self):
-        """Get primary perk style image URL.
-        """
+        """Get primary perk style image URL."""
         url = ""
         query = ReforgedTree.objects.filter(_id=self.perk_primary_style).order_by(
             "-version"
@@ -451,11 +455,11 @@ class Stats(models.Model):
         return url
 
     def perk_sub_style_image_url(self):
-        """Get perk sub style image URL.
-        """
+        """Get perk sub style image URL."""
         url = ""
         query = ReforgedTree.objects.filter(_id=self.perk_sub_style).order_by(
-            "-major", "-minor",
+            "-major",
+            "-minor",
         )
         if query.exists():
             perk = query.first()
@@ -463,8 +467,7 @@ class Stats(models.Model):
         return url
 
     def get_perk_image(self, number):
-        """Get perk image URL.
-        """
+        """Get perk image URL."""
         url = ""
         try:
             value = getattr(self, f"perk_{number}")
@@ -498,8 +501,7 @@ class Stats(models.Model):
         return self.get_perk_image(5)
 
     def get_item_image_url(self, number, major=None, minor=None):
-        """Get item image URL.
-        """
+        """Get item image URL."""
         url = ""
         try:
             item_id = getattr(self, f"item_{number}")
@@ -510,11 +512,13 @@ class Stats(models.Model):
                 "-major", "-minor", "-patch"
             )
             version_query = query.filter(major=major, minor=minor)
-            if all([
-                major is not None,
-                minor is not None,
-                version_query.exists(),
-            ]):
+            if all(
+                [
+                    major is not None,
+                    minor is not None,
+                    version_query.exists(),
+                ]
+            ):
                 item = version_query.first()
                 url = item.image_url()
             elif query.exists():
@@ -723,7 +727,9 @@ class TurretPlateDestroyedEvent(Event):
 
 class EliteMonsterKillEvent(Event):
     killer_id = models.PositiveSmallIntegerField()
-    assisting_participant_ids = ArrayField(models.PositiveSmallIntegerField(), blank=True, null=True)
+    assisting_participant_ids = ArrayField(
+        models.PositiveSmallIntegerField(), blank=True, null=True
+    )
     killer_team_id = models.PositiveSmallIntegerField()
     monster_type = models.CharField(max_length=64)
     monster_sub_type = models.CharField(max_length=64, null=True)
@@ -732,7 +738,9 @@ class EliteMonsterKillEvent(Event):
 
 
 class ChampionSpecialKillEvent(Event):
-    assisting_participant_ids = ArrayField(models.PositiveSmallIntegerField(), null=True)
+    assisting_participant_ids = ArrayField(
+        models.PositiveSmallIntegerField(), null=True
+    )
     kill_type = models.CharField(max_length=32)
     killer_id = models.PositiveSmallIntegerField()
     multi_kill_length = models.PositiveSmallIntegerField(default=None, null=True)
@@ -741,7 +749,9 @@ class ChampionSpecialKillEvent(Event):
 
 
 class BuildingKillEvent(Event):
-    assisting_participant_ids = ArrayField(models.PositiveSmallIntegerField(), null=True)
+    assisting_participant_ids = ArrayField(
+        models.PositiveSmallIntegerField(), null=True
+    )
     building_type = models.CharField(max_length=32)
     killer_id = models.PositiveSmallIntegerField()
     lane_type = models.CharField(max_length=32)
