@@ -2085,6 +2085,99 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sentry/browser@npm:6.13.2":
+  version: 6.13.2
+  resolution: "@sentry/browser@npm:6.13.2"
+  dependencies:
+    "@sentry/core": 6.13.2
+    "@sentry/types": 6.13.2
+    "@sentry/utils": 6.13.2
+    tslib: ^1.9.3
+  checksum: 3ba197a2dfae4675e657f9d945237198bdadaa4937cf6d27b426d296a7a018e0be213524b55ee57fbf3106b4724559cd8b9e00f6d990a99bf65e1eb8e5b31b71
+  languageName: node
+  linkType: hard
+
+"@sentry/core@npm:6.13.2":
+  version: 6.13.2
+  resolution: "@sentry/core@npm:6.13.2"
+  dependencies:
+    "@sentry/hub": 6.13.2
+    "@sentry/minimal": 6.13.2
+    "@sentry/types": 6.13.2
+    "@sentry/utils": 6.13.2
+    tslib: ^1.9.3
+  checksum: a3133dc428fc1475c7c93b677eac0096f00c41cf3dfbf66a0365332d0333f716eb724bca334eaf372e1e0a798b80e415da88dba7af55ddb8ada4e7354dba45c1
+  languageName: node
+  linkType: hard
+
+"@sentry/hub@npm:6.13.2":
+  version: 6.13.2
+  resolution: "@sentry/hub@npm:6.13.2"
+  dependencies:
+    "@sentry/types": 6.13.2
+    "@sentry/utils": 6.13.2
+    tslib: ^1.9.3
+  checksum: 88d191a65bc7a3145876cb2b110af7940d958d5ddf28418caf6dd82dcf3d91bc6b913c1d706642c454dab46bb7d88de577d983bfca6507d6d01cd3e29e6635fe
+  languageName: node
+  linkType: hard
+
+"@sentry/minimal@npm:6.13.2":
+  version: 6.13.2
+  resolution: "@sentry/minimal@npm:6.13.2"
+  dependencies:
+    "@sentry/hub": 6.13.2
+    "@sentry/types": 6.13.2
+    tslib: ^1.9.3
+  checksum: 5820045e6edb71fbbf945a92c9ea9a194a0b9794eb9c381df186d0718f7cb39d81879d63a7c6f49f8d1f33932fa68d205783885d2dc5090df1f56ae65ac33378
+  languageName: node
+  linkType: hard
+
+"@sentry/react@npm:^6.13.2":
+  version: 6.13.2
+  resolution: "@sentry/react@npm:6.13.2"
+  dependencies:
+    "@sentry/browser": 6.13.2
+    "@sentry/minimal": 6.13.2
+    "@sentry/types": 6.13.2
+    "@sentry/utils": 6.13.2
+    hoist-non-react-statics: ^3.3.2
+    tslib: ^1.9.3
+  peerDependencies:
+    react: 15.x || 16.x || 17.x
+  checksum: d648ab914012b49b61f7d944283773e25662f4d162447848028ebc1c0cde9d74c12309152d0957cc02356153e7736fa54aa8e9c3bdf7b3ff0e9fce40d5f0d762
+  languageName: node
+  linkType: hard
+
+"@sentry/tracing@npm:^6.13.2":
+  version: 6.13.2
+  resolution: "@sentry/tracing@npm:6.13.2"
+  dependencies:
+    "@sentry/hub": 6.13.2
+    "@sentry/minimal": 6.13.2
+    "@sentry/types": 6.13.2
+    "@sentry/utils": 6.13.2
+    tslib: ^1.9.3
+  checksum: fe3a9488632e00b107963548316e1a61eb714f7170ebd4de79002f2f617b3226bcb4950347519b5a9ab8de602aee64fae872b5c8cda892a5e30b32aab5993fb7
+  languageName: node
+  linkType: hard
+
+"@sentry/types@npm:6.13.2":
+  version: 6.13.2
+  resolution: "@sentry/types@npm:6.13.2"
+  checksum: fab45d11337e1c332f240b823ade0b97929b17aee356c3c6944a02efed1adf507179bdb9aff3f3183101075ebf2e865c0bcafca8224b11974c143184f67a7d5a
+  languageName: node
+  linkType: hard
+
+"@sentry/utils@npm:6.13.2":
+  version: 6.13.2
+  resolution: "@sentry/utils@npm:6.13.2"
+  dependencies:
+    "@sentry/types": 6.13.2
+    tslib: ^1.9.3
+  checksum: 2ef2a063924055f0199af1410267841ef5328e4fb48b793a3d920b9d329466cde767a10223a1b4857ceca02fa1387c8612e4c976f7343825e5c2344d45c4f9c0
+  languageName: node
+  linkType: hard
+
 "@sinonjs/commons@npm:^1.7.0":
   version: 1.8.3
   resolution: "@sinonjs/commons@npm:1.8.3"
@@ -7553,7 +7646,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"hoist-non-react-statics@npm:^3.1.0":
+"hoist-non-react-statics@npm:^3.1.0, hoist-non-react-statics@npm:^3.3.2":
   version: 3.3.2
   resolution: "hoist-non-react-statics@npm:3.3.2"
   dependencies:
@@ -9642,6 +9735,8 @@ fsevents@^1.2.7:
   version: 0.0.0-use.local
   resolution: "lol@workspace:."
   dependencies:
+    "@sentry/react": ^6.13.2
+    "@sentry/tracing": ^6.13.2
     "@types/jest": ^26.0.22
     "@types/node": ^14.14.37
     "@types/numeral": ^2.0.1
@@ -14980,7 +15075,7 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"tslib@npm:^1.8.1":
+"tslib@npm:^1.8.1, tslib@npm:^1.9.3":
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: f44fe7f216946b17d3e3074df3746372703cf24e9127b4c045511456e8e4bf25515fb0a1bb3937676cc305651c5d4fcb6377b0588a4c6a957e748c4c28905d17

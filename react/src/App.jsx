@@ -17,10 +17,23 @@ import {ChampionsPage} from './components/champion/champion'
 import {NotificationPage} from './components/notification/notification'
 import { QueryClient, QueryClientProvider } from 'react-query'
 
+import * as Sentry from "@sentry/react";
+import { Integrations } from "@sentry/tracing";
+
 import api from './api/api'
 
 const trackingId = 'UA-153444087-1'
 ReactGA.initialize(trackingId)
+
+Sentry.init({
+    dsn: "https://9596d6f2a197495094ea44d37f329c67@o77441.ingest.sentry.io/5990012",
+    integrations: [new Integrations.BrowserTracing()],
+
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+});
 
 const queryClient = new QueryClient()
 

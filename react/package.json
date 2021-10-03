@@ -8,6 +8,8 @@
     ]
   },
   "dependencies": {
+    "@sentry/react": "^6.13.2",
+    "@sentry/tracing": "^6.13.2",
     "axios": "^0.21.1",
     "fp-ts": "^2.9.5",
     "fuzzysearch": "^1.0.3",
