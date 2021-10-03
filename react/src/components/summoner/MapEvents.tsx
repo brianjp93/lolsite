@@ -266,6 +266,9 @@ function EventBubble({
   if (!ev) {
     return null
   }
+  if (Object.keys(part_dict).length === 0) {
+    return null
+  }
   const part = part_dict[ev.killer_id]
   let team_id: number
   if (buildingKillEvent) {
