@@ -235,6 +235,7 @@ function MatchCardModal(props) {
         setParticipants(parts)
       })
       getTimeline().then((data) => {
+        data.sort((a, b) => a.timestamp - b.timestamp)
         setTimeline(data)
       })
     }
