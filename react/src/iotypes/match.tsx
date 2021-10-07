@@ -296,7 +296,7 @@ export const SpectateParticipant = t.type({
     perkStyle: t.number,
     perkSubStyle: t.number,
   }),
-  positions: t.array(Position),
+  positions: optional(t.array(Position)),
   profileIconId: t.number,
   spell1Id: t.number,
   spell2Id: t.number,
