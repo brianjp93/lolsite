@@ -18,6 +18,10 @@ let queuefilter = [
         id: 430
     },
     {
+        name: 'Custom Games',
+        id: 0
+    },
+    {
         name: 'Clash',
         id: 700
     },
