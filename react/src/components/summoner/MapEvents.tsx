@@ -182,7 +182,7 @@ export function MapEvents(props: {
             height: image_size,
             borderRadius: 10,
           }}
-          src={`${store.state.static}general/map.png`}
+          src={`${store.state.static}general/map.jpg`}
           alt="League Map"
         />
 
