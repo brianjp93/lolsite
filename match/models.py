@@ -173,7 +173,7 @@ class MatchQuerySet(models.QuerySet):
 class Match(VersionedModel):
     _id = models.CharField(unique=True, db_index=True, max_length=32)
     game_creation = models.BigIntegerField(db_index=True)
-    game_duration = models.IntegerField()
+    game_duration = models.BigIntegerField()
     game_mode = models.CharField(max_length=32, default="", blank=True)
     game_type = models.CharField(max_length=32, default="", blank=True)
     map_id = models.IntegerField()
