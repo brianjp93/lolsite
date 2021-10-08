@@ -45,7 +45,7 @@ def get_summoner_champions_overview(
 
     """
     all_fields = True if not fields else False
-    min_game_time = 60 * 5
+    min_game_time = 60 * 5 * 1000
     query = Stats.objects.select_related(
         'participant', 'participant__match'
     ).filter(participant__match__game_duration__gt=min_game_time)
@@ -146,7 +146,7 @@ def get_summoner_champions_overview(
         ]
     ):
         annotation_kwargs["minutes"] = ExpressionWrapper(
-            Sum("participant__match__game_duration") / 60, output_field=FloatField()
+            Sum("participant__match__game_duration") / 60 / 1000, output_field=FloatField()
         )
     if annotation_kwargs:
         query = query.annotate(**annotation_kwargs)
