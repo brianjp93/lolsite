@@ -121,9 +121,9 @@ function BuildOrder(props: {
       for (let event of group) {
         let key: string
         if (event._type === 'ITEM_UNDO') {
-          key = `${event.before_id}-${event.after_id}-${event.timestamp}`
+          key = `${event.before_id}-${event.after_id}`
         } else {
-          key = `${event?.item_id}-${event.timestamp}`
+          key = `${event?.item_id}`
         }
         if (group_count[key] === undefined) {
           event.count = 1
@@ -345,13 +345,14 @@ function BuildOrder(props: {
                                 <div
                                   style={{
                                     position: 'absolute',
-                                    bottom: 0,
+                                    bottom: 5,
                                     right: 0,
-                                    width: 20,
+                                    width: 15,
                                     background: 'white',
                                     color: 'black',
+                                    opacity: '0.70',
                                     textAlign: 'center',
-                                    fontSize: 'smaller',
+                                    fontSize: '75%',
                                     borderRadius: 5,
                                   }}
                                 >
