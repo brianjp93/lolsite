@@ -350,8 +350,8 @@ function BuildOrder(props: {
                                     width: 15,
                                     background: 'white',
                                     color: 'black',
-				    opacity: '0.70',
-				    textAlign: 'center',
+                                    opacity: '0.70',
+                                    textAlign: 'center',
                                     fontSize: '75%',
                                     borderRadius: 5,
                                   }}
