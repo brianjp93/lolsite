@@ -99,7 +99,7 @@ class PlayerChampionSummary extends Component {
     }
     getParams() {
         let data = {
-            summoner_id: this.props.summoner.id,
+            puuid: this.props.summoner.puuid,
             start: this.state.start,
             end: this.state.end,
             order_by: '-count',
@@ -125,7 +125,7 @@ class PlayerChampionSummary extends Component {
     getChampionStats() {
         let data = this.getParams()
 
-        if (data.summoner_id !== undefined) {
+        if (data.puuid) {
             this.setState({ is_loading: true })
             api.player
                 .getChampionsOverview(data)

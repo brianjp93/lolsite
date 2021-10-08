@@ -527,7 +527,7 @@ def get_summoner_champions_overview(request, format=None):
         end = int(request.data.get("end", 5))
         order_by = request.data.get("order_by", None)
         kwargs = {
-            "summoner_id": request.data.get("summoner_id", None),
+            "puuid": request.data.get("puuid", None),
             "major_version": request.data.get("major_version", None),
             "minor_version": request.data.get("minor_version", None),
             "season": request.data.get("season", None),

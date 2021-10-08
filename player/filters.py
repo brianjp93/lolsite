@@ -14,7 +14,7 @@ from django.utils.dateparse import parse_datetime
 
 
 def get_summoner_champions_overview(
-    summoner_id=None,
+    puuid: str=None,
     major_version=None,
     minor_version=None,
     queue_in=None,
@@ -28,7 +28,7 @@ def get_summoner_champions_overview(
 
     Parameters
     ----------
-    summoner_id : ID
+    puuid : ID
     queue_in : list
     major_version : int
     minor_version : int
@@ -50,9 +50,8 @@ def get_summoner_champions_overview(
         'participant', 'participant__match'
     ).filter(participant__match__game_duration__gt=min_game_time)
 
-    if summoner_id is not None:
-        summoner = Summoner.objects.get(id=summoner_id)
-        query = query.filter(participant__summoner_id=summoner._id)
+    if puuid is not None:
+        query = query.filter(participant__puuid=puuid)
     if champion_in is not None:
         query = query.filter(participant__champion_id__in=champion_in)
     if major_version is not None:
