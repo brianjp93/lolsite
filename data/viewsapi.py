@@ -5,13 +5,14 @@ from rest_framework import exceptions
 from .models import ProfileIcon, ReforgedRune, ReforgedTree
 from .models import Champion, Item
 
-from match.models import Match, Item
+from match.models import Match
 
 from .serializers import ProfileIconSerializer, ItemSerializer
 from .serializers import ReforgedRuneSerializer, ChampionSerializer
 from .serializers import ChampionSpellSerializer
 
 from lolsite.helpers import query_debugger
+from django.db.models import QuerySet
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 
@@ -37,10 +38,9 @@ def get_profile_icon(request, format=None):
     # language = request.data.get('language', None)
 
     if request.method == "POST":
-        query = ProfileIcon.objects.filter(_id=profile_icon_id)
-        if query.exists():
-            query = query.order_by("-major", "-minor", "-patch")
-            profile_icon = query.first()
+        query: QuerySet[ProfileIcon] = ProfileIcon.objects.filter(_id=profile_icon_id)
+        query = query.order_by("-major", "-minor", "-patch")
+        if profile_icon := query.first():
             serializer = ProfileIconSerializer(profile_icon)
             data["data"] = serializer.data
         else:
@@ -82,9 +82,7 @@ def get_item(request, format=None):
         version = f"{major}.{minor}.1"
 
     if item_id:
-        query = Item.objects.filter(_id=item_id, version=version)
-        if query:
-            item = query[0]
+        if item := Item.objects.filter(_id=item_id, version=version):
             item_data = ItemSerializer(item).data
             data["data"] = item_data
         else:
@@ -356,8 +354,7 @@ def get_champion_spells(request, format=None):
         champion_id = request.data["champion_id"]
         query = Champion.objects.all().order_by("-major", "-minor", "-patch")
         query = query.filter(_id=champion_id)
-        if query.exists():
-            champion = query.first()
+        if champion := query.first():
             spells = champion.spells.all().order_by("id")
             data["data"] = ChampionSpellSerializer(spells, many=True).data
         else:
