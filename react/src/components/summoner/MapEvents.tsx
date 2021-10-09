@@ -269,12 +269,12 @@ function EventBubble({
   if (Object.keys(part_dict).length === 0) {
     return null
   }
-  const part = part_dict[ev.killer_id]
   let team_id: number
   if (buildingKillEvent) {
     team_id = buildingKillEvent.team_id
   } else if (championKillEvent) {
-    team_id = part.team_id
+    const victim = part_dict[championKillEvent.victim_id]
+    team_id = victim.team_id === 100 ? 200 : 100
   } else if (turretPlateDestroyedEvent) {
     team_id = turretPlateDestroyedEvent.team_id
   } else if (eliteMonsterKillEvent) {
@@ -373,6 +373,7 @@ function EventBubble({
                     })}
                   </div>
                 )}
+                {ev.killer_id === 0 && <div>Executed</div>}
                 <div
                   style={{
                     display: 'inline-block',
