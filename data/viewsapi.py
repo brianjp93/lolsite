@@ -82,7 +82,7 @@ def get_item(request, format=None):
         version = f"{major}.{minor}.1"
 
     if item_id:
-        if item := Item.objects.filter(_id=item_id, version=version):
+        if item := Item.objects.filter(_id=item_id, version=version).first():
             item_data = ItemSerializer(item).data
             data["data"] = item_data
         else:
