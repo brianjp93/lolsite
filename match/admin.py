@@ -5,8 +5,10 @@ from .models import Match, Participant, Stats
 from .models import Team, Ban
 
 from .models import AdvancedTimeline, Frame, ParticipantFrame
+from .models import EliteMonsterKillEvent
 
 
+@admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
     list_display = ("_id", "get_creation", "queue_id", "game_version")
     list_filter = ("platform_id", "major")
@@ -20,6 +22,7 @@ class MatchAdmin(admin.ModelAdmin):
     paginator = CachedCountPaginator
 
 
+@admin.register(Participant)
 class ParticipantAdmin(admin.ModelAdmin):
     list_display = ("_id", "summoner_name_simplified", "champion_id", "team_position", "team_id")
     raw_id_fields = ("match",)
@@ -30,6 +33,7 @@ class ParticipantAdmin(admin.ModelAdmin):
     paginator = CachedCountPaginator
 
 
+@admin.register(Stats)
 class StatsAdmin(admin.ModelAdmin):
     list_display = ("participant",)
     raw_id_fields = ("participant",)
@@ -39,6 +43,7 @@ class StatsAdmin(admin.ModelAdmin):
     paginator = CachedCountPaginator
 
 
+@admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
     list_display = ("_id", "match", "win")
     raw_id_fields = ("match",)
@@ -48,6 +53,7 @@ class TeamAdmin(admin.ModelAdmin):
     paginator = CachedCountPaginator
 
 
+@admin.register(Ban)
 class BanAdmin(admin.ModelAdmin):
     list_display = ("team", "champion_id", "pick_turn")
     raw_id_fields = ("team",)
@@ -60,6 +66,7 @@ class BanAdmin(admin.ModelAdmin):
 # ADVANCEDTIMELINE STUFF
 
 
+@admin.register(AdvancedTimeline)
 class AdvancedTimelineAdmin(admin.ModelAdmin):
     list_display = ("match",)
     raw_id_fields = ("match",)
@@ -68,6 +75,7 @@ class AdvancedTimelineAdmin(admin.ModelAdmin):
     paginator = CachedCountPaginator
 
 
+@admin.register(Frame)
 class FrameAdmin(admin.ModelAdmin):
     list_display = ("timestamp",)
     search_fields = ("timeline__match___id",)
@@ -77,6 +85,7 @@ class FrameAdmin(admin.ModelAdmin):
     paginator = CachedCountPaginator
 
 
+@admin.register(ParticipantFrame)
 class ParticipantFrameAdmin(admin.ModelAdmin):
     list_display = ("participant_id",)
     search_fields = ("frame__timeline__match___id",)
@@ -86,11 +95,7 @@ class ParticipantFrameAdmin(admin.ModelAdmin):
     paginator = CachedCountPaginator
 
 
-admin.site.register(Match, MatchAdmin)
-admin.site.register(Participant, ParticipantAdmin)
-admin.site.register(Stats, StatsAdmin)
-admin.site.register(Team, TeamAdmin)
-admin.site.register(Ban, BanAdmin)
-admin.site.register(AdvancedTimeline, AdvancedTimelineAdmin)
-admin.site.register(Frame, FrameAdmin)
-admin.site.register(ParticipantFrame, ParticipantFrameAdmin)
+@admin.register(EliteMonsterKillEvent)
+class EliteMonsterKillEventAdmin(admin.ModelAdmin):
+    list_display = ('killer_id', 'monster_type', 'x', 'y')
+    search_fields = ('frame__timeline__match___id',)

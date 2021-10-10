@@ -111,7 +111,6 @@ function Timeline(props: {
       events = getBigEvents(i)
       for (let event of events) {
         if (event._type === 'ELITE_MONSTER_KILL') {
-          event.y = frame[getMyTeamDataKey()]
           event.frame_timestamp = frame.timestamp
           reference_lines.push(event)
         }

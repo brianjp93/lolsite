@@ -84,7 +84,7 @@ export function MapEvents(props: {
         const pos = getPosition(ev.x, ev.y)
         return (
           <EventBubble
-            key={`monster-${ev.timestamp}-${ev.x}`}
+            key={`monster-${ev.timestamp}-${ev.x}-${ev.y}`}
             part_dict={part_dict}
             eliteMonsterKillEvent={ev}
             pos={pos}
