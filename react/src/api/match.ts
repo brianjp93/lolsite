@@ -12,12 +12,9 @@ var version = 'v1';
 axios.defaults.xsrfHeaderName = "X-CSRFToken";
 axios.defaults.xsrfCookieName = "csrftoken";
 
-interface TimelineData extends AxiosRequestConfig {
-    id: number,
-}
-async function timeline(data: TimelineData) {
+async function timeline(_id: string) {
     var url = `/api/${version}/match/timeline/`
-    const response = await axios.post(url, data)
+    const response = await axios.get(url, {params: {id: _id}})
     return unwrap(t.array(Frame).decode(response.data.data))
 }
 

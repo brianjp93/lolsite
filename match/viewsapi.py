@@ -28,7 +28,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 from django.shortcuts import get_object_or_404
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 def get_match_timeline(request, format=None):
     """Gets match timeline from Riot's API.
 
@@ -46,17 +46,16 @@ def get_match_timeline(request, format=None):
     """
     data = {}
     status_code = 200
-    match_id = request.data.get("match_id", None)
-    if request.method == "POST":
-        match = Match.objects.get(_id=match_id)
-        try:
-            timeline = match.advancedtimeline
-        except:
-            mt.import_advanced_timeline(match.id)
-            match.refresh_from_db()
-            timeline = match.advancedtimeline
+    match_id = request.query_params.get("id", None)
+    match = get_object_or_404(Match, _id=match_id)
+    try:
+        timeline = match.advancedtimeline
+    except:
+        mt.import_advanced_timeline(match.id)
+        match.refresh_from_db()
+        timeline = match.advancedtimeline
 
-        data = {'data': AdvancedTimelineSerializer(timeline).data.get('frames', {})}
+    data = {'data': AdvancedTimelineSerializer(timeline).data.get('frames', {})}
     return Response(data, status=status_code)
 
 

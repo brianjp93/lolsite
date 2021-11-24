@@ -57,8 +57,7 @@ function MatchCardModal(props) {
   }, [match_id])
 
   const getTimeline = useCallback(() => {
-    let data = {match_id}
-    return api.match.timeline(data)
+    return api.match.timeline(match_id)
   }, [match_id])
 
   function showParticipants() {
