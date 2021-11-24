@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useState, useEffect} from 'react'
 import {Link} from 'react-router-dom'
 import {useQuery} from 'react-query'
 
@@ -28,37 +28,38 @@ function MatchCardModal(props) {
   let match_id = props.route.match.params.match_id
   let puuid = props.summoner.puuid
 
-  const [match, setMatch] = useState({})
-  const [participants, setParticipants] = useState([])
-  const [timeline, setTimeline] = useState([])
   const [timeline_index, setTimelineIndex] = useState(null)
   // stats, comments
   const [view, setView] = useState('stats')
 
-  const team_100 = getTeam(100, participants)
-  const team_200 = getTeam(200, participants)
-
-  // TODO: replace getMatch with matchQuery
   const matchQuery = useQuery(
     ['full-match', match_id],
     () => api.match.getMatch({match_id}).then((response) => response.data.data),
     {retry: false, refetchOnWindowFocus: false},
   )
+  const match = matchQuery.isSuccess ? matchQuery.data: {}
 
   const participantQuery = useQuery(
-    ['participants', match_id]
+    ['participants', match_id],
+    () => api.match.participants(
+      {match__id: match_id, apply_ranks: true}
+    ).then(response => rankParticipants(response.data)),
+    {retry: false, refetchOnWindowFocus: false}
   )
-  const getParticipants = useCallback(() => {
-    let data = {
-      match__id: match_id,
-      apply_ranks: true,
-    }
-    return api.match.participants(data)
-  }, [match_id])
+  const participants = participantQuery.isSuccess ? participantQuery.data: []
 
-  const getTimeline = useCallback(() => {
-    return api.match.timeline(match_id)
-  }, [match_id])
+  const timelineQuery = useQuery(
+    ['timeline', match_id],
+    () => api.match.timeline(match_id).then(data => {
+      data.sort((a, b) => a.timestamp - b.timestamp)
+      return data
+    }),
+    {retry: false, refetchOnWindowFocus: false}
+  )
+  const timeline = timelineQuery.data || []
+
+  const team_100 = getTeam(100, participants)
+  const team_200 = getTeam(200, participants)
 
   function showParticipants() {
     let div_style = {
@@ -230,22 +231,6 @@ function MatchCardModal(props) {
     return out
   }
 
-  useEffect(() => {
-    if (match_id !== undefined) {
-      getMatch().then((response) => {
-        setMatch(response.data.data)
-      })
-      getParticipants().then((response) => {
-        let parts = rankParticipants(response.data)
-        setParticipants(parts)
-      })
-      getTimeline().then((data) => {
-        data.sort((a, b) => a.timestamp - b.timestamp)
-        setTimeline(data)
-      })
-    }
-  }, [match_id, getMatch, getParticipants, getTimeline])
-
   // on-load, check for query-string to tell what view to load
   useEffect(() => {
     const query = queryString.parse(window.location.search)
@@ -357,7 +342,7 @@ function MatchCardModal(props) {
                       <MapEvents
                         summoner={props.summoner}
                         match={match}
-                        participants={participants}
+                        participants={participantQuery || []}
                         timeline={timeline}
                         setOuterTimelineIndex={setTimelineIndex}
                         store={props.store}
@@ -384,7 +369,7 @@ function MatchCardModal(props) {
                         theme={store.state.theme}
                         my_part={mypart}
                         summoner={props.summoner}
-                        participants={participants}
+                        participants={participantQuery.data || []}
                         timeline={timeline}
                         expanded_width={500}
                       />
@@ -393,7 +378,7 @@ function MatchCardModal(props) {
                   <div style={comp_style}>
                     <h5 style={header_style}>Champion Stats</h5>
                     <StatOverview
-                      participants={participants}
+                      participants={participantQuery.data || []}
                       match={match}
                       store={props.store}
                       pageStore={props.pageStore}
@@ -407,7 +392,7 @@ function MatchCardModal(props) {
                       theme={store.state.theme}
                       timeline={timeline}
                       expanded_width={500}
-                      participants={participants}
+                      participants={participantQuery.data || []}
                       summoner={props.summoner}
                       my_part={mypart}
                       match_id={match._id}
@@ -417,7 +402,7 @@ function MatchCardModal(props) {
                     <h5 style={header_style}>Runes</h5>
                     <RunePage
                       mypart={mypart}
-                      participants={participants}
+                      participants={participantQuery.data || []}
                       match={match}
                       store={props.store}
                       pageStore={props.pageStore}
