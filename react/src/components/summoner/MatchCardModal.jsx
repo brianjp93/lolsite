@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {Link} from 'react-router-dom'
+import {useQuery} from 'react-query'
 
 import {Timeline} from './Timeline'
 import ChampionTimelines from './ChampionTimelines'
@@ -37,11 +38,16 @@ function MatchCardModal(props) {
   const team_100 = getTeam(100, participants)
   const team_200 = getTeam(200, participants)
 
-  const getMatch = useCallback(() => {
-    let data = {match_id}
-    return api.match.getMatch(data)
-  }, [match_id])
+  // TODO: replace getMatch with matchQuery
+  const matchQuery = useQuery(
+    ['full-match', match_id],
+    () => api.match.getMatch({match_id}).then((response) => response.data.data),
+    {retry: false, refetchOnWindowFocus: false},
+  )
 
+  const participantQuery = useQuery(
+    ['participants', match_id]
+  )
   const getParticipants = useCallback(() => {
     let data = {
       match__id: match_id,
@@ -296,9 +302,9 @@ function MatchCardModal(props) {
         <div style={{display: 'inline-block'}}>
           {formatDatetimeFull(match.game_creation)}
           <span> -- </span>
-          {`${Math.floor(match.game_duration / 1000 / 60)}:${numeral((match.game_duration / 1000) % 60).format(
-            '00',
-          )}`}
+          {`${Math.floor(match.game_duration / 1000 / 60)}:${numeral(
+            (match.game_duration / 1000) % 60,
+          ).format('00')}`}
         </div>
         <div>
           patch {match.major}.{match.minor}

@@ -132,7 +132,7 @@ def get_summoner_meta_data(request, meta):
 
 
 def get_match_meta_data(request, meta):
-    r = re.match(r'/([a-z]+)/([^/]+)/match/([0-9]+)/(?:.*)?', request.path)
+    r = re.match(r'/([a-z]+)/([^/]+)/match/([A-Z0-9_]+)/(?:.*)?', request.path)
     if r:
         region, name, match_id = r.groups()
         name = simplify(name)
