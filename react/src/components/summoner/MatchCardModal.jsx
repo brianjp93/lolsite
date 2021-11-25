@@ -88,6 +88,9 @@ function MatchCardModal(props) {
             })}
             {banQuery.data && (
               <div>
+                <div style={{display: 'inline-block', fontSize: 25}}>
+                  Bans:
+                </div>{' '}
                 <BanList bans={banQuery.data.filter((x) => x.team === 100)} />
               </div>
             )}
@@ -101,6 +104,9 @@ function MatchCardModal(props) {
             })}
             {banQuery.data && (
               <div>
+                <div style={{display: 'inline-block', fontSize: 25}}>
+                  Bans:
+                </div>{' '}
                 <BanList bans={banQuery.data.filter((x) => x.team === 200)} />
               </div>
             )}
