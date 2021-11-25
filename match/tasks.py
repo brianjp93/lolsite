@@ -172,7 +172,7 @@ def import_match_from_data(data, refresh=False, region=""):
     teams = parsed.pop("teams")
     for _t_data in teams:
         _t_data["match"] = match_model
-        bans = _t_data.pop("bans")
+        _bans = _t_data.pop("bans")
 
         team_model = Team(**_t_data)
         try:
@@ -182,8 +182,8 @@ def import_match_from_data(data, refresh=False, region=""):
 
         # BANS
         bans = []
-        for _ban_data in bans:
-            _ban_data["team"] = team_model
+        for _ban_data in _bans:
+            _ban_data['team'] = team_model
             bans.append(Ban(**_ban_data))
         try:
             Ban.objects.bulk_create(bans)
