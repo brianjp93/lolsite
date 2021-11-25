@@ -451,6 +451,16 @@ var RUNEDATA = {
       ],
       "perkFormat": ["{0}"]
     },
+    "8369": {
+      "id": 8369,
+      "name": "First Strike",
+      "perkVars": 2,
+      "perkDesc": [
+        "Bonus Damage",
+        "Gold Gained"
+      ],
+      "perkFormat": ["{0}", "{0}"]
+    },
     "8401": {
       "id": 8410,
       "name": "Shield Bash",
