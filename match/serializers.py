@@ -251,9 +251,18 @@ class TeamSerializer(serializers.ModelSerializer):
 
 
 class BanSerializer(serializers.ModelSerializer):
+    team = serializers.SerializerMethodField()
+
     class Meta:
         model = Ban
-        fields = "__all__"
+        fields = [
+            'pick_turn',
+            'champion_id',
+            'team',
+        ]
+
+    def get_team(self, obj):
+        return obj.team._id
 
 
 class FullParticipantSerializer(serializers.ModelSerializer):

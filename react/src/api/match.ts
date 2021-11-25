@@ -4,6 +4,7 @@ import {
     FullParticipant,
     SpectateMatch,
     Frame,
+    Ban,
 } from '../types'
 import * as t from 'io-ts'
 
@@ -58,6 +59,12 @@ async function getLatestUnlabeled(data: any) {
     return await axios.post(url, data)
 }
 
+async function bans(match_id: string) {
+  const url = `/api/${version}/match/${match_id}/bans/`
+  const response = await axios.get(url)
+  return unwrap(t.array(Ban).decode(response.data))
+}
+
 const exports = {
     timeline,
     participants,
@@ -66,6 +73,7 @@ const exports = {
     getMatch,
     setRole,
     getLatestUnlabeled,
+    bans,
 }
 
 export default exports

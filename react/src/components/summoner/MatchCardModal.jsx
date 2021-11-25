@@ -9,6 +9,7 @@ import BuildOrder from './BuildOrder'
 import RunePage from './RunePage'
 import {MapEvents} from './MapEvents'
 import {getMyPart} from '../../constants/general'
+import {BanList} from './Bans'
 
 import numeral from 'numeral'
 import api from '../../api/api'
@@ -37,24 +38,31 @@ function MatchCardModal(props) {
     () => api.match.getMatch({match_id}).then((response) => response.data.data),
     {retry: false, refetchOnWindowFocus: false},
   )
-  const match = matchQuery.isSuccess ? matchQuery.data: {}
+  const match = matchQuery.isSuccess ? matchQuery.data : {}
+
+  const banQuery = useQuery(['match-bans', match_id], () => api.match.bans(match_id), {
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
 
   const participantQuery = useQuery(
     ['participants', match_id],
-    () => api.match.participants(
-      {match__id: match_id, apply_ranks: true}
-    ).then(response => rankParticipants(response.data)),
-    {retry: false, refetchOnWindowFocus: false}
+    () =>
+      api.match
+        .participants({match__id: match_id, apply_ranks: true})
+        .then((response) => rankParticipants(response.data)),
+    {retry: false, refetchOnWindowFocus: false},
   )
-  const participants = participantQuery.isSuccess ? participantQuery.data: []
+  const participants = participantQuery.isSuccess ? participantQuery.data : []
 
   const timelineQuery = useQuery(
     ['timeline', match_id],
-    () => api.match.timeline(match_id).then(data => {
-      data.sort((a, b) => a.timestamp - b.timestamp)
-      return data
-    }),
-    {retry: false, refetchOnWindowFocus: false}
+    () =>
+      api.match.timeline(match_id).then((data) => {
+        data.sort((a, b) => a.timestamp - b.timestamp)
+        return data
+      }),
+    {retry: false, refetchOnWindowFocus: false},
   )
   const timeline = timelineQuery.data || []
 
@@ -78,6 +86,11 @@ function MatchCardModal(props) {
             {team_100.map((part) => {
               return <div key={`${part.id}`}>{participantLine(part)}</div>
             })}
+            {banQuery.data && (
+              <div>
+                <BanList bans={banQuery.data.filter((x) => x.team === 100)} />
+              </div>
+            )}
           </div>
 
           <div style={{width: 8, display: 'inline-block'}}></div>
@@ -86,6 +99,11 @@ function MatchCardModal(props) {
             {team_200.map((part) => {
               return <div key={`${part.id}`}>{participantLine(part)}</div>
             })}
+            {banQuery.data && (
+              <div>
+                <BanList bans={banQuery.data.filter((x) => x.team === 200)} />
+              </div>
+            )}
           </div>
         </div>
       </div>

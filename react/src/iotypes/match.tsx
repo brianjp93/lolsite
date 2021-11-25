@@ -243,7 +243,6 @@ export const FullParticipant = t.type({
 export type FullParticipantType = t.TypeOf<typeof FullParticipant>
 
 export const Ban = t.type({
-  id: t.number,
   team: t.number,
   champion_id: t.number,
   pick_turn: t.number,

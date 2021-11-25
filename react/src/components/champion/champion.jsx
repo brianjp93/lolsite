@@ -3,6 +3,7 @@ import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
 import fuzzysearch from 'fuzzysearch'
 import LazyLoad from 'react-lazyload'
+import { useQuery } from 'react-query'
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, Tooltip } from 'recharts'
 import numeral from 'numeral'
 import { stripHtml } from '../../constants/general'
@@ -19,16 +20,23 @@ export function ChampionsPage(props) {
 }
 
 export function ChampionGrid(props) {
-    const [champions, setChampions] = useState([])
     const [processed_champions, setProcessedChampions] = useState([])
     const [search, setSearch] = useState('')
 
     const theme = props.theme
 
-    const getChampions = useCallback(() => {
-        let params = { full: true }
-        return api.data.getChampions(params)
-    }, [])
+    const championsQuery = useQuery(
+        'champions',
+        () => api.data.getChampions().then(x => x.data.data),
+        {
+            retry: false,
+            refetchOnWindowFocus: false,
+            staleTime: 1000 * 60 * 10,
+        }
+    )
+    const champions = useMemo(() => {
+        return championsQuery.data || []
+    }, [championsQuery.data])
 
     const [max_stat, min_stat, avg_stat] = useMemo(() => {
         let maxes = {}
@@ -51,12 +59,6 @@ export function ChampionGrid(props) {
         }
         return [maxes, mins, avgs]
     }, [processed_champions])
-
-    useEffect(() => {
-        getChampions().then(response => {
-            setChampions(response.data.data)
-        })
-    }, [getChampions])
 
     useEffect(() => {
         if (champions.length > 0) {

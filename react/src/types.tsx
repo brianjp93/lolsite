@@ -11,6 +11,7 @@ export {
     SpectateMatch,
     AdvancedTimeline,
     Frame,
+    Ban,
 } from './iotypes/match'
 export type {
     FullMatchType,
@@ -27,11 +28,15 @@ export type {
     ItemSoldEventType,
     SimpleMatchType,
     ParticipantFrameType,
+    BanType,
 } from './iotypes/match'
 
 // PLAYER
 export {Summoner, PositionBin, TopPlayedWithPlayer, SummonerSearch} from './iotypes/player'
 export type {SummonerType, PositionBinType, TopPlayedWithPlayerType, SummonerSearchType} from './iotypes/player'
+
+export {Champion} from './iotypes/data'
+export type {ChampionType} from './iotypes/data'
 
 export function unwrap<T>(x: t.Validation<T>) {
     if (isRight(x)) {

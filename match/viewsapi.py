@@ -2,14 +2,14 @@
 """
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 from match import tasks as mt
 from player import tasks as pt
 
-from .models import Match, Participant, sort_positions
+from .models import Match, Participant, sort_positions, Ban
 
 from player.models import Summoner, simplify
 
@@ -19,6 +19,7 @@ from data.serializers import BasicChampionWithImageSerializer
 from .serializers import (
     MatchSerializer,
     AdvancedTimelineSerializer, FullMatchSerializer,
+    BanSerializer,
 )
 
 from player.serializers import RankPositionSerializer
@@ -57,6 +58,17 @@ def get_match_timeline(request, format=None):
 
     data = {'data': AdvancedTimelineSerializer(timeline).data.get('frames', {})}
     return Response(data, status=status_code)
+
+
+class MatchBanListView(ListAPIView):
+    serializer_class = BanSerializer
+
+    def get_queryset(self):
+        _id = self.kwargs['_id']
+        print(_id)
+        qs = Ban.objects.filter(team__match___id=_id)
+        qs = qs.select_related('team')
+        return qs
 
 
 @api_view(["POST"])
