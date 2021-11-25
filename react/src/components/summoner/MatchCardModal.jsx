@@ -217,19 +217,7 @@ function MatchCardModal(props) {
     )
   }
 
-  function isDataAcquired() {
-    let out = true
-    if (timeline.length === 0) {
-      out = false
-    }
-    if (participants.length === 0) {
-      out = false
-    }
-    if (match._id === undefined) {
-      out = false
-    }
-    return out
-  }
+  const isDataAcquired = timeline.length && participants.length && match._id
 
   // on-load, check for query-string to tell what view to load
   useEffect(() => {
@@ -326,7 +314,7 @@ function MatchCardModal(props) {
         <div>
           <div>{showParticipants()}</div>
           <div style={{marginTop: 20, marginBottom: 100}}>
-            {isDataAcquired() && (
+            {isDataAcquired && (
               <React.Fragment>
                 <div
                   style={{
