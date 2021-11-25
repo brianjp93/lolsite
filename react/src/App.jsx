@@ -68,14 +68,6 @@ class App extends Component {
       // whether or not to ignore vertical scroll conversion to horizontal
       ignore_horizontal: false,
 
-      tooltip_style: {
-        background: 'black',
-        padding: 15,
-        opacity: 0.9,
-        maxWidth: 300,
-        borderRadius: 10,
-      },
-
       regions: ['na', 'euw', 'eune', 'kr', 'jp', 'lan', 'las', 'br', 'oce', 'tr', 'ru'],
       region_selected: 'na',
 

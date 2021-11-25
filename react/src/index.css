@@ -167,3 +167,11 @@ hr {
     margin-left: -15px;
     margin-right: 8px;
 }
+
+.react-tiny-popover-container {
+    background: black;
+    padding: 15px;
+    opacity: 0.9;
+    max-width: 300px;
+    border-radius: 10px;
+}

@@ -3,7 +3,7 @@ import Popover from 'react-tiny-popover'
 
 export function Item(props: any) {
   return (
-    <div style={{...props.tooltip_style}}>
+    <div>
       {props.item === null && <span>Retrieving item...</span>}
       {props.item !== null && (
         <div>
@@ -61,7 +61,7 @@ export function ItemPopover(props: any) {
         isOpen={isOpen}
         position={'top'}
         containerStyle={{zIndex: '11'}}
-        content={<Item item={props.item} tooltip_style={props.tooltip_style} />}
+        content={<Item item={props.item} />}
       >
         <div ref={ref} style={{...props.style, cursor: 'pointer'}} onClick={toggle}>
           {props.children}

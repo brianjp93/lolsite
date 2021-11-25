@@ -97,7 +97,6 @@ export function item(id, image_url, match, store) {
                 margin: '0px 2px',
             }}
             item={item_data}
-            tooltip_style={store.state.tooltip_style}
             getItem={getItem}
             store={store}
             item_id={id}

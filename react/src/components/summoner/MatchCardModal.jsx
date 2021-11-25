@@ -348,7 +348,7 @@ function MatchCardModal(props) {
                       <MapEvents
                         summoner={props.summoner}
                         match={match}
-                        participants={participantQuery || []}
+                        participants={participants}
                         timeline={timeline}
                         setOuterTimelineIndex={setTimelineIndex}
                         store={props.store}

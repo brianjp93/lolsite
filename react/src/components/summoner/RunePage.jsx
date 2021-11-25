@@ -174,7 +174,6 @@ class RunePage extends Component {
                                         <RuneTooltip
                                             rune={rune}
                                             style={{ display: 'inline-block' }}
-                                            tooltip_style={this.props.store.state.tooltip_style}
                                         >
                                             <img
                                                 style={{ height: 40, paddingRight: 10 }}
@@ -288,7 +287,7 @@ class RuneTooltip extends Component {
                 position={'top'}
                 containerStyle={{ 'z-index': '11' }}
                 content={
-                    <div style={{ ...this.props.tooltip_style }}>
+                    <div>
                         <h5 style={{ textDecoration: 'underline', marginTop: -5 }}>{rune.name}</h5>
 
                         <div dangerouslySetInnerHTML={{ __html: rune.long_description }}></div>
