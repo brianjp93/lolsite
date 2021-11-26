@@ -65,7 +65,6 @@ class MatchBanListView(ListAPIView):
 
     def get_queryset(self):
         _id = self.kwargs['_id']
-        print(_id)
         qs = Ban.objects.filter(team__match___id=_id)
         qs = qs.select_related('team')
         return qs

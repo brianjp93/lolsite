@@ -159,6 +159,10 @@ def import_positions(summoner, threshold_days=None, close=False):
             rankcheckpoint = RankCheckpoint(summoner=summoner)
             rankcheckpoint.save()
             for pos in positions:
+                if 'rank' not in pos:
+                    logger.info(f'Position Data: {pos}')
+                    logger.info(f'Rank information not available.  Skipping for {summoner}.')
+                    continue
                 attrs = {
                     "checkpoint": rankcheckpoint,
                     "league_points": pos["leaguePoints"],
