@@ -27,6 +27,7 @@
     "react-datetime": "^3.0.4",
     "react-dom": "^16.14.0",
     "react-ga": "^2.7.0",
+    "react-hook-form": "^7.20.4",
     "react-hookstore": "^1.5.1",
     "react-latex": "^1.6.0",
     "react-lazyload": "^2.6.8",

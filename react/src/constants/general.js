@@ -201,3 +201,7 @@ export function stripHtmlFull(html) {
     elt.innerHTML = html
     return elt.textContent
 }
+
+export const VICTORY_COLOR = '#68b568'
+export const LOSS_COLOR = '#c33c3c'
+export const NEUTRAL_COLOR = 'lightblue'

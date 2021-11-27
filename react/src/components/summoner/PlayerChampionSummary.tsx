@@ -107,7 +107,7 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
     }
     if (timeDivision === 'days') {
       const now = moment()
-      const start = now.subtract(timeValue, 'days')
+      const start = now.subtract(timeValue, 'days').startOf('day')
       data.start_datetime = start.toISOString()
     } else if (timeDivision === 'season') {
       data.season = timeValue
@@ -126,7 +126,7 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
       retry: false,
       refetchOnWindowFocus: false,
       enabled: !!params.puuid,
-      cacheTime: 1000 * 60,
+      staleTime: 1000 * 60 * 5,
       keepPreviousData: true,
     },
   )

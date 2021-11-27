@@ -393,7 +393,6 @@ function MatchCardModal(props) {
                       participants={participantQuery.data || []}
                       match={match}
                       store={props.store}
-                      pageStore={props.pageStore}
                       mypart={mypart}
                       is_expanded={true}
                     />
@@ -413,6 +412,7 @@ function MatchCardModal(props) {
                   <div style={{...comp_style, alignSelf: 'baseline'}}>
                     <h5 style={header_style}>Runes</h5>
                     <RunePage
+                      matchCardHeight={props.matchCardHeight}
                       mypart={mypart}
                       participants={participantQuery.data || []}
                       match={match}

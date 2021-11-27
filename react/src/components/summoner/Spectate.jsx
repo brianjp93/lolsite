@@ -222,24 +222,24 @@ class SpectateModal extends Component {
             <div>
                 <Modal
                     style={MODALSTYLE}
-                    isOpen={this.props.pageStore.state.is_spectate_modal_open}
+                    isOpen={this.props.isSpectateModalOpen}
                     onRequestClose={() =>
-                        this.props.pageStore.setState({ is_spectate_modal_open: false })
+                        this.props.setIsSpectateModalOpen(false)
                     }
                 >
                     <Spectate
                         closeModal={() =>
-                            this.props.pageStore.setState({ is_spectate_modal_open: false })
+                          this.props.setIsSpectateModalOpen(false)
                         }
                         queue_convert={this.props.queue_convert}
                         theme={theme}
-                        region={this.props.pageStore.props.region}
+                        region={this.props.region}
                         summoner_id={this.props.summoner_id}
                     />
                 </Modal>
                 <span
                     style={{ cursor: 'pointer' }}
-                    onClick={() => this.props.pageStore.setState({ is_spectate_modal_open: true })}
+                    onClick={() => this.props.setIsSpectateModalOpen(true)}
                 >
                     {this.props.children}
                 </span>

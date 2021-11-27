@@ -14,6 +14,7 @@ export {
     Ban,
 } from './iotypes/match'
 export type {
+    BasicMatchType,
     FullMatchType,
     FrameType,
     FullParticipantType,

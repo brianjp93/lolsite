@@ -9767,6 +9767,7 @@ fsevents@^1.2.7:
     react-datetime: ^3.0.4
     react-dom: ^16.14.0
     react-ga: ^2.7.0
+    react-hook-form: ^7.20.4
     react-hookstore: ^1.5.1
     react-latex: ^1.6.0
     react-lazyload: ^2.6.8
@@ -12729,6 +12730,15 @@ fsevents@^1.2.7:
     prop-types: ^15.6.0
     react: ^15.6.2 || ^16.0
   checksum: fd2d21fcf27b69f17759006ce981b79f5ab896b7696a4d6fc7bec8c7ca3f6790e052d530cfe029b9e50055fd5701e0610739d036fa8a8e8e3eda28cdc9929f37
+  languageName: node
+  linkType: hard
+
+"react-hook-form@npm:^7.20.4":
+  version: 7.20.4
+  resolution: "react-hook-form@npm:7.20.4"
+  peerDependencies:
+    react: ^16.8.0 || ^17
+  checksum: ea5082517fda2825ca641e5097f28c7746cfc661cfb34523529882b2c677071830cd84153d9f6df037b00ec436bd68c74712351dc075ce0addbe5a05f0558d0d
   languageName: node
   linkType: hard
 

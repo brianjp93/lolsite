@@ -189,7 +189,7 @@ def get_base_react_context(request):
     """
     user = request.user
     user_data = {}
-    favorite_data = {}
+    favorite_data = []
     default_summoner = {}
     if hasattr(user, 'custom') and user.custom.default_summoner:
         default_summoner = SummonerSerializer(user.custom.default_summoner, many=False).data

@@ -20,7 +20,7 @@ class RunePage extends Component {
     this.partSelection = this.partSelection.bind(this)
   }
   componentDidMount() {
-    var version = this.getVersion()
+    const version = this.getVersion()
     if (this.props.store.state.runes[version] === undefined) {
       this.props.store.getRunes(version)
     }
@@ -146,8 +146,8 @@ class RunePage extends Component {
     })
   }
   render() {
-    let match = this.props.match
-    var rune_stat_height = (this.props.pageStore.state.match_card_height - 20) / 6
+    const match = this.props.match
+    const rune_stat_height = (this.props.matchCardHeight - 20) / 6
     return (
       <div>
         <div
@@ -162,8 +162,8 @@ class RunePage extends Component {
         </div>
         <div style={{display: 'inline-block'}}>
           {this.getPerks().map((perk) => {
-            var rune = this.getRune(perk.id)
-            var rune_etc = RUNES.data[perk.id]
+            const rune = this.getRune(perk.id)
+            const rune_etc = RUNES.data[perk.id]
             if (rune && rune_etc && rune_etc.perkFormat) {
               return (
                 <div key={`${match.id}-${perk.id}`} style={{height: rune_stat_height}}>
@@ -179,7 +179,7 @@ class RunePage extends Component {
                       }}
                     >
                       {rune_etc.perkFormat.map((perk_format, j) => {
-                        var desc = rune_etc.perkDesc[j]
+                        const desc = rune_etc.perkDesc[j]
                         return (
                           <div style={{lineHeight: 1}} key={`${match._id}-${j}`}>
                             <div
