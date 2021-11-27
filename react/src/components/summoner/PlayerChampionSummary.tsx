@@ -108,7 +108,7 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
       data.queue_in = queues[queueSelection]
     }
     return data
-  }, [summoner, start, end, isLoadAll, timeDivision, timeValue])
+  }, [summoner, start, end, isLoadAll, timeDivision, timeValue, queueSelection])
 
   const statQuery = useQuery(
     ['stats', params],
