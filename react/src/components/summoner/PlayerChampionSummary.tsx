@@ -216,6 +216,11 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
         </div>
         <div style={{marginBottom: 0}} className="row">
           <div className="col s12 quiet-scroll" style={{maxHeight: 300, overflowY: 'scroll'}}>
+            {statQuery.isFetching && (
+              <div style={{textAlign: 'center'}}>
+                <Orbit size={80} style={{margin: 'auto'}} />
+              </div>
+            )}
             {stats.map((data: any, key: number) => {
               return (
                 <React.Fragment key={`${data.champion_id}-${key}`}>
@@ -232,11 +237,6 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
                     }}
                     key={`${data.champion_id}-${key}`}
                   >
-                    {statQuery.isLoading && (
-                      <div style={{textAlign: 'center'}}>
-                        <Orbit size={80} style={{margin: 'auto'}} />
-                      </div>
-                    )}
                     {!statQuery.isLoading && <ChampionData champions={champions} stats={data} />}
                   </div>
                   {(key + 1) % 5 === 0 && <br />}
