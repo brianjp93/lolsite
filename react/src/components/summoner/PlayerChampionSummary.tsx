@@ -89,7 +89,16 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
   const major = versionQuery.data?.major
 
   const params = useMemo(() => {
-    let data: any = {
+    let data: {
+      puuid: string,
+      start: number,
+      end: number,
+      order_by: string,
+      fields: string[],
+      start_datetime?: string,
+      season?: number,
+      queue_in?: number[]
+    } = {
       puuid: summoner.puuid,
       start: start,
       end: isLoadAll ? 500 : end,
@@ -108,12 +117,18 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
       data.queue_in = queues[queueSelection]
     }
     return data
-  }, [summoner, start, end, isLoadAll, timeDivision, timeValue, queueSelection])
+  }, [summoner.puuid, start, end, isLoadAll, timeDivision, timeValue, queueSelection])
 
   const statQuery = useQuery(
     ['stats', params],
     () => api.player.getChampionsOverview(params).then((x) => x.data.data),
-    {retry: false, refetchOnWindowFocus: false, enabled: !!params.puuid},
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+      enabled: !!params.puuid,
+      cacheTime: 1000 * 60,
+      keepPreviousData: true,
+    },
   )
   const stats = statQuery.data || []
 
@@ -133,6 +148,11 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
                 }
               >
                 30 days
+                {30 === timeValue && 'days' === timeDivision && statQuery.isFetching &&
+                  <div style={{display: 'inline-block'}}>
+                    <Orbit size={15} style={{margin: 'auto'}} />
+                  </div>
+                }
               </div>
               <div
                 onClick={() => {
@@ -144,6 +164,11 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
                 }
               >
                 60 days
+                {60 === timeValue && 'days' === timeDivision && statQuery.isFetching &&
+                  <div style={{display: 'inline-block'}}>
+                    <Orbit size={15} style={{margin: 'auto'}} />
+                  </div>
+                }
               </div>
             </div>
             <div style={{display: 'inline-block', float: 'right'}}>
@@ -163,6 +188,11 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
                       }
                     >
                       Season {ver}
+                      {ver === timeValue && 'season' === timeDivision && statQuery.isFetching &&
+                        <div style={{display: 'inline-block'}}>
+                          <Orbit size={15} style={{margin: 'auto'}} />
+                        </div>
+                      }
                     </div>
                   )
                 })}
@@ -177,6 +207,11 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
                 style={queueSelection === '' ? queue_selected_style : unselected_style}
               >
                 All
+                {queueSelection === '' && statQuery.isFetching &&
+                  <div style={{display: 'inline-block'}}>
+                    <Orbit size={15} style={{margin: 'auto'}} />
+                  </div>
+                }
               </div>
             </div>
 
@@ -186,37 +221,62 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
                 style={'solo' === queueSelection ? queue_selected_style : unselected_style}
               >
                 Solo/Duo
+                {queueSelection === 'solo' && statQuery.isFetching &&
+                  <div style={{display: 'inline-block'}}>
+                    <Orbit size={15} style={{margin: 'auto'}} />
+                  </div>
+                }
               </div>
               <div
                 onClick={() => setQueueSelection('flex')}
                 style={'flex' === queueSelection ? queue_selected_style : unselected_style}
               >
                 Flex
+                {queueSelection === 'flex' && statQuery.isFetching &&
+                  <div style={{display: 'inline-block'}}>
+                    <Orbit size={15} style={{margin: 'auto'}} />
+                  </div>
+                }
               </div>
               <div
                 onClick={() => setQueueSelection('norms')}
                 style={'norms' === queueSelection ? queue_selected_style : unselected_style}
               >
                 Norms
+                {queueSelection === 'norms' && statQuery.isFetching &&
+                  <div style={{display: 'inline-block'}}>
+                    <Orbit size={15} style={{margin: 'auto'}} />
+                  </div>
+                }
               </div>
               <div
                 onClick={() => setQueueSelection('clash')}
                 style={queueSelection === 'clash' ? queue_selected_style : unselected_style}
               >
                 Clash
+                {queueSelection === 'clash' && statQuery.isFetching &&
+                  <div style={{display: 'inline-block'}}>
+                    <Orbit size={15} style={{margin: 'auto'}} />
+                  </div>
+                }
               </div>
               <div
                 onClick={() => setQueueSelection('aram')}
                 style={queueSelection === 'aram' ? queue_selected_style : unselected_style}
               >
                 ARAM
+                {queueSelection === 'aram' && statQuery.isFetching &&
+                  <div style={{display: 'inline-block'}}>
+                    <Orbit size={15} style={{margin: 'auto'}} />
+                  </div>
+                }
               </div>
             </div>
           </div>
         </div>
         <div style={{marginBottom: 0}} className="row">
           <div className="col s12 quiet-scroll" style={{maxHeight: 300, overflowY: 'scroll'}}>
-            {statQuery.isFetching && (
+            {statQuery.isLoading && (
               <div style={{textAlign: 'center'}}>
                 <Orbit size={80} style={{margin: 'auto'}} />
               </div>
@@ -297,7 +357,6 @@ function ChampionData({champions, stats}: {champions: Record<number, ChampionTyp
   const average_kills = kills_sum / count
   const average_deaths = deaths_sum / count
   const average_assists = assists_sum / count
-  // let win_percentage = (wins / (wins + losses)) * 100
   const champ = champions[champion_id]
   return (
     <div
