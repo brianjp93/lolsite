@@ -219,7 +219,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                       icon={icon}
                       summoner={summoner}
                       store={store}
-                      spectateData={spectateQuery.data || {}}
+                      spectateData={spectateQuery.data}
                       isSpectateModalOpen={isSpectateModalOpen}
                       setIsSpectateModalOpen={setIsSpectateModalOpen}
                     />

@@ -5,6 +5,7 @@ import Popover from 'react-tiny-popover'
 
 export function BanList({bans}: {bans: BanType[]}) {
   const champions = useChampions()
+  bans.sort((a, b) => a.pick_turn - b.pick_turn)
   return (
     <>
       {Object.keys(champions).length > 0 &&
