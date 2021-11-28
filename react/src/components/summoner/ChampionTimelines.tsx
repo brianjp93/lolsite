@@ -1,5 +1,6 @@
 import {useState, useCallback, useMemo} from 'react'
 import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip} from 'recharts'
+import ReactTooltip from 'react-tooltip'
 import numeral from 'numeral'
 import type {FullParticipantType, SummonerType, FrameType, ParticipantFrameType} from '../../types'
 
@@ -10,6 +11,7 @@ type GraphType =
   | 'level'
   | 'total_damage_done_to_champions'
   | 'time_enemy_spent_controlled'
+  | 'gold_per_second'
 interface AugmentedParticipantFrame extends ParticipantFrameType {
   cs: number
 }
@@ -56,10 +58,14 @@ function ChampionTimelines(props: {
     '#994352',
   ]
 
-  const getGraphBubbleInput = (_type: GraphType, displayName?: string) => {
+  const getGraphBubbleInput = (_type: GraphType, displayName?: string, tooltip?: string) => {
+    const tooltipId = `tooltip-label-${_type}`
     return (
       <div className="col s3">
-        <label htmlFor={`${_type}-champion-graph`}>
+        <label
+          data-tip
+          data-for={tooltipId}
+          htmlFor={`${_type}-champion-graph`}>
           <input
             id={`${_type}-champion-graph`}
             onChange={() => setGraphType(_type)}
@@ -68,6 +74,13 @@ function ChampionTimelines(props: {
           />
           <span>{displayName || _type}</span>
         </label>
+        {tooltip &&
+          <ReactTooltip
+              effect='solid'
+              id={tooltipId}>
+              <span>{tooltip}</span>
+          </ReactTooltip>
+        }
       </div>
     )
   }
@@ -205,7 +218,16 @@ function ChampionTimelines(props: {
         {getGraphBubbleInput('xp', 'XP')}
         {getGraphBubbleInput('level', 'Level')}
         {getGraphBubbleInput('total_damage_done_to_champions', 'Champ DMG')}
-        {getGraphBubbleInput('time_enemy_spent_controlled', '?')}
+        {getGraphBubbleInput(
+          'time_enemy_spent_controlled',
+          'CC Time',
+          'I have no idea what the units of this is supposed to be.'
+        )}
+        {getGraphBubbleInput(
+          'gold_per_second',
+          'Gold/Sec',
+          'Passive gold generation from support items?'
+        )}
       </div>
     </div>
   )
