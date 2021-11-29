@@ -1,5 +1,4 @@
-awsebcli==3.20.0
+awsebcli==3.20.2
 ipython
 jedi
 flake8
-pip-tools
