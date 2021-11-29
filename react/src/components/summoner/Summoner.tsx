@@ -77,7 +77,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
       retry: false,
       refetchOnWindowFocus: false,
       keepPreviousData: true,
-      staleTime: 1000 * 60 * 2,
+      staleTime: 1000 * 60 * 3,
       onSuccess: () => {
         setLastRefresh(new Date().getTime())
         setIsInitialQuery(false)
@@ -95,7 +95,10 @@ export function Summoner({route, region, store}: {route: any; region: string; st
         api.player
           .getSummonerPage({...filterParams, page: filterParams.page + 1})
           .then((x) => x.data),
-      {retry: false},
+      {
+        retry: false,
+        staleTime: 1000 * 60 * 3,
+      },
     )
   }, [filterParams])
 
