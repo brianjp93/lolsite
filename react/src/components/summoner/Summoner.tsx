@@ -81,20 +81,23 @@ export function Summoner({route, region, store}: {route: any; region: string; st
       onSuccess: () => {
         setLastRefresh(new Date().getTime())
         setIsInitialQuery(false)
-        queryClient.prefetchQuery(
-          ['pageQuery', {...filterParams, page: filterParams.page + 1}],
-          () =>
-            api.player
-              .getSummonerPage({...filterParams, page: filterParams.page + 1})
-              .then((x) => x.data),
-          {retry: false},
-        )
       },
     },
   )
   const summoner = pageQuery.data?.summoner
   const icon = pageQuery.data?.profile_icon
   const matches = pageQuery.data?.matches || []
+
+  useEffect(() => {
+    queryClient.prefetchQuery(
+      ['pageQuery', {...filterParams, page: filterParams.page + 1}],
+      () =>
+        api.player
+          .getSummonerPage({...filterParams, page: filterParams.page + 1})
+          .then((x) => x.data),
+      {retry: false},
+    )
+  }, [filterParams])
 
   const refreshPage = useCallback(() => {
     setPage(1)
