@@ -132,12 +132,13 @@ def import_match_from_data(data, refresh=False, region=""):
     match_model = Match(**match_data)
     try:
         match_model.save()
-    except IntegrityError as error:
+    except IntegrityError:
         if refresh:
             Match.objects.get(_id=match_data["_id"]).delete()
             match_model.save()
         else:
-            raise error
+            logging.exception('Attempting to import game which was already imported.')
+            return
 
     participants_data = parsed.pop("participants")
     try:
@@ -525,6 +526,8 @@ def import_recent_matches(
     if api:
         index = start
         size = 100
+        if index + size > end:
+            size = end - start
         please_continue = True
         while has_more and please_continue:
             riot_match_request_time = time.time()
