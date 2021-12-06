@@ -1,4 +1,4 @@
-import {useEffect} from 'react'
+import {useEffect, useCallback} from 'react'
 import {useForm, SubmitHandler} from 'react-hook-form'
 import queuefilter from '../../constants/queuefilter'
 
@@ -16,15 +16,16 @@ export interface MatchFilterFormType {
 }
 export function MatchFilterForm({onUpdate}: {onUpdate: (data?: MatchFilterFormType) => void}) {
   const form = useForm<MatchFilterFormType>()
+  const {handleSubmit} = form
   const watchQueue = form.watch('queue')
 
-  const handleSubmit: SubmitHandler<MatchFilterFormType> = (data) => {
+  const onSubmit: SubmitHandler<MatchFilterFormType> = useCallback((data) => {
     onUpdate(data)
-  }
+  }, [onUpdate])
 
   useEffect(() => {
-    form.handleSubmit(handleSubmit)()
-  }, [watchQueue])
+    handleSubmit(onSubmit)()
+  }, [watchQueue, handleSubmit, onSubmit])
 
   useEffect(() => {
     window.$('select').formSelect()

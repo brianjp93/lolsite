@@ -100,11 +100,11 @@ export function Summoner({route, region, store}: {route: any; region: string; st
         staleTime: 1000 * 60 * 3,
       },
     )
-  }, [filterParams])
+  }, [filterParams, queryClient])
 
   const refreshPage = useCallback(() => {
     setPage(1)
-  }, [setPage, setMatchFilters])
+  }, [setPage])
 
   // refresh page if the summoner changes
   useEffect(() => {
@@ -150,6 +150,11 @@ export function Summoner({route, region, store}: {route: any; region: string; st
     const pathname = window.location.pathname.split(/match\/\w+/)[0]
     route.history.push(pathname)
   }
+
+  const matchFilterOnUpdate = useCallback((data: any) => {
+    setMatchFilters(data)
+    setPage(1)
+  }, [])
 
   const pagination = () => {
     const disabled = {
@@ -263,10 +268,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                 <div className="row">
                   <div className="col l6 m12">
                     <MatchFilterForm
-                      onUpdate={(data) => {
-                        setMatchFilters(data)
-                        setPage(1)
-                      }}
+                      onUpdate={matchFilterOnUpdate}
                     />
                   </div>
                   <div className="col l6 m12">
