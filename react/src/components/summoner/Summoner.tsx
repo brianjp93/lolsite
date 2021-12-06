@@ -128,6 +128,13 @@ export function Summoner({route, region, store}: {route: any; region: string; st
     {retry: false, refetchOnWindowFocus: false, enabled: !!summoner?._id},
   )
 
+  const match_ids = matches.map((x: any) => x.id)
+  const commentQuery = useQuery(
+    ['comment_count', match_ids],
+    () => api.player.getCommentCount({match_ids: match_ids}).then((response) => response.data.data),
+    {retry: false, refetchOnWindowFocus: false, enabled: matches.length > 0},
+  )
+
   const queues = useMemo(() => {
     const queue_elt = document.getElementById('queues')
     const queues = JSON.parse(queue_elt?.innerHTML || '')
@@ -303,7 +310,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                           index={key}
                           store={store}
                           match={match}
-                          comment_count={0}
+                          comment_count={commentQuery.data && (commentQuery.data[match.id] || 0)}
                           region={region}
                           queues={queues}
                           summoner={summoner}
