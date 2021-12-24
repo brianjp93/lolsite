@@ -30,7 +30,7 @@ certifi==2021.10.8
     #   sentry-sdk
 charset-normalizer==2.0.8
     # via requests
-django==3.2.9
+django==3.2.10
     # via
     #   -r requirements.in
     #   django-elastipymemcache
