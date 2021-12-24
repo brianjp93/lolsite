@@ -221,8 +221,8 @@ def parse_match(data):
     try:
         version = {i: int(x) for i, x in enumerate(data["gameVersion"].split("."))}
     except Exception as error:
-        print("Error on parse.")
-        print(data)
+        logger.error("Error on parse.")
+        logger.error(data)
         raise error
     game_duration = data["gameDuration"]
     if data.get("gameEndTimestamp") is not None:
@@ -1031,8 +1031,7 @@ def import_summoners_from_spectate(data, region):
                 summoners[summoner._id] = summoner.id
             except IntegrityError:
                 query = Summoner.objects.filter(region=region, _id=summoner_id)
-                if query.exists():
-                    summoner = query.first()
+                if summoner := query.first():
                     summoners[summoner._id] = summoner.id
     return summoners
 

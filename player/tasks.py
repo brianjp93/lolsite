@@ -101,7 +101,7 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         return summoner_model.id
 
 
-def import_positions(summoner, threshold_days=None, close=False):
+def import_positions(summoner, threshold_days=None):
     """Get most recent position data for Summoner.
 
     Parameters
@@ -119,6 +119,8 @@ def import_positions(summoner, threshold_days=None, close=False):
     if not isinstance(summoner, Summoner):
         summoner = Summoner.objects.get(id=summoner)
 
+    logger.info(f'Trying to import positions for summoner: {summoner}')
+
     rankcheckpoint = summoner.get_newest_rank_checkpoint()
     if rankcheckpoint and threshold_days:
         threshold = timezone.now() - timezone.timedelta(days=threshold_days)
@@ -129,6 +131,7 @@ def import_positions(summoner, threshold_days=None, close=False):
     api = get_riot_api()
     region = summoner.region
     r = api.league.entries(summoner._id, region)
+    logger.info(f'api.league.entries response: {r}')
     if r.status_code >= 200 and r.status_code < 300:
         positions = r.json()
         create_new = False
@@ -177,6 +180,7 @@ def import_positions(summoner, threshold_days=None, close=False):
                     "veteran": pos["veteran"],
                     "series_progress": pos.get("miniSeries", {}).get("progress", None),
                 }
+                logger.info(f'Saving new rank position for {summoner}')
                 rankposition = RankPosition(**attrs)
                 rankposition.save()
     connection.close()

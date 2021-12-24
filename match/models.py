@@ -1,5 +1,6 @@
 """match.models
 """
+from typing import List, Optional
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
@@ -13,7 +14,7 @@ from data.models import Item, SummonerSpellImage
 from data.models import SummonerSpell, Champion
 from data import constants as DATA_CONSTANTS
 
-from player.models import simplify
+from player.models import simplify, Summoner
 
 logger = logging.getLogger(__name__)
 
@@ -247,10 +248,10 @@ class Match(VersionedModel):
     def get_comment_count(self):
         return self.comments.all().count()
 
-    def is_summoner_in_game(self, summoner):
+    def is_summoner_in_game(self, summoners: List[Summoner]) -> Optional['Participant']:
         """Find if a summoner is in the game."""
-        query = self.participants.filter(puuid=summoner.puuid)
-        return query.exists()
+        part: Optional['Participant'] = self.participants.filter(puuid__in=[x.puuid for x in summoners]).first()
+        return part
 
 
 class Participant(models.Model):

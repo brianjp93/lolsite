@@ -2,7 +2,7 @@
 """
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListAPIView
 
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
@@ -15,18 +15,17 @@ from player.models import Summoner, simplify
 
 from data.models import Champion
 from data.serializers import BasicChampionWithImageSerializer
-
 from .serializers import (
     MatchSerializer,
     AdvancedTimelineSerializer, FullMatchSerializer,
     BanSerializer,
 )
-
 from player.serializers import RankPositionSerializer
-
 from multiprocessing.dummy import Pool as ThreadPool
-
+import logging
 from django.shortcuts import get_object_or_404
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
@@ -106,9 +105,8 @@ def get_match(request, format=None):
             else:
                 op_summoners = []
             summoner_name = None
-            for pot_sum in op_summoners:
-                if match.is_summoner_in_game(pot_sum):
-                    summoner_name = pot_sum.simple_name
+            if part := match.is_summoner_in_game(op_summoners):
+                summoner_name = part.simple_name
             serializer = MatchSerializer(match, summoner_name=summoner_name)
             data = {"data": serializer.data}
         else:
@@ -189,7 +187,7 @@ def get_spectate(request, format=None):
             mt.import_spectate_from_data(spectate_data, region)
             summoners = mt.import_summoners_from_spectate(spectate_data, region)
             pool.map(
-                lambda x: pt.import_positions(x, threshold_days=3, close=True),
+                lambda x: pt.import_positions(x, threshold_days=3),
                 summoners.values(),
             )
             for part in spectate_data["participants"]:
