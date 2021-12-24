@@ -3628,12 +3628,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.21.1":
-  version: 0.21.1
-  resolution: "axios@npm:0.21.1"
+"axios@npm:>=0.21.2":
+  version: 0.24.0
+  resolution: "axios@npm:0.24.0"
   dependencies:
-    follow-redirects: ^1.10.0
-  checksum: 864fb7b5d077d236737f10adca53bf451a93f35a15271f56fba8da07265a02d26b7d881b935a6697dc6adb0549ea3e56d2eecb403edaa3bb78f6479901c10f69
+    follow-redirects: ^1.14.4
+  checksum: e741dfea07def55be7b1082824d71f54f7859b9c3c75a86c6a74b91c6e48bb461aceac683f77867313f89ff40ef5f2d1d2a1fe1953fcb71bdc1c1fc0fc069925
   languageName: node
   linkType: hard
 
@@ -7062,13 +7062,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.10.0":
+"follow-redirects@npm:^1.0.0":
   version: 1.14.1
   resolution: "follow-redirects@npm:1.14.1"
   peerDependenciesMeta:
     debug:
       optional: true
   checksum: 761a18699688b19d66b3e9199ecaf9cd39ede953f3529299c7fca4190b27b855c17c491170977844d5db5e169ffc35ebae999bb0833e9c9c61988d19c20ae7ab
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.14.4":
+  version: 1.14.6
+  resolution: "follow-redirects@npm:1.14.6"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: 36636ef3b21193e0b8aec8a4ab7ef55c3eafb6d15f02adbf672701565a999efddd241d1ae5ce274842fe867a9da4cfe1404794988b8294df9067619c61830f58
   languageName: node
   linkType: hard
 
@@ -7614,10 +7624,10 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"highlight.js@npm:^10.1.1":
-  version: 10.7.3
-  resolution: "highlight.js@npm:10.7.3"
-  checksum: 2b7bc9890d447e6cb0135f3a53fc54f1ddb11c76f8255896715bfcba94e0df32d7e8527778ab0d79a00c57bbcb6326532bb62d1d2b343fd3d685c1c8fdc0c321
+"highlight.js@npm:>=10.4.1":
+  version: 11.3.1
+  resolution: "highlight.js@npm:11.3.1"
+  checksum: 99bf4acd4f1ae530dd4b4eb68b5955d0a3fcae30eeb2aca99dec11339650d08c963e1826c259a61f2083103609b918bb1d0b17a537396932dd030aee87ea458c
   languageName: node
   linkType: hard
 
@@ -9747,12 +9757,12 @@ fsevents@^1.2.7:
     "@types/react-router-dom": ^5.1.7
     "@types/recharts": ^1.8.19
     "@types/toastr": ^2.1.39
-    axios: ^0.21.1
+    axios: ">=0.21.2"
     eslint-config-react-app: ^6.0.0
     eslint-plugin-react-hooks: ^1.7.0
     fp-ts: ^2.9.5
     fuzzysearch: ^1.0.3
-    highlight.js: ^10.1.1
+    highlight.js: ">=10.4.1"
     io-ts: ^2.2.16
     io-ts-reporters: ^1.2.2
     markdown-it: ^11.0.0
