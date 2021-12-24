@@ -95,7 +95,7 @@ def get_match(request, format=None):
             query = Match.objects.filter(id=match_id_internal)
 
         if query:
-            match = query[0]
+            match: Match = query[0]
             if request.user.is_authenticated:
                 op_summoners = [
                     x
@@ -106,7 +106,7 @@ def get_match(request, format=None):
                 op_summoners = []
             summoner_name = None
             if part := match.is_summoner_in_game(op_summoners):
-                summoner_name = part.simple_name
+                summoner_name = part.summoner_name_simplified
             serializer = MatchSerializer(match, summoner_name=summoner_name)
             data = {"data": serializer.data}
         else:
