@@ -10,6 +10,8 @@ asgiref==3.4.1
     # via django
 attrs==21.2.0
     # via hypothesis
+backports.zoneinfo==0.2.1
+    # via django
 beautifulsoup4==4.7.1
     # via -r requirements.in
 billiard==3.5.0.5
@@ -28,9 +30,9 @@ certifi==2021.10.8
     # via
     #   requests
     #   sentry-sdk
-charset-normalizer==2.0.8
+charset-normalizer==2.0.9
     # via requests
-django==3.2.9
+django==4.0
     # via
     #   -r requirements.in
     #   django-elastipymemcache
@@ -48,7 +50,7 @@ django-storages==1.9.1
     # via -r requirements.in
 djangorestframework==3.11.2
     # via -r requirements.in
-hypothesis==6.28.1
+hypothesis==6.32.1
     # via -r requirements.in
 idna==3.3
     # via requests
@@ -66,7 +68,7 @@ lolwrapper==1.5.1
     # via -r requirements.in
 model-mommy==1.6.0
     # via -r requirements.in
-numpy==1.21.4
+numpy==1.21.5
     # via
     #   scikit-learn
     #   scipy
@@ -83,9 +85,7 @@ python-dateutil==2.8.2
 python-decouple==3.3
     # via -r requirements.in
 pytz==2021.3
-    # via
-    #   celery
-    #   django
+    # via celery
 redis==3.2
     # via -r requirements.in
 requests==2.26.0
