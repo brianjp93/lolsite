@@ -2,7 +2,7 @@ beautifulsoup4==4.7.1
 boto3==1.18
 cached-property<1.6
 celery==4.2.1
-django>=4.0
+django==3.2.10
 django-extensions<3.1
 django-storages<1.10
 djangorestframework<3.12
