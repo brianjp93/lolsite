@@ -16,7 +16,7 @@
     "highlight.js": ">=10.4.1",
     "io-ts": "^2.2.16",
     "io-ts-reporters": "^1.2.2",
-    "markdown-it": "^11.0.0",
+    "markdown-it": "^12.3.2",
     "markdown-it-latex": "^0.2.0",
     "moment": "^2.24.0",
     "numeral": "^2.0.6",
