@@ -72,7 +72,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
 
   const pageQuery = useQuery(
     ['pageQuery', filterParams],
-    () => api.player.getSummonerPage(filterParams).then((x) => x.data),
+    () => api.player.getSummonerPage({...filterParams, update: isInitialQuery}).then((x) => x.data),
     {
       retry: false,
       refetchOnWindowFocus: false,
@@ -267,9 +267,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
               <div className={`${custom_max_width}`}>
                 <div className="row">
                   <div className="col l6 m12">
-                    <MatchFilterForm
-                      onUpdate={matchFilterOnUpdate}
-                    />
+                    <MatchFilterForm onUpdate={matchFilterOnUpdate} />
                   </div>
                   <div className="col l6 m12">
                     <div
