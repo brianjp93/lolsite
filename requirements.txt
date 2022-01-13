@@ -70,7 +70,7 @@ numpy==1.21.5
     # via
     #   scikit-learn
     #   scipy
-pillow==8.3.2
+pillow==9.0.0
     # via -r requirements.in
 psycopg2-binary==2.9.2
     # via -r requirements.in

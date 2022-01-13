@@ -11,7 +11,7 @@ hypothesis
 joblib<0.16
 lolwrapper==1.5.1
 model-mommy==1.6.0
-Pillow<8.4
+Pillow<9.1
 psycopg2-binary<3
 python-decouple<=3.3
 pycurl
