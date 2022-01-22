@@ -34,38 +34,116 @@ def get_null_bool(val):
 
 
 SEASONS = [
-    {"_id": 0, "name": "PRESEASON 3",},
-    {"_id": 1, "name": "SEASON 3",},
-    {"_id": 2, "name": "PRESEASON 2014",},
-    {"_id": 3, "name": "SEASON 2014",},
-    {"_id": 4, "name": "PRESEASON 2015",},
-    {"_id": 5, "name": "SEASON 2015",},
-    {"_id": 6, "name": "PRESEASON 2016",},
-    {"_id": 7, "name": "SEASON 2016",},
-    {"_id": 8, "name": "PRESEASON 2017",},
-    {"_id": 9, "name": "SEASON 2017",},
-    {"_id": 10, "name": "PRESEASON 2018",},
-    {"_id": 11, "name": "SEASON 2018",},
-    {"_id": 12, "name": "PRESEASON 2019",},
-    {"_id": 13, "name": "SEASON 2019",},
-    {"_id": 14, "name": "PRESEASON 2020",},
-    {"_id": 15, "name": "SEASON 2020",},
-    {"_id": 16, "name": "PRESEASON 2021",},
-    {"_id": 17, "name": "SEASON 2021",},
+    {
+        "_id": 0,
+        "name": "PRESEASON 3",
+    },
+    {
+        "_id": 1,
+        "name": "SEASON 3",
+    },
+    {
+        "_id": 2,
+        "name": "PRESEASON 2014",
+    },
+    {
+        "_id": 3,
+        "name": "SEASON 2014",
+    },
+    {
+        "_id": 4,
+        "name": "PRESEASON 2015",
+    },
+    {
+        "_id": 5,
+        "name": "SEASON 2015",
+    },
+    {
+        "_id": 6,
+        "name": "PRESEASON 2016",
+    },
+    {
+        "_id": 7,
+        "name": "SEASON 2016",
+    },
+    {
+        "_id": 8,
+        "name": "PRESEASON 2017",
+    },
+    {
+        "_id": 9,
+        "name": "SEASON 2017",
+    },
+    {
+        "_id": 10,
+        "name": "PRESEASON 2018",
+    },
+    {
+        "_id": 11,
+        "name": "SEASON 2018",
+    },
+    {
+        "_id": 12,
+        "name": "PRESEASON 2019",
+    },
+    {
+        "_id": 13,
+        "name": "SEASON 2019",
+    },
+    {
+        "_id": 14,
+        "name": "PRESEASON 2020",
+    },
+    {
+        "_id": 15,
+        "name": "SEASON 2020",
+    },
+    {
+        "_id": 16,
+        "name": "PRESEASON 2021",
+    },
+    {
+        "_id": 17,
+        "name": "SEASON 2021",
+    },
 ]
 
 QUEUES = [
-    {"_id": 0, "_map": "Custom games", "description": "",},
-    {"_id": 2, "_map": "Summoner's Rift", "description": "5v5 Blind Pick games",},
+    {
+        "_id": 0,
+        "_map": "Custom games",
+        "description": "",
+    },
+    {
+        "_id": 2,
+        "_map": "Summoner's Rift",
+        "description": "5v5 Blind Pick games",
+    },
     {
         "_id": 33,
         "_map": "Summoner's Rift",
         "description": "Co-op vs. AI Intermediate Bot games",
     },
-    {"_id": 72, "_map": "Howling Abyss", "description": "1v1 Snowdown Showdown games",},
-    {"_id": 73, "_map": "Howling Abyss", "description": "2v2 Snowdown Showdown games",},
-    {"_id": 75, "_map": "Summoner's Rift", "description": "6v6 Hexakill games",},
-    {"_id": 76, "_map": "Summoner's Rift", "description": "Ultra Rapid Fire games",},
+    {
+        "_id": 72,
+        "_map": "Howling Abyss",
+        "description": "1v1 Snowdown Showdown games",
+    },
+    {
+        "_id": 73,
+        "_map": "Howling Abyss",
+        "description": "2v2 Snowdown Showdown games",
+    },
+    {
+        "_id": 75,
+        "_map": "Summoner's Rift",
+        "description": "6v6 Hexakill games",
+    },
+    {
+        "_id": 76,
+        "_map": "Summoner's Rift",
+        "description": "Ultra Rapid Fire games",
+    },
     {
         "_id": 78,
         "_map": "Howling Abyss",
@@ -76,9 +154,21 @@ QUEUES = [
         "_map": "Summoner's Rift",
         "description": "Co-op vs AI Ultra Rapid Fire games",
     },
-    {"_id": 98, "_map": "Twisted Treeline", "description": "6v6 Hexakill games",},
-    {"_id": 100, "_map": "Butcher's Bridge", "description": "5v5 ARAM games",},
-    {"_id": 310, "_map": "Summoner's Rift", "description": "Nemesis games",},
+    {
+        "_id": 98,
+        "_map": "Twisted Treeline",
+        "description": "6v6 Hexakill games",
+    },
+    {
+        "_id": 100,
+        "_map": "Butcher's Bridge",
+        "description": "5v5 ARAM games",
+    },
+    {
+        "_id": 310,
+        "_map": "Summoner's Rift",
+        "description": "Nemesis games",
+    },
     {
         "_id": 313,
         "_map": "Summoner's Rift",
@@ -89,12 +179,36 @@ QUEUES = [
         "_map": "Crystal Scar",
         "description": "Definitely Not Dominion games",
     },
-    {"_id": 325, "_map": "Summoner's Rift", "description": "All Random games",},
-    {"_id": 400, "_map": "Summoner's Rift", "description": "5v5 Draft Pick games",},
-    {"_id": 420, "_map": "Summoner's Rift", "description": "5v5 Ranked Solo games",},
-    {"_id": 430, "_map": "Summoner's Rift", "description": "5v5 Blind Pick games",},
-    {"_id": 440, "_map": "Summoner's Rift", "description": "5v5 Ranked Flex games",},
-    {"_id": 450, "_map": "Howling Abyss", "description": "5v5 ARAM games",},
+    {
+        "_id": 325,
+        "_map": "Summoner's Rift",
+        "description": "All Random games",
+    },
+    {
+        "_id": 400,
+        "_map": "Summoner's Rift",
+        "description": "5v5 Draft Pick games",
+    },
+    {
+        "_id": 420,
+        "_map": "Summoner's Rift",
+        "description": "5v5 Ranked Solo games",
+    },
+    {
+        "_id": 430,
+        "_map": "Summoner's Rift",
+        "description": "5v5 Blind Pick games",
+    },
+    {
+        "_id": 440,
+        "_map": "Summoner's Rift",
+        "description": "5v5 Ranked Flex games",
+    },
+    {
+        "_id": 450,
+        "_map": "Howling Abyss",
+        "description": "5v5 ARAM games",
+    },
     {"_id": 460, "_map": "Twisted Treeline", "description": "3v3 Blind Pick games"},
     {"_id": 470, "_map": "Twisted Treeline", "description": "3v3 Ranked Flex games"},
     {"_id": 600, "_map": "Summoner's Rift", "description": "Blood Hunt Assassin games"},
@@ -180,27 +294,87 @@ QUEUES = [
     },
     {"_id": 1200, "_map": "Nexus Blitz", "description": "Nexus Blitz games"},
     {"_id": 1300, "_map": "Nexus Blitz", "description": "Nexus Blitz games"},
-    {"_id": 1400, "_map": "Ultimate Spellbook", "description": "Ultimate Spellbook games"},
+    {
+        "_id": 1400,
+        "_map": "Ultimate Spellbook",
+        "description": "Ultimate Spellbook games",
+    },
     {"_id": 2000, "_map": "Summoner's Rift", "description": "Tutorial Part 1"},
     {"_id": 2010, "_map": "Summoner's Rift", "description": "Tutorial Part 2"},
     {"_id": 2020, "_map": "Summoner's Rift", "description": "Tutorial Part 3"},
 ]
 
 MAPS = [
-    {"_id": 1, "name": "Summoner's Rift", "notes": "Original Summer variant",},
-    {"_id": 2, "name": "Summoner's Rift", "notes": "Original Autumn variant",},
-    {"_id": 3, "name": "The Proving Grounds", "notes": "Tutorial map",},
-    {"_id": 4, "name": "Twisted Treeline", "notes": "Original version",},
-    {"_id": 8, "name": "The Crystal Scar", "notes": "Dominion map",},
-    {"_id": 10, "name": "Twisted Treeline", "notes": "Current version",},
-    {"_id": 11, "name": "Summoner's Rift", "notes": "Current version",},
-    {"_id": 12, "name": "Howling Abyss", "notes": "ARAM map",},
-    {"_id": 14, "name": "Butcher's Bridge", "notes": "ARAM map",},
-    {"_id": 16, "name": "Cosmic Ruins", "notes": "Dark Star: Singularity map",},
-    {"_id": 18, "name": "Valoran City Park", "notes": "Star Guardian Invasion map",},
-    {"_id": 19, "name": "Substructure 43", "notes": "PROJECT: Hunters map",},
-    {"_id": 20, "name": "Crash Site", "notes": "Odyssey: Extraction map",},
-    {"_id": 21, "name": "Nexus Blitz", "notes": "Nexus Blitz map",},
+    {
+        "_id": 1,
+        "name": "Summoner's Rift",
+        "notes": "Original Summer variant",
+    },
+    {
+        "_id": 2,
+        "name": "Summoner's Rift",
+        "notes": "Original Autumn variant",
+    },
+    {
+        "_id": 3,
+        "name": "The Proving Grounds",
+        "notes": "Tutorial map",
+    },
+    {
+        "_id": 4,
+        "name": "Twisted Treeline",
+        "notes": "Original version",
+    },
+    {
+        "_id": 8,
+        "name": "The Crystal Scar",
+        "notes": "Dominion map",
+    },
+    {
+        "_id": 10,
+        "name": "Twisted Treeline",
+        "notes": "Current version",
+    },
+    {
+        "_id": 11,
+        "name": "Summoner's Rift",
+        "notes": "Current version",
+    },
+    {
+        "_id": 12,
+        "name": "Howling Abyss",
+        "notes": "ARAM map",
+    },
+    {
+        "_id": 14,
+        "name": "Butcher's Bridge",
+        "notes": "ARAM map",
+    },
+    {
+        "_id": 16,
+        "name": "Cosmic Ruins",
+        "notes": "Dark Star: Singularity map",
+    },
+    {
+        "_id": 18,
+        "name": "Valoran City Park",
+        "notes": "Star Guardian Invasion map",
+    },
+    {
+        "_id": 19,
+        "name": "Substructure 43",
+        "notes": "PROJECT: Hunters map",
+    },
+    {
+        "_id": 20,
+        "name": "Crash Site",
+        "notes": "Odyssey: Extraction map",
+    },
+    {
+        "_id": 21,
+        "name": "Nexus Blitz",
+        "notes": "Nexus Blitz map",
+    },
 ]
 
 GAMEMODES = [
@@ -208,29 +382,89 @@ GAMEMODES = [
         "name": "CLASSIC",
         "description": "Classic Summoner's Rift and Twisted Treeline games",
     },
-    {"name": "ODIN", "description": "Dominion/Crystal Scar games",},
-    {"name": "ARAM", "description": "ARAM games",},
-    {"name": "TUTORIAL", "description": "Tutorial games",},
-    {"name": "URF", "description": "URF games",},
-    {"name": "DOOMBOTSTEEMO", "description": "Doom Bot games",},
-    {"name": "ONEFORALL", "description": "One for All games",},
-    {"name": "ASCENSION", "description": "Ascension games",},
-    {"name": "FIRSTBLOOD", "description": "Snowdown Showdown games",},
-    {"name": "KINGPORO", "description": "Legend of the Poro King games",},
-    {"name": "SIEGE", "description": "Nexus Siege games",},
-    {"name": "ASSASSINATE", "description": "Blood Hunt Assassin games",},
-    {"name": "ARSR", "description": "All Random Summoner's Rift games",},
-    {"name": "DARKSTAR", "description": "Dark Star: Singularity games",},
-    {"name": "STARGUARDIAN", "description": "Star Guardian Invasion games",},
-    {"name": "PROJECT", "description": "PROJECT: Hunters games",},
-    {"name": "GAMEMODEX", "description": "Nexus Blitz games",},
-    {"name": "ODYSSEY", "description": "Odyssey: Extraction games",},
+    {
+        "name": "ODIN",
+        "description": "Dominion/Crystal Scar games",
+    },
+    {
+        "name": "ARAM",
+        "description": "ARAM games",
+    },
+    {
+        "name": "TUTORIAL",
+        "description": "Tutorial games",
+    },
+    {
+        "name": "URF",
+        "description": "URF games",
+    },
+    {
+        "name": "DOOMBOTSTEEMO",
+        "description": "Doom Bot games",
+    },
+    {
+        "name": "ONEFORALL",
+        "description": "One for All games",
+    },
+    {
+        "name": "ASCENSION",
+        "description": "Ascension games",
+    },
+    {
+        "name": "FIRSTBLOOD",
+        "description": "Snowdown Showdown games",
+    },
+    {
+        "name": "KINGPORO",
+        "description": "Legend of the Poro King games",
+    },
+    {
+        "name": "SIEGE",
+        "description": "Nexus Siege games",
+    },
+    {
+        "name": "ASSASSINATE",
+        "description": "Blood Hunt Assassin games",
+    },
+    {
+        "name": "ARSR",
+        "description": "All Random Summoner's Rift games",
+    },
+    {
+        "name": "DARKSTAR",
+        "description": "Dark Star: Singularity games",
+    },
+    {
+        "name": "STARGUARDIAN",
+        "description": "Star Guardian Invasion games",
+    },
+    {
+        "name": "PROJECT",
+        "description": "PROJECT: Hunters games",
+    },
+    {
+        "name": "GAMEMODEX",
+        "description": "Nexus Blitz games",
+    },
+    {
+        "name": "ODYSSEY",
+        "description": "Odyssey: Extraction games",
+    },
 ]
 
 GAMETYPES = [
-    {"name": "CUSTOM_GAME", "description": "Custom games",},
-    {"name": "TUTORIAL_GAME", "description": "Tutorial games",},
-    {"name": "MATCHED_GAME", "description": "All other games",},
+    {
+        "name": "CUSTOM_GAME",
+        "description": "Custom games",
+    },
+    {
+        "name": "TUTORIAL_GAME",
+        "description": "Tutorial games",
+    },
+    {
+        "name": "MATCHED_GAME",
+        "description": "All other games",
+    },
 ]
 
 LANGUAGES = [
@@ -286,40 +520,104 @@ RANKS = {
 # SEASON TIMINGS
 # https://leagueoflegends.fandom.com/wiki/Patch#Pre-Season%20Six
 SEASON_PATCHES = {
+    12: {
+        "preseason": {
+            "start": (11, 24),
+            "end": (11, 100),
+        },
+        "season": {
+            "start": (12, 1),
+            "end": (12, 100),
+        },
+    },
     11: {
-        "preseason": {"start": (10, 23), "end": (10, 25),},
-        "season": {"start": (11, 1), "end": (11, 100),},
+        "preseason": {
+            "start": (10, 23),
+            "end": (10, 25),
+        },
+        "season": {
+            "start": (11, 1),
+            "end": (11, 23),
+        },
     },
     10: {
-        "preseason": {"start": (9, 23), "end": (9, 24),},
-        "season": {"start": (10, 1), "end": (10, 22),},
+        "preseason": {
+            "start": (9, 23),
+            "end": (9, 24),
+        },
+        "season": {
+            "start": (10, 1),
+            "end": (10, 22),
+        },
     },
     9: {
-        "preseason": {"start": (8, 23), "end": (9, 1),},
-        "season": {"start": (9, 2), "end": (9, 22),},
+        "preseason": {
+            "start": (8, 23),
+            "end": (9, 1),
+        },
+        "season": {
+            "start": (9, 2),
+            "end": (9, 22),
+        },
     },
     8: {
-        "preseason": {"start": (7, 22), "end": (7, 24),},
-        "season": {"start": (8, 1), "end": (8, 22),},
+        "preseason": {
+            "start": (7, 22),
+            "end": (7, 24),
+        },
+        "season": {
+            "start": (8, 1),
+            "end": (8, 22),
+        },
     },
     7: {
-        "preseason": {"start": (6, 21), "end": (6, 24),},
-        "season": {"start": (7, 1), "end": (7, 21),},
+        "preseason": {
+            "start": (6, 21),
+            "end": (6, 24),
+        },
+        "season": {
+            "start": (7, 1),
+            "end": (7, 21),
+        },
     },
     6: {
-        "preseason": {"start": (5, 22), "end": (5, 24),},
-        "season": {"start": (6, 1), "end": (6, 21),},
+        "preseason": {
+            "start": (5, 22),
+            "end": (5, 24),
+        },
+        "season": {
+            "start": (6, 1),
+            "end": (6, 21),
+        },
     },
     5: {
-        "preseason": {"start": (4, 20), "end": (4, 21),},
-        "season": {"start": (5, 1), "end": (5, 21),},
+        "preseason": {
+            "start": (4, 20),
+            "end": (4, 21),
+        },
+        "season": {
+            "start": (5, 1),
+            "end": (5, 21),
+        },
     },
     4: {
-        "preseason": {"start": (3, 14), "end": (3, 15),},
-        "season": {"start": (4, 1), "end": (4, 19),},
+        "preseason": {
+            "start": (3, 14),
+            "end": (3, 15),
+        },
+        "season": {
+            "start": (4, 1),
+            "end": (4, 19),
+        },
     },
     3: {
-        "preseason": {"start": (1, 1), "end": (1, 1),},
-        "season": {"start": (3, 1), "end": (3, 13),},
+        "preseason": {
+            "start": (1, 1),
+            "end": (1, 1),
+        },
+        "season": {
+            "start": (3, 1),
+            "end": (3, 13),
+        },
     },
 }
