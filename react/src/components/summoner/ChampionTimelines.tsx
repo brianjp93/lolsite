@@ -1,5 +1,5 @@
 import {useState, useCallback, useMemo} from 'react'
-import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip} from 'recharts'
+import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts'
 import ReactTooltip from 'react-tooltip'
 import numeral from 'numeral'
 import type {FullParticipantType, SummonerType, FrameType, ParticipantFrameType} from '../../types'
@@ -62,10 +62,7 @@ function ChampionTimelines(props: {
     const tooltipId = `tooltip-label-${_type}`
     return (
       <div className="col s3">
-        <label
-          data-tip
-          data-for={tooltipId}
-          htmlFor={`${_type}-champion-graph`}>
+        <label data-tip data-for={tooltipId} htmlFor={`${_type}-champion-graph`}>
           <input
             id={`${_type}-champion-graph`}
             onChange={() => setGraphType(_type)}
@@ -74,13 +71,11 @@ function ChampionTimelines(props: {
           />
           <span>{displayName || _type}</span>
         </label>
-        {tooltip &&
-          <ReactTooltip
-              effect='solid'
-              id={tooltipId}>
-              <span>{tooltip}</span>
+        {tooltip && (
+          <ReactTooltip effect="solid" id={tooltipId}>
+            <span>{tooltip}</span>
           </ReactTooltip>
-        }
+        )}
       </div>
     )
   }
@@ -136,80 +131,80 @@ function ChampionTimelines(props: {
       </div>
 
       <div>
-        <LineChart
-          margin={{
-            left: -10,
-            right: 20,
-          }}
-          width={usable_width}
-          height={400}
-          data={props.timeline}
-        >
-          <CartesianGrid vertical={false} stroke="#777" strokeDasharray="4 4" />
-
-          <XAxis
-            hide={false}
-            tickFormatter={(tickItem) => {
-              var m = Math.round(tickItem / 1000 / 60)
-              return `${m}m`
+        <ResponsiveContainer width='100%' height={400}>
+          <LineChart
+            margin={{
+              left: -10,
+              right: 20,
             }}
-            dataKey="timestamp"
-          />
+            data={props.timeline}
+          >
+            <CartesianGrid vertical={false} stroke="#777" strokeDasharray="4 4" />
 
-          <YAxis
-            yAxisId="left"
-            orientation="left"
-            tickFormatter={(tick) => {
-              return numeral(tick).format('0a')
-            }}
-          />
+            <XAxis
+              hide={false}
+              tickFormatter={(tickItem) => {
+                var m = Math.round(tickItem / 1000 / 60)
+                return `${m}m`
+              }}
+              dataKey="timestamp"
+            />
 
-          {participant_selection.map((id) => {
-            let stroke = colors[participant_ids.indexOf(id)]
-            const stroke_width = id !== props.my_part._id ? 1 : 3
-            const stroke_type = graph_type === 'level' ? 'stepAfter' : 'monotone'
-            return (
-              <Line
-                name={getParticipant(props.participants, id)?.champion.name}
-                key={`${id}-line-chart`}
-                isAnimationActive={false}
-                yAxisId="left"
-                type={stroke_type}
-                dot={false}
-                dataKey={(frame: AugmentedFrameType) => {
-                  for (let part of frame.participantframes) {
-                    if (part.participant_id === id) {
-                      return part[graph_type]
+            <YAxis
+              yAxisId="left"
+              orientation="left"
+              tickFormatter={(tick) => {
+                return numeral(tick).format('0a')
+              }}
+            />
+
+            {participant_selection.map((id) => {
+              let stroke = colors[participant_ids.indexOf(id)]
+              const stroke_width = id !== props.my_part._id ? 1 : 3
+              const stroke_type = graph_type === 'level' ? 'stepAfter' : 'monotone'
+              return (
+                <Line
+                  name={getParticipant(props.participants, id)?.champion.name}
+                  key={`${id}-line-chart`}
+                  isAnimationActive={false}
+                  yAxisId="left"
+                  type={stroke_type}
+                  dot={false}
+                  dataKey={(frame: AugmentedFrameType) => {
+                    for (let part of frame.participantframes) {
+                      if (part.participant_id === id) {
+                        return part[graph_type]
+                      }
                     }
-                  }
-                  return null
-                }}
-                stroke={stroke}
-                strokeWidth={stroke_width}
-              />
-            )
-          })}
-          <Tooltip
-            itemSorter={(item) => -item.value}
-            wrapperStyle={{zIndex: 10}}
-            formatter={(value) => {
-              let output
-              if (graph_type === 'total_gold') {
-                output = `${numeral(value).format('0,0')} gold`
-              } else {
-                output = value
-              }
-              return output
-            }}
-            labelFormatter={(label) => {
-              let m = ''
-              if (typeof label === 'number') {
-                m = Math.round(label / 1000 / 60).toString()
-              }
-              return `${m}m`
-            }}
-          />
-        </LineChart>
+                    return null
+                  }}
+                  stroke={stroke}
+                  strokeWidth={stroke_width}
+                />
+              )
+            })}
+            <Tooltip
+              itemSorter={(item) => -item.value}
+              wrapperStyle={{zIndex: 10}}
+              formatter={(value) => {
+                let output
+                if (graph_type === 'total_gold') {
+                  output = `${numeral(value).format('0,0')} gold`
+                } else {
+                  output = value
+                }
+                return output
+              }}
+              labelFormatter={(label) => {
+                let m = ''
+                if (typeof label === 'number') {
+                  m = Math.round(label / 1000 / 60).toString()
+                }
+                return `${m}m`
+              }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
 
       <div className="row" style={{marginLeft: 20, marginRight: 15}}>
@@ -221,12 +216,12 @@ function ChampionTimelines(props: {
         {getGraphBubbleInput(
           'time_enemy_spent_controlled',
           'CC Time',
-          'I have no idea what the units of this is supposed to be.'
+          'I have no idea what the units of this is supposed to be.',
         )}
         {getGraphBubbleInput(
           'gold_per_second',
           'Gold/Sec',
-          'Passive gold generation from support items?'
+          'Passive gold generation from support items?',
         )}
       </div>
     </div>
