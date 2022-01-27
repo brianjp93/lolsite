@@ -155,7 +155,7 @@ def get_match_meta_data(request, meta):
         deaths = part.stats.deaths
         deaths = 1 if deaths < 1 else deaths
         assists = part.stats.assists
-        minutes = match.game_duration / 60
+        minutes = match.game_duration / 60_000
         dpm = 0
         vspm = 0
         if minutes:
@@ -176,9 +176,9 @@ def get_match_meta_data(request, meta):
             f'DPM: {int(dpm)}',
             f'VISION/M: {vspm:.2f}',
         ]
-        stats = ' || '.join(stats)
+        stats = ' ᐃ '.join(stats)
 
-        meta['title'] = f'{summoner.name} ({kills} / {deaths} / {assists})[{kda:.2f} KDA] in a {queue} game.'
+        meta['title'] = f'{summoner.name} ({kills} / {deaths} / {assists})[{kda:.2f} KDA] {queue}'
         meta['description'] = stats
         meta['image'] = image
         return meta
