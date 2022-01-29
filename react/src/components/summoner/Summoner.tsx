@@ -105,7 +105,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
   const refreshPage = useCallback(() => {
     setPage(1)
     pageQuery.refetch()
-  }, [setPage])
+  }, [setPage, pageQuery])
 
   // refresh page if the summoner changes
   useEffect(() => {
