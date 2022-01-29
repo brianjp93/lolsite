@@ -3376,13 +3376,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"argparse@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "argparse@npm:2.0.1"
-  checksum: 160b7a25d2a7097fd5fdf25eb8a99e037340078f70e6c7cfdef305837ed14d54570b2b13261bcae26c8cd44ad6e9a7136a0110d815ac65a7891c69c7bf2f4afd
-  languageName: node
-  linkType: hard
-
 "aria-query@npm:^4.2.2":
   version: 4.2.2
   resolution: "aria-query@npm:4.2.2"
@@ -6098,10 +6091,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"entities@npm:~2.1.0":
-  version: 2.1.0
-  resolution: "entities@npm:2.1.0"
-  checksum: 91d5330633b97df881bcd02e233d32067876d45abdc7c75cf058ded524d8b22f8dc7a3965813d6982ceeba918abdbd9029a0459759ee5f6f98ec953a4786612f
+"entities@npm:~2.0.0":
+  version: 2.0.3
+  resolution: "entities@npm:2.0.3"
+  checksum: 02dfe1fbf531dd667420ff4e963ddc049203471ba8ad2873655303aff4cf65f27823effb397521af4d58b5609d33fc0492b0cc073c8374f3bbe6d3b5bcec1a42
   languageName: node
   linkType: hard
 
@@ -9772,7 +9765,7 @@ fsevents@^1.2.7:
     highlight.js: ">=10.4.1"
     io-ts: ^2.2.16
     io-ts-reporters: ^1.2.2
-    markdown-it: ^12.3.2
+    markdown-it: ^11.0.0
     markdown-it-latex: ^0.2.0
     moment: ^2.24.0
     numeral: ^2.0.6
@@ -9926,18 +9919,18 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"markdown-it@npm:^12.3.2":
-  version: 12.3.2
-  resolution: "markdown-it@npm:12.3.2"
+"markdown-it@npm:^11.0.0":
+  version: 11.0.1
+  resolution: "markdown-it@npm:11.0.1"
   dependencies:
-    argparse: ^2.0.1
-    entities: ~2.1.0
+    argparse: ^1.0.7
+    entities: ~2.0.0
     linkify-it: ^3.0.1
     mdurl: ^1.0.1
     uc.micro: ^1.0.5
   bin:
     markdown-it: bin/markdown-it.js
-  checksum: 77ff6933ce19d8b888bb13575631ca9757d76866328e342672963e4ef98cff9c1945edf4a8b3ed2525f0b277cc89909399231dda6170af64412eadeefe9fc725
+  checksum: bba35081a0efb4651a197db73f29f0b6de86cc5db7c3a9f6258bc0372fac363db6078d85e3a154371f1ffc5b2a00e5eec1697b6c7912b5851635889cf9c80c26
   languageName: node
   linkType: hard
 
