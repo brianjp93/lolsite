@@ -84,7 +84,6 @@ export function Summoner({route, region, store}: {route: any; region: string; st
       },
     },
   )
-  const pageQueryRefetch = pageQuery.refetch
   const summoner = pageQuery.data?.summoner
   const icon = pageQuery.data?.profile_icon
   const matches = pageQuery.data?.matches || []
@@ -105,8 +104,8 @@ export function Summoner({route, region, store}: {route: any; region: string; st
 
   const refreshPage = useCallback(() => {
     setPage(1)
-    pageQueryRefetch()
-  }, [setPage, pageQueryRefetch])
+    pageQuery.refetch()
+  }, [setPage, pageQuery])
 
   // refresh page if the summoner changes
   useEffect(() => {
