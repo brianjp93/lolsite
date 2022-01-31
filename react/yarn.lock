@@ -2581,6 +2581,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-lazyload@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "@types/react-lazyload@npm:3.1.1"
+  dependencies:
+    "@types/react": "*"
+  checksum: cd8bf77713bb793da77b4b28d3dcc3fb7bdd355bd8b3069f8e0b051a23b95c672e6e7b651b136bdeb4bbdeae52971065270b43eafec551ccca645c68ff315cbd
+  languageName: node
+  linkType: hard
+
 "@types/react-modal@npm:^3.12.0":
   version: 3.12.1
   resolution: "@types/react-modal@npm:3.12.1"
@@ -9753,6 +9762,7 @@ fsevents@^1.2.7:
     "@types/prop-types": ^15.7.4
     "@types/react": ^17.0.14
     "@types/react-dom": ^17.0.3
+    "@types/react-lazyload": ^3.1.1
     "@types/react-modal": ^3.12.0
     "@types/react-router-dom": ^5.1.7
     "@types/recharts": ^1.8.19
