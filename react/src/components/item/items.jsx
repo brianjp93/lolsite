@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useCallback} from 'react'
+import { useQuery } from 'react-query'
 import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
 import fuzzysearch from 'fuzzysearch'
@@ -90,24 +91,21 @@ function convertStatName(name) {
 }
 
 export function ItemsGrid(props) {
-  const [items, setItems] = useState([])
   const [sortedItems, setSortedItems] = useState([])
   const [order_by, setOrderBy] = useState('-gold')
   const [search, setSearch] = useState('')
   const [has_stats, setHasStats] = useState(new Set())
-  const [is_requesting_items, setIsRequesingItems] = useState(false)
 
   const map_id = 11
 
   const theme = props.store.state.theme
 
-  function getItems() {
-    setIsRequesingItems(true)
-    api.data.items().then((response) => {
-      setItems(response.data.data)
-      setIsRequesingItems(false)
-    })
-  }
+  const itemQuery = useQuery(
+    ['item-page'],
+    () => api.data.items().then(response => response.data.data),
+    {retry: false, refetchOnWindowFocus: false},
+  )
+  const items = itemQuery.data || []
 
   const statCheckbox = useCallback(
     (stat_name, label) => {
@@ -134,10 +132,6 @@ export function ItemsGrid(props) {
     },
     [has_stats],
   )
-
-  useEffect(() => {
-    getItems()
-  }, [])
 
   useEffect(() => {
     window.scrollTo(window.scrollX, window.scrollY - 1)
@@ -233,12 +227,12 @@ export function ItemsGrid(props) {
         </div>
       </div>
 
-      {is_requesting_items && (
+      {itemQuery.isFetching && (
         <div>
           <Orbit style={{margin: 'auto'}} size={300} />
         </div>
       )}
-      {!is_requesting_items && (
+      {itemQuery.isSuccess && (
         <ItemsGridDisplay search={search} theme={theme} items={sortedItems} />
       )}
     </div>
