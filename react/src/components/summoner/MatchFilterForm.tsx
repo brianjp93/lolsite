@@ -1,4 +1,4 @@
-import {useEffect, useCallback} from 'react'
+import {useEffect, useCallback, Fragment} from 'react'
 import {useForm, SubmitHandler} from 'react-hook-form'
 import queuefilter from '../../constants/queuefilter'
 
@@ -39,9 +39,9 @@ export function MatchFilterForm({onUpdate}: {onUpdate: (data?: MatchFilterFormTy
             <option value="">any</option>
             {queuefilter.map((item) => {
               return (
-                <>
+                <Fragment key={item.id}>
                   <option value={item.id}>{item.name}</option>
-                </>
+                </Fragment>
               )
             })}
           </select>
