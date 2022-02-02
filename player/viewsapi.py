@@ -3,6 +3,7 @@
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.generics import RetrieveAPIView
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -22,6 +23,7 @@ from player import filters as player_filters
 from player.models import (
     RankPosition, Comment, Favorite,
     SummonerLink, decode_int_to_rank, validate_password,
+    Reputation,
 )
 
 from data.models import ProfileIcon, Champion
@@ -34,10 +36,10 @@ from match.serializers import BasicMatchSerializer
 from .models import Summoner
 from .serializers import (
     SummonerSerializer, RankPositionSerializer,
-    FavoriteSerializer, CommentSerializer
+    FavoriteSerializer, CommentSerializer,
+    ReputationSerializer,
 )
 
-import time
 import random
 import logging
 import traceback
@@ -1570,3 +1572,21 @@ def edit_default_summoner(request, format=None):
             status_code = 404
             data = {'status': 'failure', 'message': 'Could not find Summoner with given id.'}
     return Response(data, status=status_code)
+
+
+class ReputationRetrieveAPIView(RetrieveAPIView):
+    serializer_class = ReputationSerializer
+    lookup_field = 'summoner_pk'
+
+    def get_object(self):
+        return get_object_or_404(self.get_queryset())
+
+    def get_queryset(self):
+        return Reputation.objects.filter(
+            summoner=self.kwargs['summoner_pk'],
+            user=self.request.user,
+        )
+
+
+class ReputationCreateUpdateView():
+    pass

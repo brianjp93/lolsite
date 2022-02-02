@@ -6,7 +6,7 @@ Model definitions for the player app.
 import uuid
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
@@ -17,6 +17,9 @@ from data import constants as dc
 from data.models import ProfileIcon
 
 from player.utils import get_admin
+
+
+User = get_user_model()
 
 
 def simplify(name):
@@ -515,3 +518,12 @@ class Comment(models.Model):
             for user in reply_to_users | users:
                 notification = Notification(user=user, comment=self)
                 notification.save()
+
+
+class Reputation(models.Model):
+    user = models.ForeignKey(User, null=False, on_delete=models.CASCADE)
+    summoner = models.ForeignKey(Summoner, null=False, on_delete=models.CASCADE)
+    is_approve = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ['user', 'summoner']
