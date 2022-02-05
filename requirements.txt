@@ -30,7 +30,7 @@ certifi==2021.10.8
     #   sentry-sdk
 charset-normalizer==2.0.11
     # via requests
-django==3.2.10
+django==3.2.12
     # via
     #   -r requirements.in
     #   django-elastipymemcache
@@ -74,7 +74,7 @@ numpy==1.22.2
     # via
     #   scikit-learn
     #   scipy
-pillow==8.3.2
+pillow==9.0.1
     # via -r requirements.in
 psycopg2-binary==2.9.3
     # via -r requirements.in
