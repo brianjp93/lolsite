@@ -28,7 +28,7 @@ from lolsite.helpers import query_debugger
 from player.models import Summoner
 from player import tasks as pt
 
-from celery import task
+from lolsite.celery import app
 import logging
 from multiprocessing.dummy import Pool as ThreadPool
 import time
@@ -491,7 +491,7 @@ def ranked_import(name=None, puuid=None, region=None, **kwargs):
             summoner.save()
 
 
-@task(name="match.tasks.import_recent_matches")
+@app.task(name="match.tasks.import_recent_matches")
 def import_recent_matches(
     start: int,
     end: int,
@@ -803,7 +803,7 @@ def get_frame_event_types():
     }
 
 
-@task(name="match.tasks.import_advanced_timeline")
+@app.task(name="match.tasks.import_advanced_timeline")
 def import_advanced_timeline(match_id=None, overwrite=False):
     """
 

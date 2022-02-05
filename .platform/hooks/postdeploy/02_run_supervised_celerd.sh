@@ -13,7 +13,7 @@ Restart=always
 RestartSec=1
 User=root
 WorkingDirectory=/var/app/current
-ExecStart=$PYTHONPATH/celery worker -A lolsite --loglevel=INFO -n worker.%%h
+ExecStart=$PYTHONPATH/celery -A lolsite worker --loglevel=INFO -n worker.%%h
 EnvironmentFile=/opt/elasticbeanstalk/deployment/env
 
 [Install]

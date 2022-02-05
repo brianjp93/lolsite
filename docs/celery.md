@@ -3,7 +3,7 @@
 2. run the workers
 
 ```
-> celery worker -A lolsite -l info
+> celery -A lolsite worker -l info
 ```
 
 # running on windows
@@ -30,6 +30,6 @@ it by installing `gevent`
 Then we can run a slightly modified version of the earlier command.
 
 ```
-> celery worker -A lolsite -l info -P gevent
+> celery -A lolsite worker -l info -P gevent
 ```
 

@@ -3,10 +3,10 @@
 from notification.models import Notification
 from django.utils import timezone
 
-from celery import task
+from lolsite.celery import app
 
 
-@task(name="notification.tasks.delete_old_notifications")
+@app.task(name="notification.tasks.delete_old_notifications")
 def delete_old_notifications(days=60):
     """Delete all Notifications older than <days> days.
 

@@ -1,4 +1,4 @@
-from celery import task
+from lolsite.celery import app
 
 from django.db import connection
 from django.utils import timezone
@@ -44,7 +44,7 @@ def import_pros(overwrite=False):
                 summoner.save()
 
 
-@task(name="player.tasks.import_summoner")
+@app.task(name="player.tasks.import_summoner")
 def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=None):
     """Import a summoner by one a several identifiers.
 

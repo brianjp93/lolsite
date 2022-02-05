@@ -2,7 +2,7 @@ from django.apps import apps
 from django.db import models
 from django.core.files import File
 
-from celery import task
+from lolsite.celery import app
 from PIL import Image
 from io import BytesIO
 import urllib
@@ -36,7 +36,7 @@ def save_location(instance, name):
     return f'IMAGECACHE/{instance._meta.model_name}.{instance.id}.{name}'
 
 
-@task(name='core.models.save_files')
+@app.task(name='core.models.save_files')
 def save_files(model_id, app, model_name, force=False):
     model = apps.get_model(app, model_name=model_name)
     obj = model.objects.get(id=model_id)

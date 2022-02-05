@@ -24,7 +24,7 @@ from django.db.utils import IntegrityError
 from django.utils import timezone
 
 from . import constants
-from celery import task
+from lolsite.celery import app
 from lolsite.tasks import get_riot_api
 import json
 import logging
@@ -33,7 +33,7 @@ import logging
 logger = logging.getLogger('django')
 
 
-@task(name="data.tasks.import_missing")
+@app.task(name="data.tasks.import_missing")
 def import_missing(
     max_versions=10, until_found=True, language="en_US", last_import_hours=1
 ):
@@ -79,7 +79,7 @@ def import_last_versions(start, end, language="en_US", overwrite=True):
         import_all(version, language=language, overwrite=overwrite)
 
 
-@task(name="data.tasks.import_all")
+@app.task(name="data.tasks.import_all")
 def import_all(version, language="en_US", overwrite=False, api_only=False):
     """Import all constants data from constants.py and riot api.
 
@@ -168,7 +168,7 @@ def import_gametypes():
             continue
 
 
-@task(name="data.tasks.import_reforgedrunes")
+@app.task(name="data.tasks.import_reforgedrunes")
 def import_reforgedrunes(version="", language="en_US", overwrite=False):
     """Import reforged runes through api.
 
@@ -873,7 +873,7 @@ def compute_item_last_change(index=None, start_patch=None, language="en_US"):
             item.save()
 
 
-@task(name="data.tasks.compute_changes")
+@app.task(name="data.tasks.compute_changes")
 def compute_changes(index, language="en_US"):
     """Compute item and champion changes over patches
 

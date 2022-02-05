@@ -15,12 +15,12 @@ def restart_celery():
     if platform in ["win32"]:
         win_cmd = "taskkill /IM celery.exe /F"
         subprocess.call(win_cmd)
-        win_cmd = "celery worker -A lolsite -l info -P gevent"
+        win_cmd = "celery -A lolsite worker -l info -P gevent"
         subprocess.call(win_cmd, shell=True)
     elif platform in ["darwin", "linux"]:
         cmd = "pkill -f celery worker"
         subprocess.call(shlex.split(cmd))
-        cmd = "celery worker -A lolsite -l info"
+        cmd = "celery -A lolsite worker -l info"
         subprocess.call(shlex.split(cmd))
     else:
         print(f"Autoreloading celery for platform {platform} not yet configured.")

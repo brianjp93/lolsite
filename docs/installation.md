@@ -53,7 +53,7 @@
         - The custom command will auto reload the celery worker on code changes.
     - If the previous command doesn't work...
         - > . activate <virtual env>
-        - > celery worker -A lolsite -l info
+        - > celery -A lolsite worker -l info
 13. The site should now be accessible. -yay
 14. neovim development with coc
     - run `yarn dlx @yarnpkg/sdks vim` to set up coc to work with yarn properly
