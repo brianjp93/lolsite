@@ -9,7 +9,7 @@ from .models import Summoner, Reputation
 from .models import RankPosition, Custom
 from .models import Favorite, Comment
 
-from match.models import Match
+from match.models import Match, Participant
 
 User = get_user_model()
 
@@ -78,13 +78,14 @@ class ReputationSerializer(serializers.ModelSerializer):
         """
         user_summoners = Summoner.objects.filter(
             summonerlinks__user=user,
-        ).values('puuid')
+        ).values_list('puuid')
+        user_summoners = [x[0] for x in user_summoners]
         if not user_summoners:
             raise serializers.ValidationError({'user_id': ['This user has no linked summoner accounts.']})
         q = Q()
         for puuid in user_summoners:
-            q |= Q(participants__puuid__contains=[summoner.puuid, puuid])
-        return Match.objects.filter(q).exists()
+            q |= Q(puuid=summoner.puuid, match__participants__puuid=puuid)
+        return Participant.objects.filter(q).exists()
 
 
 class CommentSerializer(DynamicSerializer):
