@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useState, useEffect, useCallback, useMemo} from 'react'
 import { useQuery } from 'react-query'
 import Skeleton from '../general/Skeleton'
 import api from '../../api/api'
@@ -105,7 +105,7 @@ export function ItemsGrid(props) {
     () => api.data.items().then(response => response.data.data),
     {retry: false, refetchOnWindowFocus: false},
   )
-  const items = itemQuery.data || []
+  const items = useMemo(() => itemQuery.data || [], [itemQuery.data])
 
   const statCheckbox = useCallback(
     (stat_name, label) => {
