@@ -21,7 +21,25 @@ class ReputationSerializerTest(TestCase):
 
     def test_no_match_overlap_fails(self):
         summoner = self.summoners[0]
+        random_summoner = factories.SummonerFactory()
         for match in self.matches[:5]:
             p1 = match.participants.order_by('pk').first()
             p1.puuid = summoner.puuid
             p1.save()
+        self.assertFalse(
+            ReputationSerializer.user_has_match_overlap(self.user, random_summoner)
+        )
+
+    def test_has_overlap(self):
+        summoner = self.summoners[0]
+        random_summoner = factories.SummonerFactory()
+        for match in self.matches[:5]:
+            p1, p2 = match.participants.order_by('pk')[1:3]
+            p1.puuid = summoner.puuid
+            p1.save()
+
+            p2.puuid = random_summoner.puuid
+            p2.save()
+        self.assertTrue(
+            ReputationSerializer.user_has_match_overlap(self.user, random_summoner)
+        )
