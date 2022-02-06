@@ -9,6 +9,9 @@
 3. `docker exec <web container> python manage.py migrate`
 4. `docker exec <web container> python manage.py settoken <riot api token>`
 
+If using docker, we can connect to the docker DB with...
+- `psql postgres://postgres:postgres@localhost:5432/postgres`
+
 
 ### No Docker
 1. Download [Postgres](https://www.postgresql.org/).
