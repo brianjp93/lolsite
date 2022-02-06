@@ -11,6 +11,7 @@ jobs:
       - image: circleci/python:3.8.11
         environment:
           DATABASE_URL: postgresql://root@localhost/circle_test?sslmode=disable
+          POSTGRES_PASSWORD: blah
       - image: circleci/postgres:13.3
         environment:
           POSTGRES_USER: root
