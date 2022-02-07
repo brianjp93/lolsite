@@ -198,9 +198,9 @@ async function createReputation(summoner: number, is_approve: boolean) {
   return unwrap(Reputation.decode(r.data))
 }
 
-async function updateReputation(summoner: number, is_approve: boolean) {
-  const url = `/api/${version}/player/reputation/update/`
-  const r = await axios.put(url, {summoner, is_approve})
+async function updateReputation(id: number, summoner: number, is_approve: boolean) {
+  const url = `/api/${version}/player/reputation/update/${id}/`
+  const r = await axios.put(url, {is_approve, summoner})
   return unwrap(Reputation.decode(r.data))
 }
 

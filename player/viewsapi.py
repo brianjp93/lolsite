@@ -271,7 +271,7 @@ def get_summoner_page(request, format=None):
             summoner = Summoner.objects.get(id=summoner__id)
 
         if summoner:
-            summoner_data = SummonerSerializer(summoner).data
+            summoner_data = SummonerSerializer(summoner, context={'request': request}).data
 
             rankcheckpoint = summoner.get_newest_rank_checkpoint()
             if rankcheckpoint:

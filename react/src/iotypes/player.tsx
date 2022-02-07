@@ -40,6 +40,7 @@ export const PositionBin = t.type({
 export type PositionBinType = t.TypeOf<typeof PositionBin>
 
 export const Summoner = t.type({
+  has_match_overlap: t.boolean,
   account_id: t.string,
   created_date: t.string,
   full_import_count: t.number,

@@ -9,36 +9,9 @@ from .models import Summoner, Reputation
 from .models import RankPosition, Custom
 from .models import Favorite, Comment
 
-from match.models import Match, Participant
+from match.models import Participant
 
 User = get_user_model()
-
-
-class SummonerSerializer(DynamicSerializer):
-    class Meta:
-        model = Summoner
-        fields = "__all__"
-
-
-class RankPositionSerializer(DynamicSerializer):
-    class Meta:
-        model = RankPosition
-        fields = "__all__"
-
-
-class CustomSerializer(DynamicSerializer):
-    class Meta:
-        model = Custom
-        fields = "__all__"
-
-
-class FavoriteSerializer(DynamicSerializer):
-    name = serializers.CharField()
-    region = serializers.CharField()
-
-    class Meta:
-        model = Favorite
-        fields = "__all__"
 
 
 class ReputationSerializer(serializers.ModelSerializer):
@@ -94,6 +67,44 @@ class ReputationSerializer(serializers.ModelSerializer):
         for puuid in user_summoners:
             q |= Q(puuid=summoner.puuid, match__participants__puuid=puuid)
         return Participant.objects.filter(q).exists()
+
+
+class SummonerSerializer(DynamicSerializer):
+    has_match_overlap = serializers.SerializerMethodField()
+
+    def get_has_match_overlap(self, obj):
+        request = self.context.get('request')
+        if request:
+            try:
+                return ReputationSerializer.user_has_match_overlap(request.user, obj)
+            except serializers.ValidationError:
+                pass
+        return False
+
+    class Meta:
+        model = Summoner
+        fields = "__all__"
+
+
+class RankPositionSerializer(DynamicSerializer):
+    class Meta:
+        model = RankPosition
+        fields = "__all__"
+
+
+class CustomSerializer(DynamicSerializer):
+    class Meta:
+        model = Custom
+        fields = "__all__"
+
+
+class FavoriteSerializer(DynamicSerializer):
+    name = serializers.CharField()
+    region = serializers.CharField()
+
+    class Meta:
+        model = Favorite
+        fields = "__all__"
 
 
 class CommentSerializer(DynamicSerializer):

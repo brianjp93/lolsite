@@ -4592,7 +4592,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"classnames@npm:2.x, classnames@npm:^2.2.1, classnames@npm:^2.2.5, classnames@npm:^2.2.6":
+"classnames@npm:2.x, classnames@npm:^2.2.1, classnames@npm:^2.2.5, classnames@npm:^2.2.6, classnames@npm:^2.3.1":
   version: 2.3.1
   resolution: "classnames@npm:2.3.1"
   checksum: 57d536edede609f81425d24b062d8d720a466565faf1e38d32c881e883920baa71519ac70c7b565e9cd39201fb1c1ff9bdf8aabf8e26544bac481e7924867c83
@@ -9768,6 +9768,7 @@ fsevents@^1.2.7:
     "@types/recharts": ^1.8.19
     "@types/toastr": ^2.1.39
     axios: ">=0.21.2"
+    classnames: ^2.3.1
     eslint-config-react-app: ^6.0.0
     eslint-plugin-react-hooks: ^1.7.0
     fp-ts: ^2.9.5

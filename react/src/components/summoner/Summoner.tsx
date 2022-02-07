@@ -1,5 +1,6 @@
 import {useState, useMemo, useEffect, useCallback} from 'react'
 import {useQuery, useMutation, useQueryClient} from 'react-query'
+import cx from 'classnames';
 import Skeleton from '../general/Skeleton'
 import ReactGA from 'react-ga'
 import Orbit from '../general/spinners/orbit'
@@ -410,6 +411,28 @@ function SummonerCard({
     {retry: false, refetchInterval: 1000 * 10},
   )
 
+  const reputation = useQuery(
+    [summoner?.id],
+    () => api.player.getReputation(summoner.id),
+    {retry: false, enabled: !!summoner?.id, refetchInterval: 60_000},
+  )
+
+  const repMutation = useMutation(
+    async (is_approve: boolean) => {
+      if (reputation.data) {
+        return api.player.updateReputation(reputation.data.id, summoner.id, is_approve)
+      } else {
+        return api.player.createReputation(summoner.id, is_approve)
+      }
+    },
+    {
+      onSuccess: () => {
+        console.log('you did it.')
+        reputation.refetch()
+      }
+    }
+  )
+
   const queueName = (queue: string) => {
     const convert: Record<string, string> = {
       RANKED_SOLO_5x5: 'Solo/Duo',
@@ -644,6 +667,22 @@ function SummonerCard({
               </span>
             </>
           )}
+
+          <div className="row" style={{marginTop: 20, marginBottom: 0}}>
+            <div className="col s12">
+              <button
+                style={{marginRight: 5}}
+                onClick={() => repMutation.mutate(false)}
+                className={cx("btn btn-link dark", {disabled: reputation.data?.is_approve === false})}>
+                <i className="material-icons">thumb_down</i>
+              </button>
+              <button
+                onClick={() => repMutation.mutate(true)}
+                className={cx("btn btn-link dark", {disabled: reputation.data?.is_approve === true})}>
+                <i className="material-icons">thumb_up</i>
+              </button>
+            </div>
+          </div>
 
           <div style={{paddingTop: 10}}>
             {positions.map((pos: any) => {
