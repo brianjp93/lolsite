@@ -43,3 +43,18 @@ class ReputationSerializerTest(TestCase):
         self.assertTrue(
             ReputationSerializer.user_has_match_overlap(self.user, random_summoner)
         )
+
+    def test_user_is_not_summoner(self):
+        """Ensure the summoner we are trying to rate is not our own linked account.
+
+        - User cannot rate a summoner that is linked to their account.
+
+        """
+        summoner = self.summoners[0]
+        for match in self.matches[:5]:
+            p1 = match.participants.first()
+            p1.puuid = summoner.puuid
+            p1.save()
+        self.assertFalse(
+            ReputationSerializer.user_has_match_overlap(self.user, summoner)
+        )

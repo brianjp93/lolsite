@@ -42,12 +42,7 @@ class FavoriteSerializer(DynamicSerializer):
 
 
 class ReputationSerializer(serializers.ModelSerializer):
-    user_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-        write_only=True,
-        required=True,
-    )
-    summoner_id = serializers.PrimaryKeyRelatedField(
+    summoner = serializers.PrimaryKeyRelatedField(
         queryset=Summoner.objects.all(),
         write_only=True,
         required=True,
@@ -56,18 +51,26 @@ class ReputationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reputation
         fields = [
-            'user_id',
-            'summoner_id',
+            'id',
+            'summoner',
             'is_approve',
         ]
 
     def validate(self, attrs):
-        attrs = super().validate(attrs)
-        user = attrs['user_id']
-        summoner = attrs['summoner_id']
+        attrs['user'] = self.context['request'].user
+        user = attrs['user']
+        self.validate_user(user)
+        summoner = attrs['summoner']
         if not self.user_has_match_overlap(user, summoner):
-            raise serializers.ValidationError({'summoner_id': ['This summoner has no overlap with the user\'s linked accounts.']})
-        return attrs
+            raise serializers.ValidationError(
+                {'summoner': ['This summoner has no overlap with the user\'s linked accounts.']}
+            )
+        return super().validate(attrs)
+
+    def validate_user(self, user):
+        if self.context['request'].user == user:
+            return user
+        raise serializers.ValidationError('User must match the user making the request.')
 
     @staticmethod
     def user_has_match_overlap(user: User, summoner: Summoner):
@@ -80,8 +83,13 @@ class ReputationSerializer(serializers.ModelSerializer):
             summonerlinks__user=user,
         ).values_list('puuid')
         user_summoners = [x[0] for x in user_summoners]
+
+        # The summoner we are checking cannot belong to the user.
+        if summoner.puuid in user_summoners:
+            return False
+
         if not user_summoners:
-            raise serializers.ValidationError({'user_id': ['This user has no linked summoner accounts.']})
+            raise serializers.ValidationError({'user': ['This user has no linked summoner accounts.']})
         q = Q()
         for puuid in user_summoners:
             q |= Q(puuid=summoner.puuid, match__participants__puuid=puuid)

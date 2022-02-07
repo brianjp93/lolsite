@@ -5,7 +5,7 @@ celery==5.2.3
 django==3.2.12
 django-extensions<3.1
 django-storages<1.10
-djangorestframework<3.12
+djangorestframework
 django-elastipymemcache
 factory_boy
 hypothesis

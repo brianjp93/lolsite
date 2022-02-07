@@ -72,3 +72,9 @@ export const TopPlayedWithPlayer = t.type({
   count: t.number,
 })
 export type TopPlayedWithPlayerType = t.TypeOf<typeof TopPlayedWithPlayer>
+
+export const Reputation = t.type({
+  id: t.number,
+  is_approve: t.boolean,
+})
+export type ReputationType = t.TypeOf<typeof Reputation>

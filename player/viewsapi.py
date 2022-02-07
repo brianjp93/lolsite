@@ -3,7 +3,7 @@
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
-from lolsite.helpers import query_debugger
+from lolsite.helpers import query_debugger, MultipleFieldLookupMixin
 
 from player import tasks as pt
 from player import constants as player_constants
@@ -1588,5 +1588,12 @@ class ReputationRetrieveAPIView(RetrieveAPIView):
         )
 
 
-class ReputationCreateUpdateView():
-    pass
+class ReputationCreateView(CreateAPIView):
+    serializer_class = ReputationSerializer
+
+
+class ReputationUpdateView(UpdateAPIView):
+    serializer_class = ReputationSerializer
+
+    def get_queryset(self):
+        return Reputation.objects.filter(user=self.request.user)

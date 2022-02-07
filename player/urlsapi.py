@@ -3,7 +3,21 @@ from . import viewsapi as player_views
 from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
-    path("reputation/<int:summoner_pk>/", player_views.ReputationRetrieveAPIView.as_view(), name='get-reputation'),
+    path(
+        "reputation/<int:summoner_pk>/",
+        player_views.ReputationRetrieveAPIView.as_view(),
+        name='get-reputation',
+    ),
+    path(
+        "reputation/create/",
+        player_views.ReputationCreateView.as_view(),
+        name='create-reputation',
+    ),
+    path(
+        "reputation/update/<int:pk>/",
+        player_views.ReputationUpdateView.as_view(),
+        name='update-reputation',
+    ),
     path("summoner/", player_views.get_summoner),
     path("summoners/", player_views.get_summoners),
     path("summoner-search/", player_views.summoner_search),
