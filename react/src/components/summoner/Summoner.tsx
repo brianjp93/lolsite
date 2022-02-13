@@ -742,27 +742,29 @@ function SummonerCard({
             </>
           )}
 
-          <div className="row" style={{marginTop: 20, marginBottom: 0}}>
-            <div className="col s12">
-              <button
-                style={{marginRight: 5}}
-                onClick={() => repMutation.mutate(false)}
-                className={cx('btn btn-link dark', {
-                  disabled: reputation.data?.is_approve === false,
-                })}
-              >
-                <i className="material-icons">thumb_down</i>
-              </button>
-              <button
-                onClick={() => repMutation.mutate(true)}
-                className={cx('btn btn-link dark', {
-                  disabled: reputation.data?.is_approve === true,
-                })}
-              >
-                <i className="material-icons">thumb_up</i>
-              </button>
+          {summoner.has_match_overlap &&
+            <div className="row" style={{marginTop: 20, marginBottom: 0}}>
+              <div className="col s12">
+                <button
+                  style={{marginRight: 5}}
+                  onClick={() => repMutation.mutate(false)}
+                  className={cx('btn btn-link dark', {
+                    disabled: reputation.data?.is_approve === false,
+                  })}
+                >
+                  <i className="material-icons">thumb_down</i>
+                </button>
+                <button
+                  onClick={() => repMutation.mutate(true)}
+                  className={cx('btn btn-link dark', {
+                    disabled: reputation.data?.is_approve === true,
+                  })}
+                >
+                  <i className="material-icons">thumb_up</i>
+                </button>
+              </div>
             </div>
-          </div>
+          }
 
           <div style={{paddingTop: 10}}>
             {positions.map((pos: any) => {
