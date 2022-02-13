@@ -80,8 +80,6 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         data = r.json()
 
         model_data = {
-            "_id": data["id"],
-            "region": region.lower(),
             "account_id": data["accountId"],
             "name": data["name"],
             "profile_icon_id": data["profileIconId"],
@@ -89,16 +87,12 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
             "revision_date": data["revisionDate"],
             "summoner_level": data["summonerLevel"],
         }
-        query = Summoner.objects.filter(region=region.lower(), _id=data["id"])
-        if query.exists():
-            summoner_model = query.first()
-
-            for attr, val in model_data.items():
-                setattr(summoner_model, attr, val)
-        else:
-            summoner_model = Summoner(**model_data)
-        summoner_model.save()
-        return summoner_model.id
+        summoner, _ = Summoner.objects.update_or_create(
+            _id=data['id'],
+            region=region.lower(),
+            defaults=model_data,
+        )
+        return summoner.id
 
 
 def import_positions(summoner, threshold_days=None):

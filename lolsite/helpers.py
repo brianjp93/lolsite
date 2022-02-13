@@ -5,6 +5,7 @@ https://gist.github.com/goutomroy/d61fc8a8445954c71b5585af042e5cf4
 from django.db import connection, reset_queries
 import time
 import functools
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 
 
 def query_debugger(func):
@@ -43,3 +44,32 @@ class MultipleFieldLookupMixin:
         obj = get_object_or_404(queryset, **filter)  # Lookup the object
         self.check_object_permissions(self.request, obj)
         return obj
+
+
+class Paginator(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class CustomLimitOffsetPagination(LimitOffsetPagination):
+    offset_query_param = 'start'
+    limit_query_param = 'limit'
+    default_limit = 10
+    max_limit = 100
+
+    def paginate_queryset(self, queryset, request, view=None):
+        """Override to return a queryset."""
+        self.limit = self.get_limit(request)
+        if self.limit is None:
+            return None
+
+        self.count = self.get_count(queryset)
+        self.offset = self.get_offset(request)
+        self.request = request
+        if self.count > self.limit and self.template is not None:
+            self.display_page_controls = True
+
+        if self.count == 0 or self.offset > self.count:
+            return []
+        return queryset[self.offset:self.offset + self.limit]

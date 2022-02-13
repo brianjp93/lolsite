@@ -89,6 +89,24 @@ def get_summoner(request, format=None):
     return Response(data, status=status_code)
 
 
+class SummonerByNameView(RetrieveAPIView):
+    lookup_field = 'name'
+    serializer_class = SummonerSerializer
+
+    def get_object(self):
+        name = pt.simplify(self.kwargs['name'])
+        region = self.kwargs['region']
+        summoner = Summoner.objects.filter(
+            simple_name=name,
+            region=region,
+        ).first()
+        if summoner:
+            pt.import_summoner.delay(self.kwargs['region'], name=name)
+            return summoner
+        summoner_id = pt.import_summoner(self.kwargs['region'], name=name)
+        return get_object_or_404(Summoner, id=summoner_id)
+
+
 @api_view(["POST"])
 def get_summoners(request, format=None):
     """Get data for summoners for a list of account_ids.
@@ -177,150 +195,6 @@ def match_filter(request, puuid=None):
                 participants__summoner_name_simplified__in=with_names_simplified
             )
     return matches
-
-
-@api_view(["POST"])
-def get_summoner_page(request, format=None):
-    """Get the basic information needed to render the summoner page.
-
-    POST Parameters
-    ---------------
-    id : int
-        Internal Summoner ID
-    summoner_name : str
-    account_id : str
-    region : str
-    update : bool
-        Whether or not to check riot for update first
-    language : str
-        default = 'en_US'
-    queue : int
-    with_names : [str]
-        Get games that include these summoner names.
-    page : int
-    count : int
-    trigger_import : bool
-        Whether or not to check for new games
-        Even if this is true, it may not check.
-    after_index : int
-        import matches after this index
-    start_date : str
-        ISO DateTime
-    end_date : str
-        ISO DateTime
-    order_by : str
-        enum('kills', 'deaths', 'assists')
-
-    Returns
-    -------
-    JSON Summoner Page Data
-
-    """
-    data = {}
-    status_code = 200
-
-    if request.method == "POST":
-        _id = request.data.get("id", None)
-        update = request.data.get("update", False)
-        region = request.data.get("region", None)
-        name = request.data.get("summoner_name", None)
-        puuid = request.data.get("puuid", None)
-        # language = request.data.get("language", "en_US")
-        queue = request.data.get("queue", None)
-        page = int(request.data.get("page", 1))
-        count = int(request.data.get("count", 20))
-        order_by = request.data.get("order_by", "-game_creation")
-        after_index = request.data.get("after_index", None)
-        if count > 100:
-            count = 100
-
-        if name:
-            simplified = pt.simplify(name)
-            query = Summoner.objects.filter(simple_name=simplified, region=region)
-        elif puuid:
-            query = Summoner.objects.filter(puuid=puuid, region=region)
-        elif _id:
-            query = Summoner.objects.filter(id=_id, region=region)
-
-        if query:
-            summoner = query[0]
-        else:
-            # only update if we're not importing for the first time
-            update = False
-            try:
-                pt.import_summoner(region, name=name)
-            except Exception:
-                logger.exception(traceback.format_exc())
-                data = {"message": "The summoner could not be found."}
-                status_code = 404
-                summoner = None
-            else:
-                simplified = pt.simplify(name)
-                query = Summoner.objects.filter(simple_name=simplified, region=region)
-                if query:
-                    summoner = query[0]
-                else:
-                    summoner = None
-                    data = {
-                        "error": "Could not find a summoner in this region with that name."
-                    }
-                    status_code = 404
-
-        if update:
-            summoner__id = pt.import_summoner(region, name=name)
-            summoner = Summoner.objects.get(id=summoner__id)
-
-        if summoner:
-            summoner_data = SummonerSerializer(summoner, context={'request': request}).data
-
-            rankcheckpoint = summoner.get_newest_rank_checkpoint()
-            if rankcheckpoint:
-                rank_positions = RankPositionSerializer(
-                    rankcheckpoint.positions.all(), many=True
-                ).data
-                rank_positions = sort_positions(rank_positions)
-            else:
-                rank_positions = []
-
-            query = ProfileIcon.objects.filter(_id=summoner.profile_icon_id)
-            query = query.order_by('_id', "-major", "-minor", "-patch").distinct('_id')
-            if query:
-                profile_icon = query[0]
-                profile_icon_ser = ProfileIconSerializer(profile_icon)
-                profile_icon_data = profile_icon_ser.data
-            else:
-                profile_icon_data = {}
-
-            # check for new games
-            start_index = 0
-            if after_index is not None:
-                start_index = after_index
-            elif page is not None:
-                start_index = (page - 1) * count
-            end_index = start_index + count
-
-            start = (page - 1) * count
-            end = page * count
-            mt.import_recent_matches(
-                start_index, end_index, summoner.puuid, region, queue=queue,
-            )
-            qs = match_filter(request, puuid=summoner.puuid)
-
-            if queue is None and after_index in [None, 0]:
-                summoner.last_summoner_page_import = timezone.now()
-                summoner.save()
-
-            qs = qs.order_by(order_by)
-            qs = qs[start:end]
-            matches = BasicMatchSerializer(qs, many=True).data
-            data = {
-                "matches": matches,
-                "profile_icon": profile_icon_data,
-                "summoner": summoner_data,
-                "positions": rank_positions,
-            }
-
-    return Response(data, status=status_code)
 
 
 @api_view(['POST'])

@@ -68,7 +68,15 @@ function MatchCard(props) {
     if (participants.length > 0) {
         _parts = participants
     }
+
+    useEffect(() => {
+        getParticipantRanks()
+    }, [match, getParticipantRanks])
+
     const mypart = getMyPart(_parts, puuid)
+    if (mypart === undefined) {
+      return null
+    }
     const game_time = match.game_duration / 1000 / 60
     const dpm = mypart.stats.total_damage_dealt_to_champions / game_time
     const vision_score_per_minute = mypart.stats.vision_score / game_time
@@ -302,10 +310,6 @@ function MatchCard(props) {
             </div>
         )
     }
-
-    useEffect(() => {
-        getParticipantRanks()
-    }, [match, getParticipantRanks])
 
     const TEAMSWIDTH = 120
     const TOPPAD = 20

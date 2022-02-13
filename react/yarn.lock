@@ -4442,6 +4442,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"caniuse-lite@npm:^1.0.30001311":
+  version: 1.0.30001311
+  resolution: "caniuse-lite@npm:1.0.30001311"
+  checksum: 6961a8b1b81b0e23dd282c7b5ee79754c7692ee17038c4b8d5009e99685bd557c497b1319af424539e3e02f410e2c6e0d46341caeb68fb3b1bb4dcc80a46e6c0
+  languageName: node
+  linkType: hard
+
 "capture-exit@npm:^2.0.0":
   version: 2.0.0
   resolution: "capture-exit@npm:2.0.0"
@@ -9768,6 +9775,7 @@ fsevents@^1.2.7:
     "@types/recharts": ^1.8.19
     "@types/toastr": ^2.1.39
     axios: ">=0.21.2"
+    caniuse-lite: ^1.0.30001311
     classnames: ^2.3.1
     eslint-config-react-app: ^6.0.0
     eslint-plugin-react-hooks: ^1.7.0

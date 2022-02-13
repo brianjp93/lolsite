@@ -49,6 +49,7 @@ export const Summoner = t.type({
   name: t.string,
   pro: optional(t.number),
   profile_icon_id: t.number,
+  profile_icon: t.string,
   puuid: t.string,
   ranked_import_count: t.number,
   region: t.string,

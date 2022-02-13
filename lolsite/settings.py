@@ -22,6 +22,10 @@ SECRET_KEY = config(
     "LOLSITE_SECRET_KEY", "6cs%&oj!lvxpvj44r63-#ie=-%er1hs@%sbt1k9=lf7-b_mlxv"
 )
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'lolsite.helpers.Paginator'
+}
+
 if config("LOLSITE_HOST", None) == "dev":
     from lolsite.settingsenv.dev_settings import *
     print('Using local dev settings.')

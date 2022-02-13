@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import serializers
 
+from data.models import ProfileIcon
 from data.serializers import DynamicSerializer
 from .models import Summoner, Reputation
 from .models import RankPosition, Custom
@@ -71,6 +72,11 @@ class ReputationSerializer(serializers.ModelSerializer):
 
 class SummonerSerializer(DynamicSerializer):
     has_match_overlap = serializers.SerializerMethodField()
+    profile_icon = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Summoner
+        fields = "__all__"
 
     def get_has_match_overlap(self, obj):
         request = self.context.get('request')
@@ -81,9 +87,13 @@ class SummonerSerializer(DynamicSerializer):
                 pass
         return False
 
-    class Meta:
-        model = Summoner
-        fields = "__all__"
+    def get_profile_icon(self, obj):
+        query = ProfileIcon.objects.filter(_id=obj.profile_icon_id)
+        query = query.order_by('_id', "-major", "-minor", "-patch").distinct('_id')
+        if query:
+            profile_icon = query[0]
+            return profile_icon.image_url()
+        return ''
 
 
 class RankPositionSerializer(DynamicSerializer):

@@ -1,6 +1,6 @@
 import {useState, useMemo, useEffect, useCallback} from 'react'
 import {useQuery, useMutation, useQueryClient} from 'react-query'
-import cx from 'classnames';
+import cx from 'classnames'
 import Skeleton from '../general/Skeleton'
 import ReactGA from 'react-ga'
 import Orbit from '../general/spinners/orbit'
@@ -50,30 +50,37 @@ export function Summoner({route, region, store}: {route: any; region: string; st
   useEffect(() => {
     ReactGA.event({
       category: 'Summoner Page',
-      action: 'Summoner.jsx was mounted.',
+      action: 'Summoner.tsx was mounted.',
     })
   }, [])
 
   const filterParams = useMemo(() => {
     let params = route.match.params
-    let data = {
+    const start = count * page - count
+    const data = {
       summoner_name: params.summoner_name || null,
       id: params.id || null,
       region: region,
-      count: count,
       queue: matchFilters?.queue,
-      with_names: matchFilters?.summoners ? matchFilters.summoners.split(',') : '',
-      champion_key: matchFilters?.champion,
-      start_date: matchFilters?.startDate,
-      end_date: matchFilters?.endDate,
-      page: page,
+      start,
+      limit: count,
+      sync_import: false,
     }
     return data
   }, [matchFilters, page, region, route.match.params])
 
-  const pageQuery = useQuery(
-    ['pageQuery', filterParams],
-    () => api.player.getSummonerPage({...filterParams, update: isInitialQuery}).then((x) => x.data),
+  const summonerQuery = useQuery(
+    ['summoner', 'name', filterParams.summoner_name, filterParams.region],
+    () => api.player.getSummonerByName(filterParams.summoner_name, filterParams.region),
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  )
+
+  const matchQuery = useQuery(
+    ['matches', 'by-summoner', filterParams],
+    () => api.match.getMatchesBySummonerName(filterParams).then((x) => x.results),
     {
       retry: false,
       refetchOnWindowFocus: false,
@@ -85,29 +92,84 @@ export function Summoner({route, region, store}: {route: any; region: string; st
       },
     },
   )
-  const pageQueryRefetch = pageQuery.refetch
-  const summoner = pageQuery.data?.summoner
-  const icon = pageQuery.data?.profile_icon
-  const matches = pageQuery.data?.matches || []
+  const matchQueryRefetch = matchQuery.refetch
+  // prefetch next page
+  queryClient.prefetchQuery(
+    ['matches', 'by-summoner', {...filterParams, start: filterParams.start + count}],
+    () =>
+      api.match
+        .getMatchesBySummonerName({...filterParams, start: filterParams.start + count})
+        .then((x) => x.results),
+    {
+      retry: false,
+      staleTime: 1000 * 60 * 3,
+    },
+  )
 
-  useEffect(() => {
-    queryClient.prefetchQuery(
-      ['pageQuery', {...filterParams, page: filterParams.page + 1}],
-      () =>
-        api.player
-          .getSummonerPage({...filterParams, page: filterParams.page + 1})
-          .then((x) => x.data),
-      {
-        retry: false,
-        staleTime: 1000 * 60 * 3,
+  const matchQueryWithSync = useQuery(
+    ['matches-with-sync', 'by-summoner', {...filterParams, sync_import: true}],
+    () =>
+      api.match
+        .getMatchesBySummonerName({...filterParams, sync_import: true})
+        .then((x) => x.results),
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+      keepPreviousData: true,
+      staleTime: 1000 * 60 * 3,
+      onSuccess: () => {
+        setLastRefresh(new Date().getTime())
+        setIsInitialQuery(false)
       },
-    )
-  }, [filterParams, queryClient])
+    },
+  )
+  const matchQueryWithSyncRefetch = matchQueryWithSync.refetch
+  // prefetch next page
+  queryClient.prefetchQuery(
+    [
+      'matches-with-sync',
+      'by-summoner',
+      {...filterParams, start: filterParams.start + count, sync_import: true},
+    ],
+    () =>
+      api.match
+        .getMatchesBySummonerName({
+          ...filterParams,
+          start: filterParams.start + count,
+          sync_import: true,
+        })
+        .then((x) => x.results),
+    {
+      retry: false,
+      staleTime: 1000 * 60 * 3,
+    },
+  )
+
+  const isMatchLoading = useMemo(() => {
+    if (matchQuery.isLoading) {
+      return true
+    } else if (matchQueryWithSync.isLoading && !matchQuery.data?.length) {
+      return true
+    }
+    return false
+  }, [matchQuery, matchQueryWithSync])
+
+  const summoner = summonerQuery.data
+  const icon = summoner?.profile_icon
+  const matches: BasicMatchType[] = useMemo(() => {
+    if (matchQueryWithSync.data?.length) {
+      return matchQueryWithSync.data
+    } else if (matchQuery.data?.length) {
+      return matchQuery.data
+    }
+    return []
+  }, [matchQueryWithSync.data, matchQuery.data])
 
   const refreshPage = useCallback(() => {
     setPage(1)
-    pageQueryRefetch()
-  }, [setPage, pageQueryRefetch])
+    matchQueryRefetch()
+    matchQueryWithSyncRefetch()
+  }, [setPage, matchQueryRefetch, matchQueryWithSyncRefetch])
 
   // refresh page if the summoner changes
   useEffect(() => {
@@ -116,7 +178,10 @@ export function Summoner({route, region, store}: {route: any; region: string; st
 
   const spectateQuery = useQuery(
     ['spectate', region, summoner?._id],
-    () => api.match.getSpectate({region, summoner_id: summoner._id}).then((x) => x.data),
+    () =>
+      summoner?._id
+        ? api.match.getSpectate({region, summoner_id: summoner._id}).then((x) => x.data)
+        : undefined,
     {
       retry: false,
       refetchOnWindowFocus: false,
@@ -127,7 +192,10 @@ export function Summoner({route, region, store}: {route: any; region: string; st
 
   const positionQuery = useQuery(
     ['positions', summoner?._id, region],
-    () => api.player.getPositions({summoner_id: summoner._id, region}).then((x) => x.data.data),
+    () =>
+      summoner?._id
+        ? api.player.getPositions({summoner_id: summoner._id, region}).then((x) => x.data.data)
+        : undefined,
     {retry: false, refetchOnWindowFocus: false, enabled: !!summoner?._id},
   )
 
@@ -135,7 +203,12 @@ export function Summoner({route, region, store}: {route: any; region: string; st
   const commentQuery = useQuery(
     ['comment_count', match_ids],
     () => api.player.getCommentCount({match_ids: match_ids}).then((response) => response.data.data),
-    {retry: false, refetchOnWindowFocus: false, enabled: matches.length > 0},
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+      enabled: matches.length > 0,
+      staleTime: 1000 * 60 * 3,
+    },
   )
 
   const queues = useMemo(() => {
@@ -161,7 +234,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
 
   const pagination = () => {
     const disabled = {
-      disabled: pageQuery.isFetching,
+      disabled: matchQuery.isFetching,
     }
     return (
       <div>
@@ -181,7 +254,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
           <i className="material-icons">chevron_right</i>
         </button>
         <div style={{display: 'inline-block', marginLeft: 8}}>{page}</div>
-        {pageQuery.isFetching && (
+        {matchQuery.isFetching && (
           <div style={{display: 'inline-block', marginLeft: 10}}>
             <Orbit size={25} />
           </div>
@@ -193,7 +266,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
   return (
     <Skeleton store={store} topPad={0}>
       <div style={{minHeight: 1000}}>
-        {pageQuery.isLoading && isInitialQuery && (
+        {isMatchLoading && isInitialQuery && (
           <div>
             <div
               style={{
@@ -206,9 +279,9 @@ export function Summoner({route, region, store}: {route: any; region: string; st
           </div>
         )}
 
-        {pageQuery.isSuccess && !summoner && <SummonerNotFound store={store} />}
+        {matchQuery.isSuccess && !summonerQuery.isSuccess && <SummonerNotFound store={store} />}
 
-        {!pageQuery.isLoading && summoner && (
+        {(matchQuery.isSuccess || matchQueryWithSync.isSuccess) && summonerQuery.isSuccess && (
           <div>
             {matches.length > 0 && (
               <Modal isOpen={isMatchModalOpen} onRequestClose={closeModal} style={MODALSTYLE}>
@@ -295,7 +368,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
               <div className="col l10 offset-l1 m12 s12">
                 <div style={{display: 'inline-block'}}>
                   {pagination()}
-                  {pageQuery.isLoading && (
+                  {isMatchLoading && (
                     <div style={{width: 600}}>
                       <Orbit
                         size={200}
@@ -305,7 +378,8 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                       />
                     </div>
                   )}
-                  {!pageQuery.isLoading &&
+                  {!isMatchLoading &&
+                    summonerQuery.isSuccess &&
                     matches.map((match: BasicMatchType, key: number) => {
                       return (
                         <MatchCard
@@ -323,7 +397,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                   {pagination()}
                 </div>
 
-                {summoner && (
+                {summonerQuery.isSuccess && summoner && (
                   <div
                     style={{
                       display: 'inline-block',
@@ -411,11 +485,11 @@ function SummonerCard({
     {retry: false, refetchInterval: 1000 * 10},
   )
 
-  const reputation = useQuery(
-    [summoner?.id],
-    () => api.player.getReputation(summoner.id),
-    {retry: false, enabled: !!summoner?.id, refetchInterval: 60_000},
-  )
+  const reputation = useQuery([summoner?.id], () => api.player.getReputation(summoner.id), {
+    retry: false,
+    enabled: !!summoner?.id,
+    refetchInterval: 60_000,
+  })
 
   const repMutation = useMutation(
     async (is_approve: boolean) => {
@@ -429,8 +503,8 @@ function SummonerCard({
       onSuccess: () => {
         console.log('you did it.')
         reputation.refetch()
-      }
-    }
+      },
+    },
   )
 
   const queueName = (queue: string) => {
@@ -534,7 +608,7 @@ function SummonerCard({
     <>
       <span>
         <div style={{position: 'relative', padding: 18}} className={`card-panel dark`}>
-          {icon.image_url !== undefined && (
+          {icon !== undefined && (
             <span
               style={{
                 position: 'relative',
@@ -548,8 +622,8 @@ function SummonerCard({
                   verticalAlign: 'middle',
                   borderRadius: 5,
                 }}
-                src={icon.image_url}
-                alt={`profile icon ${icon._id}`}
+                src={icon}
+                alt={`profile icon ${icon}`}
               />
               <span
                 style={{
@@ -673,12 +747,18 @@ function SummonerCard({
               <button
                 style={{marginRight: 5}}
                 onClick={() => repMutation.mutate(false)}
-                className={cx("btn btn-link dark", {disabled: reputation.data?.is_approve === false})}>
+                className={cx('btn btn-link dark', {
+                  disabled: reputation.data?.is_approve === false,
+                })}
+              >
                 <i className="material-icons">thumb_down</i>
               </button>
               <button
                 onClick={() => repMutation.mutate(true)}
-                className={cx("btn btn-link dark", {disabled: reputation.data?.is_approve === true})}>
+                className={cx('btn btn-link dark', {
+                  disabled: reputation.data?.is_approve === true,
+                })}
+              >
                 <i className="material-icons">thumb_up</i>
               </button>
             </div>

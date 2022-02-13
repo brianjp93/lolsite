@@ -40,10 +40,14 @@ function MatchCardModal(props) {
   )
   const match = matchQuery.isSuccess ? matchQuery.data : {}
 
-  const banQuery = useQuery(['match-bans', match_id], () => api.match.bans(match_id), {
-    retry: false,
-    refetchOnWindowFocus: false,
-  })
+  const banQuery = useQuery(
+    ['match-bans', match_id],
+    () => api.match.bans(match_id).then((x) => x.results),
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  )
 
   const participantQuery = useQuery(
     ['participants', match_id],
@@ -88,9 +92,7 @@ function MatchCardModal(props) {
             })}
             {banQuery.data && (
               <div>
-                <div style={{display: 'inline-block', fontSize: 25}}>
-                  Bans:
-                </div>{' '}
+                <div style={{display: 'inline-block', fontSize: 25}}>Bans:</div>{' '}
                 <BanList bans={banQuery.data.filter((x) => x.team === 100)} />
               </div>
             )}
@@ -104,9 +106,7 @@ function MatchCardModal(props) {
             })}
             {banQuery.data && (
               <div>
-                <div style={{display: 'inline-block', fontSize: 25}}>
-                  Bans:
-                </div>{' '}
+                <div style={{display: 'inline-block', fontSize: 25}}>Bans:</div>{' '}
                 <BanList bans={banQuery.data.filter((x) => x.team === 200)} />
               </div>
             )}

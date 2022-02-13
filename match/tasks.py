@@ -482,7 +482,7 @@ def ranked_import(name=None, puuid=None, region=None, **kwargs):
 
     new_import_count = total - old_import_count
     if new_import_count > 0:
-        print(f"Importing {new_import_count} ranked matches for {summoner.name}.")
+        logger.info(f"Importing {new_import_count} ranked matches for {summoner.name}.")
         is_finished = import_recent_matches(
             0, new_import_count, puuid, region, **kwargs
         )

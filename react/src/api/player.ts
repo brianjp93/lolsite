@@ -19,6 +19,12 @@ function getSummoner(data: any) {
   return axios.post(url, data)
 }
 
+async function getSummonerByName(name: string, region: string) {
+  const url = `/api/${version}/player/summoner/${region}/by-name/${name}/`
+  const response = await axios.get(url)
+  return unwrap(Summoner.decode(response.data))
+}
+
 interface GetSummonersData extends AxiosRequestConfig {
   puuids: string[]
   region: string
@@ -27,11 +33,6 @@ async function getSummoners(data: GetSummonersData) {
   const url = `/api/${version}/player/summoners/`
   const r = await axios.post(url, data)
   return unwrap(t.array(Summoner).decode(r.data.data))
-}
-
-function getSummonerPage(data: any) {
-  let url = `/api/${version}/player/summoner-page/`
-  return axios.post(url, data)
 }
 
 function getPositions(data: any) {
@@ -206,8 +207,8 @@ async function updateReputation(id: number, summoner: number, is_approve: boolea
 
 const exports = {
   getSummoner,
+  getSummonerByName,
   getSummoners,
-  getSummonerPage,
   getPositions,
   signUp,
   login,

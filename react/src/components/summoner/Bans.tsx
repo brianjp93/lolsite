@@ -11,7 +11,7 @@ export function BanList({bans}: {bans: BanType[]}) {
       {Object.keys(champions).length > 0 &&
         bans.map((ban) => {
           const champ = champions[ban.champion_id]
-          return <BanItem champ={champ} key={ban.pick_turn}/>
+          return <BanItem champ={champ} key={`${ban.pick_turn}-${ban.champion_id}`}/>
         })
       }
     </>

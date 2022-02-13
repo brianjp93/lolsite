@@ -243,6 +243,7 @@ class TeamSerializer(serializers.ModelSerializer):
             'first_dragon',
             'first_inhibitor',
             'first_rift_herald',
+            'rift_herald_kills',
             'first_tower',
             'inhibitor_kills',
             'tower_kills',
@@ -871,9 +872,10 @@ class BasicMatchSerializer(serializers.ModelSerializer):
         ]
 
     def __new__(cls, instance, *args, **kwargs):
-        instance = instance.prefetch_related(
-            'participants', 'participants__stats', 'teams',
-        )
+        if isinstance(instance, QuerySet):
+            instance = instance.prefetch_related(
+                'participants', 'participants__stats', 'teams',
+            )
         return super().__new__(cls, instance, *args, **kwargs)
 
     def __init__(self, instance=None, **kwargs):

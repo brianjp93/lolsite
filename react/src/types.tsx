@@ -48,6 +48,14 @@ export type {
   ReputationType,
 } from './iotypes/player'
 
+export {
+  PaginatedResponse
+} from './iotypes/base'
+
+export type {
+  PaginatedResponseType
+} from './iotypes/base'
+
 export {Champion} from './iotypes/data'
 export type {ChampionType} from './iotypes/data'
 

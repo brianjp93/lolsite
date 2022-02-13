@@ -6,12 +6,19 @@ from rest_framework.generics import ListAPIView
 
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
+from data import constants
 from match import tasks as mt
 from player import tasks as pt
 
-from .models import Match, Participant, sort_positions, Ban
+from .serializers import FullMatchSerializer, BasicMatchSerializer
+from player.models import Summoner
+from .models import Match
+from django.shortcuts import get_object_or_404
+from lolsite.helpers import CustomLimitOffsetPagination
 
-from player.models import Summoner, simplify
+from .models import Participant, sort_positions, Ban
+
+from player.models import simplify
 
 from data.models import Champion
 from data.serializers import BasicChampionWithImageSerializer
@@ -23,9 +30,56 @@ from .serializers import (
 from player.serializers import RankPositionSerializer
 from multiprocessing.dummy import Pool as ThreadPool
 import logging
-from django.shortcuts import get_object_or_404
 
 logger = logging.getLogger(__name__)
+
+
+class MatchBySummoner(ListAPIView):
+    serializer_class = BasicMatchSerializer
+    queryset = Match.objects.filter(is_fully_imported=True)
+    pagination_class = CustomLimitOffsetPagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        name = pt.simplify(self.kwargs['name'])
+        region = self.kwargs['region']
+        queue = self.request.query_params.get('queue', '')
+        if queue.isdigit():
+            queue = int(queue)
+        with_names = self.request.query_params.get('with_names', [])
+        sync_import = self.request.query_params.get('sync_import', False)
+        start = self.paginator.get_offset(self.request)
+        limit = self.paginator.get_limit(self.request)
+
+        summoner_query = Summoner.objects.filter(simple_name=name, region=region)
+        if not summoner_query:
+            pt.import_summoner(region, name=name)
+        else:
+            # update in the background if we already have the user imported
+            pt.import_summoner.delay(region, name=name)
+        summoner = get_object_or_404(Summoner, simple_name=name, region=region)
+        qs = qs.filter(
+            participants__puuid=summoner.puuid,
+            is_fully_imported=True,
+        )
+        if queue:
+            qs = qs.filter(queue_id=queue)
+
+        with_names = [
+            pt.simplify(name)
+            for name in with_names if len(name.strip()) > 0
+        ]
+        if with_names:
+            qs = qs.filter(
+                participants__summoner_name_simplified__in=with_names
+            )
+
+        if sync_import in constants.TRUTHY:
+            mt.import_recent_matches(
+                start, start + limit, summoner.puuid, region, queue=queue,
+            )
+        qs = qs.order_by('-game_creation')
+        return qs
 
 
 @api_view(["GET"])
@@ -65,6 +119,7 @@ class MatchBanListView(ListAPIView):
     def get_queryset(self):
         _id = self.kwargs['_id']
         qs = Ban.objects.filter(team__match___id=_id)
+        qs = qs.order_by('pick_turn')
         qs = qs.select_related('team')
         return qs
 

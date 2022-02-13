@@ -81,7 +81,7 @@ export type TeamType = t.TypeOf<typeof Team>
 
 export const BasicMatch = t.type({
   id: t.number,
-  _id: t.number,
+  _id: t.string,
   game_duration: t.number,
   game_creation: t.number,
   queue_id: t.number,
