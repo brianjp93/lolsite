@@ -1,5 +1,6 @@
 import {useState, useMemo, useEffect, useCallback} from 'react'
 import {useQuery, useMutation, useQueryClient} from 'react-query'
+import {useQueryWithPrefetch} from '../../hooks'
 import cx from 'classnames'
 import Skeleton from '../general/Skeleton'
 import ReactGA from 'react-ga'
@@ -78,9 +79,14 @@ export function Summoner({route, region, store}: {route: any; region: string; st
     },
   )
 
-  const matchQuery = useQuery(
+  const matchQuery = useQueryWithPrefetch(
     ['matches', 'by-summoner', filterParams],
     () => api.match.getMatchesBySummonerName(filterParams).then((x) => x.results),
+    ['matches', 'by-summoner', {...filterParams, start: filterParams.start + count}],
+    () =>
+      api.match
+        .getMatchesBySummonerName({...filterParams, start: filterParams.start + count})
+        .then((x) => x.results),
     {
       retry: false,
       refetchOnWindowFocus: false,
@@ -93,39 +99,13 @@ export function Summoner({route, region, store}: {route: any; region: string; st
     },
   )
   const matchQueryRefetch = matchQuery.refetch
-  // prefetch next page
-  queryClient.prefetchQuery(
-    ['matches', 'by-summoner', {...filterParams, start: filterParams.start + count}],
-    () =>
-      api.match
-        .getMatchesBySummonerName({...filterParams, start: filterParams.start + count})
-        .then((x) => x.results),
-    {
-      retry: false,
-      staleTime: 1000 * 60 * 3,
-    },
-  )
 
-  const matchQueryWithSync = useQuery(
+  const matchQueryWithSync = useQueryWithPrefetch(
     ['matches-with-sync', 'by-summoner', {...filterParams, sync_import: true}],
     () =>
       api.match
         .getMatchesBySummonerName({...filterParams, sync_import: true})
         .then((x) => x.results),
-    {
-      retry: false,
-      refetchOnWindowFocus: false,
-      keepPreviousData: true,
-      staleTime: 1000 * 60 * 3,
-      onSuccess: () => {
-        setLastRefresh(new Date().getTime())
-        setIsInitialQuery(false)
-      },
-    },
-  )
-  const matchQueryWithSyncRefetch = matchQueryWithSync.refetch
-  // prefetch next page
-  queryClient.prefetchQuery(
     [
       'matches-with-sync',
       'by-summoner',
@@ -141,9 +121,16 @@ export function Summoner({route, region, store}: {route: any; region: string; st
         .then((x) => x.results),
     {
       retry: false,
+      refetchOnWindowFocus: false,
+      keepPreviousData: true,
       staleTime: 1000 * 60 * 3,
+      onSuccess: () => {
+        setLastRefresh(new Date().getTime())
+        setIsInitialQuery(false)
+      },
     },
   )
+  const matchQueryWithSyncRefetch = matchQueryWithSync.refetch
 
   const isMatchLoading = useMemo(() => {
     if (matchQuery.isLoading) {
@@ -489,6 +476,7 @@ function SummonerCard({
     retry: false,
     enabled: !!summoner?.id,
     refetchInterval: 60_000,
+    refetchOnWindowFocus: false,
   })
 
   const repMutation = useMutation(
@@ -742,7 +730,7 @@ function SummonerCard({
             </>
           )}
 
-          {summoner.has_match_overlap &&
+          {summoner.has_match_overlap && (
             <div className="row" style={{marginTop: 20, marginBottom: 0}}>
               <div className="col s12">
                 <button
@@ -764,7 +752,7 @@ function SummonerCard({
                 </button>
               </div>
             </div>
-          }
+          )}
 
           <div style={{paddingTop: 10}}>
             {positions.map((pos: any) => {
