@@ -133,35 +133,6 @@ def get_summoners(request, format=None):
     return Response(data, status=status_code)
 
 
-def participant_sort(part):
-    """assign values to roles to help sorting
-
-    Parameters
-    ----------
-    part : dict
-
-    Returns
-    -------
-    int
-
-    """
-    out = 0
-    if part["lane"] == "TOP":
-        out = 0
-    elif part["lane"] == "JUNGLE":
-        out = 5
-    elif part["lane"] == "MIDDLE":
-        out = 10
-    elif part["lane"] == "BOTTOM":
-        if part["role"] == "DUO_CARRY":
-            out = 15
-        elif part["role"] == "DUO_SUPPORT":
-            out = 16
-        else:
-            out = 15
-    return out
-
-
 @api_view(["POST"])
 def get_positions(request, format=None):
     """Get a player's positional ranks.
@@ -1374,13 +1345,11 @@ class ReputationRetrieveAPIView(RetrieveAPIView):
     lookup_field = 'summoner_pk'
 
     def get_object(self):
-        return get_object_or_404(self.get_queryset())
-
-    def get_queryset(self):
-        return Reputation.objects.filter(
-            summoner=self.kwargs['summoner_pk'],
+        qs = Reputation.objects.filter(
+            summoner=self.kwargs[self.lookup_field],
             user=self.request.user,
         )
+        return get_object_or_404(qs)
 
 
 class ReputationCreateView(CreateAPIView):
