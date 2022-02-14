@@ -8,26 +8,23 @@ from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 from data import constants
 from match import tasks as mt
-from player import tasks as pt
 
+from .models import Match, AdvancedTimeline
+from .models import Participant, sort_positions, Ban
 from .serializers import FullMatchSerializer, BasicMatchSerializer
+from .serializers import MatchSerializer, AdvancedTimelineSerializer, BanSerializer
+
 from player.models import Summoner
-from .models import Match
 from django.shortcuts import get_object_or_404
 from lolsite.helpers import CustomLimitOffsetPagination
 
-from .models import Participant, sort_positions, Ban
-
+from player import tasks as pt
 from player.models import simplify
+from player.serializers import RankPositionSerializer
 
 from data.models import Champion
 from data.serializers import BasicChampionWithImageSerializer
-from .serializers import (
-    MatchSerializer,
-    AdvancedTimelineSerializer, FullMatchSerializer,
-    BanSerializer,
-)
-from player.serializers import RankPositionSerializer
+
 from multiprocessing.dummy import Pool as ThreadPool
 import logging
 
@@ -43,13 +40,13 @@ class MatchBySummoner(ListAPIView):
         qs = super().get_queryset()
         name = pt.simplify(self.kwargs['name'])
         region = self.kwargs['region']
-        queue = self.request.query_params.get('queue', '')
-        if queue.isdigit():
+        queue = self.request.query_params.get('queue', None)
+        if isinstance(queue, str) and queue.isdigit():
             queue = int(queue)
         with_names = self.request.query_params.get('with_names', [])
         sync_import = self.request.query_params.get('sync_import', False)
-        start = self.paginator.get_offset(self.request)
-        limit = self.paginator.get_limit(self.request)
+        start: int = self.paginator.get_offset(self.request)
+        limit: int = self.paginator.get_limit(self.request)
 
         summoner_query = Summoner.objects.filter(simple_name=name, region=region)
         if not summoner_query:
@@ -82,35 +79,18 @@ class MatchBySummoner(ListAPIView):
         return qs
 
 
-@api_view(["GET"])
-def get_match_timeline(request, format=None):
-    """Gets match timeline from Riot's API.
+class AdvancedTimelineView(RetrieveAPIView):
+    serializer_class = AdvancedTimelineSerializer
+    queryset = AdvancedTimeline.objects.all()
+    lookup_field = 'match_id'
 
-    This is a tunnel.
-
-    POST Parameters
-    ---------------
-    match_id : ID
-        Riot's match ID
-
-    Returns
-    -------
-    JSON Timeline Data
-
-    """
-    data = {}
-    status_code = 200
-    match_id = request.query_params.get("id", None)
-    match = get_object_or_404(Match, _id=match_id)
-    try:
-        timeline = match.advancedtimeline
-    except:
-        mt.import_advanced_timeline(match.id)
-        match.refresh_from_db()
-        timeline = match.advancedtimeline
-
-    data = {'data': AdvancedTimelineSerializer(timeline).data.get('frames', {})}
-    return Response(data, status=status_code)
+    def get_object(self):
+        _id = self.kwargs[self.lookup_field]
+        match = get_object_or_404(Match.objects.all().select_related('advancedtimeline'), _id=_id)
+        if not getattr(match, 'advancedtimeline', None):
+            mt.import_advanced_timeline(match.id)
+            match.refresh_from_db()
+        return match.advancedtimeline
 
 
 class MatchBanListView(ListAPIView):

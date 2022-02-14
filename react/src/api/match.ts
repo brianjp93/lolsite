@@ -16,9 +16,9 @@ axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 axios.defaults.xsrfCookieName = 'csrftoken'
 
 async function timeline(_id: string) {
-  var url = `/api/${version}/match/timeline/`
-  const response = await axios.get(url, {params: {id: _id}})
-  return unwrap(t.array(Frame).decode(response.data.data))
+  var url = `/api/${version}/match/${_id}/timeline/`
+  const response = await axios.get(url)
+  return unwrap(t.array(Frame).decode(response.data.frames))
 }
 
 interface ParticipantsData extends AxiosRequestConfig {
