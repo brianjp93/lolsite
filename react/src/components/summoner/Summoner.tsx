@@ -1,5 +1,5 @@
 import {useState, useMemo, useEffect, useCallback} from 'react'
-import {useQuery, useMutation, useQueryClient} from 'react-query'
+import {useQuery, useMutation} from 'react-query'
 import {useQueryWithPrefetch} from '../../hooks'
 import cx from 'classnames'
 import Skeleton from '../general/Skeleton'
@@ -40,7 +40,6 @@ export function Summoner({route, region, store}: {route: any; region: string; st
   const [isSpectateModalOpen, setIsSpectateModalOpen] = useState(false)
   const [isInitialQuery, setIsInitialQuery] = useState(true)
   const [page, setPage] = useState(1)
-  const queryClient = useQueryClient()
   const count = 10
 
   const match_card_height = 400
