@@ -105,7 +105,7 @@ def get_notifications(
             if is_read in [True, False]:
                 query = query.filter(is_read=is_read)
             query = query.values(
-                "comment__match__id", "comment__match__game_creation"
+                "comment__match__id", "comment__match__game_creation", "comment__match___id",
             ).annotate(Max("comment__created_date"), Count("comment"),)
             if order_by == "-created_date":
                 query = query.order_by("-comment__created_date__max")

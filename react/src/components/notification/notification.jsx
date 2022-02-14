@@ -39,8 +39,7 @@ export function NotificationGroup(props) {
     }, [is_read, group])
 
     const goToMatch = useCallback(() => {
-        const data = { match_id_internal: group.comment__match__id }
-        api.match.getMatch(data).then(response => {
+        api.match.getMatch(group.comment__match___id).then(response => {
             const match_url = response.data.data.url
             if (match_url.length === 0) {
             } else {

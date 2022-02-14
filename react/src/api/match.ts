@@ -46,9 +46,9 @@ async function checkForLiveGame(data: any) {
   return await axios.post(url, data)
 }
 
-async function getMatch(data: any) {
-  var url = `/api/${version}/match/get/`
-  return await axios.post(url, data)
+async function getMatch(match_id: string) {
+  var url = `/api/${version}/match/${match_id}/`
+  return await axios.get(url)
 }
 
 async function getMatchesBySummonerName({

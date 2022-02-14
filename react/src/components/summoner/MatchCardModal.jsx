@@ -35,7 +35,7 @@ function MatchCardModal(props) {
 
   const matchQuery = useQuery(
     ['full-match', match_id],
-    () => api.match.getMatch({match_id}).then((response) => response.data.data),
+    () => api.match.getMatch(match_id).then((response) => response.data),
     {retry: false, refetchOnWindowFocus: false},
   )
   const match = matchQuery.isSuccess ? matchQuery.data : {}

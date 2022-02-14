@@ -20,3 +20,6 @@ class Notification(models.Model):
 
     def get_match_id(self):
         return self.comment.match.id
+
+    def external_id(self):
+        return self.comment.match._id

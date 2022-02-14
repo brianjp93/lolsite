@@ -2,7 +2,7 @@
 """
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
@@ -124,53 +124,22 @@ class MatchBanListView(ListAPIView):
         return qs
 
 
-@api_view(["POST"])
-def get_match(request, format=None):
-    """Get a match and basic data about it.
+class MatchView(RetrieveAPIView):
+    serializer_class = MatchSerializer
+    queryset = Match
+    lookup_field = '_id'
 
-    Parameters
-    ----------
-    match_id : int
-    match_id_internal : int
-
-    Returns
-    -------
-    JSON
-
-    """
-    data = {}
-    status_code = 200
-    if request.method == "POST":
-        match_id = request.data.get("match_id")
-        match_id_internal = request.data.get("match_id_internal")
-
-        if match_id is not None:
-            query = Match.objects.filter(_id=match_id)
-        else:
-            query = Match.objects.filter(id=match_id_internal)
-
-        if query:
-            match: Match = query[0]
-            if request.user.is_authenticated:
-                op_summoners = [
-                    x
-                    for x in Summoner.objects.filter(summonerlinks__user=request.user)
-                    if x.summonerlinks.get(user=request.user).verified is True
-                ]
-            else:
-                op_summoners = []
-            summoner_name = None
-            if part := match.is_summoner_in_game(op_summoners):
-                summoner_name = part.summoner_name_simplified
-            serializer = MatchSerializer(match, summoner_name=summoner_name)
-            data = {"data": serializer.data}
-        else:
-            data = {"message": "Match not found."}
-            status_code = 404
-    else:
-        data = {"message": "Only POST allowed."}
-        status_code = 403
-    return Response(data, status=status_code)
+    def get_serializer(self, *args, **kwargs):
+        match = args[0]
+        op_summoners = []
+        if self.request.user.is_authenticated:
+            op_summoners = [
+                x for x in Summoner.objects.filter(summonerlinks__user=self.request.user)
+                if x.summonerlinks.get(user=self.request.user).verified is True
+            ]
+        if part := match.is_summoner_in_game(op_summoners):
+            kwargs['summoner_name'] = part.summoner_name_simplified
+        return super().get_serializer(*args, **kwargs)
 
 
 class ParticipantsView(ListAPIView):

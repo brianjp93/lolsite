@@ -8,6 +8,7 @@ from notification.models import Notification
 
 class NotificationSerializer(DynamicSerializer):
     get_match_id = serializers.IntegerField()
+    external_id = serializers.CharField()
     comment = CommentSerializer()
 
     class Meta:
