@@ -61,7 +61,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
       summoner_name: params.summoner_name || null,
       id: params.id || null,
       region: region,
-      queue: matchFilters?.queue,
+      queue: matchFilters?.queue || '',
       start,
       limit: count,
       sync_import: false,

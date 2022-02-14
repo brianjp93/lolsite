@@ -8,7 +8,7 @@ interface CustomWindow extends Window {
 declare let window: CustomWindow
 
 export interface MatchFilterFormType {
-  queue: number
+  queue: number | string
   champion: string
   startDate: string
   endDate: string
@@ -36,7 +36,7 @@ export function MatchFilterForm({onUpdate}: {onUpdate: (data?: MatchFilterFormTy
       <form>
         <div className="input-field dark">
           <select {...form.register('queue')}>
-            <option value="">any</option>
+            <option value=''>any</option>
             {queuefilter.map((item) => {
               return (
                 <Fragment key={item.id}>

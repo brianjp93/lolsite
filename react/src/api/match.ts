@@ -64,7 +64,7 @@ async function getMatchesBySummonerName({
   sync_import?: boolean,
   start?: number
   limit?: number
-  queue?: number,
+  queue?: number | string,
 }) {
   const url = `/api/${version}/match/by-summoner/${region}/${summoner_name}/`
   const params = {
