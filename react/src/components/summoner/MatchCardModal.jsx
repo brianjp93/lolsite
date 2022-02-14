@@ -46,6 +46,7 @@ function MatchCardModal(props) {
     {
       retry: false,
       refetchOnWindowFocus: false,
+      enabled: match_id !== undefined,
     },
   )
 
