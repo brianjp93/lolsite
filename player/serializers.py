@@ -53,6 +53,8 @@ class ReputationSerializer(serializers.ModelSerializer):
         - Users should only be able to rate a player's Reputation if they have played a game together.
 
         """
+        if not user.is_authenticated:
+            return False
         user_summoners = Summoner.objects.filter(
             summonerlinks__user=user,
         ).values_list('puuid')
