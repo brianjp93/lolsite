@@ -29,7 +29,7 @@ function matchHighlightColor(queue_id) {
         out = 'highlight1'
     }
     // norms draft
-    else if (queue_id === 400) {
+    else if ([400, 0].includes(queue_id)) {
         out = ''
     }
     // ranked 5v5 flex
@@ -37,15 +37,15 @@ function matchHighlightColor(queue_id) {
         out = 'highlight2'
     }
     // aram
-    else if ([100, 450].indexOf(queue_id >= 0)) {
+    else if ([100, 450].includes(queue_id)) {
         out = 'highlight3'
-    } else if ([900, 1010].indexOf(queue_id >= 0)) {
+    } else if ([900, 1010].includes(queue_id)) {
         out = 'highlight4'
     }
     // 3v3 ranked
-    else if ([470].indexOf(queue_id >= 0)) {
+    else if ([470].includes(queue_id)) {
         out = 'highlight5'
-    } else if ([850].indexOf(queue_id >= 0)) {
+    } else if ([850].includes(queue_id)) {
         out = 'highlight6'
     }
     return out
