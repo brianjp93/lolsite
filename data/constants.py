@@ -112,7 +112,7 @@ QUEUES = [
     {
         "_id": 0,
         "_map": "Custom games",
-        "description": "",
+        "description": "Custom games",
     },
     {
         "_id": 2,
