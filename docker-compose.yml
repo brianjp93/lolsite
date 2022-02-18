@@ -29,7 +29,6 @@ services:
       - react
       - redis
     stdin_open: true
-    tty: true
   worker:
     restart: always
     build:

@@ -59,7 +59,7 @@ class MatchBySummoner(ListAPIView):
             participants__puuid=summoner.puuid,
             is_fully_imported=True,
         )
-        if queue:
+        if isinstance(queue, int):
             qs = qs.filter(queue_id=queue)
 
         with_names = [
