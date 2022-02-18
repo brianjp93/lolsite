@@ -1,6 +1,7 @@
 """player.viewsapi
 """
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
+from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView
@@ -1343,6 +1344,7 @@ def edit_default_summoner(request, format=None):
 class ReputationRetrieveAPIView(RetrieveAPIView):
     serializer_class = ReputationSerializer
     lookup_field = 'summoner_pk'
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         qs = Reputation.objects.filter(
