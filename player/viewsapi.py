@@ -94,7 +94,7 @@ class SummonerByNameView(RetrieveAPIView):
     serializer_class = SummonerSerializer
 
     def get_object(self):
-        name = pt.simplify(self.kwargs['name'])
+        name = pt.simplify(self.kwargs[self.lookup_field])
         region = self.kwargs['region']
         summoner = Summoner.objects.filter(
             simple_name=name,
@@ -168,7 +168,7 @@ def get_positions(request, format=None):
             data = {"data": pos_data}
             status_code = 200
         except Exception:
-            logger.exception(traceback.format_exc())
+            logger.exception('Error while trying to serialize rank positions.')
             data = {"data": []}
             status_code = 200
     else:

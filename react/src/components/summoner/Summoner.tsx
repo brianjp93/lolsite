@@ -77,6 +77,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
       refetchOnWindowFocus: false,
     },
   )
+  const summonerQueryRefetch = summonerQuery.refetch
 
   const matchQuery = useQueryWithPrefetch(
     ['matches', 'by-summoner', filterParams],
@@ -155,7 +156,8 @@ export function Summoner({route, region, store}: {route: any; region: string; st
     setPage(1)
     matchQueryRefetch()
     matchQueryWithSyncRefetch()
-  }, [setPage, matchQueryRefetch, matchQueryWithSyncRefetch])
+    summonerQueryRefetch()
+  }, [setPage, matchQueryRefetch, matchQueryWithSyncRefetch, summonerQueryRefetch])
 
   // refresh page if the summoner changes
   useEffect(() => {
