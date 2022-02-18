@@ -7,12 +7,23 @@ import {
   Summoner,
   SummonerSearch,
   Reputation,
+  User,
 } from '../types'
 
 let version = 'v1'
 
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 axios.defaults.xsrfCookieName = 'csrftoken'
+
+
+async function getMyUser() {
+  const url = `/api/${version}/player/me/`
+  const response = await axios.get(url)
+  if (response.data.email) {
+    return unwrap(User.decode(response.data))
+  }
+  return null
+}
 
 function getSummoner(data: any) {
   let url = `/api/${version}/player/summoner/`
@@ -225,5 +236,6 @@ const exports = {
   getReputation,
   createReputation,
   updateReputation,
+  getMyUser,
 }
 export default exports

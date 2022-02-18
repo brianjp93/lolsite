@@ -119,6 +119,14 @@ class FavoriteSerializer(DynamicSerializer):
         fields = "__all__"
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'email',
+        ]
+
+
 class CommentSerializer(DynamicSerializer):
     summoner = SummonerSerializer()
 

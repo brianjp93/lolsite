@@ -39,6 +39,7 @@ export {
   TopPlayedWithPlayer,
   SummonerSearch,
   Reputation,
+  User,
 } from './iotypes/player'
 export type {
   SummonerType,
@@ -46,6 +47,7 @@ export type {
   TopPlayedWithPlayerType,
   SummonerSearchType,
   ReputationType,
+  UserType,
 } from './iotypes/player'
 
 export {

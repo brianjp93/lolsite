@@ -1,6 +1,12 @@
 import * as t from 'io-ts'
 import {optional, maybe} from './base'
 
+
+export const User = t.type({
+  email: t.string,
+})
+export type UserType = t.TypeOf<typeof User>
+
 export const Position = t.type({
   checkpoint: t.number,
   fresh_blood: t.boolean,

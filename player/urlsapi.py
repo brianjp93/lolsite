@@ -3,6 +3,7 @@ from . import viewsapi as player_views
 from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
+    path('me/', player_views.MyUserView.as_view(), name='me'),
     path(
         "reputation/<int:summoner_pk>/",
         player_views.ReputationRetrieveAPIView.as_view(),

@@ -9,7 +9,7 @@ from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIVie
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.core.cache import cache
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db.models.functions import Extract
 from django.db.models import Max, Min, F
 from django.shortcuts import get_object_or_404
@@ -38,12 +38,14 @@ from .models import Summoner
 from .serializers import (
     SummonerSerializer, RankPositionSerializer,
     FavoriteSerializer, CommentSerializer,
-    ReputationSerializer,
+    ReputationSerializer, UserSerializer,
 )
 
 import random
 import logging
 import traceback
+
+User = get_user_model()
 
 
 logger = logging.getLogger(__name__)
@@ -88,6 +90,13 @@ def get_summoner(request, format=None):
             data["error"] = "No summoner found"
             status_code = 400
     return Response(data, status=status_code)
+
+
+class MyUserView(RetrieveAPIView):
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
 
 
 class SummonerByNameView(RetrieveAPIView):

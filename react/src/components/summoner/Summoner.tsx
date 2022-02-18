@@ -1,6 +1,6 @@
 import {useState, useMemo, useEffect, useCallback} from 'react'
 import {useQuery, useMutation} from 'react-query'
-import {useQueryWithPrefetch} from '../../hooks'
+import {useQueryWithPrefetch, useUser} from '../../hooks'
 import cx from 'classnames'
 import Skeleton from '../general/Skeleton'
 import ReactGA from 'react-ga'
@@ -430,6 +430,7 @@ function SummonerCard({
   region: string
 }) {
   const [timeDesc, setTimeDesc] = useState('')
+  const user = useUser()
   const generalRankImage = (tier: string) => {
     const tier_convert = {
       iron: 'Iron',
@@ -475,8 +476,7 @@ function SummonerCard({
 
   const reputation = useQuery([summoner?.id], () => api.player.getReputation(summoner.id), {
     retry: false,
-    enabled: !!summoner?.id,
-    refetchInterval: 60_000,
+    enabled: !!summoner?.id && !!user,
     refetchOnWindowFocus: false,
   })
 
@@ -490,7 +490,6 @@ function SummonerCard({
     },
     {
       onSuccess: () => {
-        console.log('you did it.')
         reputation.refetch()
       },
     },

@@ -9,7 +9,7 @@ import {
 } from 'react-query'
 import api from './api/api'
 
-import {ChampionType} from './types'
+import {ChampionType, UserType} from './types'
 
 export function useDebounce<V>(value: V, delay: number) {
   // State and setters for debounced value
@@ -30,6 +30,15 @@ export function useDebounce<V>(value: V, delay: number) {
     [value, delay], // Only re-call effect if value or delay changes
   )
   return debouncedValue
+}
+
+export function useUser(): UserType | null {
+  const userQuery = useQuery(
+    'my-user',
+    api.player.getMyUser,
+    {retry: false, refetchOnWindowFocus: false, staleTime: 1000 * 60 * 10}
+  )
+  return userQuery.data || null
 }
 
 export function useChampions(): Record<number, ChampionType> {
