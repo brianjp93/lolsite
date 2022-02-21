@@ -49,12 +49,18 @@ class MatchBySummoner(ListAPIView):
         limit: int = self.paginator.get_limit(self.request)
 
         summoner_query = Summoner.objects.filter(simple_name=name, region=region)
-        if not summoner_query:
-            pt.import_summoner(region, name=name)
+        if len(summoner_query) == 0:
+            summoner_id = pt.import_summoner(region, name=name)
+            summoner = get_object_or_404(Summoner, id=summoner_id)
+        elif len(summoner_query) >= 2:
+            for summoner in summoner_qs:
+                pt.import_summoner(region, puuid=summoner.puuid)
+            summoner = get_object_or_404(Summoner, region=region, simple_name=name)
         else:
             # update in the background if we already have the user imported
             pt.import_summoner.delay(region, name=name)
-        summoner = get_object_or_404(Summoner, simple_name=name, region=region)
+            summoner = summoner_query[0]
+
         qs = qs.filter(
             participants__puuid=summoner.puuid,
             is_fully_imported=True,
