@@ -18,38 +18,6 @@ from django.shortcuts import get_object_or_404
 
 
 @api_view(["POST"])
-def get_profile_icon(request, format=None):
-    """
-
-    POST Parameters
-    ---------------
-    profile_icon_id : str
-    language : str
-
-    Returns
-    -------
-    JSON Profile Icon Model
-
-    """
-    data = {}
-    status_code = 200
-
-    profile_icon_id = request.data.get("profile_icon_id", None)
-    # language = request.data.get('language', None)
-
-    if request.method == "POST":
-        query: QuerySet[ProfileIcon] = ProfileIcon.objects.filter(_id=profile_icon_id)
-        query = query.order_by("-major", "-minor", "-patch")
-        if profile_icon := query.first():
-            serializer = ProfileIconSerializer(profile_icon)
-            data["data"] = serializer.data
-        else:
-            data["error"] = "Couldn't find a ProfileIcon with the id given."
-            status_code = 404
-    return Response(data, status=status_code)
-
-
-@api_view(["POST"])
 def get_item(request, format=None):
     """
 

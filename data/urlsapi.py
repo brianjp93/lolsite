@@ -3,7 +3,6 @@ from data import viewsapi as data_views
 from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
-    path("profile-icon/", data_views.get_profile_icon),
     path("item/", data_views.get_item),
     path("items/", data_views.all_items),
     path("item-history/<slug:_id>/", data_views.get_item_history),
