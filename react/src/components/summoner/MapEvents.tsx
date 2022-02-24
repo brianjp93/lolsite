@@ -3,8 +3,6 @@ import ReactDOMServer from 'react-dom/server'
 import {buildings_default} from '../../constants/buildings'
 import ReactTooltip from 'react-tooltip'
 
-const SWORD = 'https://www.svgrepo.com/show/105378/sword.svg'
-
 import type {
   FullMatchType,
   FrameType,
@@ -15,6 +13,8 @@ import type {
   TurretPlateDestroyedEventType,
   VictimDamageType,
 } from '../../types'
+
+const SWORD = 'https://www.svgrepo.com/show/105378/sword.svg'
 
 function mapAssistName(name: string) {
   if (name.match(/sru.*minion/i)) {
