@@ -137,7 +137,7 @@ def import_match_from_data(data, refresh=False, region=""):
             Match.objects.get(_id=match_data["_id"]).delete()
             match_model.save()
         else:
-            logging.exception('Attempting to import game which was already imported.')
+            logging.exception("Attempting to import game which was already imported.")
             return
 
     participants_data = parsed.pop("participants")
@@ -184,7 +184,7 @@ def import_match_from_data(data, refresh=False, region=""):
         # BANS
         bans = []
         for _ban_data in _bans:
-            _ban_data['team'] = team_model
+            _ban_data["team"] = team_model
             bans.append(Ban(**_ban_data))
         try:
             Ban.objects.bulk_create(bans)
@@ -777,6 +777,7 @@ def get_frame_event_types():
                 "tower_type": "towerType",
                 "x": "position__x",
                 "y": "position__y",
+                "bounty": "bounty",
             },
         },
         "GAME_END": {
@@ -793,6 +794,7 @@ def get_frame_event_types():
             "events": [],
             "mapping": {
                 "bounty": "bounty",
+                "shutdown_bounty": "shutdownBounty",
                 "kill_streak_length": "killStreakLength",
                 "killer_id": "killerId",
                 "victim_id": "victimId",

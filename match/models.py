@@ -757,6 +757,7 @@ class BuildingKillEvent(Event):
         models.PositiveSmallIntegerField(), null=True
     )
     building_type = models.CharField(max_length=32)
+    bounty = models.PositiveIntegerField(default=0, blank=True)
     killer_id = models.PositiveSmallIntegerField()
     lane_type = models.CharField(max_length=32)
     x = models.PositiveIntegerField()
@@ -773,6 +774,7 @@ class GameEndEvent(Event):
 
 class ChampionKillEvent(Event):
     bounty = models.PositiveSmallIntegerField()
+    shutdown_bounty = models.PositiveIntegerField(default=0, blank=True)
     kill_streak_length = models.PositiveSmallIntegerField()
     killer_id = models.PositiveSmallIntegerField()
     victim_id = models.PositiveSmallIntegerField()
