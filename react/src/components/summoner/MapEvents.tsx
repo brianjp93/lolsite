@@ -16,6 +16,17 @@ import type {
   VictimDamageType,
 } from '../../types'
 
+function mapAssistName(name: string) {
+  if (name.match(/sru.*minion/i)) {
+    return 'Minions'
+  } else if (name.match(/sru.*turret/i)) {
+    return 'Tower'
+  } else if (name.match(/sru.*red/i)) {
+    return 'Red Buff'
+  }
+  return name
+}
+
 export function MapEvents(props: {
   summoner: any
   match: FullMatchType
@@ -354,13 +365,6 @@ function EventBubble({
                     src={part_dict[ev.killer_id].champion?.image?.file_40}
                     alt=""
                   />
-                  {getKillAssists(championKillEvent.victimdamagereceived_set).map((item) => {
-                    return (
-                      <div key={item.name}>
-                        {item.name}: {item.damage} dmg
-                      </div>
-                    )
-                  })}
                 </div>
               )}
               {ev.killer_id === 0 && <div>Executed</div>}
@@ -379,6 +383,28 @@ function EventBubble({
                 src={part_dict[championKillEvent.victim_id].champion?.image?.file_40}
                 alt=""
               />
+              <div className="row col s12">
+                {getKillAssists(championKillEvent.victimdamagereceived_set)
+                  .sort((a, b) => b.damage - a.damage)
+                  .map((item) => {
+                    return (
+                      <div style={{marginBottom:0}} className='row' key={item.name}>
+                        <div className="col s6">
+                          {mapAssistName(item.name)}
+                        </div>
+                        <div className="col s6">
+                          : {item.damage}
+                        </div>
+                      </div>
+                    )
+                  })}
+              </div>
+              <div className="row col s12">
+                <div>
+                  Kill Gold: <b>{championKillEvent.bounty + championKillEvent.shutdown_bounty}</b> (
+                  {championKillEvent.bounty} + {championKillEvent.shutdown_bounty})
+                </div>
+              </div>
             </div>
           )}
 

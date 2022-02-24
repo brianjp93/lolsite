@@ -583,6 +583,7 @@ class BuildingKillEventSerializer(serializers.ModelSerializer):
         model = models.BuildingKillEvent
         fields = [
             'timestamp',
+            'bounty',
             'assisting_participant_ids',
             'building_type',
             'killer_id',
@@ -637,6 +638,7 @@ class ChampionKillEventSerializer(serializers.ModelSerializer):
         fields = [
             'timestamp',
             'bounty',
+            'shutdown_bounty',
             'kill_streak_length',
             'killer_id',
             'victim_id',

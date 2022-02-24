@@ -484,6 +484,7 @@ export const BuildingKillEvent = t.type({
   timestamp: t.number,
   assisting_participant_ids: optional(t.array(t.number)),
   building_type: t.string,
+  bounty: t.number,
   killer_id: t.number,
   lane_type: t.string,
   x: t.number,
@@ -510,6 +511,7 @@ export type VictimDamageType = t.TypeOf<typeof VictimDamage>
 export const ChampionKillEvent = t.type({
   timestamp: t.number,
   bounty: t.number,
+  shutdown_bounty: t.number,
   kill_streak_length: t.number,
   killer_id: t.number,
   victim_id: t.number,
