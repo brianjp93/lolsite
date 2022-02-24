@@ -23,6 +23,12 @@ function mapAssistName(name: string) {
     return 'Tower'
   } else if (name.match(/sru.*red/i)) {
     return 'Red Buff'
+  } else if (name.match(/sru.*wolf/i)) {
+    return 'Wolves'
+  } else if (name.match(/sru.*razorbeak/i)) {
+    return 'Birds'
+  } else if (name.match(/sru.*blue/i)) {
+    return 'Blue Buff'
   }
   return name
 }
