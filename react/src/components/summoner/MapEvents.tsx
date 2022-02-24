@@ -1,5 +1,10 @@
 import React, {useState, useEffect, useCallback} from 'react'
+import ReactDOMServer from 'react-dom/server'
 import {buildings_default} from '../../constants/buildings'
+import ReactTooltip from 'react-tooltip'
+
+const SWORD = 'https://www.svgrepo.com/show/105378/sword.svg'
+
 import type {
   FullMatchType,
   FrameType,
@@ -37,6 +42,8 @@ export function MapEvents(props: {
   const max_x = 15300
   const max_y = 15000
   const slice = timeline[index]
+
+  ReactTooltip.rebuild()
 
   function getPosition(x: number, y: number): [number, number] {
     let x_val = (x / max_x) * image_size
@@ -260,7 +267,6 @@ function EventBubble({
   pos: [number, number]
   part_dict: Record<number, FullParticipantType>
 }) {
-  const [is_open, setIsOpen] = useState(false)
   const ev =
     buildingKillEvent || championKillEvent || turretPlateDestroyedEvent || eliteMonsterKillEvent
   if (!ev) {
@@ -276,7 +282,7 @@ function EventBubble({
     const victim = part_dict[championKillEvent.victim_id]
     team_id = victim.team_id === 100 ? 200 : 100
   } else if (turretPlateDestroyedEvent) {
-    team_id = turretPlateDestroyedEvent.team_id
+    team_id = turretPlateDestroyedEvent.team_id === 100 ? 200 : 100
   } else if (eliteMonsterKillEvent) {
     team_id = eliteMonsterKillEvent.killer_team_id
   } else {
@@ -327,8 +333,7 @@ function EventBubble({
   return (
     <div
       key={`event-${ev.x}-${ev.y}`}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      data-html={true}
       style={{
         background: bubble_color,
         width: size,
@@ -338,136 +343,108 @@ function EventBubble({
         position: 'absolute',
         borderRadius: '50%',
       }}
-    >
-      <div style={{position: 'relative'}}>
-        {is_open && (
-          <div
-            // onMouseEnter={() => setIsOpen(false)}
-            style={{
-              width: 300,
-              height: 100,
-              position: 'absolute',
-              bottom: 5,
-              left: -140,
-              background: 'black',
-              borderRadius: 8,
-              textAlign: 'center',
-              zIndex: 20,
-            }}
-          >
-            {championKillEvent && (
-              <div style={div_style}>
-                {ev.killer_id !== 0 && (
-                  <div style={{display: 'inline-block'}}>
-                    <img
-                      style={img_style}
-                      src={part_dict[ev.killer_id].champion?.image?.file_40}
-                      alt=""
-                    />
-                    {getKillAssists(championKillEvent.victimdamagereceived_set).map((item) => {
-                      return (
-                        <div key={item.name}>
-                          {item.name}: {item.damage} dmg
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-                {ev.killer_id === 0 && <div>Executed</div>}
-                <div
-                  style={{
-                    display: 'inline-block',
-                    background: 'white',
-                    borderRadius: 8,
-                    margin: '0px 5px',
-                  }}
-                >
-                  <img
-                    style={sword_style}
-                    src="https://image.flaticon.com/icons/svg/65/65741.svg"
-                    alt=""
-                  />
-                </div>
-                <img
-                  style={img_style}
-                  src={part_dict[championKillEvent.victim_id].champion?.image?.file_40}
-                  alt=""
-                />
-              </div>
-            )}
-
-            {eliteMonsterKillEvent && (
-              <div style={div_style}>
-                {ev.killer_id !== 0 && (
-                  <React.Fragment>
-                    <img
-                      style={img_style}
-                      src={part_dict[ev.killer_id].champion?.image?.file_40}
-                      alt=""
-                    />
-                    <div style={{display: 'inline-block', margin: '0px 8px'}}> killed </div>
-                    <span>{eliteMonsterKillEvent.monster_type}</span>
-                  </React.Fragment>
-                )}
-                {ev.killer_id === 0 && (
-                  <div style={{display: 'inline-block'}}>
-                    {eliteMonsterKillEvent.monster_type} executed
-                  </div>
-                )}
-              </div>
-            )}
-
-            {buildingKillEvent && (
-              <div style={div_style}>
-                {ev.killer_id !== 0 && (
+      data-tip={ReactDOMServer.renderToString(
+        <div>
+          {championKillEvent && (
+            <div style={div_style}>
+              {ev.killer_id !== 0 && (
+                <div style={{display: 'inline-block'}}>
                   <img
                     style={img_style}
                     src={part_dict[ev.killer_id].champion?.image?.file_40}
                     alt=""
                   />
-                )}
-                {!ev.killer_id && <div style={{display: 'inline-block'}}>minions</div>}
-                <div
-                  style={{
-                    display: 'inline-block',
-                    background: 'white',
-                    borderRadius: 8,
-                    margin: '0px 5px',
-                  }}
-                >
-                  <img
-                    style={sword_style}
-                    src="https://image.flaticon.com/icons/svg/65/65741.svg"
-                    alt=""
-                  />
+                  {getKillAssists(championKillEvent.victimdamagereceived_set).map((item) => {
+                    return (
+                      <div key={item.name}>
+                        {item.name}: {item.damage} dmg
+                      </div>
+                    )
+                  })}
                 </div>
-                <span>structure</span>
+              )}
+              {ev.killer_id === 0 && <div>Executed</div>}
+              <div
+                style={{
+                  display: 'inline-block',
+                  background: 'white',
+                  borderRadius: 8,
+                  margin: '0px 5px',
+                }}
+              >
+                <img style={sword_style} src={SWORD} alt="" />
               </div>
-            )}
+              <img
+                style={img_style}
+                src={part_dict[championKillEvent.victim_id].champion?.image?.file_40}
+                alt=""
+              />
+            </div>
+          )}
 
-            {turretPlateDestroyedEvent && (
-              <div style={div_style}>
-                <div
-                  style={{
-                    display: 'inline-block',
-                    background: 'white',
-                    borderRadius: 8,
-                    margin: '0px 5px',
-                  }}
-                >
+          {eliteMonsterKillEvent && (
+            <div style={div_style}>
+              {ev.killer_id !== 0 && (
+                <React.Fragment>
                   <img
-                    style={sword_style}
-                    src="https://image.flaticon.com/icons/svg/65/65741.svg"
+                    style={img_style}
+                    src={part_dict[ev.killer_id].champion?.image?.file_40}
                     alt=""
                   />
+                  <div style={{display: 'inline-block', margin: '0px 8px'}}> killed </div>
+                  <span>{eliteMonsterKillEvent.monster_type}</span>
+                </React.Fragment>
+              )}
+              {ev.killer_id === 0 && (
+                <div style={{display: 'inline-block'}}>
+                  {eliteMonsterKillEvent.monster_type} executed
                 </div>
-                <span>Turret Plating</span>
+              )}
+            </div>
+          )}
+
+          {buildingKillEvent && (
+            <div style={div_style}>
+              {ev.killer_id !== 0 && (
+                <img
+                  style={img_style}
+                  src={part_dict[ev.killer_id].champion?.image?.file_40}
+                  alt=""
+                />
+              )}
+              {!ev.killer_id && <div style={{display: 'inline-block'}}>minions</div>}
+              <div
+                style={{
+                  display: 'inline-block',
+                  background: 'white',
+                  borderRadius: 8,
+                  margin: '0px 5px',
+                }}
+              >
+                <img style={sword_style} src={SWORD} alt="" />
               </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+              <span>structure</span>
+            </div>
+          )}
+
+          {turretPlateDestroyedEvent && (
+            <div style={div_style}>
+              <div
+                style={{
+                  display: 'inline-block',
+                  background: 'white',
+                  borderRadius: 8,
+                  margin: '0px 5px',
+                }}
+              >
+                <img style={sword_style} src={SWORD} alt="" />
+              </div>
+              <span>Turret Plating</span>
+            </div>
+          )}
+        </div>,
+      )}
+    ></div>
   )
 }
 

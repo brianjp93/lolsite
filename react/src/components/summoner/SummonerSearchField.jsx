@@ -20,6 +20,7 @@ class SummonerSearchField extends Component {
         this.search = this.search.bind(this)
     }
     componentDidMount() {
+        ReactTooltip.rebuild()
         window.addEventListener('keydown', this.handleKeyListener)
         try {
             if (this.props.start_with_focus) {
@@ -90,14 +91,8 @@ class SummonerSearchField extends Component {
                     style={{marginBottom: 0}}
                     className='row'>
                     <div className="col m2 s3">
-                        <ReactTooltip
-                            id='region-select-tooltip'
-                            effect='solid' >
-                            <span>Select Region</span>
-                        </ReactTooltip>
                         <div
-                            data-tip
-                            data-for='region-select-tooltip'
+                            data-tip='Select Region'
                             className={`input-field ${store.state.theme}`}>
                             <select
                                 onChange={(event) => store.setState({region_selected: event.target.value})}
@@ -119,14 +114,8 @@ class SummonerSearchField extends Component {
                         </div>
                     </div>
                     <div className="col m10 s9">
-                            <ReactTooltip
-                                id='search-field-tooltip'
-                                effect='solid' >
-                                <span>Press "/" to focus the search field.</span>
-                            </ReactTooltip>
                             <div
-                                data-tip
-                                data-for='search-field-tooltip'
+                                data-tip='Press "/" to focus the search field.'
                                 className="input-field">
                                 <input
                                     ref={(elt) => {this.input = elt}}

@@ -511,6 +511,10 @@ function SummonerCard({
 
   const isFavorite = store.state.favorites.filter((x: any) => x.summoner === summoner.id).length > 0
 
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  }, [isFavorite])
+
   const toggleFavorite = useMutation(
     async () => {
       return api.player
@@ -708,9 +712,6 @@ function SummonerCard({
 
           {store.state.user.email !== undefined && (
             <>
-              <ReactTooltip effect="solid" id="favorite-button">
-                <span>{isFavorite ? 'Remove favorite' : 'Set favorite'}</span>
-              </ReactTooltip>
               <span
                 style={{
                   position: 'absolute',
@@ -719,8 +720,7 @@ function SummonerCard({
                 }}
               >
                 <button
-                  data-tip
-                  data-for="favorite-button"
+                  data-tip={isFavorite ? 'Remove favorite' : 'Set favorite'}
                   className="dark btn-small"
                   onClick={() => toggleFavorite.mutate()}
                 >

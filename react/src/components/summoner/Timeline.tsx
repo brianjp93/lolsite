@@ -62,14 +62,18 @@ function Timeline(props: {
 
   function getBigEvents(index: number) {
     let events = getEvents(index)
-    let include_events = new Set(['CHAMPION_KILL', 'BUILDING_KILL', 'ELITE_MONSTER_KILL', 'TURRET_PLATE_DESTROYED'])
+    let include_events = new Set([
+      'CHAMPION_KILL',
+      'BUILDING_KILL',
+      'ELITE_MONSTER_KILL',
+      'TURRET_PLATE_DESTROYED',
+    ])
     let big_events = []
     for (let event of events) {
       if (include_events.has(event._type)) {
         if (event.killer_id !== 0) {
           big_events.push(event)
-        }
-        else if (event._type === 'TURRET_PLATE_DESTROYED') {
+        } else if (event._type === 'TURRET_PLATE_DESTROYED') {
           big_events.push(event)
         }
       }
@@ -141,7 +145,7 @@ function Timeline(props: {
         team_id = part.team_id
       }
     } else if (event._type === 'TURRET_PLATE_DESTROYED') {
-      return event.team_id
+      return event.team_id === 100 ? 200 : 100
     }
     return team_id
   }
@@ -239,7 +243,6 @@ function Timeline(props: {
     }
   }, [props.timeline_index])
 
-
   const getMonsterLabel = (event: EliteMonsterKillEventType) => {
     if (event.monster_type === 'DRAGON') {
       if (event.monster_sub_type === 'EARTH_DRAGON') {
@@ -261,10 +264,10 @@ function Timeline(props: {
       return <span>big scuttle</span>
     } else {
       return (
-          <span>
+        <span>
           {event.monster_type} {event.monster_sub_type}
-          </span>
-          )
+        </span>
+      )
     }
   }
 
@@ -473,17 +476,13 @@ function Timeline(props: {
 
                   {event._type === 'TURRET_PLATE_DESTROYED' && (
                     <span>
-                      <span>
-                        team
-                      </span>{' '}
+                      <span>team</span>{' '}
                       <span>
                         <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>
                           broke
                         </span>
                       </span>{' '}
-                      <span style={{verticalAlign: 'text-bottom'}}>
-                        plating
-                      </span>
+                      <span style={{verticalAlign: 'text-bottom'}}>plating</span>
                     </span>
                   )}
 
@@ -500,9 +499,7 @@ function Timeline(props: {
                           killed
                         </span>
                       </span>{' '}
-                      <span style={{verticalAlign: 'text-bottom'}}>
-                        {getMonsterLabel(event)}
-                      </span>
+                      <span style={{verticalAlign: 'text-bottom'}}>{getMonsterLabel(event)}</span>
                     </span>
                   )}
                 </span>

@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import {BarChart, Bar, XAxis, YAxis, Tooltip, Cell} from 'recharts'
 import numeral from 'numeral'
 import ReactTooltip from 'react-tooltip'
@@ -45,6 +45,9 @@ class StatOverview extends Component {
         this.getCSPM = this.getCSPM.bind(this)
         this.getBarGraphStat = this.getBarGraphStat.bind(this)
         this.getTeam = this.getTeam.bind(this)
+    }
+    componentDidMount() {
+      ReactTooltip.rebuild()
     }
     toggle(event) {
         var select_value = event.target.value
@@ -141,14 +144,8 @@ class StatOverview extends Component {
         }
         return (
             <span>
-                <ReactTooltip
-                    id={`${value}-tooltip`}
-                    effect='solid'>
-                    <span>{tooltip}</span>
-                </ReactTooltip>
                 <label
-                    data-tip
-                    data-for={`${value}-tooltip`}
+                    data-tip={tooltip}
                     style={outer_label_style}
                     htmlFor={`${value}-${match._id}`}>
                     <input

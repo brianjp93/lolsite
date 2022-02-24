@@ -128,6 +128,7 @@ export function PlayerChampionSummary({summoner, theme}: {summoner: SummonerType
       enabled: !!params.puuid,
       staleTime: 1000 * 60 * 5,
       keepPreviousData: true,
+      onSuccess: () => ReactTooltip.rebuild(),
     },
   )
   const stats = statQuery.data || []
@@ -365,19 +366,9 @@ function ChampionData({champions, stats}: {champions: Record<number, ChampionTyp
         width: '100%',
       }}
     >
-      {champ !== undefined && (
-        <ReactTooltip id={`${champion_id}-image-tooltip`} effect="solid">
-          <span>
-            {champ.name}: {champ.title}
-          </span>
-        </ReactTooltip>
-      )}
-      {champ === undefined && (
-        <ReactTooltip id={`${champion_id}-image-tooltip`} effect="solid">
-          <span>{champion}</span>
-        </ReactTooltip>
-      )}
-      <div data-tip data-for={`${champion_id}-image-tooltip`}>
+      <div
+        data-tip={champ === undefined ? champion : `${champ.name}: ${champ.title}`}
+      >
         {champ !== undefined && (
           <img
             style={{maxHeight: 30, display: 'inline-block', borderRadius: '50%'}}
@@ -404,8 +395,8 @@ function ChampionData({champions, stats}: {champions: Record<number, ChampionTyp
           theme="dark"
           val1={wins}
           val2={losses}
-          label1={<span>{wins} Wins</span>}
-          label2={<span>{losses} Losses</span>}
+          label1={`${wins} Wins`}
+          label2={`${losses} Losses`}
         />
       </div>
 
@@ -432,39 +423,27 @@ function ChampionData({champions, stats}: {champions: Record<number, ChampionTyp
       </div>
 
       <div style={{fontSize: 'small', marginTop: 5}}>
-        <ReactTooltip id={`${champion_id}-dpm-tooltip`} effect="solid">
-          <span>Damage per Minute</span>
-        </ReactTooltip>
-        <div data-tip data-for={`${champion_id}-dpm-tooltip`}>
+        <div data-tip='Damage per Minute'>
           <span>DPM</span> : <span style={{fontWeight: 'bold'}}>{numeral(dpm).format('0,0')}</span>
         </div>
       </div>
 
       <div style={{fontSize: 'small'}}>
-        <ReactTooltip id={`${champion_id}-dtpd-tooltip`} effect="solid">
-          <span>Damage Taken per Death</span>
-        </ReactTooltip>
-        <div data-tip data-for={`${champion_id}-dtpd-tooltip`}>
+        <div data-tip='Damage Taken per Death'>
           <span>DT/D</span> :{' '}
           <span style={{fontWeight: 'bold'}}>{numeral(dtpd).format('0,0')}</span>
         </div>
       </div>
 
       <div style={{fontSize: 'small'}}>
-        <ReactTooltip id={`${champion_id}-cs-tooltip`} effect="solid">
-          <span>CS per Minute</span>
-        </ReactTooltip>
-        <div data-tip data-for={`${champion_id}-cs-tooltip`}>
+        <div data-tip='CS per Minute'>
           <span>CS/M</span> :{' '}
           <span style={{fontWeight: 'bold'}}>{numeral(cspm).format('0.00')}</span>
         </div>
       </div>
 
       <div style={{fontSize: 'small'}}>
-        <ReactTooltip id={`${champion_id}-vs-tooltip`} effect="solid">
-          <span>Vision Score per Minute</span>
-        </ReactTooltip>
-        <div data-tip data-for={`${champion_id}-vs-tooltip`}>
+        <div data-tip='Vision Score per Minute'>
           <span>VS/M</span> :{' '}
           <span style={{fontWeight: 'bold'}}>{numeral(vspm).format('0.00')}</span>
         </div>

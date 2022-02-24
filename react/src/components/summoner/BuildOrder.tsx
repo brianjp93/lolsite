@@ -1,4 +1,5 @@
 import {useState, useEffect, useMemo, useCallback} from 'react'
+import ReactDOMServer from 'react-dom/server'
 import numeral from 'numeral'
 import ReactTooltip from 'react-tooltip'
 import api from '../../api/api'
@@ -206,6 +207,10 @@ function BuildOrder(props: {
     }
   }, [participant_selection, purchase_history, items])
 
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  }, [participant_selection, purchase_history, display_page, items])
+
   let count = 0
   let lines = 1
   return (
@@ -280,7 +285,6 @@ function BuildOrder(props: {
                   )}
                   <div>
                     {Object.values(group).map((event, sub_key) => {
-                      // let event = group[item_id]
                       if (event._type !== 'ITEM_UNDO' && items[event.item_id] !== undefined) {
                         let image_style = {}
                         let action = 'purchased'
@@ -307,32 +311,32 @@ function BuildOrder(props: {
                                 position: 'relative',
                               }}
                             >
-                              <ReactTooltip
-                                id={`${props.match_id}-${item_data._id}-${key}-${sub_key}-tt`}
-                                effect="solid"
-                              >
-                                <h4 style={{marginBottom: 0, marginTop: 0}}>{item_data.name}</h4>
-
-                                <div style={{marginBottom: 15}}>
-                                  {action} at {minutes}:{numeral(seconds).format('00')}.
-                                </div>
-
-                                <div
-                                  className="item-description-tt"
-                                  style={{
-                                    maxWidth: 500,
-                                    wordBreak: 'normal',
-                                    whiteSpace: 'normal',
-                                    marginBottom: 0,
-                                  }}
-                                  dangerouslySetInnerHTML={{
-                                    __html: item_data.description,
-                                  }}
-                                ></div>
-                              </ReactTooltip>
                               <img
-                                data-tip
-                                data-for={`${props.match_id}-${item_data._id}-${key}-${sub_key}-tt`}
+                                data-html
+                                data-tip={ReactDOMServer.renderToString(
+                                  <>
+                                    <h4 style={{marginBottom: 0, marginTop: 0}}>
+                                      {item_data.name}
+                                    </h4>
+
+                                    <div style={{marginBottom: 15}}>
+                                      {action} at {minutes}:{numeral(seconds).format('00')}.
+                                    </div>
+
+                                    <div
+                                      className="item-description-tt"
+                                      style={{
+                                        maxWidth: 500,
+                                        wordBreak: 'normal',
+                                        whiteSpace: 'normal',
+                                        marginBottom: 0,
+                                      }}
+                                      dangerouslySetInnerHTML={{
+                                        __html: item_data.description,
+                                      }}
+                                    ></div>
+                                  </>,
+                                )}
                                 style={{
                                   width: 30,
                                   borderRadius: 5,
@@ -472,6 +476,10 @@ function SkillLevelUp(props: {
       })
   }, [props.selected_participant])
 
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  }, [spells])
+
   let div_width = (props.expanded_width - 65) / 18
   let div_height = 30
   return (
@@ -501,55 +509,51 @@ function SkillLevelUp(props: {
                   if (['q', 'w', 'e', 'r'].indexOf(skill_num) >= 0) {
                     output = (
                       <span>
-                        <ReactTooltip
-                          id={`${props.selected_participant?._id}-${skill_num}-ability`}
-                          effect="solid"
-                        >
-                          <div
-                            style={{
-                              maxWidth: 500,
-                              wordBreak: 'normal',
-                              whiteSpace: 'normal',
-                            }}
-                          >
-                            {spells[skill_num] !== undefined && (
-                              <div>
-                                <div>
-                                  <div
-                                    style={{
-                                      display: 'inline-block',
-                                    }}
-                                  >
-                                    <img
-                                      style={{
-                                        height: 50,
-                                        borderRadius: 8,
-                                      }}
-                                      src={spells[skill_num].image_url}
-                                      alt=""
-                                    />
-                                  </div>
-                                  <h4
-                                    style={{
-                                      display: 'inline-block',
-                                      marginLeft: 10,
-                                    }}
-                                  >
-                                    {spells[skill_num].name}
-                                  </h4>
-                                </div>
-                                <div
-                                  dangerouslySetInnerHTML={{
-                                    __html: spells[skill_num].description,
-                                  }}
-                                ></div>
-                              </div>
-                            )}
-                          </div>
-                        </ReactTooltip>
                         <div
-                          data-tip
-                          data-for={`${props.selected_participant._id}-${skill_num}-ability`}
+                          data-html
+                          data-tip={ReactDOMServer.renderToString(
+                            <div
+                              style={{
+                                maxWidth: 500,
+                                wordBreak: 'normal',
+                                whiteSpace: 'normal',
+                              }}
+                            >
+                              {spells[skill_num] !== undefined && (
+                                <div>
+                                  <div>
+                                    <div
+                                      style={{
+                                        display: 'inline-block',
+                                      }}
+                                    >
+                                      <img
+                                        style={{
+                                          height: 50,
+                                          borderRadius: 8,
+                                        }}
+                                        src={spells[skill_num].image_url}
+                                        alt=""
+                                      />
+                                    </div>
+                                    <h4
+                                      style={{
+                                        display: 'inline-block',
+                                        marginLeft: 10,
+                                      }}
+                                    >
+                                      {spells[skill_num].name}
+                                    </h4>
+                                  </div>
+                                  <div
+                                    dangerouslySetInnerHTML={{
+                                      __html: spells[skill_num].description,
+                                    }}
+                                  ></div>
+                                </div>
+                              )}
+                            </div>,
+                          )}
                           style={{
                             width: 30,
                             height: 30,

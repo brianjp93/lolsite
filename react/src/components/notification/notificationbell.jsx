@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ReactTooltip from 'react-tooltip'
 import api from '../../api/api'
@@ -21,6 +21,10 @@ export function NotificationBell(props) {
     }, [count])
 
     useEffect(() => {
+      ReactTooltip.rebuild()
+    }, [count])
+
+    useEffect(() => {
         // check for new notifications every over some interval
         // defined below
         getNotifications()
@@ -36,14 +40,10 @@ export function NotificationBell(props) {
     }
     return (
         <>
-            <ReactTooltip id="notification-tooltip" effect="solid">
-                <span>You have {count} new notification groups.</span>
-            </ReactTooltip>
             <Link to='/notifications/'>
                 <div
                     style={{ display: 'flex', cursor: 'pointer' }}
-                    data-tip
-                    data-for="notification-tooltip"
+                    data-tip={`You have ${count} new notification groups.`}
                     className={`input-field ${theme}`}
                 >
                     <i style={{ color: notifcolor }} className="material-icons">

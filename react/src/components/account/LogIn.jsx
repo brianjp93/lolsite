@@ -36,6 +36,7 @@ class LogIn extends Component {
         this.verifyLoggedIn = this.verifyLoggedIn.bind(this)
     }
     componentDidMount() {
+        ReactTooltip.rebuild()
         ReactGA.event({
             category: "Log In",
             action: "LogIn page was mounted.",
@@ -85,7 +86,6 @@ class LogIn extends Component {
 
             this.setState({is_logging_in: true})
             this.form.submit()
-            
         }
     }
     getHelpText(field) {
@@ -150,14 +150,8 @@ class LogIn extends Component {
                                     {/* CSRF Input Field */}
                                     <input name='csrfmiddlewaretoken' type="hidden" defaultValue={store.props.csrf_token} />
 
-                                    <ReactTooltip
-                                        effect='solid'
-                                        id='email-tip'>
-                                        <span>Enter your email address.</span>
-                                    </ReactTooltip>
                                     <div
-                                        data-tip
-                                        data-for='email-tip'
+                                        data-tip='Enter your email address.'
                                         className="input-field">
                                         <input
                                             name='email'
@@ -171,13 +165,8 @@ class LogIn extends Component {
                                         {this.getHelpText('email')}
                                     </div>
 
-                                    <ReactTooltip
-                                        effect='solid'
-                                        id='password-tip' >
-                                        <span>Enter your password.</span>
-                                    </ReactTooltip>
                                     <div
-                                        data-tip
+                                        data-tip='Enter your password.'
                                         data-for='password-tip'
                                         className="input-field">
                                         <input

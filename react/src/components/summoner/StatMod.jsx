@@ -1,4 +1,4 @@
-import React from 'react'
+import { useEffect } from 'react'
 import ReactTooltip from 'react-tooltip'
 import { getStatMod } from '../../constants/statmod'
 
@@ -10,6 +10,10 @@ export function StatModTable(props) {
     const perk_1_order = [5008, 5002, 5003]
     const perk_2_order = [5001, 5002, 5003]
     const table_rows = [perk_0_order, perk_1_order, perk_2_order]
+
+    useEffect(() => {
+      ReactTooltip.rebuild()
+    }, [])
 
     return (
         <div>
@@ -30,12 +34,8 @@ export function StatModTable(props) {
                             }
                             return (
                                 <div key={`${perk_id}-${key}`} style={{ display: 'inline-block' }}>
-                                    <ReactTooltip id={`perk-tooltip-${perk_id}`} effect="solid">
-                                        <span>{perk.name}</span>
-                                    </ReactTooltip>
                                     <div
-                                        data-tip
-                                        data-for={`perk-tooltip-${perk_id}`}
+                                        data-tip={perk.name}
                                         style={{ ...perk_style }}
                                     >
                                         <img

@@ -1,4 +1,4 @@
-import {useState, useCallback, useMemo} from 'react'
+import {useState, useCallback, useMemo, useEffect} from 'react'
 import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts'
 import ReactTooltip from 'react-tooltip'
 import numeral from 'numeral'
@@ -59,10 +59,9 @@ function ChampionTimelines(props: {
   ]
 
   const getGraphBubbleInput = (_type: GraphType, displayName?: string, tooltip?: string) => {
-    const tooltipId = `tooltip-label-${_type}`
     return (
       <div className="col s3">
-        <label data-tip data-for={tooltipId} htmlFor={`${_type}-champion-graph`}>
+        <label data-tip={tooltip} htmlFor={`${_type}-champion-graph`}>
           <input
             id={`${_type}-champion-graph`}
             onChange={() => setGraphType(_type)}
@@ -71,14 +70,13 @@ function ChampionTimelines(props: {
           />
           <span>{displayName || _type}</span>
         </label>
-        {tooltip && (
-          <ReactTooltip effect="solid" id={tooltipId}>
-            <span>{tooltip}</span>
-          </ReactTooltip>
-        )}
       </div>
     )
   }
+
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  }, [participants])
 
   return (
     <div>

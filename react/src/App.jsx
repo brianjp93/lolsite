@@ -16,6 +16,7 @@ import {ItemStatPage} from './components/item/itemstats'
 import {ChampionsPage} from './components/champion/champion'
 import {NotificationPage} from './components/notification/notification'
 import { QueryClient, QueryClientProvider } from 'react-query'
+import ReactTooltip from 'react-tooltip'
 
 import * as Sentry from "@sentry/react";
 import { Integrations } from "@sentry/tracing";
@@ -169,6 +170,7 @@ class App extends Component {
     return (
       <div id="background-div">
         <QueryClientProvider client={queryClient}>
+          <ReactTooltip effect='solid' />
           <Routes store={this} />
         </QueryClientProvider>
       </div>
@@ -177,7 +179,6 @@ class App extends Component {
 }
 
 function Routes(props) {
-  // if (['true', 'True', true].indexOf(props.store.props.allow_access) >= 0) {
   return (
     <main>
       <Switch>

@@ -81,6 +81,10 @@ export function CreateComment(props) {
         }
     }, [props.summoners, summoner])
 
+  useEffect(() => {
+    ReactTooltip.rebuild()
+  }, [props.summoners])
+
     const button_disabled = { disabled: isValid(text, summoner).length > 0 && !loading}
 
     return (
@@ -124,12 +128,8 @@ export function CreateComment(props) {
                     )}
                     <div>
                         <div style={{ maxWidth: 500, display: 'inline-block' }}>
-                            <ReactTooltip id="post-as-summoner-select" effect="solid">
-                                <span>Which summoner would you like to post as?</span>
-                            </ReactTooltip>
                             <div
-                                data-tip
-                                data-for="post-as-summoner-select"
+                                data-tip='Which summoner would you like to post as?'
                                 className={`input-field ${theme}`}
                             >
                                 <select
