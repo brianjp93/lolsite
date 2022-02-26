@@ -29,6 +29,10 @@ function mapAssistName(name: string) {
     return 'Dragon'
   } else if (name.match(/sru.*razorbeak/i)) {
     return 'Birds'
+  } else if (name.match(/sru.*blue/i)) {
+    return 'Blue Buff'
+  } else if (name.match(/sru.*wolf/i)) {
+    return 'Wolves'
   }
   return name
 }

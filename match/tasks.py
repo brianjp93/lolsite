@@ -666,140 +666,140 @@ def get_frame_event_types():
             "model": WardKillEvent,
             "events": [],
             "mapping": {
-                "killer_id": "killerId",
-                "ward_type": "wardType",
+                "killer_id": ["killerId", None],
+                "ward_type": ["wardType", None],
             },
         },
         "WARD_PLACED": {
             "model": WardPlacedEvent,
             "events": [],
             "mapping": {
-                "creator_id": "creatorId",
-                "ward_type": "wardType",
+                "creator_id": ["creatorId", None],
+                "ward_type": ["wardType", None],
             },
         },
         "LEVEL_UP": {
             "model": LevelUpEvent,
             "events": [],
             "mapping": {
-                "level": "level",
-                "participant_id": "participantId",
+                "level": ["level", None],
+                "participant_id": ["participantId", None],
             },
         },
         "SKILL_LEVEL_UP": {
             "model": SkillLevelUpEvent,
             "events": [],
             "mapping": {
-                "level_up_type": "levelUpType",
-                "participant_id": "participantId",
-                "skill_slot": "skillSlot",
+                "level_up_type": ["levelUpType", None],
+                "participant_id": ["participantId", None],
+                "skill_slot": ["skillSlot", None],
             },
         },
         "ITEM_PURCHASED": {
             "model": ItemPurchasedEvent,
             "events": [],
             "mapping": {
-                "item_id": "itemId",
-                "participant_id": "participantId",
+                "item_id": ["itemId", None],
+                "participant_id": ["participantId", None],
             },
         },
         "ITEM_DESTROYED": {
             "model": ItemDestroyedEvent,
             "events": [],
             "mapping": {
-                "item_id": "itemId",
-                "participant_id": "participantId",
+                "item_id": ["itemId", None],
+                "participant_id": ["participantId", None],
             },
         },
         "ITEM_SOLD": {
             "model": ItemSoldEvent,
             "events": [],
             "mapping": {
-                "item_id": "itemId",
-                "participant_id": "participantId",
+                "item_id": ["itemId", None],
+                "participant_id": ["participantId", None],
             },
         },
         "ITEM_UNDO": {
             "model": ItemUndoEvent,
             "events": [],
             "mapping": {
-                "participant_id": "participantId",
-                "before_id": "beforeId",
-                "after_id": "afterId",
-                "gold_gain": "goldGain",
+                "participant_id": ["participantId", None],
+                "before_id": ["beforeId", None],
+                "after_id": ["afterId", None],
+                "gold_gain": ["goldGain", None],
             },
         },
         "TURRET_PLATE_DESTROYED": {
             "model": TurretPlateDestroyedEvent,
             "events": [],
             "mapping": {
-                "killer_id": "killerId",
-                "lane_type": "laneType",
-                "x": "position__x",
-                "y": "position__y",
-                "team_id": "teamId",
+                "killer_id": ["killerId", None],
+                "lane_type": ["laneType", None],
+                "x": ["position__x", None],
+                "y": ["position__y", None],
+                "team_id": ["teamId", None],
             },
         },
         "ELITE_MONSTER_KILL": {
             "model": EliteMonsterKillEvent,
             "events": [],
             "mapping": {
-                "killer_id": "killerId",
-                "assisting_participant_ids": "assistingParticipantIds",
-                "killer_team_id": "killerTeamId",
-                "monster_type": "monsterType",
-                "monster_sub_type": "monsterSubType",
-                "x": "position__x",
-                "y": "position__y",
+                "killer_id": ["killerId", None],
+                "assisting_participant_ids": ["assistingParticipantIds", None],
+                "killer_team_id": ["killerTeamId", None],
+                "monster_type": ["monsterType", None],
+                "monster_sub_type": ["monsterSubType", None],
+                "x": ["position__x", None],
+                "y": ["position__y", None],
             },
         },
         "CHAMPION_SPECIAL_KILL": {
             "model": ChampionSpecialKillEvent,
             "events": [],
             "mapping": {
-                "assisting_participant_ids": "assistingParticipantIds",
-                "kill_type": "killType",
-                "killer_id": "killerId",
-                "multi_kill_length": "multiKillLength",
-                "x": "position__x",
-                "y": "position__y",
+                "assisting_participant_ids": ["assistingParticipantIds", None],
+                "kill_type": ["killType", None],
+                "killer_id": ["killerId", None],
+                "multi_kill_length": ["multiKillLength", None],
+                "x": ["position__x", None],
+                "y": ["position__y", None],
             },
         },
         "BUILDING_KILL": {
             "model": BuildingKillEvent,
             "events": [],
             "mapping": {
-                "assisting_participant_ids": "assistingParticipantIds",
-                "building_type": "buildingType",
-                "killer_id": "killerId",
-                "lane_type": "laneType",
-                "team_id": "teamId",
-                "tower_type": "towerType",
-                "x": "position__x",
-                "y": "position__y",
-                "bounty": "bounty",
+                "assisting_participant_ids": ["assistingParticipantIds", None],
+                "building_type": ["buildingType", None],
+                "killer_id": ["killerId", None],
+                "lane_type": ["laneType", None],
+                "team_id": ["teamId", None],
+                "tower_type": ["towerType", None],
+                "x": ["position__x", None],
+                "y": ["position__y", None],
+                "bounty": ["bounty", 0],
             },
         },
         "GAME_END": {
             "model": GameEndEvent,
             "events": [],
             "mapping": {
-                "game_id": "gameId",
-                "real_timestamp": "realTimestamp",
-                "winning_team": "winningTeam",
+                "game_id": ["gameId", None],
+                "real_timestamp": ["realTimestamp", None],
+                "winning_team": ["winningTeam", None],
             },
         },
         "CHAMPION_KILL": {
             "model": ChampionKillEvent,
             "events": [],
             "mapping": {
-                "bounty": "bounty",
-                "shutdown_bounty": "shutdownBounty",
-                "kill_streak_length": "killStreakLength",
-                "killer_id": "killerId",
-                "victim_id": "victimId",
-                "x": "position__x",
-                "y": "position__y",
+                "bounty": ["bounty", 0],
+                "shutdown_bounty": ["shutdownBounty", 0],
+                "kill_streak_length": ["killStreakLength", None],
+                "killer_id": ["killerId", None],
+                "victim_id": ["victimId", None],
+                "x": ["position__x", None],
+                "y": ["position__y", None],
             },
         },
     }
@@ -926,12 +926,12 @@ def import_advanced_timeline(match_id=None, overwrite=False):
                 for temp_event_type, val in events.items():
                     if temp_event_type == event_type:
                         kwargs = {}
-                        for _key, _val in val["mapping"].items():
+                        for _key, (_val, _default) in val["mapping"].items():
                             _data = _event
                             for lookup in _val.split("__"):
                                 _data = _data.get(lookup, {})
                                 if _data == {}:
-                                    _data = None
+                                    _data = _default
                             kwargs[_key] = _data
                         created_model = val["model"](
                             frame=frame,
