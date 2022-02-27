@@ -4,7 +4,7 @@ const {existsSync} = require(`fs`);
 const {createRequire, createRequireFromPath} = require(`module`);
 const {resolve} = require(`path`);
 
-const relPnpApiPath = "../../../../.pnp.cjs";
+const relPnpApiPath = "../../../../.pnp.js";
 
 const absPnpApiPath = resolve(__dirname, relPnpApiPath);
 const absRequire = (createRequire || createRequireFromPath)(absPnpApiPath);
@@ -18,7 +18,6 @@ const moduleWrapper = tsserver => {
   const pnpApi = require(`pnpapi`);
 
   const isVirtual = str => str.match(/\/(\$\$virtual|__virtual__)\//);
-  const isPortal = str => str.startsWith("portal:/");
   const normalize = str => str.replace(/\\/g, `/`).replace(/^\/?/, `/`);
 
   const dependencyTreeRoots = new Set(pnpApi.getDependencyTreeRoots().map(locator => {
@@ -31,7 +30,7 @@ const moduleWrapper = tsserver => {
 
   function toEditorPath(str) {
     // We add the `zip:` prefix to both `.zip/` paths and virtual paths
-    if (isAbsolute(str) && !str.match(/^\^?(zip:|\/zip\/)/) && (str.match(/\.zip\//) || isVirtual(str))) {
+    if (isAbsolute(str) && !str.match(/^\^zip:/) && (str.match(/\.zip\//) || isVirtual(str))) {
       // We also take the opportunity to turn virtual paths into physical ones;
       // this makes it much easier to work with workspaces that list peer
       // dependencies, since otherwise Ctrl+Click would bring us to the virtual
@@ -45,7 +44,7 @@ const moduleWrapper = tsserver => {
       const resolved = isVirtual(str) ? pnpApi.resolveVirtual(str) : str;
       if (resolved) {
         const locator = pnpApi.findPackageLocator(resolved);
-        if (locator && (dependencyTreeRoots.has(`${locator.name}@${locator.reference}`) || isPortal(locator.reference))) {
+        if (locator && dependencyTreeRoots.has(`${locator.name}@${locator.reference}`)) {
           str = resolved;
         }
       }
@@ -61,16 +60,8 @@ const moduleWrapper = tsserver => {
           //
           // Ref: https://github.com/microsoft/vscode/issues/105014#issuecomment-686760910
           //
-          // Update Oct 8 2021: VSCode changed their format in 1.61.
-          // Before | ^zip:/c:/foo/bar.zip/package.json
-          // After  | ^/zip//c:/foo/bar.zip/package.json
-          //
-          case `vscode <1.61`: {
-            str = `^zip:${str}`;
-          } break;
-
           case `vscode`: {
-            str = `^/zip/${str}`;
+            str = `^zip:${str}`;
           } break;
 
           // To make "go to definition" work,
@@ -86,7 +77,7 @@ const moduleWrapper = tsserver => {
           // everything else is up to neovim
           case `neovim`: {
             str = normalize(resolved).replace(/\.zip\//, `.zip::`);
-            str = `zipfile://${str}`;
+            str = `zipfile:${str}`;
           } break;
 
           default: {
@@ -100,30 +91,9 @@ const moduleWrapper = tsserver => {
   }
 
   function fromEditorPath(str) {
-    switch (hostInfo) {
-      case `coc-nvim`: {
-        str = str.replace(/\.zip::/, `.zip/`);
-        // The path for coc-nvim is in format of /<pwd>/zipfile:/<pwd>/.yarn/...
-        // So in order to convert it back, we use .* to match all the thing
-        // before `zipfile:`
-        return process.platform === `win32`
-          ? str.replace(/^.*zipfile:\//, ``)
-          : str.replace(/^.*zipfile:/, ``);
-      } break;
-
-      case `neovim`: {
-        str = str.replace(/\.zip::/, `.zip/`);
-        // The path for neovim is in format of zipfile:///<pwd>/.yarn/...
-        return str.replace(/^zipfile:\/\//, ``);
-      } break;
-
-      case `vscode`:
-      default: {
-        return process.platform === `win32`
-          ? str.replace(/^\^?(zip:|\/zip)\/+/, ``)
-          : str.replace(/^\^?(zip:|\/zip)\/+/, `/`);
-      } break;
-    }
+    return process.platform === `win32`
+      ? str.replace(/^\^?zip:\//, ``)
+      : str.replace(/^\^?zip:/, ``);
   }
 
   // Force enable 'allowLocalPluginLoads'
@@ -149,9 +119,8 @@ const moduleWrapper = tsserver => {
   let hostInfo = `unknown`;
 
   Object.assign(Session.prototype, {
-    onMessage(/** @type {string | object} */ message) {
-      const isStringMessage = typeof message === 'string';
-      const parsedMessage = isStringMessage ? JSON.parse(message) : message;
+    onMessage(/** @type {string} */ message) {
+      const parsedMessage = JSON.parse(message)
 
       if (
         parsedMessage != null &&
@@ -160,19 +129,11 @@ const moduleWrapper = tsserver => {
         typeof parsedMessage.arguments.hostInfo === `string`
       ) {
         hostInfo = parsedMessage.arguments.hostInfo;
-        if (hostInfo === `vscode` && process.env.VSCODE_IPC_HOOK && process.env.VSCODE_IPC_HOOK.match(/Code\/1\.([1-5][0-9]|60)\./)) {
-          hostInfo += ` <1.61`;
-        }
       }
 
-      const processedMessageJSON = JSON.stringify(parsedMessage, (key, value) => {
-        return typeof value === 'string' ? fromEditorPath(value) : value;
-      });
-
-      return originalOnMessage.call(
-        this,
-        isStringMessage ? processedMessageJSON : JSON.parse(processedMessageJSON)
-      );
+      return originalOnMessage.call(this, JSON.stringify(parsedMessage, (key, value) => {
+        return typeof value === `string` ? fromEditorPath(value) : value;
+      }));
     },
 
     send(/** @type {any} */ msg) {

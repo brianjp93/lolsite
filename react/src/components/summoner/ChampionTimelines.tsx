@@ -42,7 +42,7 @@ function ChampionTimelines(props: {
       ...props.participants.filter((participant) => participant.team_id === 200),
     ]
   }, [props.participants])
-  const participant_ids = participants.map((participant: any) => participant._id)
+  const participant_ids = participants.map((participant) => participant._id)
   const colors = [
     '#d94630',
     '#d98d30',
@@ -182,9 +182,9 @@ function ChampionTimelines(props: {
               )
             })}
             <Tooltip
-              itemSorter={(item: any) => -item.value}
+              itemSorter={(item) => -item.value}
               wrapperStyle={{zIndex: 10}}
-              formatter={(value: any) => {
+              formatter={(value) => {
                 let output
                 if (graph_type === 'total_gold') {
                   output = `${numeral(value).format('0,0')} gold`

@@ -287,7 +287,8 @@ function RankHistory(props: {summoner: SummonerType; theme: string}) {
                         })}
 
                         <Tooltip
-                            formatter={(value: any, name: any, props: any) => {
+                            formatter={(value, name, props) => {
+                                // console.log(value)
                                 let peak = props.payload.peak_rank
                                 let trough = props.payload.trough_rank
                                 let output = `${trough.tier.toUpperCase()} ${trough.division} ${

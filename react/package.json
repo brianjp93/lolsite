@@ -2,16 +2,17 @@
   "name": "lol",
   "version": "0.1.0",
   "private": true,
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
   "dependencies": {
     "@sentry/react": "^6.13.2",
     "@sentry/tracing": "^6.13.2",
-    "@typescript-eslint/eslint-plugin": "latest",
-    "@typescript-eslint/parser": "latest",
     "axios": ">=0.21.2",
     "caniuse-lite": "^1.0.30001311",
     "classnames": "^2.3.1",
-    "esbuild": "^0.14.23",
-    "eslint-plugin-react": "latest",
     "fp-ts": "^2.9.5",
     "fuzzysearch": "^1.0.3",
     "highlight.js": ">=10.4.1",
@@ -24,29 +25,31 @@
     "prop-types": "^15.7.2",
     "query-string": "^6.9.0",
     "rc-slider": "^9.3.1",
-    "react": "17.0.0",
+    "react": "^16.14.0",
     "react-datetime": "^3.0.4",
-    "react-dom": "17.0.0",
-    "react-ga": "^3.3.0",
+    "react-dom": "^16.14.0",
+    "react-ga": "^2.7.0",
     "react-hook-form": "^7.20.4",
+    "react-hookstore": "^1.5.1",
     "react-latex": "^1.6.0",
-    "react-lazyload": "^3.2.0",
+    "react-lazyload": "^2.6.8",
     "react-markdown-editor-lite": "^1.1.5",
     "react-modal": "^3.11.2",
     "react-query": "^3.22.0",
     "react-router-dom": "^5.2.0",
-    "react-tiny-popover": "^7.0.1",
+    "react-scripts": "^4.0.3",
+    "react-tiny-popover": "^3.4.5",
     "react-tooltip": "^4.2.21",
-    "recharts": "^2.1.9",
+    "recharts": "^1.8.5",
     "toastr": "^2.1.4",
-    "typescript": "^4.5.5",
-    "uuid": "^8.3.2",
-    "vite-plugin-svgr": "^1.0.1"
+    "typescript": "^4.2.3",
+    "uuid": "^3.3.3"
   },
   "scripts": {
-    "start": "vite",
-    "build": "tsc && vite build",
-    "serve": "vite preview"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
   "browserslist": [
     ">0.2%",
@@ -64,12 +67,11 @@
     "@types/react-lazyload": "^3.1.1",
     "@types/react-modal": "^3.12.0",
     "@types/react-router-dom": "^5.1.7",
-    "@types/recharts": "^1.8.23",
+    "@types/recharts": "^1.8.19",
     "@types/toastr": "^2.1.39",
-    "@vitejs/plugin-react": "^1.2.0",
-    "eslint": "^8.10.0",
-    "prettier": "2.0.5",
-    "vite": "^2.8.4"
+    "eslint-config-react-app": "^6.0.0",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "prettier": "2.0.5"
   },
   "prettier": {
     "tabWidth": 2,
@@ -79,6 +81,5 @@
     "printWidth": 100,
     "bracketSpacing": false,
     "parser": "typescript"
-  },
-  "packageManager": "yarn@3.2.0"
+  }
 }

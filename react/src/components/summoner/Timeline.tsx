@@ -294,7 +294,7 @@ function Timeline(props: {
               }
             }
           }}
-          onMouseLeave={() => setTimelineIndex(null)}
+          onMouseOut={() => setTimelineIndex(null)}
         >
           <CartesianGrid vertical={false} stroke="#777" strokeDasharray="4 4" />
           <XAxis
@@ -316,7 +316,7 @@ function Timeline(props: {
 
           <Tooltip
             offset={70}
-            formatter={(value: any, name: any) => {
+            formatter={(value, name) => {
               if (name.indexOf('perc') >= 0) {
                 value = numeral(value).format('0')
                 return [`${value}%`, '% Gold Adv.']

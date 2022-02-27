@@ -49,9 +49,9 @@ services:
   redis:
     image: redis
   react:
-    image: node:15-alpine
+    image: node:14-alpine
     working_dir: /code
-    command: sh -c "yarn install && yarn start --host"
+    command: sh -c "yarn install && yarn start"
     volumes:
       - ./react:/code
     ports:

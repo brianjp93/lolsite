@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import type {BanType, ChampionType} from '../../types'
 import {useChampions} from '../../hooks'
-import {Popover} from 'react-tiny-popover'
+import Popover from 'react-tiny-popover'
 
 export function BanList({bans}: {bans: BanType[]}) {
   const champions = useChampions()
@@ -37,8 +37,9 @@ function BanItem({champ}: {champ: ChampionType}) {
       >
         {champ && (
           <Popover
+            transitionDuration={0.01}
             isOpen={isOpen}
-            positions={['top']}
+            position="top"
             containerStyle={{zIndex: '11'}}
             content={() => {
               return <>{champ.name}</>
