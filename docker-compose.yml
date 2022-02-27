@@ -49,7 +49,7 @@ services:
   redis:
     image: redis
   react:
-    image: node:14-alpine
+    image: node:15-alpine
     working_dir: /code
     command: sh -c "yarn install && yarn start"
     volumes:
