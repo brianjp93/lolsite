@@ -39,7 +39,10 @@ def react_data_processor(request):
         soup = BeautifulSoup(r.content, features="html.parser")
         scripts = []
         for sc in soup.find_all("script"):
-            sc["src"] = f'http://{ip}{sc["src"]}'
+            if 'import RefreshRuntime from "/@react-refresh"' in sc.text:
+                sc.string = sc.string.replace('import RefreshRuntime from "/@react-refresh"', 'import RefreshRuntime from "http://localhost:3000/@react-refresh"')
+            if sc.get('src', None):
+                sc["src"] = f'http://{ip}{sc["src"]}'
             scripts.append(str(sc))
         scripts = "".join(scripts)
 
