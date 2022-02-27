@@ -1,5 +1,5 @@
 import {useState, useRef, useEffect, useCallback} from 'react'
-import Popover from 'react-tiny-popover'
+import {Popover} from 'react-tiny-popover'
 
 export function Item(props: any) {
   return (
@@ -57,9 +57,8 @@ export function ItemPopover(props: any) {
   if (props.item_id) {
     return (
       <Popover
-        transitionDuration={0.01}
         isOpen={isOpen}
-        position={'top'}
+        positions={['top']}
         containerStyle={{zIndex: '11'}}
         content={<Item item={props.item} />}
       >

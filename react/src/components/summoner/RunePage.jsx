@@ -1,6 +1,6 @@
 import {Component} from 'react'
 import PropTypes from 'prop-types'
-import Popover from 'react-tiny-popover'
+import {Popover} from 'react-tiny-popover'
 import numeral from 'numeral'
 import {StatModTable} from './StatMod'
 
@@ -259,9 +259,8 @@ class RuneTooltip extends Component {
     let rune = this.props.rune
     return (
       <Popover
-        transitionDuration={0.01}
         isOpen={this.state.is_open}
-        position={'top'}
+        positions={['top']}
         containerStyle={{'z-index': '11'}}
         content={
           <div>

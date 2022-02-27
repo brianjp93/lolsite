@@ -50,8 +50,8 @@ StatBar.propTypes = {
   theme: PropTypes.string.isRequired,
   val1: PropTypes.number.isRequired,
   val2: PropTypes.number.isRequired,
-  label1: PropTypes.object,
-  label2: PropTypes.object,
+  label1: PropTypes.string,
+  label2: PropTypes.string,
 }
 
 export default StatBar
