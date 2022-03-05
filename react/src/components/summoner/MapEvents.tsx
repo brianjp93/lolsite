@@ -329,8 +329,9 @@ function EventBubble({
   }
 
   const red = 'linear-gradient(60deg, rgb(86, 14, 123) 0%, rgb(230, 147, 22) 100%)'
-  let bubble_color = red
   const blue = 'linear-gradient(66deg, rgb(64, 131, 171) 0%, rgb(15, 63, 123) 100%)'
+
+  let bubble_color = red
   if (team_id === 100) {
     bubble_color = blue
   }
