@@ -33,6 +33,12 @@ function mapAssistName(name: string) {
     return 'Blue Buff'
   } else if (name.match(/sru.*wolf/i)) {
     return 'Wolves'
+  } else if (name.match(/sru.*gromp/i)) {
+    return 'Gromp'
+  } else if (name.match(/sru.*rift.*herald/i)) {
+    return 'Rift Herald'
+  } else if (name.match(/sru.*baron/i)) {
+    return 'Baron'
   }
   return name
 }
