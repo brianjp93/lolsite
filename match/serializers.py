@@ -547,6 +547,7 @@ class EliteMonsterKillEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.EliteMonsterKillEvent
         fields = [
+            'bounty',
             'timestamp',
             'killer_id',
             'assisting_participant_ids',

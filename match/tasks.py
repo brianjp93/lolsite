@@ -745,6 +745,7 @@ def get_frame_event_types():
             "events": [],
             "mapping": {
                 "killer_id": ["killerId", None],
+                "bounty": ["bounty", 0],
                 "assisting_participant_ids": ["assistingParticipantIds", None],
                 "killer_team_id": ["killerTeamId", None],
                 "monster_type": ["monsterType", None],

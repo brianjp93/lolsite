@@ -731,6 +731,7 @@ class TurretPlateDestroyedEvent(Event):
 
 class EliteMonsterKillEvent(Event):
     killer_id = models.PositiveSmallIntegerField()
+    bounty = models.PositiveIntegerField(default=0, blank=True)
     assisting_participant_ids = ArrayField(
         models.PositiveSmallIntegerField(), blank=True, null=True
     )

@@ -456,6 +456,7 @@ export const TurretPlateDestroyedEvent = t.type({
 export type TurretPlateDestroyedEventType = t.TypeOf<typeof TurretPlateDestroyedEvent>
 
 export const EliteMonsterKillEvent = t.type({
+  bounty: t.number,
   timestamp: t.number,
   killer_id: t.number,
   assisting_participant_ids: optional(t.array(t.number)),
