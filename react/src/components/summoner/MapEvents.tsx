@@ -226,8 +226,6 @@ export function MapEvents(props: {
             <Building
               key={`${match.id}-${key}`}
               pos={getPosition(data.x, data.y)}
-              team={data.team}
-              building_type={data.type}
               is_alive={data.is_alive}
             />
           )
@@ -405,13 +403,9 @@ function EventBubble({
                   .sort((a, b) => b.damage - a.damage)
                   .map((item) => {
                     return (
-                      <div style={{marginBottom:0}} className='row' key={item.name}>
-                        <div className="col s6">
-                          {mapAssistName(item.name)}
-                        </div>
-                        <div className="col s6">
-                          : {item.damage}
-                        </div>
+                      <div style={{marginBottom: 0}} className="row" key={item.name}>
+                        <div className="col s6">{mapAssistName(item.name)}</div>
+                        <div className="col s6">: {item.damage}</div>
                       </div>
                     )
                   })}
@@ -491,10 +485,7 @@ function EventBubble({
   )
 }
 
-function Building(props: any) {
-  const is_alive = props.is_alive
-  const pos = props.pos
-
+function Building({is_alive, pos}: {is_alive: boolean; pos: [number, number]}) {
   const size = 15
 
   let style = {
