@@ -409,9 +409,10 @@ export function NavBar(props: any) {
                       </Link>
                     </div>
 
-                    {props.store.state.favorites.map((favorite: any) => {
+                    {props.store.state.favorites.map((favorite: any, key: number) => {
                       return (
                         <div
+                          key={`favorite-${key}`}
                           style={{
                             margin: '0 0 10px 0',
                             lineHeight: 1.5,
