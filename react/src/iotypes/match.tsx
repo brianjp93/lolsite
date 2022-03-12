@@ -58,6 +58,7 @@ export const BasicParticipant = t.type({
   summoner_2_id: t.number,
   summoner_2_image: t.string,
   champion: t.union([BasicChampionWithImage, t.type({})]),
+  champion_id: t.number,
   stats: BasicStats,
 })
 export type BasicParticipantType = t.TypeOf<typeof BasicParticipant>

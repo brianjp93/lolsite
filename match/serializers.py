@@ -835,6 +835,7 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
             "summoner_2_id",
             "summoner_2_image",
             "champion",
+            "champion_id",
             "stats",
         ]
 

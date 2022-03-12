@@ -1,11 +1,11 @@
-import {Fragment, useState, useCallback} from 'react'
+import {Fragment, useState, useCallback, useEffect} from 'react'
 import {Link} from 'react-router-dom'
 import PropTypes from 'prop-types'
 import numeral from 'numeral'
 import {ParticipantItems} from '../../constants/general'
 import {rankParticipants} from './rankparticipants'
 import {Comments} from '../comment/comments'
-import {useEffect} from 'react'
+import {useChampions} from '../../hooks'
 import {
   getMyPart,
   formatDatetime,
@@ -74,6 +74,8 @@ function MatchCard(props) {
   }, [match, getParticipantRanks])
 
   const mypart = getMyPart(_parts, puuid)
+  const champions = useChampions()
+
   if (mypart === undefined) {
     return null
   }
@@ -255,8 +257,8 @@ function MatchCard(props) {
               ></div>
 
               <img
-                src={part.champion.image?.file_15}
-                alt={part.champion.name}
+                src={champions?.[part.champion_id]?.image?.file_15}
+                alt={champions?.[part.champion_id]?.name}
                 style={{height: 15, borderRadius: 5, paddingRight: 2}}
               />
               <div
@@ -328,7 +330,7 @@ function MatchCard(props) {
             <div>
               <img
                 style={{height: 40, display: 'inline'}}
-                src={mypart.champion.image?.file_40}
+                src={champions?.[mypart.champion_id]?.image?.file_40}
                 alt=""
               />
               <div style={{display: 'inline-block', paddingLeft: 4}}>
