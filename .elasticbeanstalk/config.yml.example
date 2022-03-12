@@ -1,18 +1,19 @@
 branch-defaults:
   master:
-    environment: lolsite
-    group_suffix: null
+    environment: lolsite2-env
+environment-defaults:
+  lolsite2-env:
+    branch: null
+    repository: null
 global:
-  application_name: lolsite
-  branch: null
+  application_name: lolsite2
   default_ec2_keyname: lolsite
-  default_platform: Python 3.6
+  default_platform: Python 3.8 running on 64bit Amazon Linux 2
   default_region: us-west-2
   include_git_submodules: true
   instance_profile: null
   platform_name: null
   platform_version: null
-  profile: default
-  repository: null
+  profile: null
   sc: git
   workspace_type: Application
