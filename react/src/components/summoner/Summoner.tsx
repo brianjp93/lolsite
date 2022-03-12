@@ -6,7 +6,7 @@ import Skeleton from '../general/Skeleton'
 import ReactGA from 'react-ga'
 import Orbit from '../general/spinners/orbit'
 import MatchCard from './MatchCardHorizontal'
-import Spectate from './Spectate'
+import {SpectateModal} from './Spectate'
 import SummonerNotFound from './SummonerNotFound'
 import ReactTooltip from 'react-tooltip'
 import OverviewSelection from './OverviewSelection'
@@ -682,15 +682,15 @@ function SummonerCard({
             </span>
             <br />
             {region && (
-              <Spectate.SpectateModal
-                queue_convert={store.state.queue_convert}
+              <SpectateModal
+                queueConvert={store.state.queue_convert}
                 summoner_id={summoner._id}
                 isSpectateModalOpen={isSpectateModalOpen}
                 setIsSpectateModalOpen={setIsSpectateModalOpen}
                 region={region}
               >
                 <small>{spectateData ? 'Live Game!' : 'Check For Game'}</small>
-              </Spectate.SpectateModal>
+              </SpectateModal>
             )}
           </div>
 
