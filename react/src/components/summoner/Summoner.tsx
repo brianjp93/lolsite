@@ -152,12 +152,29 @@ export function Summoner({route, region, store}: {route: any; region: string; st
     return []
   }, [matchQueryWithSync.data, matchQuery.data])
 
+  const positionQuery = useQuery(
+    ['positions', summoner?._id, region],
+    () =>
+      summoner?._id
+        ? api.player.getPositions({summoner_id: summoner._id, region}).then((x) => x.data.data)
+        : undefined,
+    {retry: false, refetchOnWindowFocus: false, enabled: !!summoner?._id},
+  )
+  const positionQueryRefetch = positionQuery.refetch
+
   const refreshPage = useCallback(() => {
     setPage(1)
     matchQueryRefetch()
     matchQueryWithSyncRefetch()
     summonerQueryRefetch()
-  }, [setPage, matchQueryRefetch, matchQueryWithSyncRefetch, summonerQueryRefetch])
+    positionQueryRefetch()
+  }, [
+    setPage,
+    matchQueryRefetch,
+    matchQueryWithSyncRefetch,
+    summonerQueryRefetch,
+    positionQueryRefetch,
+  ])
 
   // refresh page if the summoner changes
   useEffect(() => {
@@ -176,15 +193,6 @@ export function Summoner({route, region, store}: {route: any; region: string; st
       enabled: !!summoner?._id,
       refetchInterval: 1000 * 60 * 5,
     },
-  )
-
-  const positionQuery = useQuery(
-    ['positions', summoner?._id, region],
-    () =>
-      summoner?._id
-        ? api.player.getPositions({summoner_id: summoner._id, region}).then((x) => x.data.data)
-        : undefined,
-    {retry: false, refetchOnWindowFocus: false, enabled: !!summoner?._id},
   )
 
   const match_ids = matches.map((x: any) => x.id)
