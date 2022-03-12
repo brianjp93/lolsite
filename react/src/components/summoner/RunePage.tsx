@@ -9,7 +9,7 @@ import RUNES from '../../constants/runes'
 
 export function RunePage({mypart, participants, match, matchCardHeight}: {mypart: any, participants: FullParticipantType[], match: BasicMatchType, matchCardHeight: number}) {
   const [selectedPart, setSelectedPart] = useState<FullParticipantType | undefined>()
-  const version = `${match.major}${match.minor}`
+  const version = `${match.major}.${match.minor}`
   const runes = useRunes(version)
 
   const getPerks = (part: FullParticipantType) => {
