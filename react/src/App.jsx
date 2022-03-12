@@ -21,8 +21,6 @@ import ReactTooltip from 'react-tooltip'
 import * as Sentry from "@sentry/react";
 import { Integrations } from "@sentry/tracing";
 
-import api from './api/api'
-
 const trackingId = 'UA-153444087-1'
 ReactGA.initialize(trackingId)
 
@@ -60,7 +58,6 @@ class App extends Component {
 
       summoners: {},
       items: {},
-      runes: {},
       favorites: [],
 
       queues: [],
@@ -76,8 +73,6 @@ class App extends Component {
       ignore_tags: new Set(['input', 'textarea']),
     }
 
-    this.getRunes = this.getRunes.bind(this)
-    this.getRune = this.getRune.bind(this)
     this.setQueueDict = this.setQueueDict.bind(this)
   }
   componentDidUpdate(prevProps, prevState) {
@@ -130,41 +125,6 @@ class App extends Component {
     var elt = document.getElementsByTagName('html')[0]
     elt.classList.remove(theme)
     elt.classList.remove('background')
-  }
-  getRunes(version) {
-    var data = {version: version}
-    api.data.getRunes(data).then((response) => {
-      var data = response.data.data
-      // var version = response.data.version
-      var new_runes = this.formatRunes(data, version)
-      this.setState({runes: new_runes})
-      if (Object.keys(data).length === 0) {
-        api.data.getRunes().then((response) => {
-          data = response.data.data
-          version = response.data.version
-          new_runes = this.formatRunes(data, version)
-          this.setState({runes: new_runes})
-        })
-      }
-    })
-  }
-  formatRunes(data, version) {
-    var rune
-    var output = {}
-    var new_runes = this.state.runes
-    for (var i = 0; i < data.length; i++) {
-      rune = data[i]
-      output[rune._id] = rune
-    }
-    new_runes[version] = output
-    return new_runes
-  }
-  getRune(rune_id, version) {
-    if (this.state.runes[version] === undefined) {
-      return null
-    } else {
-      return this.state.runes[version][rune_id]
-    }
   }
   render() {
     return (

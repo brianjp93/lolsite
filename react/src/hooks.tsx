@@ -9,7 +9,7 @@ import {
 } from 'react-query'
 import api from './api/api'
 
-import {ChampionType, UserType} from './types'
+import {ChampionType, UserType, RuneType} from './types'
 
 export function useDebounce<V>(value: V, delay: number) {
   // State and setters for debounced value
@@ -52,6 +52,19 @@ export function useChampions(): Record<number, ChampionType> {
     champions[champ.key] = champ
   }
   return champions
+}
+
+export function useRunes(version: string) {
+  const runesQuery = useQuery(
+    ['runes', version],
+    () => api.data.getRunes({version}),
+    {retry: false, refetchOnWindowFocus: false, staleTime: 1000 * 60 * 60}
+  )
+  const runes: Record<number, RuneType> = {}
+  for (const rune of runesQuery.data || []) {
+    runes[rune._id] = rune
+  }
+  return runes
 }
 
 export function useQueryWithPrefetch<T>(

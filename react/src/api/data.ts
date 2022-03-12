@@ -1,4 +1,6 @@
 import axios from 'axios'
+import {unwrap, Rune} from '../types'
+import * as t from 'io-ts'
 
 var version = 'v1'
 
@@ -15,9 +17,10 @@ function items(data: any) {
   return axios.post(url, data)
 }
 
-function getRunes(data: any) {
+async function getRunes(data: any) {
   var url = `/api/${version}/data/reforged-runes/`
-  return axios.post(url, data)
+  const response = await axios.post(url, data)
+  return unwrap(t.array(Rune).decode(response.data.data))
 }
 
 function getCurrentSeason() {

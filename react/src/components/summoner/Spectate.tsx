@@ -1,4 +1,4 @@
-import {useEffect, useRef, useMemo, ReactNode} from 'react'
+import {useEffect, useRef, useMemo, ReactNode, useCallback} from 'react'
 import {useQuery} from 'react-query'
 import {Link} from 'react-router-dom'
 import Modal from 'react-modal'
@@ -53,7 +53,7 @@ export function Spectate({
     return top
   }
 
-  const getGameTime = () => {
+  const getGameTime = useCallback(() => {
     if (spectateData === undefined) {
       return ''
     }
@@ -63,7 +63,7 @@ export function Spectate({
     const minutes = Math.floor(total_seconds / 60)
     const seconds = total_seconds % 60
     return `${numeral(minutes).format('0')}:${numeral(seconds).format('00')}`
-  }
+  }, [spectateData])
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -75,7 +75,7 @@ export function Spectate({
     return () => {
       window.clearInterval(interval)
     }
-  }, [])
+  }, [getGameTime])
 
   const participantLine = (part: any) => {
     const pos = getTopSoloPosition(part.positions)

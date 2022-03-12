@@ -44,3 +44,18 @@ export const Champion = t.type({
   created_date: t.string,
 })
 export type ChampionType = t.TypeOf<typeof Champion>
+
+export const Rune = t.type({
+  icon: t.string,
+  id: t.number,
+  image_url: t.string,
+  key: t.string,
+  long_description: t.string,
+  name: t.string,
+  reforgedtree: t.number,
+  row: t.number,
+  short_description: t.string,
+  sort_int: t.number,
+  _id: t.number,
+})
+export type RuneType = t.TypeOf<typeof Rune>

@@ -58,8 +58,8 @@ export type {
   PaginatedResponseType
 } from './iotypes/base'
 
-export {Champion} from './iotypes/data'
-export type {ChampionType} from './iotypes/data'
+export {Champion, Rune} from './iotypes/data'
+export type {ChampionType, RuneType} from './iotypes/data'
 
 export function unwrap<T>(x: t.Validation<T>) {
   if (isRight(x)) {
