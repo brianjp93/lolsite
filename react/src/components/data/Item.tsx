@@ -1,4 +1,4 @@
-import {useState, useRef, useEffect, useCallback} from 'react'
+import {useState, useCallback} from 'react'
 import {Popover} from 'react-tiny-popover'
 
 export function Item(props: any) {
@@ -23,17 +23,7 @@ export function Item(props: any) {
 export function ItemPopover(props: any) {
   const [isOpen, setIsOpen] = useState(false)
   const [isAttemptedGet, setIsAttemptedGet] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
   const {item_id, major, minor, store, item, getItem} = props
-
-  const handleOutsideClick = useCallback((event) => {
-    if (ref?.current) {
-      if (ref.current.contains(event.target)) { }
-      else if (isOpen) {
-        setIsOpen(false);
-      }
-    }
-  }, [isOpen, ref])
 
   const toggle = useCallback(() => {
     setIsOpen((state) => !state)
@@ -45,24 +35,16 @@ export function ItemPopover(props: any) {
     }
   }, [isAttemptedGet, item, item_id, major, minor, store, getItem])
 
-  useEffect(() => {
-    if (item_id) {
-      window.addEventListener('mousedown', handleOutsideClick);
-      return () => {
-        window.removeEventListener('mousedown', handleOutsideClick);
-      }
-    }
-  }, [handleOutsideClick, item_id])
-
   if (props.item_id) {
     return (
       <Popover
+        onClickOutside={() => setIsOpen(false)}
         isOpen={isOpen}
         positions={['top']}
         containerStyle={{zIndex: '11'}}
         content={<Item item={props.item} />}
       >
-        <div ref={ref} style={{...props.style, cursor: 'pointer'}} onClick={toggle}>
+        <div style={{...props.style, cursor: 'pointer'}} onClick={toggle}>
           {props.children}
         </div>
       </Popover>
