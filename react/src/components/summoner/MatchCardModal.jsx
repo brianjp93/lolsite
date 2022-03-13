@@ -4,7 +4,7 @@ import {useQuery} from 'react-query'
 
 import {Timeline} from './Timeline'
 import ChampionTimelines from './ChampionTimelines'
-import StatOverview from './StatOverview'
+import {StatOverview} from './StatOverview'
 import BuildOrder from './BuildOrder'
 import {RunePage} from './RunePage'
 import {MapEvents} from './MapEvents'
@@ -23,11 +23,13 @@ import {
 import {rankParticipants} from './rankparticipants'
 import {Comments} from '../comment/comments'
 import queryString from 'query-string'
+import { useChampions } from '../../hooks'
 
 function MatchCardModal(props) {
   let store = props.store
   let match_id = props.route.match.params.match_id
   let puuid = props.summoner.puuid
+  const champions = useChampions()
 
   const [timeline_index, setTimelineIndex] = useState(null)
   // stats, comments
@@ -147,7 +149,7 @@ function MatchCardModal(props) {
           <div>
             <img
               style={{height: 40, display: 'inline'}}
-              src={part.champion.image?.file_40}
+              src={champions[part.champion_id].image?.file_40}
               alt=""
             />
             <div style={{display: 'inline-block', paddingLeft: 4}}>

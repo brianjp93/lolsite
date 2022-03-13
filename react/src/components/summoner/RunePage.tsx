@@ -2,7 +2,7 @@ import React, { useState, useEffect, ReactNode, CSSProperties, useRef } from 're
 import {Popover} from 'react-tiny-popover'
 import numeral from 'numeral'
 import {StatModTable} from './StatMod'
-import {useRunes} from '../../hooks'
+import {useRunes, useChampions} from '../../hooks'
 import type { FullParticipantType, BasicMatchType, RuneType } from '../../types'
 
 import RUNES from '../../constants/runes'
@@ -11,6 +11,7 @@ export function RunePage({mypart, participants, match, matchCardHeight}: {mypart
   const [selectedPart, setSelectedPart] = useState<FullParticipantType | undefined>()
   const version = `${match.major}.${match.minor}`
   const runes = useRunes(version)
+  const champions = useChampions()
 
   const getPerks = (part: FullParticipantType) => {
     let perks: {id: string, var1: string, var2: string, var3: string}[] = []
@@ -36,6 +37,7 @@ export function RunePage({mypart, participants, match, matchCardHeight}: {mypart
 
   const partSelection = () => {
     return participants.map((part) => {
+      const champ = champions[part.champion_id]
       let select_style: React.CSSProperties = {
         height: 30,
         width: 30,
@@ -57,7 +59,7 @@ export function RunePage({mypart, participants, match, matchCardHeight}: {mypart
       }
       return (
         <div key={`${match.id}-${part.id}-rune-champ-image`}>
-          {part.champion.image_url === '' && (
+          {champ.image.file_30 === '' && (
             <div
               title={part.summoner_name}
               onClick={() => setSelectedPart(part)}
@@ -66,12 +68,12 @@ export function RunePage({mypart, participants, match, matchCardHeight}: {mypart
               NA
             </div>
           )}
-          {part.champion.image.file_30 !== '' && (
+          {champ.image.file_30 !== '' && (
             <img
               title={part.summoner_name}
               onClick={() => setSelectedPart(part)}
               style={{...select_style}}
-              src={part.champion.image.file_30}
+              src={champ.image.file_30}
               alt=""
             />
           )}

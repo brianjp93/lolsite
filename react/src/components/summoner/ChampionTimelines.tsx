@@ -1,5 +1,6 @@
 import {useState, useCallback, useMemo, useEffect} from 'react'
 import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts'
+import { useChampions } from '../../hooks'
 import ReactTooltip from 'react-tooltip'
 import numeral from 'numeral'
 import type {FullParticipantType, SummonerType, FrameType, ParticipantFrameType} from '../../types'
@@ -31,6 +32,7 @@ function ChampionTimelines(props: {
     props.participants.map((item) => item._id),
   )
   const [graph_type, setGraphType] = useState<GraphType>('total_gold')
+  const champions = useChampions()
 
   const image_width = 30
   const usable_width = props.expanded_width - 30
@@ -160,9 +162,13 @@ function ChampionTimelines(props: {
               let stroke = colors[participant_ids.indexOf(id)]
               const stroke_width = id !== props.my_part._id ? 1 : 3
               const stroke_type = graph_type === 'level' ? 'stepAfter' : 'monotone'
+              const part = getParticipant(props.participants, id)
+              if (!part) {
+                return null
+              }
               return (
                 <Line
-                  name={getParticipant(props.participants, id)?.champion.name}
+                  name={champions[part.champion_id]?.name}
                   key={`${id}-line-chart`}
                   isAnimationActive={false}
                   yAxisId="left"
@@ -236,6 +242,7 @@ function getParticipant(participants: FullParticipantType[], id: number) {
 }
 
 function ChampionImage(props: any) {
+  const champions = useChampions()
   let image_style: any = {
     borderStyle: 'solid',
     borderWidth: 2,
@@ -258,17 +265,17 @@ function ChampionImage(props: any) {
 
   return (
     <div style={{display: 'inline-block', paddingRight: props.padding_pixels, ...vert_align}}>
-      {props.participant.champion.image_url === '' && (
+      {champions[props.participant.champion_id].image.file_30 === '' && (
         <div onClick={props.handleClick} style={{...image_style}}>
           NA
         </div>
       )}
-      {props.participant?.champion?.image?.file_30 && (
+      {champions?.[props.participant?.champion_id]?.image?.file_30 && (
         <img
           onClick={props.handleClick}
           style={{...image_style}}
-          aria-label={props.participant.champion.name}
-          src={props.participant.champion.image.file_30}
+          aria-label={champions?.[props.participant.champion_id]?.name}
+          src={champions?.[props.participant.champion_id]?.image?.file_30}
           alt=""
         />
       )}

@@ -1,9 +1,10 @@
 import {useState, useEffect, useMemo, useCallback} from 'react'
+import { useQuery } from 'react-query'
 import ReactDOMServer from 'react-dom/server'
 import numeral from 'numeral'
 import ReactTooltip from 'react-tooltip'
 import api from '../../api/api'
-import toastr from 'toastr'
+import {useChampions} from '../../hooks'
 import type {
   FrameType,
   FullParticipantType,
@@ -404,6 +405,7 @@ function ChampionImage(props: {
   theme: string
   handleClick: () => void
 }) {
+  const champions = useChampions()
   let image_style: any = {
     cursor: 'pointer',
     width: 30,
@@ -424,7 +426,8 @@ function ChampionImage(props: {
   }
 
   let vert_align: any = {}
-  let champ_image = props.participant.champion?.image?.file_30
+  const champ = champions[props.participant.champion_id]
+  let champ_image = champ?.image?.file_30
   if (champ_image === undefined) {
     vert_align.verticalAlign = 'top'
   }
@@ -441,8 +444,8 @@ function ChampionImage(props: {
           style={{
             ...image_style,
           }}
-          aria-label={props.participant.champion.name}
-          src={props.participant.champion?.image?.file_30}
+          aria-label={champ.name}
+          src={champ?.image?.file_30}
           alt=""
         />
       )}
@@ -455,12 +458,12 @@ function SkillLevelUp(props: {
   expanded_width: number
   skills: any
 }) {
-  const [spells, setSpells] = useState<any>({})
+  const champions = useChampions()
 
-  useEffect(() => {
-    let params = {champion_id: props.selected_participant.champion._id}
-    api.data
-      .getChampionSpells(params)
+  const spellQuery = useQuery(
+    ['spells', props.selected_participant.champion_id],
+    () => api.data
+      .getChampionSpells({champion_id: champions[props.selected_participant.champion_id]._id})
       .then((response) => {
         let output: any = {}
         let data = response.data.data
@@ -469,12 +472,16 @@ function SkillLevelUp(props: {
           let letter = ['q', 'w', 'e', 'r'][i]
           output[letter] = spell
         }
-        setSpells(output)
-      })
-      .catch((_) => {
-        toastr.error('Error while getting champion abilities.')
-      })
-  }, [props.selected_participant])
+        return output
+      }),
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 10,
+      enabled: Object.keys(champions).length > 0 && !!props.selected_participant.champion_id,
+    }
+  )
+  const spells = useMemo(() => spellQuery.data || {}, [spellQuery.data])
 
   useEffect(() => {
     ReactTooltip.rebuild()

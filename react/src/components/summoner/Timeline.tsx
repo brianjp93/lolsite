@@ -1,9 +1,9 @@
-import {useCallback} from 'react'
+import {useCallback, useEffect} from 'react'
 import {ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine} from 'recharts'
 import {useState} from 'react'
 import numeral from 'numeral'
-import {useEffect} from 'react'
 import {getMyPart} from '../../constants/general'
+import { useChampions } from '../../hooks'
 
 import type {
   SummonerType,
@@ -38,8 +38,8 @@ function Timeline(props: {
   const [timeline, setTimeline] = useState<AugmentedFrameType[]>([])
   const participants = props.participants
   const match = props.match
-  // const summoner = props.summoner
   const theme = props.store.state.theme
+  const champions = useChampions()
 
   const [timeline_index, setTimelineIndex] = useState<number | null>(null)
   const [mypart, setMypart] = useState<FullParticipantType>()
@@ -437,7 +437,7 @@ function Timeline(props: {
                     <span>
                       <span>
                         {part1 !== null && (
-                          <img style={{height: 15}} src={part1.champion.image?.file_30} alt="" />
+                          <img style={{height: 15}} src={champions[part1.champion_id].image?.file_30} alt="" />
                         )}
                         {part1 === null && <span>minions</span>}
                       </span>{' '}
@@ -446,9 +446,11 @@ function Timeline(props: {
                           killed
                         </span>
                       </span>{' '}
-                      <span>
-                        <img style={{height: 15}} src={part2?.champion.image?.file_30} alt="" />
-                      </span>
+                      {part2?.champion_id &&
+                        <span>
+                          <img style={{height: 15}} src={champions[part2?.champion_id].image?.file_30} alt="" />
+                        </span>
+                      }
                     </span>
                   )}
 
@@ -456,7 +458,7 @@ function Timeline(props: {
                     <span>
                       <span>
                         {part1 !== null && (
-                          <img style={{height: 15}} src={part1.champion.image?.file_30} alt="" />
+                          <img style={{height: 15}} src={champions[part1.champion_id].image?.file_30} alt="" />
                         )}
                         {part1 === null && <span>minions</span>}
                       </span>{' '}
@@ -490,7 +492,7 @@ function Timeline(props: {
                     <span>
                       <span>
                         {part1 !== null && (
-                          <img style={{height: 15}} src={part1.champion.image?.file_30} alt="" />
+                          <img style={{height: 15}} src={champions[part1.champion_id].image?.file_30} alt="" />
                         )}
                         {part1 === null && <span>minions</span>}
                       </span>{' '}

@@ -2,6 +2,7 @@ import React, {useState, useEffect, useCallback} from 'react'
 import ReactDOMServer from 'react-dom/server'
 import {buildings_default} from '../../constants/buildings'
 import ReactTooltip from 'react-tooltip'
+import { useChampions } from '../../hooks'
 
 import type {
   FullMatchType,
@@ -57,6 +58,7 @@ export function MapEvents(props: {
   const [buildings, setBuildings] = useState<any>({})
   const [part_dict, setPartDict] = useState<Record<number, FullParticipantType>>({})
   const [players, setPlayers] = useState<any>([])
+  const champions = useChampions()
 
   const match = props.match
   const store = props.store
@@ -254,7 +256,7 @@ export function MapEvents(props: {
                     borderRadius: '50%',
                     border: `2px solid ${border_color}`,
                   }}
-                  src={player.part.champion?.image?.file_30}
+                  src={champions[player.part.champion_id]?.image?.file_30}
                   alt="participant bubble"
                 />
               </div>
@@ -292,6 +294,7 @@ function EventBubble({
   pos: [number, number]
   part_dict: Record<number, FullParticipantType>
 }) {
+  const champions = useChampions()
   const ev =
     buildingKillEvent || championKillEvent || turretPlateDestroyedEvent || eliteMonsterKillEvent
   if (!ev) {
@@ -377,7 +380,7 @@ function EventBubble({
                 <div style={{display: 'inline-block'}}>
                   <img
                     style={img_style}
-                    src={part_dict[ev.killer_id].champion?.image?.file_40}
+                    src={champions?.[part_dict[ev.killer_id].champion_id]?.image?.file_40}
                     alt=""
                   />
                 </div>
@@ -395,7 +398,7 @@ function EventBubble({
               </div>
               <img
                 style={img_style}
-                src={part_dict[championKillEvent.victim_id].champion?.image?.file_40}
+                src={champions?.[part_dict[championKillEvent.victim_id].champion_id]?.image?.file_40}
                 alt=""
               />
               <div className="row col s12">
@@ -425,7 +428,7 @@ function EventBubble({
                 <React.Fragment>
                   <img
                     style={img_style}
-                    src={part_dict[ev.killer_id].champion?.image?.file_40}
+                    src={champions?.[part_dict[ev.killer_id].champion_id]?.image?.file_40}
                     alt=""
                   />
                   <div style={{display: 'inline-block', margin: '0px 8px'}}> killed </div>
@@ -445,7 +448,7 @@ function EventBubble({
               {ev.killer_id !== 0 && (
                 <img
                   style={img_style}
-                  src={part_dict[ev.killer_id].champion?.image?.file_40}
+                  src={champions?.[part_dict[ev.killer_id].champion_id]?.image?.file_40}
                   alt=""
                 />
               )}

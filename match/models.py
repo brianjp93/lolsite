@@ -110,19 +110,6 @@ class MatchQuerySet(models.QuerySet):
         qs = qs.distinct("_id").select_related("image")
         return {x._id: x for x in qs}
 
-    def get_champs(self):
-        champ_ids = set()
-        for match in self.prefetch_related("participants"):
-            for part in match.participants.all():
-                champ_ids.add(part.champion_id)
-        qs = Champion.objects.filter(key__in=champ_ids, language="en_US")
-        qs = (
-            qs.order_by("key", "-major", "-minor")
-            .distinct("key")
-            .select_related("image")
-        )
-        return {x.key: x for x in qs}
-
     def get_spell_images(self):
         spell_ids = set()
         for match in self.prefetch_related("participants"):
@@ -166,7 +153,6 @@ class MatchQuerySet(models.QuerySet):
             "items": self.get_items(),
             "runes": self.get_runes(),
             "perk_substyles": self.get_perk_substyles(),
-            "champs": self.get_champs(),
             "spell_images": self.get_spell_images(),
         }
 

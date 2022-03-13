@@ -57,7 +57,6 @@ export const BasicParticipant = t.type({
   summoner_1_image: t.string,
   summoner_2_id: t.number,
   summoner_2_image: t.string,
-  champion: t.union([BasicChampionWithImage, t.type({})]),
   champion_id: t.number,
   stats: BasicStats,
 })
@@ -237,7 +236,6 @@ export const FullParticipant = t.type({
   team_position: optional(t.string),
   role_label: optional(t.number),
   stats: Stats,
-  champion: optional(BasicChampionWithImage),
   summoner_1_image: t.string,
   summoner_2_image: t.string,
 })

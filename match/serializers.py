@@ -268,7 +268,6 @@ class BanSerializer(serializers.ModelSerializer):
 
 class FullParticipantSerializer(serializers.ModelSerializer):
     stats = serializers.SerializerMethodField()
-    champion = serializers.SerializerMethodField()
     summoner_1_image = serializers.SerializerMethodField()
     summoner_2_image = serializers.SerializerMethodField()
 
@@ -287,18 +286,10 @@ class FullParticipantSerializer(serializers.ModelSerializer):
             if match_qs:
                 self.extra = match_qs.get_related()
         self.spell_images = self.extra.get('spell_images', {})
-        self.champs = self.extra.get('champs', {})
         self.runes = self.extra.get('runes', {})
         self.items = self.extra.get('items', {})
         self.perk_substyles = self.extra.get('perk_substyles', {})
         super().__init__(instance=instance, **kwargs)
-
-    def get_champion(self, obj):
-        ret = None
-        champ = self.champs.get(obj.champion_id)
-        if champ:
-            ret = BasicChampionWithImageSerializer(champ).data
-        return ret
 
     def get_stats(self, obj):
         return StatsSerializer(obj.stats, extra=self.extra).data
@@ -818,7 +809,6 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
     stats = serializers.SerializerMethodField()
     summoner_1_image = serializers.SerializerMethodField()
     summoner_2_image = serializers.SerializerMethodField()
-    champion = serializers.SerializerMethodField()
 
     class Meta:
         model = Participant
@@ -834,7 +824,6 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
             "summoner_1_image",
             "summoner_2_id",
             "summoner_2_image",
-            "champion",
             "champion_id",
             "stats",
         ]
@@ -842,7 +831,6 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
     def __init__(self, instance=None, extra=None, **kwargs):
         self.extra = extra or {}
         self.spell_images = self.extra.get('spell_images', {})
-        self.champs = self.extra.get('champs', {})
         self.items = self.extra.get('items', {})
         super().__init__(instance=instance, **kwargs)
 
@@ -854,13 +842,6 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
 
     def get_summoner_2_image(self, obj):
         return self.spell_images.get(obj.summoner_2_id, '')
-
-    def get_champion(self, obj):
-        ret = {}
-        champ = self.champs.get(obj.champion_id)
-        if champ:
-            ret = BasicChampionWithImageSerializer(champ).data
-        return ret
 
 
 class BasicMatchSerializer(serializers.ModelSerializer):
