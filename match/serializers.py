@@ -228,7 +228,7 @@ class StatsSerializer(serializers.ModelSerializer):
             return ItemImageSerializer(item.image).data
 
     def get_perk_sub_style_image_url(self, obj):
-        return self.perk_substyles.get(obj.perk_sub_style, '')
+        return self.perk_substyles.get(obj.perk_sub_style, '') or ''
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -767,7 +767,7 @@ class BasicStatsSerializer(serializers.ModelSerializer):
         return ''
 
     def get_perk_sub_style_image_url(self, obj):
-        return self.perk_substyles.get(obj.perk_sub_style)
+        return self.perk_substyles.get(obj.perk_sub_style) or ''
 
     def get_item_0_image(self, obj):
         item = self.items.get(obj.item_0)
