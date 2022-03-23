@@ -1,7 +1,9 @@
 """match.models
 """
+from __future__ import annotations
 from typing import List, Optional
 from django.db import models
+from django.db.models import QuerySet
 from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
 
@@ -14,7 +16,7 @@ from data.models import Item, SummonerSpellImage
 from data.models import SummonerSpell, Champion
 from data import constants as DATA_CONSTANTS
 
-from player.models import simplify, Summoner
+from player.models import simplify, Summoner, Comment
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +175,11 @@ class Match(VersionedModel):
 
     objects = MatchQuerySet.as_manager()
 
+    id: int | None
+    pk: int | None
+    participants: QuerySet['Participant']
+    comments: QuerySet[Comment]
+
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
 
@@ -191,9 +198,9 @@ class Match(VersionedModel):
         """
         if pname is None:
             pname = ""
-            try:
-                pname = self.participants.all().first().summoner_name_simplified
-            except:
+            if part := self.participants.all().first():
+                pname = part.summoner_name_simplified
+            else:
                 logger.exception("problem while finding participant")
         else:
             pname = simplify(pname)
@@ -210,26 +217,6 @@ class Match(VersionedModel):
         """Get creation as datetime"""
         dt = timezone.datetime.fromtimestamp(self.game_creation // 1000, tz=pytz.utc)
         return dt
-
-    def tier_average(self):
-        """Compute tier average."""
-        major = self.major
-        try:
-            tiers = getattr(DATA_CONSTANTS, f"TIERS_{major}")
-        except:
-            output = ""
-        else:
-            all_tiers = []
-            for part in self.participants.all():
-                if part.highest_achieved_season_tier:
-                    index = tiers.index(part.highest_achieved_season_tier.lower())
-                    all_tiers.append(index)
-            if all_tiers:
-                output_index = int(sum(all_tiers) / len(all_tiers))
-                output = tiers[output_index]
-            else:
-                output = ""
-        return output.title()
 
     def get_comment_count(self):
         return self.comments.all().count()
