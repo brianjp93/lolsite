@@ -221,10 +221,9 @@ class Match(VersionedModel):
     def get_comment_count(self):
         return self.comments.all().count()
 
-    def is_summoner_in_game(self, summoners: List[Summoner]) -> Optional['Participant']:
+    def is_summoner_in_game(self, summoners: List[Summoner]):
         """Find if a summoner is in the game."""
-        part: Optional['Participant'] = self.participants.filter(puuid__in=[x.puuid for x in summoners]).first()
-        return part
+        return self.participants.filter(puuid__in=[x.puuid for x in summoners]).first()
 
 
 class Participant(models.Model):
