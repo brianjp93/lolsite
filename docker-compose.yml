@@ -2,7 +2,6 @@ version: "3.3"
 
 services:
   db:
-    restart: always
     image: postgres:13.3-alpine
     volumes:
       - ./data/db:/var/lib/postgresql/data
@@ -10,7 +9,6 @@ services:
       - "5432:5432"
     env_file: .docker_env
   web:
-    restart: always
     build:
       context: .
       dockerfile: ./docker/local/Dockerfile
@@ -30,7 +28,6 @@ services:
       - redis
     stdin_open: true
   worker:
-    restart: always
     build:
       context: .
       dockerfile: ./docker/local/Dockerfile
