@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-. /var/app/venv/*/bin/activate && . /opt/elasticbeanstalk/deployment/env && cd /var/app/current

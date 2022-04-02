@@ -35,8 +35,7 @@ elif config("ENVNAME", None) == "circleci":
 elif config('ENVNAME', None) == 'fly':
     from lolsite.settingsenv.fly_settings import *
 else:
-    from lolsite.settingsenv.aws_settings import *
-    print('Using aws settings.')
+    raise RuntimeError('ENVNAME or LOLSITE_HOST must be set.')
 
 GIT_BUILD = 0
 try:
