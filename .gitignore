@@ -5,6 +5,8 @@ react/node_modules
 react/start.bat
 react/build/*
 
+schema.prisma
+
 react/.yarn/*
 !react/.yarn/patches
 !react/.yarn/plugins

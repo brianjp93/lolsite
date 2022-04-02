@@ -1,0 +1,11 @@
+media/
+.env
+.vim/
+.vscode/
+.git/
+.pytest_cache/
+go.fish
+schema.prisma
+react/node_modules/
+react/build/
+data/db/

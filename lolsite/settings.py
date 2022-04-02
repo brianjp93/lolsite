@@ -32,6 +32,8 @@ if config("LOLSITE_HOST", None) == "dev":
 elif config("ENVNAME", None) == "circleci":
     from lolsite.settingsenv.circleci_settings import *
     print('Using circle ci settings.')
+elif config('ENVNAME', None) == 'fly':
+    from lolsite.settingsenv.fly_settings import *
 else:
     from lolsite.settingsenv.aws_settings import *
     print('Using aws settings.')
