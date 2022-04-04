@@ -1,20 +1,19 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import exceptions
+from rest_framework.generics import ListAPIView
 
-from .models import ProfileIcon, ReforgedRune, ReforgedTree
+from .models import ReforgedRune, ReforgedTree
 from .models import Champion, Item
 
 from match.models import Match
 
-from .serializers import ProfileIconSerializer, ItemSerializer
+from .serializers import ItemSerializer
 from .serializers import ReforgedRuneSerializer, ChampionSerializer
-from .serializers import ChampionSpellSerializer
+from .serializers import ChampionSpellSerializer, BasicChampionWithImageSerializer
 
-from lolsite.helpers import query_debugger
-from django.db.models import QuerySet
+from lolsite.helpers import query_debugger, LargeResultsSetPagination
 from django.core.cache import cache
-from django.shortcuts import get_object_or_404
 
 
 @api_view(["POST"])
@@ -298,6 +297,20 @@ def get_champions(request, format=None):
         data = {"message": "Must use POST."}
 
     return Response(data, status=status_code)
+
+
+class BasicChampionView(ListAPIView):
+    serializer_class = BasicChampionWithImageSerializer
+    pagination_class = LargeResultsSetPagination
+
+    def get_queryset(self):
+        if champ := Champion.objects.all().order_by('-major', '-minor', '-patch').first():
+            return Champion.objects.filter(
+                major=champ.major,
+                minor=champ.minor,
+                patch=champ.patch
+            ).distinct('key')
+        return Champion.objects.none()
 
 
 @api_view(["POST"])

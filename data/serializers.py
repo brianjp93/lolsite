@@ -152,7 +152,7 @@ class BasicChampionWithImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Champion
-        fields = ['_id', 'name', 'image']
+        fields = ['_id', 'name', 'image', 'key']
 
     def __new__(cls, instance, *args, **kwargs):
         if isinstance(instance, QuerySet):

@@ -23,6 +23,7 @@ export type ChampionImageType = t.TypeOf<typeof ChampionImage>
 export const BasicChampionWithImage = t.type({
     _id: t.string,
     name: t.string,
+    key: t.number,
     image: ChampionImage,
 })
 export type BasicChampionWithImageType = t.TypeOf<typeof BasicChampionWithImage>

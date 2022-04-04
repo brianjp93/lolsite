@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {unwrap, Rune} from '../types'
+import {unwrap, Rune, BasicChampionWithImage, PaginatedResponse} from '../types'
 import * as t from 'io-ts'
 
 var version = 'v1'
@@ -38,6 +38,12 @@ function getChampionSpells(data: any) {
   return axios.post(url, data)
 }
 
+async function basicChampions() {
+  const url = `/api/${version}/data/basic-champions/`
+  const response = await axios.get(url)
+  return unwrap(PaginatedResponse(BasicChampionWithImage).decode(response.data))
+}
+
 const exports = {
   getItem,
   getRunes,
@@ -45,5 +51,6 @@ const exports = {
   getCurrentSeason,
   getChampions,
   getChampionSpells,
+  basicChampions,
 }
 export default exports

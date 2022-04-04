@@ -9,7 +9,7 @@ import {
 } from 'react-query'
 import api from './api/api'
 
-import {ChampionType, UserType, RuneType} from './types'
+import {ChampionType, UserType, RuneType, BasicChampionWithImageType} from './types'
 
 export function useDebounce<V>(value: V, delay: number) {
   // State and setters for debounced value
@@ -45,9 +45,22 @@ export function useChampions(): Record<number, ChampionType> {
   const championQuery = useQuery(
     'champions',
     () => api.data.getChampions().then((x) => x.data.data),
-    {retry: false, refetchOnWindowFocus: false, staleTime: 1000 * 60 * 10},
+    {retry: true, refetchOnWindowFocus: false, staleTime: 1000 * 60 * 10},
   )
   let champions: Record<number, ChampionType> = {}
+  for (let champ of championQuery.data || []) {
+    champions[champ.key] = champ
+  }
+  return champions
+}
+
+export function useBasicChampions(): Record<number, BasicChampionWithImageType> {
+  const championQuery = useQuery(
+    'basic-champions',
+    () => api.data.basicChampions().then((x) => x.results),
+    {retry: true, refetchOnWindowFocus: false, staleTime: 1000 * 60 * 10},
+  )
+  let champions: Record<number, BasicChampionWithImageType> = {}
   for (let champ of championQuery.data || []) {
     champions[champ.key] = champ
   }

@@ -9,6 +9,7 @@ urlpatterns = [
     path("reforged-runes/", data_views.get_reforged_runes),
     path("get-current-season/", data_views.get_current_season),
     path("champions/", data_views.get_champions),
+    path("basic-champions/", data_views.BasicChampionView.as_view()),
     path("champion-spells/", data_views.get_champion_spells),
 ]
 

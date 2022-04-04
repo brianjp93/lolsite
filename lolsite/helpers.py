@@ -46,6 +46,11 @@ class MultipleFieldLookupMixin:
         return obj
 
 
+class LargeResultsSetPagination(PageNumberPagination):
+    page_size = 1000
+    max_page_size = 1000
+
+
 class Paginator(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
