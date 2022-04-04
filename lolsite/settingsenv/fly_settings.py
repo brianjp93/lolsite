@@ -10,20 +10,6 @@ import dj_database_url
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-try:
-    with open(os.path.join(os.path.dirname(BASE_DIR), "env"), "rb") as env_file:
-        for line in env_file:
-            line = line.strip()
-            if line == "":
-                continue
-            line = line.split("export ")[1]
-            key = line.split("=")[0]
-            value = "".join(line.split("=")[1:]).strip('"')
-            config[key] = value
-except:
-    # print('Unable to set environment variables through env bash script')
-    pass
-
 REACT_DEV = False
 DEV = False
 DEBUG = False
