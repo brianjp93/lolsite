@@ -30,10 +30,8 @@ RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
 RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
 RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
 ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
-RUN corepack enable
-RUN yarn set version berry
-RUN yarn install
-RUN yarn build
+RUN corepack enable && yarn set version berry && yarn install && yarn build
+RUN rm -r node_modules/
 
 WORKDIR /app
 
