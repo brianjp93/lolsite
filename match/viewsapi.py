@@ -53,7 +53,7 @@ class MatchBySummoner(ListAPIView):
             summoner_id = pt.import_summoner(region, name=name)
             summoner = get_object_or_404(Summoner, id=summoner_id)
         elif len(summoner_query) >= 2:
-            for summoner in summoner_qs:
+            for summoner in summoner_query:
                 pt.import_summoner(region, puuid=summoner.puuid)
             summoner = get_object_or_404(Summoner, region=region, simple_name=name)
         else:
