@@ -48,6 +48,27 @@ CACHES = {
     }
 }
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '[{asctime}][{levelname}] {filename}:{funcName}:{lineno} :: {message}',
+            'style': "{",
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
+
 
 def before_breadcrumb(crumb, hint):
     if crumb.get("category", None) == "django.security.DisallowedHost":
