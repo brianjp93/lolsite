@@ -9,3 +9,4 @@ schema.prisma
 react/node_modules/
 react/build/
 data/db/
+static/
