@@ -45,8 +45,7 @@ function RankHistory(props: {summoner: SummonerType; theme: string}) {
     const [top_challenger_lp, setTopChallengerLP] = useState(100)
     const [timeFrame, setTimeFrame] = useState<timeFramesKeys>('year')
 
-    // eslint-disable-next-line
-    const [four_div_tiers, setFourDivTiers] = useState([
+    const [four_div_tiers,] = useState([
         'IRON',
         'BRONZE',
         'SILVER',
@@ -55,8 +54,7 @@ function RankHistory(props: {summoner: SummonerType; theme: string}) {
         'DIAMOND',
     ])
 
-    // eslint-disable-next-line
-    const [one_div_tiers, setOneDivTiers] = useState(['MASTER', 'GRANDMASTER', 'CHALLENGER'])
+    const [one_div_tiers,] = useState(['MASTER', 'GRANDMASTER', 'CHALLENGER'])
 
     const top_rank_lp = useMemo(() => {
         return {
@@ -323,9 +321,8 @@ function RankHistory(props: {summoner: SummonerType; theme: string}) {
             )}
 
             <div>
-                {Object.keys(timeFrames).map((name: any) => {
-                    // this is really dumb but idk how to make typescript happy
-                    const tf_copy: any = {...timeFrames}
+                {(Object.keys(timeFrames) as Array<keyof typeof timeFrames>).map((name) => {
+                    const tf_copy = {...timeFrames}
                     return (
                         <>
                             <label style={{marginRight: 15}} htmlFor={`timeframe-label-${name}`}>
