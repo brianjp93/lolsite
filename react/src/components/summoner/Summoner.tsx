@@ -338,23 +338,23 @@ export function Summoner({route, region, store}: {route: any; region: string; st
             <div className="row">
               <div className={`${custom_max_width}`}>
                 <div className="row">
-                  <div className="col l6 m12">
-                    <MatchFilterForm onUpdate={matchFilterOnUpdate} />
-                  </div>
-                  <div className="col l6 m12">
-                    <div
-                      style={{
-                        display: 'inline-block',
-                        verticalAlign: 'top',
-                      }}
-                    >
-                      <RecentlyPlayedWith
-                        region={region}
-                        summoner={summoner}
-                        matches={matches || []}
-                        store={store}
-                      />
+                  <div className="col l4 m12">
+                      <div
+                        style={{
+                          display: 'inline-block',
+                          verticalAlign: 'top',
+                        }}
+                      >
+                        <RecentlyPlayedWith
+                          region={region}
+                          summoner={summoner}
+                          matches={matches || []}
+                          store={store}
+                        />
+                      </div>
                     </div>
+                  <div className="col l8 m12">
+                    <MatchFilterForm onUpdate={matchFilterOnUpdate} />
                   </div>
                 </div>
               </div>
@@ -362,7 +362,23 @@ export function Summoner({route, region, store}: {route: any; region: string; st
 
             <div className="row" style={{visibility: 'visible'}}>
               <div className="col l10 offset-l1 m12 s12">
-                <div style={{display: 'inline-block'}}>
+                <div className="row">
+                  <div className='col l4 m12 collapsible-plays-with'>
+              {summonerQuery.isSuccess && summoner && (
+                  <div
+                    style={{
+                      display: 'inline-block',
+                      verticalAlign: 'top',
+                      marginLeft: 8,
+                    }}
+                  >
+                    <h5 style={{marginBottom: 3}}>Often Plays With</h5>
+                    <OftenPlaysWith region={region} summoner_id={summoner.id} />
+                  </div>
+                )}
+                </div>
+
+                <div className= "col l8 m12" style={{display: 'inline-block'}}>
                   {pagination()}
                   {isMatchLoading && (
                     <div style={{width: 600}}>
@@ -392,19 +408,9 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                     })}
                   {pagination()}
                 </div>
+                </div>
 
-                {summonerQuery.isSuccess && summoner && (
-                  <div
-                    style={{
-                      display: 'inline-block',
-                      verticalAlign: 'top',
-                      marginLeft: 8,
-                    }}
-                  >
-                    <h5 style={{marginBottom: 3}}>Often Plays With</h5>
-                    <OftenPlaysWith region={region} summoner_id={summoner.id} />
-                  </div>
-                )}
+
               </div>
             </div>
           </div>

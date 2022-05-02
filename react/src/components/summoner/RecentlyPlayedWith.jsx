@@ -53,7 +53,6 @@ export class RecentlyPlayedWith extends Component {
         style={{
           width: 270,
           height: 150,
-          marginLeft: 15,
           padding: 15,
         }}
         className={`card-panel ${this.props.store.state.theme}`}

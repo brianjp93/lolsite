@@ -32,9 +32,15 @@ export function MatchFilterForm({onUpdate}: {onUpdate: (data?: MatchFilterFormTy
   }, [])
 
   return (
+
     <>
       <form>
-        <div className="input-field dark">
+        <div 
+          style={{
+            width:600,
+          }} 
+          className="input-field dark"
+        >
           <select {...form.register('queue')}>
             <option value=''>any</option>
             {queuefilter.map((item) => {
