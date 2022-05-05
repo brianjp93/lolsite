@@ -358,7 +358,7 @@ function Timeline(props: {
             )
           })}
 
-          {timelineIndex && (
+          {timelineIndex && timeline[timelineIndex]?.timestamp &&(
             <ReferenceLine
               yAxisId="left"
               x={timeline[timelineIndex].timestamp}
