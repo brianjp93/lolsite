@@ -31,7 +31,6 @@ function MatchCardModal(props) {
   let puuid = props.summoner.puuid
   const champions = useChampions()
 
-  const [timeline_index, setTimelineIndex] = useState(null)
   // stats, comments
   const [view, setView] = useState('stats')
 
@@ -359,7 +358,6 @@ function MatchCardModal(props) {
                         match={match}
                         participants={participants}
                         timeline={timeline}
-                        setOuterTimelineIndex={setTimelineIndex}
                         store={props.store}
                         route={props.route}
                       />
@@ -371,7 +369,6 @@ function MatchCardModal(props) {
                       summoner={props.summoner}
                       match={match}
                       participants={participants}
-                      timeline_index={timeline_index}
                       timeline={timeline}
                       store={props.store}
                       route={props.route}
@@ -381,6 +378,7 @@ function MatchCardModal(props) {
                     <div style={{marginLeft: 30, marginRight: 8}}>
                       <h5 style={header_style}>Champion Timelines</h5>
                       <ChampionTimelines
+                        matchId={match._id}
                         theme={store.state.theme}
                         my_part={mypart}
                         summoner={props.summoner}

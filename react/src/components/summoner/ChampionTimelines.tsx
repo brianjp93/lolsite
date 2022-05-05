@@ -1,9 +1,19 @@
 import {useState, useCallback, useMemo, useEffect} from 'react'
-import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts'
-import { useChampions } from '../../hooks'
+import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from 'recharts'
+import {useChampions} from '../../hooks'
 import ReactTooltip from 'react-tooltip'
 import numeral from 'numeral'
 import type {FullParticipantType, SummonerType, FrameType, ParticipantFrameType} from '../../types'
+import {useTimelineIndex} from '../../stores'
 
 type GraphType =
   | 'total_gold'
@@ -21,6 +31,7 @@ interface AugmentedFrameType extends FrameType {
 }
 
 function ChampionTimelines(props: {
+  matchId: string
   theme: string
   my_part: FullParticipantType
   summoner: SummonerType
@@ -33,6 +44,7 @@ function ChampionTimelines(props: {
   )
   const [graph_type, setGraphType] = useState<GraphType>('total_gold')
   const champions = useChampions()
+  const [timelineIndex, setTimelineIndex] = useTimelineIndex(props.matchId)
 
   const image_width = 30
   const usable_width = props.expanded_width - 30
@@ -131,8 +143,14 @@ function ChampionTimelines(props: {
       </div>
 
       <div>
-        <ResponsiveContainer width='100%' height={400}>
+        <ResponsiveContainer width="100%" height={400}>
           <LineChart
+            onMouseMove={(props) => {
+              if (props.activeTooltipIndex !== undefined) {
+                let new_timeline_index = props.activeTooltipIndex
+                setTimelineIndex(new_timeline_index)
+              }
+            }}
             margin={{
               left: -10,
               right: 20,
@@ -157,6 +175,15 @@ function ChampionTimelines(props: {
                 return numeral(tick).format('0a')
               }}
             />
+
+            {timelineIndex && (
+              <ReferenceLine
+                yAxisId="left"
+                x={props.timeline[timelineIndex].timestamp}
+                stroke="white"
+                strokeWidth={2}
+              />
+            )}
 
             {participant_selection.map((id) => {
               let stroke = colors[participant_ids.indexOf(id)]

@@ -17,6 +17,7 @@ import {ChampionsPage} from './components/champion/champion'
 import {NotificationPage} from './components/notification/notification'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import ReactTooltip from 'react-tooltip'
+import {RecoilRoot} from 'recoil'
 
 import * as Sentry from "@sentry/react";
 import { Integrations } from "@sentry/tracing";
@@ -130,8 +131,10 @@ class App extends Component {
     return (
       <div id="background-div">
         <QueryClientProvider client={queryClient}>
-          <ReactTooltip effect='solid' />
-          <Routes store={this} />
+          <RecoilRoot>
+            <ReactTooltip effect='solid' />
+            <Routes store={this} />
+          </RecoilRoot>
         </QueryClientProvider>
       </div>
     )

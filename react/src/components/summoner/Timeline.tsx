@@ -4,6 +4,7 @@ import {useState} from 'react'
 import numeral from 'numeral'
 import {getMyPart} from '../../constants/general'
 import { useChampions } from '../../hooks'
+import {useTimelineIndex} from '../../stores'
 
 import type {
   SummonerType,
@@ -29,35 +30,33 @@ function Timeline(props: {
   summoner: SummonerType
   match: SimpleMatchType
   participants: FullParticipantType[]
-  timeline_index: number
   timeline: FrameType[]
   store: any
   route: any
   theme: string
 }) {
+  const [timelineIndex, setTimelineIndex] = useTimelineIndex(props.match._id)
+
   const [timeline, setTimeline] = useState<AugmentedFrameType[]>([])
   const participants = props.participants
   const match = props.match
   const theme = props.store.state.theme
   const champions = useChampions()
 
-  const [timeline_index, setTimelineIndex] = useState<number | null>(null)
   const [mypart, setMypart] = useState<FullParticipantType>()
-  const [is_show_reference, setIsShowReference] = useState(false)
-
-  let big_events = timeline_index !== null ? getBigEvents(timeline_index) : []
+  let big_events = timelineIndex !== null ? getBigEvents(timelineIndex) : []
 
   function getEvents(index: number | null) {
     if (index === null) {
       return []
     }
     const frame = timeline[index]
-    return [
+    return frame ? [
       ...frame.buildingkillevents,
       ...frame.elitemonsterkillevents,
       ...frame.championkillevents,
       ...frame.turretplatedestroyedevents,
-    ]
+    ] : []
   }
 
   function getBigEvents(index: number) {
@@ -236,13 +235,6 @@ function Timeline(props: {
     }
   }, [props.summoner, participants])
 
-  useEffect(() => {
-    if (props.timeline_index) {
-      setTimelineIndex(props.timeline_index)
-      setIsShowReference(true)
-    }
-  }, [props.timeline_index])
-
   const getMonsterLabel = (event: EliteMonsterKillEventType) => {
     if (event.monster_type === 'DRAGON') {
       if (event.monster_sub_type === 'EARTH_DRAGON') {
@@ -289,12 +281,8 @@ function Timeline(props: {
             if (props.activeTooltipIndex !== undefined) {
               let new_timeline_index = props.activeTooltipIndex
               setTimelineIndex(new_timeline_index)
-              if (is_show_reference) {
-                setIsShowReference(false)
-              }
             }
           }}
-          onMouseLeave={() => setTimelineIndex(null)}
         >
           <CartesianGrid vertical={false} stroke="#777" strokeDasharray="4 4" />
           <XAxis
@@ -370,10 +358,10 @@ function Timeline(props: {
             )
           })}
 
-          {is_show_reference && props.timeline_index && (
+          {timelineIndex && timeline[timelineIndex]?.timestamp &&(
             <ReferenceLine
               yAxisId="left"
-              x={timeline[props.timeline_index].timestamp}
+              x={timeline[timelineIndex].timestamp}
               stroke="white"
               strokeWidth={2}
             />
