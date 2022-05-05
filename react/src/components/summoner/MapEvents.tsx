@@ -2,7 +2,8 @@ import React, {useState, useEffect, useCallback} from 'react'
 import ReactDOMServer from 'react-dom/server'
 import {buildings_default} from '../../constants/buildings'
 import ReactTooltip from 'react-tooltip'
-import { useChampions } from '../../hooks'
+import {useChampions} from '../../hooks'
+import {useTimelineIndex} from '../../stores'
 
 import type {
   FullMatchType,
@@ -50,7 +51,6 @@ export function MapEvents(props: {
   participants: FullParticipantType[]
   timeline_index: number
   timeline: FrameType[]
-  setOuterTimelineIndex: (x: number) => void
   store: any
   route: any
 }) {
@@ -59,13 +59,13 @@ export function MapEvents(props: {
   const [part_dict, setPartDict] = useState<Record<number, FullParticipantType>>({})
   const [players, setPlayers] = useState<any>([])
   const champions = useChampions()
+  const [outerTimelineIndex, setOuterTimelineIndex] = useTimelineIndex(props.match._id)
 
   const match = props.match
   const store = props.store
   const theme = store.state.theme
   const timeline = props.timeline
   const participants = props.participants
-  const setOuterTimelineIndex = props.setOuterTimelineIndex
 
   const image_size = 500
   const max_x = 15300
@@ -134,9 +134,6 @@ export function MapEvents(props: {
     let newindex = index + 1
     if (newindex < timeline.length) {
       setIndex(newindex)
-      if (setOuterTimelineIndex !== undefined) {
-        setOuterTimelineIndex(newindex)
-      }
       let new_buildings = {...buildings}
       for (let ev of slice.buildingkillevents) {
         let team = 'BLUE'
@@ -156,9 +153,6 @@ export function MapEvents(props: {
     let newindex = index - 1
     if (newindex >= 0) {
       setIndex(newindex)
-      if (setOuterTimelineIndex !== undefined) {
-        setOuterTimelineIndex(newindex)
-      }
       let new_buildings = {...buildings}
       for (let ev of slice.buildingkillevents) {
         let team = 'BLUE'
@@ -209,6 +203,14 @@ export function MapEvents(props: {
     }
     setBuildings(new_buildings)
   }, [])
+
+  useEffect(() => {
+    if (index < outerTimelineIndex) {
+      stepForward()
+    } else if (index > outerTimelineIndex) {
+      stepBackward()
+    }
+  }, [stepForward, stepBackward, outerTimelineIndex, index])
 
   return (
     <div style={{display: 'inline-block'}}>
@@ -267,10 +269,25 @@ export function MapEvents(props: {
       </div>
 
       <div>
-        <button onClick={stepBackward} className={`${theme} btn-small`}>
+        <button
+          onClick={() => {
+            if (index > 0) {
+              setOuterTimelineIndex((index) => index - 1)
+            }
+          }}
+          className={`${theme} btn-small`}
+        >
           <i className="material-icons">chevron_left</i>
         </button>
-        <button style={{marginLeft: 8}} onClick={stepForward} className={`${theme} btn-small`}>
+        <button
+          style={{marginLeft: 8}}
+          onClick={() => {
+            if (index < timeline.length - 1) {
+              setOuterTimelineIndex((index) => index + 1)
+            }
+          }}
+          className={`${theme} btn-small`}
+        >
           <i className="material-icons">chevron_right</i>
         </button>
         <div style={{marginLeft: 8, display: 'inline-block'}}>{index} min</div>
@@ -398,7 +415,9 @@ function EventBubble({
               </div>
               <img
                 style={img_style}
-                src={champions?.[part_dict[championKillEvent.victim_id].champion_id]?.image?.file_40}
+                src={
+                  champions?.[part_dict[championKillEvent.victim_id].champion_id]?.image?.file_40
+                }
                 alt=""
               />
               <div className="row col s12">

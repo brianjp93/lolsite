@@ -260,6 +260,7 @@ export type FullTeamType = t.TypeOf<typeof FullTeam>
 
 export const FullMatch = t.type({
   id: t.number,
+  _id: t.string,
   game_creation: t.number,
   game_duration: t.number,
   game_mode: t.string,
