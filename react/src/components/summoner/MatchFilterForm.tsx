@@ -35,10 +35,10 @@ export function MatchFilterForm({onUpdate}: {onUpdate: (data?: MatchFilterFormTy
 
     <>
       <form>
-        <div 
+        <div
           style={{
             width:600,
-          }} 
+          }}
           className="input-field dark"
         >
           <select {...form.register('queue')}>
