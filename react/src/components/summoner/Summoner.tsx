@@ -338,10 +338,11 @@ export function Summoner({route, region, store}: {route: any; region: string; st
             <div className="row">
               <div className={`${custom_max_width}`}>
                 <div className="row">
-                  <div className="col l4 m12 collapsible-col">
+                  <div
+                    style={{maxWidth: 300}}
+                    className="col l4 m12 collapsible-col">
                     <div
                       style={{
-                        display: 'inline-block',
                         verticalAlign: 'top',
                       }}
                     >
@@ -355,7 +356,6 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                     {summonerQuery.isSuccess && summoner && (
                     <div
                       style={{
-                        display: 'inline-block',
                         verticalAlign: 'top',
                         marginLeft: 8,
                       }}
