@@ -175,3 +175,17 @@ hr {
     max-width: 300px;
     border-radius: 10px;
 }
+
+
+@media only screen and (min-width: 601px) {
+    .collapsible-col{
+        visibility: collapse;
+        height: 0px;
+    }
+}
+
+@media only screen and (min-width: 993px) {
+    .collapsible-col{
+        visibility: visible;
+    }
+}

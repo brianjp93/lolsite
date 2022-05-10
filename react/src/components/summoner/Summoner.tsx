@@ -338,10 +338,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
             <div className="row">
               <div className={`${custom_max_width}`}>
                 <div className="row">
-                  <div className="col l6 m12">
-                    <MatchFilterForm onUpdate={matchFilterOnUpdate} />
-                  </div>
-                  <div className="col l6 m12">
+                  <div className="col l4 m12 collapsible-col">
                     <div
                       style={{
                         display: 'inline-block',
@@ -355,56 +352,53 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                         store={store}
                       />
                     </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="row" style={{visibility: 'visible'}}>
-              <div className="col l10 offset-l1 m12 s12">
-                <div style={{display: 'inline-block'}}>
-                  {pagination()}
-                  {isMatchLoading && (
-                    <div style={{width: 600}}>
-                      <Orbit
-                        size={200}
-                        style={{
-                          margin: 'auto',
-                        }}
-                      />
+                    {summonerQuery.isSuccess && summoner && (
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        verticalAlign: 'top',
+                        marginLeft: 8,
+                      }}
+                    >
+                      <h5 style={{marginBottom: 3}}>Often Plays With</h5>
+                      <OftenPlaysWith region={region} summoner_id={summoner.id} />
                     </div>
-                  )}
-                  {!isMatchLoading &&
-                    summonerQuery.isSuccess &&
-                    matches.map((match: BasicMatchType, key: number) => {
-                      return (
-                        <MatchCard
-                          key={`${key}-${match._id}`}
-                          index={key}
-                          store={store}
-                          match={match}
-                          comment_count={commentQuery.data && (commentQuery.data[match.id] || 0)}
-                          region={region}
-                          queues={queues}
-                          summoner={summoner}
-                        />
-                      )
-                    })}
-                  {pagination()}
-                </div>
-
-                {summonerQuery.isSuccess && summoner && (
-                  <div
-                    style={{
-                      display: 'inline-block',
-                      verticalAlign: 'top',
-                      marginLeft: 8,
-                    }}
-                  >
-                    <h5 style={{marginBottom: 3}}>Often Plays With</h5>
-                    <OftenPlaysWith region={region} summoner_id={summoner.id} />
+                    )}
                   </div>
-                )}
+                  <div className="col l8 m12">
+                    <MatchFilterForm onUpdate={matchFilterOnUpdate} />
+                    {pagination()}
+                    {isMatchLoading && (
+                      <div style={{width: 600}}>
+                        <Orbit
+                          size={200}
+                          style={{
+                            margin: 'auto',
+                          }}
+                        />
+                      </div>
+                    )}
+                    {!isMatchLoading &&
+                      summonerQuery.isSuccess &&
+                      matches.map((match: BasicMatchType, key: number) => {
+                        return (
+                          <MatchCard
+                            key={`${key}-${match._id}`}
+                            index={key}
+                            store={store}
+                            match={match}
+                            comment_count={commentQuery.data && (commentQuery.data[match.id] || 0)}
+                            region={region}
+                            queues={queues}
+                            summoner={summoner}
+                          />
+                        )
+                      })}
+                    {pagination()}
+
+
+                  </div>
+                </div>
               </div>
             </div>
           </div>
