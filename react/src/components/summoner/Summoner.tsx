@@ -339,7 +339,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
               <div className={`${custom_max_width}`}>
                 <div className="row">
                   <div
-                    style={{maxWidth: 300}}
+                    style={{maxWidth: 415}}
                     className="col l4 m12 collapsible-col">
                     <div
                       style={{
