@@ -12,6 +12,7 @@ processes = []
 [env]
   PORT = "8000"
   ENVNAME = 'fly'
+  PYTHONUNBUFFERED = "TRUE"
 
 [experimental]
   allowed_public_ports = []
