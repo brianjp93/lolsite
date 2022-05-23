@@ -21,9 +21,9 @@ export function Spectate({
   const spectateQuery = useQuery(
     ['spectate', region, summoner_id],
     () => api.match.getSpectate({region, summoner_id}).then((x) => x.data),
-    {retry: false, refetchOnMount: false},
+    {retry: false},
   )
-  const spectateData = spectateQuery.data
+  const spectateData = spectateQuery.isSuccess ? spectateQuery.data : undefined
 
   const team100 = (spectateQuery.data?.participants || []).filter((x) => x.teamId === 100)
   const team200 = (spectateQuery.data?.participants || []).filter((x) => x.teamId === 200)

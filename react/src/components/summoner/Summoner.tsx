@@ -194,6 +194,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
       refetchInterval: 1000 * 60 * 5,
     },
   )
+  const spectateData = spectateQuery.isSuccess ? spectateQuery.data : undefined
 
   const match_ids = matches.map((x: any) => x.id)
   const commentQuery = useQuery(
@@ -309,7 +310,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                       icon={icon}
                       summoner={summoner}
                       store={store}
-                      spectateData={spectateQuery.data}
+                      spectateData={spectateData}
                       isSpectateModalOpen={isSpectateModalOpen}
                       setIsSpectateModalOpen={setIsSpectateModalOpen}
                     />
