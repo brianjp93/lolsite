@@ -175,15 +175,10 @@ export function Summoner({route, region, store}: {route: any; region: string; st
 
   const spectateQuery = useQuery(
     ['spectate', region, summoner?._id],
-    () =>
-      summoner?._id
-        ? api.match.getSpectate({region, summoner_id: summoner._id}).then((x) => x.data)
-        : undefined,
+    () => api.match.getSpectate({region, summoner_id: summoner!._id}).then((x) => x.data),
     {
       retry: false,
-      refetchOnWindowFocus: false,
       enabled: !!summoner?._id,
-      refetchInterval: 1000 * 60 * 5,
     },
   )
   const spectateData = spectateQuery.isSuccess ? spectateQuery.data : undefined
