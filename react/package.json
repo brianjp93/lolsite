@@ -36,7 +36,6 @@
     "react": "17.0.0",
     "react-datetime": "3.1.1",
     "react-dom": "17.0.0",
-    "react-ga": "3.3.0",
     "react-hook-form": "^7.20.4",
     "react-latex": "^1.6.0",
     "react-lazyload": "3.2.0",

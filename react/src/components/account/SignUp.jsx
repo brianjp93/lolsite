@@ -1,6 +1,5 @@
 import { Component } from 'react'
 import { Link } from 'react-router-dom'
-import ReactGA from 'react-ga'
 import PropTypes from 'prop-types'
 import ReactTooltip from 'react-tooltip'
 import toastr from 'toastr'
@@ -34,11 +33,6 @@ class SignUp extends Component {
         this.validatePasswordVerify = this.validatePasswordVerify.bind(this)
     }
     componentDidMount() {
-        ReactGA.event({
-          category: "Sign Up",
-          action: "Sign up page was mounted.",
-        })
-
         try {
             this.email_field.focus()
             this.email_field.select()

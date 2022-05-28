@@ -8401,7 +8401,6 @@ __metadata:
     react: 17.0.0
     react-datetime: 3.1.1
     react-dom: 17.0.0
-    react-ga: 3.3.0
     react-hook-form: ^7.20.4
     react-latex: ^1.6.0
     react-lazyload: 3.2.0
@@ -10695,16 +10694,6 @@ __metadata:
   version: 6.0.10
   resolution: "react-error-overlay@npm:6.0.10"
   checksum: e7384f086a0162eecac8e081fe3c79b32f4ac8690c56bde35ab6b6380d10e6c8375bbb689a450902b6615261fcf6c95ea016fc0b200934667089ca83536bc4a7
-  languageName: node
-  linkType: hard
-
-"react-ga@npm:3.3.0":
-  version: 3.3.0
-  resolution: "react-ga@npm:3.3.0"
-  peerDependencies:
-    prop-types: ^15.6.0
-    react: ^15.6.2 || ^16.0 || ^17
-  checksum: b4f5b0ed3a5d7ea781397d6a1f8dacae2284fe7f03f72dde330958dd0a64732f8766c6fa26cf0f1a8fb1303fa02aa51f23cf0b261e52981d0275262b831c7fea
   languageName: node
   linkType: hard
 

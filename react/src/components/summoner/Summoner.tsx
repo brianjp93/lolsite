@@ -3,7 +3,6 @@ import {useQuery, useMutation} from 'react-query'
 import {useQueryWithPrefetch, useUser} from '../../hooks'
 import cx from 'classnames'
 import Skeleton from '../general/Skeleton'
-import ReactGA from 'react-ga'
 import Orbit from '../general/spinners/orbit'
 import MatchCard from './MatchCardHorizontal'
 import {SpectateModal} from './Spectate'
@@ -46,13 +45,6 @@ export function Summoner({route, region, store}: {route: any; region: string; st
   const custom_max_width = 'col l10 offset-l1 m12 s12'
   const match_id = route.match.params.match_id
   const isMatchModalOpen = match_id !== undefined
-
-  useEffect(() => {
-    ReactGA.event({
-      category: 'Summoner Page',
-      action: 'Summoner.tsx was mounted.',
-    })
-  }, [])
 
   const filterParams = useMemo(() => {
     let params = route.match.params

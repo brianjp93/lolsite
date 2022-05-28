@@ -1,7 +1,6 @@
 import {Component} from 'react'
 import {Switch, Route, withRouter} from 'react-router-dom'
 
-import ReactGA from 'react-ga'
 import Modal from 'react-modal'
 import {HomeV2} from './components/general/HomeV2'
 import {Summoner} from './components/summoner/Summoner'
@@ -22,9 +21,6 @@ import {RecoilRoot} from 'recoil'
 import * as Sentry from "@sentry/react";
 import { Integrations } from "@sentry/tracing";
 
-const trackingId = 'UA-153444087-1'
-ReactGA.initialize(trackingId)
-
 Sentry.init({
     dsn: "https://9596d6f2a197495094ea44d37f329c67@o77441.ingest.sentry.io/5990012",
     integrations: [new Integrations.BrowserTracing()],
@@ -39,10 +35,6 @@ const queryClient = new QueryClient()
 
 document.addEventListener('DOMContentLoaded', function() {
   const user_data = JSON.parse(document.getElementById('user-data').innerHTML)
-  ReactGA.set({
-    user_id: user_data.id,
-    user_email: user_data.email,
-  })
 })
 
 class App extends Component {
@@ -76,16 +68,10 @@ class App extends Component {
 
     this.setQueueDict = this.setQueueDict.bind(this)
   }
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(_, prevState) {
     if (prevState.theme !== this.state.theme) {
       this.removeTheme(prevState.theme)
       this.setTheme(this.state.theme)
-    }
-
-    // update location info for GA
-    if (prevProps.location.pathname !== this.props.location.pathname) {
-      ReactGA.set({page: this.props.location.pathname}) // Update the user's current page
-      ReactGA.pageview(this.props.location.pathname) // Record a pageview for the given page
     }
   }
   componentDidMount() {
