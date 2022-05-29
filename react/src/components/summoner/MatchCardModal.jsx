@@ -146,11 +146,27 @@ function MatchCardModal(props) {
           }}
         >
           <div>
-            <img
-              style={{height: 40, display: 'inline'}}
-              src={champions[part.champion_id].image?.file_40}
-              alt=""
-            />
+            <span style={{position: 'relative'}}>
+              <img
+                style={{height: 40, display: 'inline'}}
+                src={champions[part.champion_id].image?.file_40}
+                alt=""
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'white',
+                  borderRadius: 5,
+                  color: 'black',
+                  padding: '2px',
+                  fontSize: 'small',
+                }}
+              >
+                {part?.stats?.champ_level ? part.stats.champ_level : '?'}
+              </div>
+            </span>
             <div style={{display: 'inline-block', paddingLeft: 4}}>
               <img style={{height: 20, display: 'block'}} src={part.summoner_1_image} alt="" />
               <img style={{height: 20, display: 'block'}} src={part.summoner_2_image} alt="" />
@@ -195,7 +211,6 @@ function MatchCardModal(props) {
             <span style={{color: '#419241'}}>{part.stats.assists}</span>
           </h6>
           <div>{numeral(part.stats.gold_earned).format('0,0')} gold</div>
-          <div>level {part.stats.champ_level}</div>
         </div>
 
         <div
