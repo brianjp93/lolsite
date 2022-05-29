@@ -1,7 +1,7 @@
 """match.models
 """
 from __future__ import annotations
-from typing import List, Optional
+from typing import List
 from django.db import models
 from django.db.models import QuerySet
 from django.contrib.postgres.fields import ArrayField
@@ -38,7 +38,7 @@ def tier_sort(position):
     int
 
     """
-    tier_order = [
+    tier_order = (
         "challenger",
         "grandmaster",
         "master",
@@ -48,7 +48,7 @@ def tier_sort(position):
         "silver",
         "bronze",
         "iron",
-    ]
+    )
     try:
         index = tier_order.index(position["tier"].lower())
     except:
@@ -68,7 +68,7 @@ def rank_sort(position):
     int
 
     """
-    division_order = ["i", "ii", "iii", "iv", "v"]
+    division_order = ("i", "ii", "iii", "iv", "v")
     try:
         index = division_order.index(position["rank"].lower())
     except:
