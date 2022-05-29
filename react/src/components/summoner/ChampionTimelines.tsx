@@ -94,29 +94,31 @@ function ChampionTimelines(props: {
 
   return (
     <div>
-      {participants.map((participant, index) => {
-        return (
-          <ChampionImage
-            key={`${participant._id}-champion-image`}
-            is_me={participant._id === props.my_part._id}
-            color={colors[index]}
-            is_selected={participant_selection.indexOf(participant._id) >= 0}
-            image_width={image_width}
-            participant={participant}
-            padding_pixels={padding_pixels}
-            theme={props.theme}
-            handleClick={() => {
-              let new_selection = [...participant_selection]
-              if (participant_selection.indexOf(participant._id) >= 0) {
-                new_selection = new_selection.filter((id) => id !== participant._id)
-              } else {
-                new_selection.push(participant._id)
-              }
-              setParticipantSelection(new_selection)
-            }}
-          />
-        )
-      })}
+      <div style={{display: 'flex', justifyContent: 'center'}}>
+        {participants.map((participant, index) => {
+          return (
+            <ChampionImage
+              key={`${participant._id}-champion-image`}
+              is_me={participant._id === props.my_part._id}
+              color={colors[index]}
+              is_selected={participant_selection.indexOf(participant._id) >= 0}
+              image_width={image_width}
+              participant={participant}
+              padding_pixels={padding_pixels}
+              theme={props.theme}
+              handleClick={() => {
+                let new_selection = [...participant_selection]
+                if (participant_selection.indexOf(participant._id) >= 0) {
+                  new_selection = new_selection.filter((id) => id !== participant._id)
+                } else {
+                  new_selection.push(participant._id)
+                }
+                setParticipantSelection(new_selection)
+              }}
+            />
+          )
+        })}
+      </div>
 
       <div className="row" style={{marginLeft: 0, marginRight: 0}}>
         <div className="col s6">
@@ -291,7 +293,7 @@ function ChampionImage(props: any) {
   }
 
   return (
-    <div style={{display: 'inline-block', paddingRight: props.padding_pixels, ...vert_align}}>
+    <div style={{padding: '0px 10px'}}>
       {champions[props.participant.champion_id].image.file_30 === '' && (
         <div onClick={props.handleClick} style={{...image_style}}>
           NA
@@ -303,7 +305,7 @@ function ChampionImage(props: any) {
           style={{...image_style}}
           aria-label={champions?.[props.participant.champion_id]?.name}
           src={champions?.[props.participant.champion_id]?.image?.file_30}
-          alt=""
+          alt={champions?.[props.participant.champion_id]?.name}
         />
       )}
     </div>
