@@ -1,24 +1,25 @@
 import moment from 'moment'
 import { ItemPopover } from '../components/data/Item'
 import api from '../api/api'
+import { BasicMatchType, FullParticipantType } from '../types'
 
-export function formatDatetime(epoch) {
+export function formatDatetime(epoch: number) {
     return moment(epoch).format('MMM D h:mm a')
 }
 
-export function formatDatetimeFull(epoch) {
+export function formatDatetimeFull(epoch: number) {
     return moment(epoch).format('MMM D, YYYY h:mm a')
 }
 
-export function formatDatetimeTime(epoch) {
+export function formatDatetimeTime(epoch: number) {
     return moment(epoch).format('h:mm a')
 }
 
-export function getTeam(num, participants) {
+export function getTeam<T>(num: number, participants: ({team_id: number} & T)[]) {
     return participants.filter(item => item.team_id === num)
 }
 
-export function convertTier(tier) {
+export function convertTier(tier: string) {
     let out = ''
     if (tier.toLowerCase() === 'grandmaster') {
         out = 'GM'
@@ -28,22 +29,21 @@ export function convertTier(tier) {
     return out
 }
 
-export function convertRank(rank) {
-    let out = rank
-    let dict = {
+export function convertRank(rank: string) {
+    const dict = {
         I: '1',
         II: '2',
         III: '3',
         IV: '4',
         V: '5',
     }
-    if (dict[rank] !== undefined) {
-        out = dict[rank]
+    if (dict[rank as keyof typeof dict] !== undefined) {
+      return dict[rank as keyof typeof dict]
     }
-    return out
+    return rank
 }
 
-function getItem(item_id, major, minor, store) {
+function getItem(item_id: string | number, major: number, minor: number, store: any) {
     // request item info if it isn't in the store
     let version = `${major}.${minor}`
     let item = null
@@ -73,7 +73,7 @@ function getItem(item_id, major, minor, store) {
     return item
 }
 
-function retrieveItem(item_id, major, minor, store) {
+function retrieveItem(item_id: number | string, major: number, minor: number, store: any) {
     // get item from store
     let version = `${major}.${minor}`
     let item = null
@@ -86,7 +86,7 @@ function retrieveItem(item_id, major, minor, store) {
     return item
 }
 
-export function item(id, image_url, match, store) {
+export function item(id: number, image_url: string, match: BasicMatchType, store: any) {
     const item_data = retrieveItem(id, match.major, match.minor, store)
     return (
         <ItemPopover
@@ -125,7 +125,7 @@ export function item(id, image_url, match, store) {
     )
 }
 
-export function ParticipantItems({part, match, store}) {
+export function ParticipantItems({part, match, store}: {part: FullParticipantType, match: BasicMatchType, store: any}) {
     return (
         <div
             style={{
@@ -147,7 +147,7 @@ export function ParticipantItems({part, match, store}) {
     )
 }
 
-export function getMyPart(participants, puuid) {
+export function getMyPart(participants: FullParticipantType[], puuid: string) {
     for (let part of participants) {
         if (part.puuid === puuid) {
             return part
@@ -183,20 +183,21 @@ export function getStatCosts() {
         Heal: 0.3333,
         PercentBaseHPRegen: 3,
         FlatMagicPen: 31.11,
+        ArmorPen: 0,
+        MagicPen: 0,
     }
     // calculating value of armor pen against
     // an enemy with 100 armor
     stats_costs.ArmorPen = stats_costs.FlatArmorMod * 100
     stats_costs.MagicPen = stats_costs.FlatSpellBlockMod * 100
-
     return stats_costs
 }
 
-export function stripHtml(html) {
+export function stripHtml(html: string) {
     return html.replace(/<(?!br\s*\/?)[^>]+>/g, '')
 }
 
-export function stripHtmlFull(html) {
+export function stripHtmlFull(html: string) {
     let elt = document.createElement('div')
     elt.innerHTML = html
     return elt.textContent

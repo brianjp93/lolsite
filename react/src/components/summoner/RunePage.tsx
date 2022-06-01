@@ -1,24 +1,33 @@
-import React, { useState, useEffect, ReactNode, CSSProperties, useRef } from 'react'
+import React, {useState, useEffect, ReactNode, CSSProperties, useRef} from 'react'
 import {Popover} from 'react-tiny-popover'
 import numeral from 'numeral'
 import {StatModTable} from './StatMod'
 import {useRunes, useChampions} from '../../hooks'
-import type { FullParticipantType, BasicMatchType, RuneType } from '../../types'
+import type {FullParticipantType, BasicMatchType, RuneType} from '../../types'
 
 import RUNES from '../../constants/runes'
 
-export function RunePage({mypart, participants, match, matchCardHeight}: {mypart: any, participants: FullParticipantType[], match: BasicMatchType, matchCardHeight: number}) {
+export function RunePage({
+  mypart,
+  participants,
+  match,
+  matchCardHeight,
+}: {
+  mypart: any
+  participants: FullParticipantType[]
+  match: BasicMatchType
+  matchCardHeight: number
+}) {
   const [selectedPart, setSelectedPart] = useState<FullParticipantType | undefined>()
   const version = `${match.major}.${match.minor}`
   const runes = useRunes(version)
   const champions = useChampions()
 
   const getPerks = (part: FullParticipantType) => {
-    let perks: {id: string, var1: string, var2: string, var3: string}[] = []
+    let perks: {id: string; var1: string; var2: string; var3: string}[] = []
     if (!part && selectedPart) {
       part = selectedPart
-    }
-    else if (part === null) {
+    } else if (part === null) {
       return []
     }
     for (var i = 0; i <= 5; i++) {
@@ -93,23 +102,23 @@ export function RunePage({mypart, participants, match, matchCardHeight}: {mypart
     }
   }, [mypart, participants])
 
-    const rune_stat_height = (matchCardHeight - 20) / 6
-    return (
-      <div>
-        <div
-          style={{
-            marginRight: 20,
-            display: 'inline-block',
-            marginLeft: 35,
-            verticalAlign: 'top',
-          }}
-        >
-          {partSelection()}
-        </div>
-        {selectedPart !== undefined &&
+  const rune_stat_height = (matchCardHeight - 20) / 6
+  return (
+    <div>
+      <div
+        style={{
+          marginRight: 20,
+          display: 'inline-block',
+          marginLeft: 35,
+          verticalAlign: 'top',
+        }}
+      >
+        {partSelection()}
+      </div>
+      {selectedPart !== undefined && (
         <div style={{display: 'inline-block'}}>
           {getPerks(selectedPart).map((perk) => {
-            const rune = runes[perk.id as unknown as keyof typeof runes]
+            const rune = runes[(perk.id as unknown) as keyof typeof runes]
             const rune_etc = RUNES.data[perk.id as keyof typeof RUNES.data]
             if (rune && rune_etc && rune_etc.perkFormat) {
               return (
@@ -145,7 +154,10 @@ export function RunePage({mypart, participants, match, matchCardHeight}: {mypart
                             >
                               {perk_format
                                 .replace('{0}', perk[`var${j + 1}` as keyof typeof perk])
-                                .replace('{1}', numeral(perk[`var${j + 2}` as keyof typeof perk]).format('00'))
+                                .replace(
+                                  '{1}',
+                                  numeral(perk[`var${j + 2}` as keyof typeof perk]).format('00'),
+                                )
                                 .replace('{2}', perk[`var${j + 2}` as keyof typeof perk])}
                             </div>
                           </div>
@@ -172,19 +184,27 @@ export function RunePage({mypart, participants, match, matchCardHeight}: {mypart
             <div style={{textAlign: 'center', textDecoration: 'underline'}}>No runes set</div>
           )}
         </div>
-        }
-        {selectedPart && (
-          <div style={{display: 'inline-block', margin: 20, verticalAlign: 'top'}}>
-            <StatModTable participant={selectedPart} />
-          </div>
-        )}
-      </div>
-    )
+      )}
+      {selectedPart && (
+        <div style={{display: 'inline-block', margin: 20, verticalAlign: 'top'}}>
+          <StatModTable participant={selectedPart} />
+        </div>
+      )}
+    </div>
+  )
 }
 
-export function RuneTooltip({rune, style, children}: {rune: RuneType, style: CSSProperties, children: ReactNode}) {
+export function RuneTooltip({
+  rune,
+  style,
+  children,
+}: {
+  rune: RuneType
+  style: CSSProperties
+  children: ReactNode
+}) {
   const [isOpen, setIsOpen] = useState(false)
-  const toggle = () => setIsOpen(x => !x)
+  const toggle = () => setIsOpen((x) => !x)
   const ref = useRef<HTMLDivElement>(null)
   return (
     <Popover

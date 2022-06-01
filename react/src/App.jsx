@@ -33,10 +33,6 @@ Sentry.init({
 
 const queryClient = new QueryClient()
 
-document.addEventListener('DOMContentLoaded', function() {
-  const user_data = JSON.parse(document.getElementById('user-data').innerHTML)
-})
-
 class App extends Component {
   constructor(props) {
     super(props)

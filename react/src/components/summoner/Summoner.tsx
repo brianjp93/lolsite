@@ -267,7 +267,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
 
         {(matchQuery.isSuccess || matchQueryWithSync.isSuccess) && summonerQuery.isSuccess && (
           <div>
-            {matches.length > 0 && (
+            {matches.length > 0 && summoner && (
               <Modal isOpen={isMatchModalOpen} onRequestClose={closeModal} style={MODALSTYLE}>
                 <MatchCardModal
                   closeModal={closeModal}

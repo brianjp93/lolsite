@@ -33,14 +33,12 @@ function Timeline(props: {
   timeline: FrameType[]
   store: any
   route: any
-  theme: string
 }) {
   const [timelineIndex, setTimelineIndex] = useTimelineIndex(props.match._id)
 
   const [timeline, setTimeline] = useState<AugmentedFrameType[]>([])
   const participants = props.participants
   const match = props.match
-  const theme = props.store.state.theme
   const champions = useChampions()
 
   const [mypart, setMypart] = useState<FullParticipantType>()
@@ -415,7 +413,7 @@ function Timeline(props: {
               <small style={{...some_style, display: 'inline-block', verticalAlign: 'middle'}}>
                 <div
                   style={{width: 35, verticalAlign: 'top', display: 'inline-block', marginLeft: 5}}
-                  className={`${props.theme} muted`}
+                  className={`dark muted`}
                 >
                   {Math.floor(event.timestamp / 1000 / 60)}:
                   {numeral((event.timestamp / 1000) % 60).format('00')}
@@ -430,7 +428,7 @@ function Timeline(props: {
                         {part1 === null && <span>minions</span>}
                       </span>{' '}
                       <span>
-                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>
+                        <span style={{verticalAlign: 'text-bottom'}} className={`dark pill`}>
                           killed
                         </span>
                       </span>{' '}
@@ -451,7 +449,7 @@ function Timeline(props: {
                         {part1 === null && <span>minions</span>}
                       </span>{' '}
                       <span>
-                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>
+                        <span style={{verticalAlign: 'text-bottom'}} className={`dark pill`}>
                           destroyed
                         </span>
                       </span>{' '}
@@ -468,7 +466,7 @@ function Timeline(props: {
                     <span>
                       <span>team</span>{' '}
                       <span>
-                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>
+                        <span style={{verticalAlign: 'text-bottom'}} className={`dark pill`}>
                           broke
                         </span>
                       </span>{' '}
@@ -485,7 +483,7 @@ function Timeline(props: {
                         {part1 === null && <span>minions</span>}
                       </span>{' '}
                       <span>
-                        <span style={{verticalAlign: 'text-bottom'}} className={`${theme} pill`}>
+                        <span style={{verticalAlign: 'text-bottom'}} className='dark pill'>
                           killed
                         </span>
                       </span>{' '}

@@ -49,7 +49,6 @@ export function MapEvents(props: {
   summoner: any
   match: FullMatchType
   participants: FullParticipantType[]
-  timeline_index: number
   timeline: FrameType[]
   store: any
   route: any

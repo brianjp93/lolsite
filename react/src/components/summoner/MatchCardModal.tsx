@@ -20,12 +20,21 @@ import {
   convertTier,
   convertRank,
 } from '../../constants/general'
-import {rankParticipants} from './rankparticipants'
+import {rankParticipants, AppendParticipant} from './rankparticipants'
 import {Comments} from '../comment/comments'
 import queryString from 'query-string'
-import { useChampions } from '../../hooks'
+import {useChampions} from '../../hooks'
+import {SummonerType} from '../../types'
 
-function MatchCardModal(props) {
+interface MatchCardModalProps {
+  store: any
+  route: any
+  region: string
+  summoner: SummonerType
+  matchCardHeight: number
+  closeModal: () => void
+}
+function MatchCardModal(props: MatchCardModalProps) {
   let store = props.store
   let match_id = props.route.match.params.match_id
   let puuid = props.summoner.puuid
@@ -118,19 +127,20 @@ function MatchCardModal(props) {
     )
   }
 
-  function participantLine(part) {
+  function participantLine(part: AppendParticipant) {
     const stat_style = {
       borderRadius: 4,
       padding: '0px 4px',
       marginBottom: 3,
     }
     const gametime = match.game_duration / 1000 / 60
-    let dpm = part.stats.total_damage_dealt_to_champions / gametime
-    dpm = numeral(dpm).format('0,0')
-    let vspm = part.stats.vision_score / gametime
-    vspm = numeral(vspm).format('0.0')
-    let cspm = (part.stats.neutral_minions_killed + part.stats.total_minions_killed) / gametime
-    cspm = numeral(cspm).format('0.0')
+    const dpm_string = part.stats.total_damage_dealt_to_champions / gametime
+    const dpm = numeral(dpm_string).format('0,0')
+    const vspm_string = part.stats.vision_score / gametime
+    const vspm = numeral(vspm_string).format('0.0')
+    const cspm_string =
+      (part.stats.neutral_minions_killed + part.stats.total_minions_killed) / gametime
+    const cspm = numeral(cspm_string).format('0.0')
     return (
       <div style={{height: 120}}>
         <div style={{marginBottom: 3}}>
@@ -268,8 +278,8 @@ function MatchCardModal(props) {
     }
   }, [])
 
-  const getButtonStyle = (name) => {
-    let button_style = {}
+  const getButtonStyle = (name: string) => {
+    let button_style: React.CSSProperties = {}
     if (view === name) {
       button_style.backgroundColor = '#0000'
     }
@@ -277,11 +287,11 @@ function MatchCardModal(props) {
   }
 
   const mypart = getMyPart(participants, puuid)
-  const header_style = {
+  const header_style: React.CSSProperties = {
     textAlign: 'center',
     textDecoration: 'underline',
   }
-  const comp_style = {
+  const comp_style: React.CSSProperties = {
     display: 'inline-block',
     verticalAlign: 'top',
   }
@@ -330,8 +340,8 @@ function MatchCardModal(props) {
           onClick={() => {
             setView('stats')
             let qs = {show: 'stats'}
-            qs = queryString.stringify(qs)
-            window.history.pushState(null, null, '?' + qs)
+            const qs_string = queryString.stringify(qs)
+            window.history.pushState(null, '', '?' + qs_string)
           }}
           className={`${store.state.theme} btn`}
         >
@@ -342,8 +352,8 @@ function MatchCardModal(props) {
           onClick={() => {
             setView('comments')
             let qs = {show: 'comments'}
-            qs = queryString.stringify(qs)
-            window.history.pushState(null, null, '?' + qs)
+            const qs_string = queryString.stringify(qs)
+            window.history.pushState(null, '', '?' + qs_string)
           }}
           className={`${store.state.theme} btn`}
         >
@@ -392,26 +402,28 @@ function MatchCardModal(props) {
                   <div style={comp_style}>
                     <div style={{marginLeft: 30, marginRight: 8}}>
                       <h5 style={header_style}>Champion Timelines</h5>
-                      <ChampionTimelines
-                        matchId={match._id}
-                        theme={store.state.theme}
-                        my_part={mypart}
-                        summoner={props.summoner}
-                        participants={participantQuery.data || []}
-                        timeline={timeline}
-                        expanded_width={500}
-                      />
+                      {mypart &&
+                        <ChampionTimelines
+                          matchId={match._id}
+                          theme={store.state.theme}
+                          my_part={mypart}
+                          summoner={props.summoner}
+                          participants={participantQuery.data || []}
+                          timeline={timeline as any}
+                          expanded_width={500}
+                        />
+                      }
                     </div>
                   </div>
                   <div style={comp_style}>
                     <h5 style={header_style}>Champion Stats</h5>
-                    <StatOverview
-                      participants={participantQuery.data || []}
-                      match={match}
-                      store={props.store}
-                      mypart={mypart}
-                      is_expanded={true}
-                    />
+                    {mypart &&
+                      <StatOverview
+                        participants={participantQuery.data || []}
+                        match={match}
+                        mypart={mypart}
+                      />
+                    }
                   </div>
                   <div style={{...comp_style, alignSelf: 'baseline'}}>
                     <h5 style={header_style}>Build Order</h5>
@@ -432,8 +444,6 @@ function MatchCardModal(props) {
                       mypart={mypart}
                       participants={participantQuery.data || []}
                       match={match}
-                      store={props.store}
-                      pageStore={props.pageStore}
                     />
                   </div>
                 </div>
