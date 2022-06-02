@@ -6,7 +6,7 @@
 #
 amqp==5.1.1
     # via kombu
-asgiref==3.5.1
+asgiref==3.5.2
     # via django
 attrs==21.4.0
     # via hypothesis
@@ -24,7 +24,7 @@ cached-property==1.5.2
     # via -r requirements.in
 celery==5.2.3
     # via -r requirements.in
-certifi==2021.10.8
+certifi==2022.5.18.1
     # via
     #   requests
     #   sentry-sdk
@@ -69,11 +69,11 @@ djangorestframework==3.13.1
     # via -r requirements.in
 factory-boy==3.2.1
     # via -r requirements.in
-faker==13.7.0
+faker==13.12.0
     # via factory-boy
 gunicorn==20.1.0
     # via -r requirements.in
-hypothesis==6.46.1
+hypothesis==6.46.10
     # via -r requirements.in
 idna==3.3
     # via requests
@@ -91,7 +91,7 @@ model-mommy==1.6.0
     # via -r requirements.in
 packaging==21.3
     # via redis
-pillow==9.1.0
+pillow==9.1.1
     # via -r requirements.in
 prompt-toolkit==3.0.29
     # via click-repl
@@ -101,7 +101,7 @@ pycurl==7.45.1
     # via -r requirements.in
 pymemcache==3.5.2
     # via django-pymemcache
-pyparsing==3.0.8
+pyparsing==3.0.9
     # via packaging
 python-dateutil==2.8.2
     # via
