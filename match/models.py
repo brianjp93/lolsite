@@ -183,18 +183,8 @@ class Match(VersionedModel):
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
 
-    def get_absolute_url(self, pname=None):
+    def get_absolute_url(self, pname: str | None = None):
         """Get url of match.
-
-        Parameters
-        ----------
-        pname : str
-            Summoner name
-
-        Returns
-        -------
-        str
-
         """
         if pname is None:
             pname = ""

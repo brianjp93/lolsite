@@ -2,3 +2,4 @@ awsebcli==3.20.2
 ipython
 jedi
 flake8
+django-stubs
