@@ -91,7 +91,7 @@ model-mommy==1.6.0
     # via -r requirements.in
 packaging==21.3
     # via redis
-pillow==9.1.0
+pillow==9.1.1
     # via -r requirements.in
 prompt-toolkit==3.0.29
     # via click-repl
