@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { CreateComment } from './createcomment'
 import { ViewComments } from './viewcomments'
 import api from '../../api/api'
