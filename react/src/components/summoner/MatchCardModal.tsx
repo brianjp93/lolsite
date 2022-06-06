@@ -453,7 +453,7 @@ function MatchCardModal(props: MatchCardModalProps) {
         </div>
       )}
 
-      {view === 'comments' && <Comments theme={store.state.theme} match={match} />}
+      {view === 'comments' && <Comments match={match} />}
 
       <div style={{height: 100}}></div>
     </div>

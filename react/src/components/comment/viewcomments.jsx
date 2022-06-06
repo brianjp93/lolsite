@@ -139,7 +139,6 @@ export function ViewComments(props) {
             setView={props.setView}
             setReplyComment={props.setReplyComment}
             comment={comment}
-            theme={props.theme}
             match={props.match}
           />
         )
@@ -310,7 +309,6 @@ export function Comment(props) {
                   <div key={`comment-reply-${reply.id}`}>
                     <Comment
                       summoners={props.summoners}
-                      theme={props.theme}
                       setReplyComment={props.setReplyComment}
                       setView={props.setView}
                       comment={reply}

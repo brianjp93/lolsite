@@ -91,7 +91,7 @@ export function CreateComment(props) {
         <>
             {posted_comment.id !== undefined && (
                 <div>
-                    <Comment comment={posted_comment} theme={props.theme} hide_action_bar={true} />
+                    <Comment comment={posted_comment} hide_action_bar={true} />
                     <div>Your comment has been posted.</div>
                     <button onClick={() => setView('view')} className={`${theme} btn`}>
                         back to comments
@@ -106,7 +106,6 @@ export function CreateComment(props) {
                                 summoners={props.summoners}
                                 comment={reply_to}
                                 setView={props.setView}
-                                theme={props.theme}
                                 hide_action_bar={true}
                             />
                         </div>

@@ -499,7 +499,7 @@ function MatchCard(props) {
             }}
             className={`card-panel ${theme}`}
           >
-            <Comments match={match} theme={theme} />
+            <Comments match={match} />
           </div>
         )}
       </>
