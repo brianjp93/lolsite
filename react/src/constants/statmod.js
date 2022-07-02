@@ -1,13 +1,6 @@
 function getStatModImageUrl({ patch = 'latest', key = '' }) {
-    return `https://raw.communitydragon.org/${patch}/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/statmods/${key}.png`
+    return `https://raw.communitydragon.org/${patch}/game/assets/perks/statmods/${key}.png`
 }
-
-// plugins/rcp-be-lol-game-data/global/default/v1/perk-images/statmods/statmodsadaptiveforceicon.png
-// plugins/rcp-be-lol-game-data/global/default/v1/perk-images/statmods/statmodsarmoricon.png
-// plugins/rcp-be-lol-game-data/global/default/v1/perk-images/statmods/statmodsattackspeedicon.png
-// plugins/rcp-be-lol-game-data/global/default/v1/perk-images/statmods/statmodscdrscalingicon.png
-// plugins/rcp-be-lol-game-data/global/default/v1/perk-images/statmods/statmodshealthscalingicon.png
-// plugins/rcp-be-lol-game-data/global/default/v1/perk-images/statmods/statmodsmagicresicon.png
 
 export function getStatMod(patch='latest') {
     const data = {
@@ -27,7 +20,7 @@ export function getStatMod(patch='latest') {
             name: '+8 Magic Resist',
             key: 'statmodsmagicresicon',
             id: 5003,
-            image_url: getStatModImageUrl({ patch, key: 'statmodsmagicresicon' }),
+            image_url: getStatModImageUrl({ patch, key: 'statmodsmagicresicon.magicresist_fix' }),
         },
         5005: {
             name: '+10% Attack Speed',
