@@ -7,6 +7,12 @@ export const User = t.type({
 })
 export type UserType = t.TypeOf<typeof User>
 
+export const NameChange = t.type({
+  old_name: t.string,
+  created_date: t.string,
+})
+export type NameChangeType = t.TypeOf<typeof NameChange>
+
 export const Position = t.type({
   checkpoint: t.number,
   fresh_blood: t.boolean,

@@ -4,10 +4,9 @@
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView, ListAPIView
 
 from django.utils import timezone
-from django.utils.dateparse import parse_datetime
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from django.db.models.functions import Extract
@@ -16,7 +15,7 @@ from django.shortcuts import get_object_or_404
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
-from lolsite.helpers import query_debugger, MultipleFieldLookupMixin
+from lolsite.helpers import query_debugger
 
 from player import tasks as pt
 from player import constants as player_constants
@@ -24,7 +23,7 @@ from player import filters as player_filters
 from player.models import (
     RankPosition, Comment, Favorite,
     SummonerLink, decode_int_to_rank, validate_password,
-    Reputation,
+    Reputation, NameChange,
 )
 
 from data.models import ProfileIcon, Champion
@@ -32,18 +31,17 @@ from data.serializers import ProfileIconSerializer
 
 from match import tasks as mt
 from match.models import Match, sort_positions
-from match.serializers import BasicMatchSerializer
 
 from .models import Summoner
 from .serializers import (
     SummonerSerializer, RankPositionSerializer,
     FavoriteSerializer, CommentSerializer,
     ReputationSerializer, UserSerializer,
+    NameChangeSerializer,
 )
 
 import random
 import logging
-import traceback
 
 User = get_user_model()
 
@@ -1372,3 +1370,13 @@ class ReputationUpdateView(UpdateAPIView):
 
     def get_queryset(self):
         return Reputation.objects.filter(user=self.request.user)
+
+
+class NameChangeListView(ListAPIView):
+    serializer_class = NameChangeSerializer
+    lookup_field = 'summoner_pk'
+
+    def get_queryset(self):
+        qs = NameChange.objects.filter(summoner=self.kwargs[self.lookup_field])
+        qs = qs.order_by('-created_date')
+        return qs

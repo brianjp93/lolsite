@@ -8,6 +8,7 @@ import ReactTooltip from 'react-tooltip'
 import numeral from 'numeral'
 import {VICTORY_COLOR, LOSS_COLOR} from '../../constants/general'
 import api from '../../api/api'
+import {Popover} from 'react-tiny-popover'
 
 export function SummonerCard({
   store,
@@ -33,6 +34,7 @@ export function SummonerCard({
   region: string
 }) {
   const [timeDesc, setTimeDesc] = useState('')
+  const [isNameHistoryOpen, setIsNameHistoryOpen] = useState(false)
   const user = useUser()
   const generalRankImage = (tier: string) => {
     const tier_convert = {
@@ -267,14 +269,24 @@ export function SummonerCard({
               height: 25,
             }}
           >
-            <span
-              style={{
-                textDecoration: 'underline',
-                fontWeight: 'bold',
-              }}
+            <Popover
+              onClickOutside={() => setIsNameHistoryOpen(false)}
+              isOpen={isNameHistoryOpen}
+              positions={['bottom']}
+              containerStyle={{zIndex: '11'}}
+              content={<NameChanges summonerId={summoner.id} />}
             >
-              {summoner.name}
-            </span>
+              <span
+                onClick={() => setIsNameHistoryOpen(true)}
+                style={{
+                  textDecoration: 'underline',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                }}
+              >
+                {summoner.name}
+              </span>
+            </Popover>
             <br />
             {region && (
               <SpectateModal
@@ -502,6 +514,29 @@ export function SummonerCard({
           )}
         </div>
       </span>
+    </>
+  )
+}
+
+function NameChanges({summonerId}: {summonerId: number}) {
+  const nameChangeQuery = useQuery(
+    ['name-change', summonerId],
+    () => api.player.getNameChanges(summonerId),
+    {staleTime: 1000 * 60 * 10, refetchOnMount: true, refetchOnWindowFocus: false},
+  )
+  return (
+    <>
+      <h3 style={{marginTop: -10}}>Old Names</h3>
+      <hr />
+      {nameChangeQuery.isLoading && <div>Loading...</div>}
+      {nameChangeQuery.isSuccess && (
+        <>
+          {nameChangeQuery.data.map((item) => {
+            return <div title={item.created_date}>{item.old_name}</div>
+          })}
+          {nameChangeQuery.data.length === 0 && <div>No historical names found.</div>}
+        </>
+      )}
     </>
   )
 }

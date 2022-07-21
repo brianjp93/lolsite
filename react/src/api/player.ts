@@ -8,6 +8,7 @@ import {
   SummonerSearch,
   Reputation,
   User,
+  NameChange,
 } from '../types'
 
 let version = 'v1'
@@ -205,6 +206,12 @@ async function updateReputation(id: number, summoner: number, is_approve: boolea
   return unwrap(Reputation.decode(r.data))
 }
 
+async function getNameChanges(id: number) {
+  const url = `/api/${version}/player/summoner/${id}/name-changes/`
+  const r = await axios.get(url)
+  return unwrap(t.array(NameChange).decode(r.data.results))
+}
+
 const exports = {
   getSummoner,
   getSummonerByName,
@@ -237,5 +244,6 @@ const exports = {
   createReputation,
   updateReputation,
   getMyUser,
+  getNameChanges,
 }
 export default exports

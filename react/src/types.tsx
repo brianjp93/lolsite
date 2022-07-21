@@ -40,6 +40,7 @@ export {
   SummonerSearch,
   Reputation,
   User,
+  NameChange,
 } from './iotypes/player'
 export type {
   SummonerType,
@@ -48,6 +49,7 @@ export type {
   SummonerSearchType,
   ReputationType,
   UserType,
+  NameChangeType,
 } from './iotypes/player'
 
 export {

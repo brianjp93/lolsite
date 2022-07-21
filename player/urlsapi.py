@@ -21,6 +21,7 @@ urlpatterns = [
     ),
     path("summoner/<str:region>/by-name/<str:name>/", player_views.SummonerByNameView.as_view()),
     path("summoner/", player_views.get_summoner),
+    path("summoner/<int:summoner_pk>/name-changes/", player_views.NameChangeListView.as_view()),
     path("summoners/", player_views.get_summoners),
     path("summoner-search/", player_views.summoner_search),
     path("champions-overview/", player_views.get_summoner_champions_overview),

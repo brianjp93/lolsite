@@ -8,7 +8,7 @@ from data.models import ProfileIcon
 from data.serializers import DynamicSerializer
 from .models import Summoner, Reputation
 from .models import RankPosition, Custom
-from .models import Favorite, Comment
+from .models import Favorite, Comment, NameChange
 
 from match.models import Participant
 
@@ -144,3 +144,12 @@ class CommentSerializer(DynamicSerializer):
             "summoner",
             "is_deleted",
         ]
+
+
+class NameChangeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NameChange
+        fields = (
+            'old_name',
+            'created_date',
+        )
