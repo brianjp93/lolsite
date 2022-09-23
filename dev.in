@@ -1,5 +1,5 @@
 awsebcli==3.20.2
 ipython
-jedi
 flake8
+django<4
 django-stubs
