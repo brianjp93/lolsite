@@ -1,5 +1,4 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import {BrowserRouter} from 'react-router-dom'
 import * as serviceWorker from "./serviceWorker"
 import 'rc-slider/assets/index.css'
@@ -23,17 +22,18 @@ function renderAppInElement(elt) {
             return;
         }
     };
+    const root = createRoot(elt)
     const props = Object.assign({}, elt.dataset);
     if (name === 'App') {
-        ReactDOM.render((
+        root.render((
             <BrowserRouter>
                 <AppComponent {...props} />
             </BrowserRouter>
-            ), elt
+            )
         );
     }
     else {
-        ReactDOM.render(<AppComponent {...props} />, elt);
+        root.render(<AppComponent {...props} />);
     }
 }
 
