@@ -131,18 +131,14 @@ function Timeline(props: {
         team_id = 100
       }
     } else if (event._type === 'BUILDING_KILL') {
-      if (event.team_id === 100) {
-        team_id = 200
-      } else {
-        team_id = 100
-      }
+      return event.team_id === 100 ? 200: 100
     } else if (event._type === 'ELITE_MONSTER_KILL') {
       part = getPart(event.killer_id)
       if (part) {
         team_id = part.team_id
       }
     } else if (event._type === 'TURRET_PLATE_DESTROYED') {
-      return event.team_id === 100 ? 200 : 100
+      return event.team_id
     }
     return team_id
   }
@@ -229,7 +225,7 @@ function Timeline(props: {
 
   useEffect(() => {
     if (props.summoner !== undefined) {
-      setMypart(getMyPart(participants, props.summoner.account_id))
+      setMypart(getMyPart(participants, props.summoner.puuid))
     }
   }, [props.summoner, participants])
 
@@ -387,11 +383,7 @@ function Timeline(props: {
           let some_style = {
             width: '50%',
           }
-          let is_right = false
-          if (getEventTeam(event) === 100) {
-          } else {
-            is_right = true
-          }
+          const is_right = getEventTeam(event) === 100
 
           let part1 = getPart(event.killer_id)
           let part2 = event._type === 'CHAMPION_KILL' ? getPart(event?.victim_id) : undefined

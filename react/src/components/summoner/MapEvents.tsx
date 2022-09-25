@@ -321,7 +321,7 @@ function EventBubble({
   }
   let team_id: number
   if (buildingKillEvent) {
-    team_id = buildingKillEvent.team_id
+    team_id = buildingKillEvent.team_id === 100 ? 200: 100
   } else if (championKillEvent) {
     const victim = part_dict[championKillEvent.victim_id]
     team_id = victim.team_id === 100 ? 200 : 100
