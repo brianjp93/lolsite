@@ -25,6 +25,7 @@ class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
         fields = [
+            'id',
             '_id',
             'game_creation',
             'game_duration',

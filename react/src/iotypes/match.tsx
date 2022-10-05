@@ -4,6 +4,7 @@ import {Position} from './player'
 import {optional} from './base'
 
 export const SimpleMatch = t.type({
+  id: t.number,
   _id: t.string,
   game_creation: t.number,
   game_duration: t.number,

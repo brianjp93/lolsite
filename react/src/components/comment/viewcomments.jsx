@@ -54,6 +54,21 @@ export function Pagination(props) {
   )
 }
 
+const getComments = (match, page, limit, order_by) => {
+  const end = page * limit
+  const start = end - limit
+  const data = {
+    match_id: match.id,
+    start,
+    end,
+    nest: 2,
+    depth: 5,
+    order_by: order_by,
+  }
+  return api.player.getComments(data)
+}
+
+
 export function ViewComments(props) {
   const [comments, setComments] = useState([])
   const [comment_count, setCommentCount] = useState(0)
@@ -70,29 +85,15 @@ export function ViewComments(props) {
     ['created_date', 'Oldest'],
   ]
 
-  const getComments = useCallback(() => {
-    const end = page * limit
-    const start = end - limit
-    const data = {
-      match_id: match.id,
-      start,
-      end,
-      nest: 2,
-      depth: 5,
-      order_by: order_by,
-    }
-    return api.player.getComments(data)
-  }, [match, limit, page, order_by])
-
   // get and set comments when necessary
   useEffect(() => {
-    if (match !== undefined && match.id !== undefined) {
-      getComments().then((response) => {
+    if (match?.id !== undefined) {
+      getComments(match, page, limit, order_by).then((response) => {
         setComments(response.data.data)
         setCommentCount(response.data.count)
       })
     }
-  }, [getComments, match, order_by])
+  }, [match, order_by])
 
   return (
     <div style={{marginBottom: 50, marginTop: 20}}>
