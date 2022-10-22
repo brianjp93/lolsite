@@ -120,7 +120,12 @@ def handle_name_changes():
             try:
                 NameChange.objects.get_or_create(summoner_id=summoner['id'], old_name=participant.summoner_name)
             except NameChange.MultipleObjectsReturned:
-                NameChange.objects.filter(summoner_id=summoner['id'], old_name=participant.summoner_name)[1:].delete()
+                qs = NameChange.objects.filter(
+                    summoner_id=summoner['id'],
+                    old_name=participant.summoner_name,
+                ).order_by('created_at')
+                for nc in qs[1:]:
+                    nc.delete()
 
 
 def import_match_from_data(data, refresh=False, region=""):
