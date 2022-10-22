@@ -123,7 +123,7 @@ def handle_name_changes():
                 qs = NameChange.objects.filter(
                     summoner_id=summoner['id'],
                     old_name=participant.summoner_name,
-                ).order_by('created_at')
+                ).order_by('created_date')
                 for nc in qs[1:]:
                     nc.delete()
 
