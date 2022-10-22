@@ -39,17 +39,6 @@ class SummonerTest(TestCase):
         summoner = mommy.make("player.Summoner", name="hello world", region="na",)
         self.assertEqual(summoner.__str__(), 'Summoner(name="hello world", region=na)')
 
-    def test_name_change_creation_on_save(self):
-        namechange_count = NameChange.objects.all().count()
-        self.assertEqual(namechange_count, 0)
-
-        summoner = mommy.make("player.Summoner", name="name numbah 1",)
-        summoner.name = "name numbah 2"
-        summoner.save()
-
-        namechange_count = NameChange.objects.all().count()
-        self.assertEqual(namechange_count, 1)
-
     def test_get_newest_rank_checkpoint(self):
         summoner = mommy.make("player.Summoner")
 
