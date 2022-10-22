@@ -1,20 +1,18 @@
 """match.models
 """
-from __future__ import annotations
 from typing import List
 from django.db import models
 from django.db.models import QuerySet
 from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
 
-import pytz
+import zoneinfo
 import logging
 
 from core.models import VersionedModel
 from data.models import ReforgedTree, ReforgedRune
 from data.models import Item, SummonerSpellImage
 from data.models import SummonerSpell, Champion
-from data import constants as DATA_CONSTANTS
 
 from player.models import simplify, Summoner, Comment
 
@@ -205,7 +203,8 @@ class Match(VersionedModel):
 
     def get_creation(self):
         """Get creation as datetime"""
-        dt = timezone.datetime.fromtimestamp(self.game_creation // 1000, tz=pytz.utc)
+        utc = zoneinfo.ZoneInfo("UTC")
+        dt = timezone.datetime.fromtimestamp(self.game_creation // 1000, tz=utc)
         return dt
 
     def get_comment_count(self):
