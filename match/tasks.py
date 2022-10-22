@@ -3,7 +3,7 @@
 from django.db.utils import IntegrityError
 from django.db.models import Count, Subquery, OuterRef
 from django.db.models import Case, When, Sum
-from django.db.models import IntegerField, Q
+from django.db.models import IntegerField, Q, F
 from django.db import connection
 from django.utils import timezone
 
@@ -25,7 +25,7 @@ from .models import Spectate
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
-from player.models import Summoner
+from player.models import Summoner, simplify, NameChange
 from player import tasks as pt
 
 from lolsite.celery import app
@@ -98,11 +98,26 @@ def import_summoner_from_participant(participants, region):
             summoner = Summoner(
                 _id=_id,
                 name=name,
+                simple_name=simplify(name),
                 region=region.lower(),
                 puuid=puuid,
             )
             sums.append(summoner)
     Summoner.objects.bulk_create(sums, ignore_conflicts=True)
+
+
+@app.task(name="match.tasks.handle_name_changes")
+def handle_name_changes():
+    """Create NameChange objects from Participant Data."""
+    qs = Participant.objects.all().annotate(
+        current_name=Subquery(
+            Summoner.objects.filter(puuid=OuterRef('puuid')).values('name')[:1]
+        )
+    ).exclude(current_name=F('summoner_name'))
+    for participant in qs:
+        summoner = Summoner.objects.filter(puuid=participant.puuid).values('id').first()
+        if summoner:
+            NameChange.objects.get_or_create(summoner_id=summoner['id'], old_name=participant.summoner_name)
 
 
 def import_match_from_data(data, refresh=False, region=""):

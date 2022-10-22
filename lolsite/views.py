@@ -3,6 +3,9 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.template.response import TemplateResponse
 from django.templatetags.static import static
+from django.core.cache import cache
+from django.utils import timezone
+from django.utils.timezone import timedelta
 
 from player.serializers import FavoriteSerializer, SummonerSerializer
 from player.models import Summoner, simplify
@@ -10,6 +13,7 @@ from player.models import Summoner, simplify
 from lolsite.context_processors import react_data_processor
 
 from match.models import Match
+from match import tasks as mt
 
 from data import tasks as dt
 from data import constants
@@ -32,14 +36,26 @@ META = {
 QUEUE_DICT = {x['_id']: x for x in constants.QUEUES}
 
 
+def do_periodic_tasks():
+    now = timezone.now()
+    dt.import_missing.delay()
+    dt.compute_changes.delay(5)
+    nt.delete_old_notifications.delay()
+
+    # only run handle name changes every 5 minutes
+    key = 'handle_name_changes'
+    last_run = cache.get(key, None)
+    if last_run is None or last_run > now - timedelta(minutes=5):
+        cache.set(key, now)
+        mt.handle_name_changes.delay()
+
+
 def home(request, path=""):
     """Return basic home address and let react render the rest.
     """
     # some tasks that need to run
     logger.info('Loading home page.')
-    dt.import_missing.delay()
-    dt.compute_changes.delay(5)
-    nt.delete_old_notifications.delay()
+    do_periodic_tasks()
 
     data = get_base_react_context(request)
     data['meta'] = get_meta_data(request)

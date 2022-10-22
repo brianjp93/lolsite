@@ -98,16 +98,8 @@ class Summoner(models.Model):
     last_summoner_page_import = models.DateTimeField(null=True)
     created_date = models.DateTimeField(default=timezone.now, db_index=True)
 
-    __original_account_id = None
-    __original_name = None
-
     class Meta:
         unique_together = ("region", "account_id", "_id")
-
-    def __init__(self, *args, **kwargs):
-        super(Summoner, self).__init__(*args, **kwargs)
-        self.__original_account_id = self.account_id
-        self.__original_name = self.name
 
     def __str__(self):
         return f'Summoner(name="{self.name}", region={self.region})'
@@ -119,13 +111,7 @@ class Summoner(models.Model):
         if self.name:
             self.simple_name = simplify(self.name)
 
-        if self.name != self.__original_name and self.__original_name is not None:
-            namechange = NameChange(summoner=self, old_name=self.__original_name)
-            namechange.save()
-
         super(Summoner, self).save(*args, **kwargs)
-        self.__original_name = self.name
-        self.__original_account_id = self.account_id
 
     def get_newest_rank_checkpoint(self):
         """Retrieve the most recent checkpoint for the summoner.
