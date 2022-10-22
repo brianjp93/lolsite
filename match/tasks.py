@@ -107,13 +107,17 @@ def import_summoner_from_participant(participants, region):
 
 
 @app.task(name="match.tasks.handle_name_changes")
-def handle_name_changes():
+def handle_name_changes(days=30):
     """Create NameChange objects from Participant Data."""
     qs = Participant.objects.all().annotate(
         current_name=Subquery(
             Summoner.objects.filter(puuid=OuterRef('puuid')).values('name')[:1]
         )
     ).exclude(current_name=F('summoner_name'))
+    if days:
+        starts_at = timezone.now() - timezone.timedelta(days=days)
+        timestamp = starts_at.timestamp() * 1000
+        qs = qs.filter(match__game_creation__gt=timestamp)
     for participant in qs:
         summoner = Summoner.objects.filter(puuid=participant.puuid).values('id').first()
         if summoner:
