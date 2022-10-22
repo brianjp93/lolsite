@@ -1,13 +1,8 @@
 """player/tests/test_tasks.py
 """
-from unittest.mock import Mock
-
-from model_mommy import mommy
-
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from player.models import EmailVerification
 from player import tasks as pt
 
 

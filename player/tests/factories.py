@@ -1,4 +1,4 @@
-from player.models import Reputation, Summoner, Custom, SummonerLink
+from player.models import Reputation, Summoner, Custom, SummonerLink, RankCheckpoint
 from django.contrib.auth import get_user_model
 from factory.django import DjangoModelFactory
 
@@ -57,4 +57,11 @@ class SummonerLinkFactory(DjangoModelFactory):
         django_get_or_create = ('user', 'summoner')
 
     user = factory.SubFactory(UserFactory)
+    summoner = factory.SubFactory(SummonerFactory)
+
+
+class RankCheckpointFactory(DjangoModelFactory):
+    class Meta:
+        model = RankCheckpoint
+
     summoner = factory.SubFactory(SummonerFactory)

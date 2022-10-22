@@ -1,20 +1,10 @@
-"""player/tests/test_models.py
-
-Tests for player models.
-
-"""
-# STANDARD LIBRARY
-from unittest.mock import Mock
-
-# 3RD PARTY
-from model_mommy import mommy
-
 # STANDARD DJANGO
 from django.test import TestCase
 from django.utils import timezone
 
 # LOCAL DJANGO
-from player.models import simplify, NameChange
+from player.models import simplify
+from .factories import SummonerFactory, RankCheckpointFactory
 
 
 class TestSimplify(TestCase):
@@ -31,48 +21,19 @@ class TestSimplify(TestCase):
 
 
 class SummonerTest(TestCase):
-    def test_save(self):
-        summoner = mommy.make("player.Summoner", name="",)
-        self.assertEqual(summoner.name, "")
-
-    def test_str(self):
-        summoner = mommy.make("player.Summoner", name="hello world", region="na",)
-        self.assertEqual(summoner.__str__(), 'Summoner(name="hello world", region=na)')
-
     def test_get_newest_rank_checkpoint(self):
-        summoner = mommy.make("player.Summoner")
+        summoner = SummonerFactory()
 
         self.assertEqual(summoner.get_newest_rank_checkpoint(), None)
 
-        old_rank_checkpoint = mommy.make(
-            "player.RankCheckpoint",
+        old_rank_checkpoint = RankCheckpointFactory(
             summoner=summoner,
             created_date=timezone.now() - timezone.timedelta(days=300),
         )
         self.assertEqual(summoner.get_newest_rank_checkpoint(), old_rank_checkpoint)
 
-        new_rank_checkpoint = mommy.make(
-            "player.RankCheckpoint", summoner=summoner, created_date=timezone.now(),
+        new_rank_checkpoint = RankCheckpointFactory(
+            summoner=summoner,
+            created_date=timezone.now(),
         )
         self.assertEqual(summoner.get_newest_rank_checkpoint(), new_rank_checkpoint)
-
-
-class NameChangeTest(TestCase):
-    def test_str(self):
-        namechange = mommy.make(
-            "player.NameChange",
-            old_name="oldboy",
-            summoner=mommy.make("player.Summoner", name="newboy",),
-        )
-        self.assertEqual(
-            namechange.__str__(), 'NameChange(old_name="oldboy", new_name="newboy")'
-        )
-
-
-class CustomTest(TestCase):
-    def test_save(self):
-        before = timezone.now()
-        custom = mommy.make("player.Custom")
-        after = timezone.now()
-        self.assertGreater(custom.modified_date, before)
-        self.assertGreater(after, custom.modified_date)

@@ -4,11 +4,5 @@ from django.contrib.auth.models import User
 
 
 def get_admin():
-    """Get admin user account.
-
-    Returns
-    -------
-    User
-
-    """
-    return User.objects.filter(is_superuser=True).first()
+    user: User | None = User.objects.filter(is_superuser=True).first()
+    return user
