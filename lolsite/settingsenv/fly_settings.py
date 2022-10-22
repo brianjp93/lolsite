@@ -40,6 +40,7 @@ DEFAULT_FILE_STORAGE = "custom_storages.MediaStorage"
 
 REDIS_URL = config('REDIS_URL', 'localhost')
 CELERY_BROKER_URL = f"redis://{REDIS_URL}"
+CSRF_TRUSTED_ORIGINS = ['https://hardstuck.club']
 
 CACHES = {
     "default": {
