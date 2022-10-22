@@ -117,7 +117,10 @@ def handle_name_changes():
     for participant in qs:
         summoner = Summoner.objects.filter(puuid=participant.puuid).values('id').first()
         if summoner:
-            NameChange.objects.get_or_create(summoner_id=summoner['id'], old_name=participant.summoner_name)
+            try:
+                NameChange.objects.get_or_create(summoner_id=summoner['id'], old_name=participant.summoner_name)
+            except NameChange.MultipleObjectsReturned:
+                NameChange.objects.filter(summoner_id=summoner['id'], old_name=participant.summoner_name)[1:].delete()
 
 
 def import_match_from_data(data, refresh=False, region=""):
