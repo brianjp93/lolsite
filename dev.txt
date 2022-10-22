@@ -38,7 +38,7 @@ cryptography==38.0.1
     # via paramiko
 decorator==5.1.1
     # via ipython
-django==3.2.15
+django==3.2.16
     # via
     #   -r dev.in
     #   django-stubs
