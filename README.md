@@ -1,5 +1,3 @@
-[![CircleCI](https://circleci.com/gh/brianjp93/lolsite.svg?style=svg&circle-token=3e958dc79cdd1106457fbc9f5f4015662c447e95)](https://circleci.com/gh/brianjp93/lolsite)
-
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ### Some Docs
