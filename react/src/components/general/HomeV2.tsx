@@ -10,7 +10,7 @@ function sleep(ms: number) {
 }
 
 export function HomeV2({store}: {store: any}) {
-  const quote = useRef<HTMLElement>(null)
+  const quote = useRef<HTMLQuoteElement>(null)
   const FADETIME = 1500
   const MESSAGE_TIME = 20
 
