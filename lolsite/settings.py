@@ -31,7 +31,7 @@ if config("LOLSITE_HOST", None) == "dev":
     print('Using local dev settings.')
 elif config("ENVNAME", None) == "test":
     from lolsite.settingsenv.settings_test import *
-    print('Using circle ci settings.')
+    print('Using settings_test')
 elif config('ENVNAME', None) == 'fly':
     from lolsite.settingsenv.fly_settings import *
 else:
