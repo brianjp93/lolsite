@@ -48,5 +48,6 @@ jobs:
         DB_HOST: 127.0.0.1
         DB_PORT: ${{ matrix.db_port }}
         DB_PASSWORD: postgres
+        ENVNAME: test
       run: |
         python manage.py test

@@ -29,8 +29,8 @@ REST_FRAMEWORK = {
 if config("LOLSITE_HOST", None) == "dev":
     from lolsite.settingsenv.dev_settings import *
     print('Using local dev settings.')
-elif config("ENVNAME", None) == "circleci":
-    from lolsite.settingsenv.circleci_settings import *
+elif config("ENVNAME", None) == "test":
+    from lolsite.settingsenv.settings_test import *
     print('Using circle ci settings.')
 elif config('ENVNAME', None) == 'fly':
     from lolsite.settingsenv.fly_settings import *

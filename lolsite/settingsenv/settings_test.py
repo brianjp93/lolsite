@@ -1,5 +1,3 @@
-"""lolsite/settingsenv/circleci_settings.py
-"""
 import os
 
 
