@@ -95,8 +95,6 @@ prompt-toolkit==3.0.31
     # via click-repl
 psycopg2-binary==2.9.3
     # via -r requirements.in
-pycurl==7.45.1
-    # via -r requirements.in
 pymemcache==3.5.2
     # via django-pymemcache
 pyparsing==3.0.9
