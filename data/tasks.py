@@ -251,6 +251,11 @@ def import_items(version="", language="en_US", overwrite=False):
         for item_id, _item in data.items():
 
             # Item
+            try:
+                int(item_id)
+            except ValueError:
+                logger.exception('Unexpected item id.')
+                continue
             item_model_data = {
                 "_id": int(item_id),
                 "version": version,
