@@ -93,7 +93,7 @@ pillow==9.2.0
     # via -r requirements.in
 prompt-toolkit==3.0.31
     # via click-repl
-psycopg2-binary==2.9.3
+psycopg2-binary==2.9.5
     # via -r requirements.in
 pymemcache==3.5.2
     # via django-pymemcache
