@@ -67,8 +67,6 @@ django-storages==1.13.1
     # via -r requirements.in
 djangorestframework==3.14.0
     # via -r requirements.in
-exceptiongroup==1.0.0rc9
-    # via hypothesis
 factory-boy==3.2.1
     # via -r requirements.in
 faker==14.2.1
@@ -89,7 +87,7 @@ lolwrapper==1.5.1
     # via -r requirements.in
 packaging==21.3
     # via redis
-pillow==9.2.0
+pillow==9.3.0
     # via -r requirements.in
 prompt-toolkit==3.0.31
     # via click-repl
