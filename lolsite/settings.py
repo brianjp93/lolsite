@@ -154,3 +154,5 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = "brianjp93@gmail.com"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+RIOT_API_TOKEN = config('RIOT_API_TOKEN')

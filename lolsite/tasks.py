@@ -1,23 +1,6 @@
-"""lolsite/tasks.py
-"""
-from data.models import Rito
 from lol.riot import Riot as RiotAPI
+from django.conf import settings
 
 
 def get_riot_api():
-    """Get an instance of the RiotAPI wrapper.
-
-    Uses the token stored in the data.Rito model
-
-    Returns
-    -------
-    RiotAPI or None
-
-    """
-    api = None
-    query = Rito.objects.all()
-    if query:
-        rito = query[0]
-        if rito.token:
-            api = RiotAPI(rito.token)
-    return api
+    return RiotAPI(settings.RIOT_API_TOKEN)
