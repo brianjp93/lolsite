@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 import os
-import pathlib
 from decouple import config
 import logging
 
@@ -37,21 +36,7 @@ elif config('ENVNAME', None) == 'fly':
 else:
     raise RuntimeError('ENVNAME or LOLSITE_HOST must be set.')
 
-GIT_BUILD = 0
-try:
-    with open(os.path.join(BASE_DIR, ".git", "logs", "HEAD")) as git_log:
-        line = [line for line in git_log][-1]
-        GIT_BUILD = line.split()[1][:7]
-except:
-    try:
-        with open(pathlib.PurePath(BASE_DIR, "gitbuild")) as git_log:
-            GIT_BUILD = git_log.read().strip()
-    except:
-        pass
-
-VERSION = [0, 1, GIT_BUILD]
-VERSION_STRING = ".".join(list(map(str, VERSION)))
-
+VERSION_STRING = '0.1.0'
 
 # Application definition
 INSTALLED_APPS = [
