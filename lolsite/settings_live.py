@@ -1,5 +1,4 @@
-"""lolsite/settingsenv/fly_settings.py
-"""
+from .settings import *
 import os
 
 from decouple import config
@@ -7,8 +6,6 @@ import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 import dj_database_url
 
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 REACT_DEV = False
 DEV = False

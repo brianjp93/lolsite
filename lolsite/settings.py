@@ -13,10 +13,10 @@ import os
 from decouple import config
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = config(
     "LOLSITE_SECRET_KEY", "6cs%&oj!lvxpvj44r63-#ie=-%er1hs@%sbt1k9=lf7-b_mlxv"
 )
@@ -24,17 +24,6 @@ SECRET_KEY = config(
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'lolsite.helpers.Paginator'
 }
-
-if config("LOLSITE_HOST", None) == "dev":
-    from lolsite.settingsenv.dev_settings import *
-    print('Using local dev settings.')
-elif config("ENVNAME", None) == "test":
-    from lolsite.settingsenv.settings_test import *
-    print('Using settings_test')
-elif config('ENVNAME', None) == 'fly':
-    from lolsite.settingsenv.fly_settings import *
-else:
-    raise RuntimeError('ENVNAME or LOLSITE_HOST must be set.')
 
 VERSION_STRING = '0.1.0'
 

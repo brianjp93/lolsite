@@ -12,6 +12,8 @@ REDIS_URL=redis
 
 DOCKER_REACT_LINK=react:3000
 REACT_URL=localhost:3000
+DJANGO_SETTINGS_MODULE=lolsite.settings_local
+RIOT_API_TOKEN=token
 
 REACT_DEV=True
 
