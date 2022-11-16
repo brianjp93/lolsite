@@ -18,6 +18,8 @@ jobs:
         include:
           - db: postgres
             db_port: 5432
+        env:
+          RIOT_API_TOKEN: blah
     services:
       postgres:
         image: postgres:13
