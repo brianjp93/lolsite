@@ -293,7 +293,9 @@ def import_recent_matches(
                     g = group(*jobs)
                     result = g()
                     if sync:
+                        start_time = time.perf_counter()
                         result.get(timeout=5)
+                        logger.info(f'group match import took {time.perf_counter() - start_time}')
             else:
                 has_more = False
             index += size
@@ -835,7 +837,7 @@ def import_match_from_data(data, refresh=False, region=""):
             Match.objects.filter(_id=parsed.metadata.matchId).delete()
             match_model.save()
         else:
-            logging.exception("Attempting to import game which was already imported.")
+            logging.warning("Attempted to import game which was already imported. Ignoring.")
             return
 
     participants_data = info.participants
