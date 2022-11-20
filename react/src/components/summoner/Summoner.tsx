@@ -67,27 +67,6 @@ export function Summoner({route, region, store}: {route: any; region: string; st
   )
   const summonerQueryRefetch = summonerQuery.refetch
 
-  const matchQuery = useQueryWithPrefetch(
-    ['matches', 'by-summoner', filterParams],
-    () => api.match.getMatchesBySummonerName(filterParams).then((x) => x.results),
-    ['matches', 'by-summoner', {...filterParams, start: filterParams.start + count}],
-    () =>
-      api.match
-        .getMatchesBySummonerName({...filterParams, start: filterParams.start + count})
-        .then((x) => x.results),
-    {
-      retry: false,
-      refetchOnWindowFocus: false,
-      keepPreviousData: true,
-      staleTime: 1000 * 60 * 3,
-      onSuccess: () => {
-        setLastRefresh(new Date().getTime())
-        setIsInitialQuery(false)
-      },
-    },
-  )
-  const matchQueryRefetch = matchQuery.refetch
-
   const matchQueryWithSync = useQueryWithPrefetch(
     ['matches-with-sync', 'by-summoner', {...filterParams, sync_import: true}],
     () =>
@@ -116,30 +95,18 @@ export function Summoner({route, region, store}: {route: any; region: string; st
         setLastRefresh(new Date().getTime())
         setIsInitialQuery(false)
       },
+      onError: () => {
+        setPage(x => x - 1)
+      }
     },
   )
   const matchQueryWithSyncRefetch = matchQueryWithSync.refetch
 
-  const isMatchLoading = useMemo(() => {
-    if (matchQuery.isLoading) {
-      return true
-    } else if (matchQueryWithSync.isLoading && !matchQuery.data?.length) {
-      return true
-    }
-    return false
-  }, [matchQuery, matchQueryWithSync])
+  const isMatchLoading = matchQueryWithSync.isFetching
 
   const summoner = summonerQuery.data
   const icon = summoner?.profile_icon
-  const matches: BasicMatchType[] = useMemo(() => {
-    if (matchQueryWithSync.data?.length) {
-      return matchQueryWithSync.data
-    } else if (matchQuery.data?.length) {
-      return matchQuery.data
-    }
-    return []
-  }, [matchQueryWithSync.data, matchQuery.data])
-
+  const matches: BasicMatchType[] = matchQueryWithSync.data || []
   const positionQuery = useQuery(
     ['positions', summoner?._id, region],
     () =>
@@ -152,13 +119,11 @@ export function Summoner({route, region, store}: {route: any; region: string; st
 
   const refreshPage = useCallback(() => {
     setPage(1)
-    matchQueryRefetch()
     matchQueryWithSyncRefetch()
     summonerQueryRefetch()
     positionQueryRefetch()
   }, [
     setPage,
-    matchQueryRefetch,
     matchQueryWithSyncRefetch,
     summonerQueryRefetch,
     positionQueryRefetch,
@@ -214,7 +179,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
 
   const pagination = () => {
     const disabled = {
-      disabled: matchQuery.isFetching,
+      disabled: isMatchLoading,
     }
     return (
       <div>
@@ -234,7 +199,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
           <i className="material-icons">chevron_right</i>
         </button>
         <div style={{display: 'inline-block', marginLeft: 8}}>{page}</div>
-        {matchQuery.isFetching && (
+        {isMatchLoading && (
           <div style={{display: 'inline-block', marginLeft: 10}}>
             <Orbit size={25} />
           </div>
@@ -259,9 +224,9 @@ export function Summoner({route, region, store}: {route: any; region: string; st
           </div>
         )}
 
-        {matchQuery.isSuccess && !summonerQuery.isSuccess && <SummonerNotFound store={store} />}
+        {matchQueryWithSync.isSuccess && !summonerQuery.isSuccess && <SummonerNotFound store={store} />}
 
-        {(matchQuery.isSuccess || matchQueryWithSync.isSuccess) && summonerQuery.isSuccess && (
+        {(matchQueryWithSync.isSuccess || matchQueryWithSync.isSuccess) && summonerQuery.isSuccess && (
           <div>
             {matches.length > 0 && summoner && (
               <Modal isOpen={isMatchModalOpen} onRequestClose={closeModal} style={MODALSTYLE}>
@@ -350,7 +315,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                   <div className="col l8 m12">
                     <MatchFilterForm onUpdate={matchFilterOnUpdate} />
                     {pagination()}
-                    {isMatchLoading && (
+                    {matchQueryWithSync.isLoading && (
                       <div style={{width: 600}}>
                         <Orbit
                           size={200}
@@ -360,7 +325,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
                         />
                       </div>
                     )}
-                    {!isMatchLoading &&
+                    {!matchQueryWithSync.isLoading &&
                       summonerQuery.isSuccess &&
                       matches.map((match: BasicMatchType, key: number) => {
                         return (
