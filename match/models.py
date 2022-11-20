@@ -1,5 +1,3 @@
-"""match.models
-"""
 from typing import List
 from django.db import models
 from django.db.models import QuerySet
@@ -216,6 +214,7 @@ class Match(VersionedModel):
 
 
 class Participant(models.Model):
+    id: int | None
     match = models.ForeignKey(
         "Match", on_delete=models.CASCADE, related_name="participants"
     )
@@ -273,20 +272,16 @@ class Participant(models.Model):
         )
 
     def spell_1_image_url(self):
-        """Get spell 1 image URL."""
         url = ""
         query = SummonerSpell.objects.filter(key=self.summoner_1_id)
-        if query.exists():
-            spell = query.first()
+        if spell := query.first():
             url = spell.image_url()
         return url
 
     def spell_2_image_url(self):
-        """Get spell 2 image URL."""
         url = ""
         query = SummonerSpell.objects.filter(key=self.summoner_2_id)
-        if query.exists():
-            spell = query.first()
+        if spell := query.first():
             url = spell.image_url()
         return url
 
@@ -427,8 +422,7 @@ class Stats(models.Model):
         query = ReforgedTree.objects.filter(_id=self.perk_primary_style).order_by(
             "-version"
         )
-        if query.exists():
-            perk = query.first()
+        if perk := query.first():
             url = perk.image_url()
         return url
 
@@ -439,8 +433,7 @@ class Stats(models.Model):
             "-major",
             "-minor",
         )
-        if query.exists():
-            perk = query.first()
+        if perk := query.first():
             url = perk.image_url()
         return url
 
@@ -455,8 +448,7 @@ class Stats(models.Model):
             query = ReforgedRune.objects.filter(_id=value).order_by(
                 "-reforgedtree__version"
             )
-            if query.exists():
-                perk = query.first()
+            if perk := query.first():
                 url = perk.image_url()
         return url
 
@@ -497,10 +489,9 @@ class Stats(models.Model):
                     version_query.exists(),
                 ]
             ):
-                item = version_query.first()
-                url = item.image_url()
-            elif query.exists():
-                item = query.first()
+                if item := version_query.first():
+                    url = item.image_url()
+            elif item := query.first():
                 url = item.image_url()
         return url
 
@@ -527,6 +518,7 @@ class Stats(models.Model):
 
 
 class Team(models.Model):
+    id: int | None
     match = models.ForeignKey("Match", on_delete=models.CASCADE, related_name="teams")
     _id = models.IntegerField()
 
@@ -551,6 +543,7 @@ class Team(models.Model):
 
 
 class Ban(models.Model):
+    id: int | None
     team = models.ForeignKey("Team", on_delete=models.CASCADE, related_name="bans")
     champion_id = models.IntegerField()
     pick_turn = models.IntegerField()
@@ -562,6 +555,7 @@ class Ban(models.Model):
 # ADVANCED TIMELINE MODELS
 class AdvancedTimeline(models.Model):
     # interval in milliseconds
+    id: int | None
     match = models.OneToOneField("Match", on_delete=models.CASCADE)
     frame_interval = models.IntegerField(default=60000, blank=True)
 
@@ -584,6 +578,7 @@ class Frame(models.Model):
 
 
 class ParticipantFrame(models.Model):
+    id: int | None
     frame = models.ForeignKey(
         "Frame", on_delete=models.CASCADE, related_name="participantframes"
     )
@@ -649,6 +644,7 @@ class ParticipantFrame(models.Model):
 
 
 class Event(models.Model):
+    id: int | None
     frame = models.ForeignKey("Frame", on_delete=models.CASCADE)
     timestamp = models.IntegerField(default=0, blank=True)
 
@@ -657,42 +653,50 @@ class Event(models.Model):
 
 
 class WardKillEvent(Event):
+    id: int | None
     killer_id = models.PositiveSmallIntegerField()
     ward_type = models.CharField(max_length=32)
 
 
 class WardPlacedEvent(Event):
+    id: int | None
     creator_id = models.PositiveSmallIntegerField()
     ward_type = models.CharField(max_length=32)
 
 
 class LevelUpEvent(Event):
+    id: int | None
     level = models.PositiveSmallIntegerField()
     participant_id = models.PositiveSmallIntegerField()
 
 
 class SkillLevelUpEvent(Event):
+    id: int | None
     level_up_type = models.CharField(max_length=32)
     participant_id = models.PositiveSmallIntegerField()
     skill_slot = models.PositiveSmallIntegerField()
 
 
 class ItemPurchasedEvent(Event):
+    id: int | None
     item_id = models.PositiveSmallIntegerField()
     participant_id = models.PositiveSmallIntegerField()
 
 
 class ItemDestroyedEvent(Event):
+    id: int | None
     item_id = models.PositiveSmallIntegerField()
     participant_id = models.PositiveSmallIntegerField()
 
 
 class ItemSoldEvent(Event):
+    id: int | None
     item_id = models.PositiveSmallIntegerField()
     participant_id = models.PositiveSmallIntegerField()
 
 
 class ItemUndoEvent(Event):
+    id: int | None
     participant_id = models.PositiveSmallIntegerField()
     before_id = models.PositiveSmallIntegerField()
     after_id = models.PositiveSmallIntegerField()
@@ -700,6 +704,7 @@ class ItemUndoEvent(Event):
 
 
 class TurretPlateDestroyedEvent(Event):
+    id: int | None
     killer_id = models.PositiveSmallIntegerField()
     lane_type = models.CharField(max_length=16)
     x = models.PositiveIntegerField()
@@ -708,6 +713,7 @@ class TurretPlateDestroyedEvent(Event):
 
 
 class EliteMonsterKillEvent(Event):
+    id: int | None
     killer_id = models.PositiveSmallIntegerField()
     bounty = models.PositiveIntegerField(default=0, blank=True)
     assisting_participant_ids = ArrayField(
@@ -721,6 +727,7 @@ class EliteMonsterKillEvent(Event):
 
 
 class ChampionSpecialKillEvent(Event):
+    id: int | None
     assisting_participant_ids = ArrayField(
         models.PositiveSmallIntegerField(), null=True
     )
@@ -732,6 +739,7 @@ class ChampionSpecialKillEvent(Event):
 
 
 class BuildingKillEvent(Event):
+    id: int | None
     assisting_participant_ids = ArrayField(
         models.PositiveSmallIntegerField(), null=True
     )
@@ -746,12 +754,14 @@ class BuildingKillEvent(Event):
 
 
 class GameEndEvent(Event):
+    id: int | None
     game_id = models.PositiveBigIntegerField()
     real_timestamp = models.PositiveBigIntegerField()
     winning_team = models.PositiveSmallIntegerField()
 
 
 class ChampionKillEvent(Event):
+    id: int | None
     bounty = models.PositiveSmallIntegerField()
     shutdown_bounty = models.PositiveIntegerField(default=0, blank=True)
     kill_streak_length = models.PositiveSmallIntegerField()
@@ -762,6 +772,7 @@ class ChampionKillEvent(Event):
 
 
 class VictimDamage(models.Model):
+    id: int | None
     championkillevent = models.ForeignKey(ChampionKillEvent, on_delete=models.CASCADE)
     basic = models.BooleanField(default=False)
     magic_damage = models.IntegerField()
@@ -789,6 +800,7 @@ class VictimDamageDealt(VictimDamage):
 
 
 class Spectate(models.Model):
+    id: int | None
     game_id = models.CharField(max_length=128, default="", blank=True)
     encryption_key = models.CharField(max_length=256, default="", blank=True)
     platform_id = models.CharField(max_length=32, default="", blank=True)
