@@ -104,8 +104,6 @@ export const Stats = t.type({
   double_kills: t.number,
   first_blood_assist: t.boolean,
   first_blood_kill: t.boolean,
-  first_inhibitor_assist: t.boolean,
-  first_inhibitor_kill: t.boolean,
   first_tower_assist: t.boolean,
   first_tower_kill: t.boolean,
   gold_earned: t.number,
@@ -128,8 +126,6 @@ export const Stats = t.type({
   magic_damage_dealt_to_champions: t.number,
   magical_damage_taken: t.number,
   neutral_minions_killed: t.number,
-  neutral_minions_killed_enemy_jungle: t.number,
-  neutral_minions_killed_team_jungle: t.number,
   penta_kills: t.number,
 
   perk_0: t.number,
