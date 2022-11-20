@@ -14,7 +14,6 @@ DEBUG = False
 ALLOWED_HOSTS = ["hardstuck.club"]
 BASE_URL = "https://hardstuck.club"
 
-ENVNAME = config("ENVNAME", None)
 DATABASES = {'default': dj_database_url.config()}
 
 AWS_ACCESS_KEY_ID = config("AWS_KEY")
