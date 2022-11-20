@@ -6,6 +6,12 @@ kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
 
+[processes]
+web = "gunicorn --bind :8000 --workers 2 lolsite.wsgi:application"
+worker = "celery -A lolsite worker --loglevel=INFO"
+
+# command=celery -A lolsite worker --loglevel=INFO
+
 [deploy]
   release_command = "sh /release.sh"
 
@@ -18,14 +24,10 @@ processes = []
   allowed_public_ports = []
   auto_rollback = true
 
-[[mounts]]
-  destination = "/lolsite_redis"
-  source = "lolsite_redis"
-
 [[services]]
   http_checks = []
   internal_port = 8000
-  processes = ["app"]
+  processes = ["web"]
   protocol = "tcp"
   script_checks = []
 
