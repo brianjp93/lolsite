@@ -46,3 +46,5 @@ wily-report.html
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
+celerybeat-schedule
+celerybeat.pid
