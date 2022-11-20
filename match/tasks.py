@@ -1,11 +1,17 @@
 """match/tasks.py
 """
+from celery import group
 from django.db.utils import IntegrityError
 from django.db.models import Count, Subquery, OuterRef
 from django.db.models import Case, When, Sum
 from django.db.models import IntegerField, Q, F
-from django.db import connection
 from django.utils import timezone
+from django.db import transaction
+from pydantic import ValidationError
+
+from .parsers.match import MatchResponseModel, ParticipantModel
+from .parsers.timeline import TimelineResponseModel
+from .parsers import timeline as tmparsers
 
 from .models import Match, Participant, Stats
 from .models import Team, Ban
@@ -25,12 +31,11 @@ from .models import Spectate
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
-from player.models import Summoner, simplify, NameChange
+from player.models import Summoner, NameChange
 from player import tasks as pt
 
 from lolsite.celery import app
 import logging
-from multiprocessing.dummy import Pool as ThreadPool
 import time
 
 from functools import partial
@@ -46,7 +51,8 @@ class RateLimitError(Exception):
 
 
 # @query_debugger
-def import_match(match_id, region, refresh=False, close=False):
+@app.task(name='match.tasks.import_match')
+def import_match(match_id, region, refresh=False):
     """Import a match by its ID.
 
     Parameters
@@ -72,35 +78,18 @@ def import_match(match_id, region, refresh=False, close=False):
             return "not found"
 
         import_match_from_data(match, refresh=refresh, region=region)
-    if close:
-        connection.close()
 
 
-def import_summoner_from_participant(participants, region):
-    """Import a summoner using participant data.
-
-    Parameters
-    ----------
-    participants : dict[]
-    region : str
-
-    Returns
-    -------
-    None
-
-    """
+def import_summoner_from_participant(participants: list[ParticipantModel], region):
     sums = []
     for part in participants:
-        if part["summoner_id"]:
-            puuid = part["puuid"]
-            name = part["summoner_name"]
-            _id = part["summoner_id"]
+        if part.summonerId:
             summoner = Summoner(
-                _id=_id,
-                name=name,
-                simple_name=simplify(name),
+                _id=part.summonerId,
+                name=part.summonerName,
+                simple_name=part.simple_name,
                 region=region.lower(),
-                puuid=puuid,
+                puuid=part.puuid,
             )
             sums.append(summoner)
     Summoner.objects.bulk_create(sums, ignore_conflicts=True)
@@ -130,297 +119,6 @@ def handle_name_changes(days=30):
                 ).order_by('created_date')
                 for nc in qs[1:]:
                     nc.delete()
-
-
-def import_match_from_data(data, refresh=False, region=""):
-    """Import a match given the riot data response json.
-
-    Ignore tutorial games.
-
-    Parameters
-    ----------
-    data : dict
-        Riot JSON data
-    refresh : bool
-    region : str
-
-    Returns
-    -------
-    None, or False if failed.
-
-    """
-    game_mode = data["info"]["gameMode"]
-    if "tutorial" in game_mode.lower():
-        return False
-
-    parsed = parse_match(data)
-
-    match_data = parsed.pop("match")
-    match_model = Match(**match_data)
-    try:
-        match_model.save()
-    except IntegrityError:
-        if refresh:
-            Match.objects.get(_id=match_data["_id"]).delete()
-            match_model.save()
-        else:
-            logging.exception("Attempting to import game which was already imported.")
-            return
-
-    participants_data = parsed.pop("participants")
-    try:
-        import_summoner_from_participant(participants_data, region)
-    except IntegrityError as error:
-        match_model.delete()
-        raise error
-
-    for _p_data in participants_data:
-        stats_data = _p_data.pop("stats")
-
-        _p_data["match"] = match_model
-
-        # PARTICIPANT
-        participant_model = Participant(**_p_data)
-        try:
-            participant_model.save()
-        except Exception as error:
-            match_model.delete()
-            raise error
-
-        # STATS
-        stats_data["participant"] = participant_model
-        stats_model = Stats(**stats_data)
-        try:
-            stats_model.save()
-        except IntegrityError as error:
-            match_model.delete()
-            raise error
-
-    # TEAMS
-    teams = parsed.pop("teams")
-    for _t_data in teams:
-        _t_data["match"] = match_model
-        _bans = _t_data.pop("bans")
-
-        team_model = Team(**_t_data)
-        try:
-            team_model.save()
-        except Exception as error:
-            raise error
-
-        # BANS
-        bans = []
-        for _ban_data in _bans:
-            _ban_data["team"] = team_model
-            bans.append(Ban(**_ban_data))
-        try:
-            Ban.objects.bulk_create(bans)
-        except Exception as error:
-            raise error
-
-    # set is_fully_imported after finished
-    match_model.is_fully_imported = True
-    match_model.save()
-
-
-def parse_match(data):
-    """Parse match data to be saved into models.
-
-    Parameters
-    ----------
-    data : dict
-        JSON match data from Riot API
-
-    Returns
-    -------
-    dict
-        formatted data to be saved into match models
-
-    """
-    metadata = data["metadata"]
-    match_id = metadata["matchId"]
-    data = data["info"]
-    out = {
-        "match": {},
-        "participants": [],
-        "teams": [],
-    }
-    try:
-        version = {i: int(x) for i, x in enumerate(data["gameVersion"].split("."))}
-    except Exception as error:
-        logger.error("Error on parse.")
-        logger.error(data)
-        raise error
-    game_duration = data["gameDuration"]
-    if data.get("gameEndTimestamp") is not None:
-        game_duration = game_duration * 1000
-    match = {
-        "_id": match_id,
-        "game_creation": data["gameCreation"],
-        "game_duration": game_duration,
-        "game_mode": data["gameMode"],
-        "game_type": data["gameType"],
-        "map_id": data["mapId"],
-        "game_version": data["gameVersion"],
-        "major": version.get(0, ""),
-        "minor": version.get(1, ""),
-        "patch": version.get(2, ""),
-        "build": version.get(3, ""),
-        "platform_id": data["platformId"],
-        "queue_id": data["queueId"],
-    }
-    out["match"] = match
-
-    participants = []
-    for part in data["participants"]:
-        perks = {x["description"]: x for x in part["perks"]["styles"]}
-        stat_perks = part["perks"]["statPerks"]
-        stats = {
-            "assists": part["assists"],
-            "champ_level": part["champLevel"],
-            "damage_dealt_to_objectives": part["damageDealtToObjectives"],
-            "damage_dealt_to_turrets": part["damageDealtToTurrets"],
-            "damage_self_mitigated": part["damageSelfMitigated"],
-            "deaths": part["deaths"],
-            "double_kills": part["doubleKills"],
-            "first_blood_assist": part.get("firstBloodAssist", False),
-            "first_blood_kill": part.get("firstBloodKill", False),
-            "first_inhibitor_assist": part.get("firstInhibitorAssist", False),
-            "first_inhibitor_kill": part.get("firstInhibitorKill", False),
-            "first_tower_assist": part.get("firstTowerAssist", False),
-            "first_tower_kill": part.get("firstTowerKill", False),
-            "gold_earned": part["goldEarned"],
-            "gold_spent": part["goldSpent"],
-            "inhibitor_kills": part.get("inhibitorKills", 0),
-            "item_0": part["item0"],
-            "item_1": part["item1"],
-            "item_2": part["item2"],
-            "item_3": part["item3"],
-            "item_4": part["item4"],
-            "item_5": part["item5"],
-            "item_6": part["item6"],
-            "killing_sprees": part["killingSprees"],
-            "kills": part["kills"],
-            "largest_critical_strike": part["largestCriticalStrike"],
-            "largest_killing_spree": part["largestKillingSpree"],
-            "largest_multi_kill": part["largestMultiKill"],
-            "longest_time_spent_living": part["longestTimeSpentLiving"],
-            "magic_damage_dealt": part["magicDamageDealt"],
-            "magic_damage_dealt_to_champions": part["magicDamageDealtToChampions"],
-            "magical_damage_taken": part["magicDamageTaken"],
-            "neutral_minions_killed": part["neutralMinionsKilled"],
-            "neutral_minions_killed_enemy_jungle": part.get(
-                "neutralMinionsKilledEnemyJungle", 0
-            ),
-            "neutral_minions_killed_team_jungle": part.get(
-                "neutralMinionsKilledTeamJungle", 0
-            ),
-            "penta_kills": part["pentaKills"],
-            "physical_damage_dealt": part["physicalDamageDealt"],
-            "physical_damage_dealt_to_champions": part[
-                "physicalDamageDealtToChampions"
-            ],
-            "physical_damage_taken": part["physicalDamageTaken"],
-            "quadra_kills": part["quadraKills"],
-            "sight_wards_bought_in_game": part["sightWardsBoughtInGame"],
-            "stat_perk_0": stat_perks.get("offense", 0),
-            "stat_perk_1": stat_perks.get("flex", 0),
-            "stat_perk_2": stat_perks.get("defense", 0),
-            "spell_1_casts": part.get("spell1Casts", 0),
-            "spell_2_casts": part.get("spell2Casts", 0),
-            "spell_3_casts": part.get("spell3Casts", 0),
-            "spell_4_casts": part.get("spell4Casts", 0),
-            "time_ccing_others": part["timeCCingOthers"],
-            "total_damage_dealt": part["totalDamageDealt"],
-            "total_damage_dealt_to_champions": part["totalDamageDealtToChampions"],
-            "total_damage_taken": part["totalDamageTaken"],
-            "total_damage_shielded_on_teammates": part[
-                "totalDamageShieldedOnTeammates"
-            ],
-            "total_heal": part["totalHeal"],
-            "total_heals_on_teammates": part["totalHealsOnTeammates"],
-            "total_minions_killed": part["totalMinionsKilled"],
-            "total_time_crowd_control_dealt": part["totalTimeCCDealt"],
-            "total_units_healed": part["totalUnitsHealed"],
-            "triple_kills": part["tripleKills"],
-            "true_damage_dealt": part["trueDamageDealt"],
-            "true_damage_dealt_to_champions": part["trueDamageDealtToChampions"],
-            "true_damage_taken": part["trueDamageTaken"],
-            "turret_kills": part.get("turretKills", 0),
-            "unreal_kills": part["unrealKills"],
-            "vision_score": part["visionScore"],
-            "vision_wards_bought_in_game": part["visionWardsBoughtInGame"],
-            "wards_killed": part.get("wardsKilled", 0),
-            "wards_placed": part.get("wardsPlaced", 0),
-            "detector_wards_placed": part.get("detectorWardsPlaced", 0),
-            "win": part["win"],
-        }
-        all_perks = (
-            perks["primaryStyle"]["selections"] + perks["subStyle"]["selections"]
-        )
-        for i, perk in enumerate(all_perks):
-            stats[f"perk_{i}"] = perk.get("perk", 0)
-            stats[f"perk_{i}_var_1"] = perk.get("var1", 0)
-            stats[f"perk_{i}_var_2"] = perk.get("var2", 0)
-            stats[f"perk_{i}_var_3"] = perk.get("var3", 0)
-        stats["perk_primary_style"] = perks["primaryStyle"]["style"]
-        stats["perk_sub_style"] = perks["subStyle"]["style"]
-
-        participant = {
-            "_id": part["participantId"],
-            "summoner_id": part.get("summonerId", None),
-            "puuid": part.get("puuid", None),
-            "summoner_name": part["summonerName"],
-            "champion_id": part["championId"],
-            "champ_experience": part["champExperience"],
-            "summoner_1_id": part["summoner1Id"],
-            "summoner_1_casts": part["summoner1Casts"],
-            "summoner_2_id": part["summoner2Id"],
-            "summoner_2_casts": part["summoner2Casts"],
-            "team_id": part["teamId"],
-            "lane": part.get("lane", ""),
-            "role": part.get("role", ""),
-            "individual_position": part["individualPosition"],
-            "team_position": part["teamPosition"],
-            "stats": dict(stats),
-        }
-        participants.append(dict(participant))
-
-    out["participants"] = participants
-
-    teams = []
-
-    for _team in data["teams"]:
-
-        bans = []
-        for _ban in _team["bans"]:
-            bans.append(
-                {
-                    "champion_id": _ban["championId"],
-                    "pick_turn": _ban["pickTurn"],
-                }
-            )
-
-        objectives = _team["objectives"]
-        team = {
-            "_id": _team["teamId"],
-            "baron_kills": objectives["baron"]["kills"],
-            "first_baron": objectives["baron"]["first"],
-            "dragon_kills": objectives["dragon"]["kills"],
-            "first_blood": objectives["champion"]["first"],
-            "first_dragon": objectives["dragon"]["first"],
-            "first_inhibitor": objectives["inhibitor"]["first"],
-            "first_rift_herald": objectives["riftHerald"]["first"],
-            "first_tower": objectives["tower"]["first"],
-            "inhibitor_kills": objectives["inhibitor"]["kills"],
-            "rift_herald_kills": objectives["riftHerald"]["kills"],
-            "tower_kills": objectives["tower"]["kills"],
-            "win": _team.get("win", False),
-            "bans": list(bans),
-        }
-        teams.append(dict(team))
-    out["teams"] = teams
-    return out
 
 
 def full_import(name=None, puuid=None, region=None, **kwargs):
@@ -525,8 +223,9 @@ def import_recent_matches(
     puuid: str,
     region: str,
     queue: Optional[int] = None,
-    startTime: Optional[int] = None,
-    endTime: Optional[int] = None,
+    startTime: Optional[timezone.datetime] = None,
+    endTime: Optional[timezone.datetime] = None,
+    sync=True,
 ):
     """Import recent matches for a puuid.
 
@@ -548,7 +247,6 @@ def import_recent_matches(
     """
     has_more = True
     api = get_riot_api()
-    pool = ThreadPool(10)
     import_count = 0
     if api:
         index = start
@@ -590,7 +288,12 @@ def import_recent_matches(
                 existing_ids = [x._id for x in Match.objects.filter(_id__in=matches)]
                 new_matches = list(set(matches) - set(existing_ids))
                 import_count += len(new_matches)
-                pool.map(lambda x: import_match(x, region, close=True), new_matches)
+                jobs = [import_match.s(x, region) for x in new_matches]
+                if jobs:
+                    g = group(*jobs)
+                    result = g()
+                    if sync:
+                        result.get(timeout=5)
             else:
                 has_more = False
             index += size
@@ -687,325 +390,278 @@ def get_top_played_with(
     return p
 
 
-def get_frame_event_types():
-    return {
-        "WARD_KILL": {
-            "model": WardKillEvent,
-            "events": [],
-            "mapping": {
-                "killer_id": ["killerId", None],
-                "ward_type": ["wardType", None],
-            },
-        },
-        "WARD_PLACED": {
-            "model": WardPlacedEvent,
-            "events": [],
-            "mapping": {
-                "creator_id": ["creatorId", None],
-                "ward_type": ["wardType", None],
-            },
-        },
-        "LEVEL_UP": {
-            "model": LevelUpEvent,
-            "events": [],
-            "mapping": {
-                "level": ["level", None],
-                "participant_id": ["participantId", None],
-            },
-        },
-        "SKILL_LEVEL_UP": {
-            "model": SkillLevelUpEvent,
-            "events": [],
-            "mapping": {
-                "level_up_type": ["levelUpType", None],
-                "participant_id": ["participantId", None],
-                "skill_slot": ["skillSlot", None],
-            },
-        },
-        "ITEM_PURCHASED": {
-            "model": ItemPurchasedEvent,
-            "events": [],
-            "mapping": {
-                "item_id": ["itemId", None],
-                "participant_id": ["participantId", None],
-            },
-        },
-        "ITEM_DESTROYED": {
-            "model": ItemDestroyedEvent,
-            "events": [],
-            "mapping": {
-                "item_id": ["itemId", None],
-                "participant_id": ["participantId", None],
-            },
-        },
-        "ITEM_SOLD": {
-            "model": ItemSoldEvent,
-            "events": [],
-            "mapping": {
-                "item_id": ["itemId", None],
-                "participant_id": ["participantId", None],
-            },
-        },
-        "ITEM_UNDO": {
-            "model": ItemUndoEvent,
-            "events": [],
-            "mapping": {
-                "participant_id": ["participantId", None],
-                "before_id": ["beforeId", None],
-                "after_id": ["afterId", None],
-                "gold_gain": ["goldGain", None],
-            },
-        },
-        "TURRET_PLATE_DESTROYED": {
-            "model": TurretPlateDestroyedEvent,
-            "events": [],
-            "mapping": {
-                "killer_id": ["killerId", None],
-                "lane_type": ["laneType", None],
-                "x": ["position__x", None],
-                "y": ["position__y", None],
-                "team_id": ["teamId", None],
-            },
-        },
-        "ELITE_MONSTER_KILL": {
-            "model": EliteMonsterKillEvent,
-            "events": [],
-            "mapping": {
-                "killer_id": ["killerId", None],
-                "bounty": ["bounty", 0],
-                "assisting_participant_ids": ["assistingParticipantIds", None],
-                "killer_team_id": ["killerTeamId", None],
-                "monster_type": ["monsterType", None],
-                "monster_sub_type": ["monsterSubType", None],
-                "x": ["position__x", None],
-                "y": ["position__y", None],
-            },
-        },
-        "CHAMPION_SPECIAL_KILL": {
-            "model": ChampionSpecialKillEvent,
-            "events": [],
-            "mapping": {
-                "assisting_participant_ids": ["assistingParticipantIds", None],
-                "kill_type": ["killType", None],
-                "killer_id": ["killerId", None],
-                "multi_kill_length": ["multiKillLength", None],
-                "x": ["position__x", None],
-                "y": ["position__y", None],
-            },
-        },
-        "BUILDING_KILL": {
-            "model": BuildingKillEvent,
-            "events": [],
-            "mapping": {
-                "assisting_participant_ids": ["assistingParticipantIds", None],
-                "building_type": ["buildingType", None],
-                "killer_id": ["killerId", None],
-                "lane_type": ["laneType", None],
-                "team_id": ["teamId", None],
-                "tower_type": ["towerType", None],
-                "x": ["position__x", None],
-                "y": ["position__y", None],
-                "bounty": ["bounty", 0],
-            },
-        },
-        "GAME_END": {
-            "model": GameEndEvent,
-            "events": [],
-            "mapping": {
-                "game_id": ["gameId", None],
-                "real_timestamp": ["realTimestamp", None],
-                "winning_team": ["winningTeam", None],
-            },
-        },
-        "CHAMPION_KILL": {
-            "model": ChampionKillEvent,
-            "events": [],
-            "mapping": {
-                "bounty": ["bounty", 0],
-                "shutdown_bounty": ["shutdownBounty", 0],
-                "kill_streak_length": ["killStreakLength", None],
-                "killer_id": ["killerId", None],
-                "victim_id": ["victimId", None],
-                "x": ["position__x", None],
-                "y": ["position__y", None],
-            },
-        },
-    }
-
-
 @app.task(name="match.tasks.import_advanced_timeline")
-def import_advanced_timeline(match_id=None, overwrite=False):
-    """
-
-    Parameters
-    ----------
-    match_id : ID
-        Internal Match ID
-
-    Returns
-    -------
-    None
-
-    """
-    match = Match.objects.get(id=match_id)
-    try:
-        match.advancedtimeline
-        if overwrite:
+def import_advanced_timeline(match_id: str, overwrite=False):
+    victim_damage_received_events = []
+    victim_damage_dealt_events = []
+    ward_placed_events = []
+    ward_kill_events = []
+    item_purchase_events = []
+    item_destroyed_events = []
+    item_sold_events = []
+    item_undo_events = []
+    skill_level_up_events = []
+    level_up_events = []
+    champion_special_kill_events = []
+    turret_plate_destroyed_events = []
+    elite_monster_kill_events = []
+    building_kill_events = []
+    with transaction.atomic():
+        match = Match.objects.select_related('advancedtimeline').get(id=match_id)
+        if hasattr(match, 'advancedtimeline') and overwrite:
             match.advancedtimeline.delete()
-    except:
-        # we haven't imported it yet.
-        pass
-    api = get_riot_api()
-    if api:
+        api = get_riot_api()
         region = match.platform_id.lower()
         logger.info(f"Requesting info for match {match.id} in region {region}")
-        r = api.match.timeline(match._id, region=region)
-        data = r.json()
-        _data = data
-        data = data["info"]
-        frame_interval = data["frameInterval"]
-        at = AdvancedTimeline(match=match, frame_interval=frame_interval)
+        try:
+            parsed = TimelineResponseModel(
+                **api.match.timeline(match._id, region=region).json()
+            )
+        except ValidationError:
+            logger.exception('AdvanceTimeline could not be parsed.')
+            return
+        logger.info('Parsed AdvancedTimeline successfully.')
+        data = parsed.info
+        at = AdvancedTimeline(match=match, frame_interval=data.frameInterval)
         at.save()
 
-        for _frame in data["frames"]:
-            timestamp = _frame["timestamp"]
-            frame = Frame(timeline=at, timestamp=timestamp)
+        for fm in data.frames:
+            frame = Frame(timeline=at, timestamp=fm.timestamp)
             frame.save()
             pframes = []
-            for i, p_frame in _frame["participantFrames"].items():
-
-                pos = p_frame.get("position", {})
-                stats = p_frame.get("championStats", {})
-                dmg_stats = p_frame.get("damageStats", {})
+            for pfm in fm.participantFrames.values():
+                stats = pfm.championStats
+                dmg_stats = pfm.damageStats
                 p_frame_data = {
                     "frame": frame,
-                    "participant_id": p_frame["participantId"],
-                    "current_gold": p_frame["currentGold"],
-                    "jungle_minions_killed": p_frame["jungleMinionsKilled"],
-                    "gold_per_second": p_frame["goldPerSecond"],
-                    "level": p_frame["level"],
-                    "minions_killed": p_frame["minionsKilled"],
-                    "time_enemy_spent_controlled": p_frame["timeEnemySpentControlled"],
-                    "team_score": p_frame.get("teamScore", 0),
-                    "total_gold": p_frame.get("totalGold", 0),
-                    "xp": p_frame.get("xp", 0),
-                    "x": pos.get("x"),
-                    "y": pos.get("y"),
-                    "ability_haste": stats.get("abilityHaste"),
-                    "ability_power": stats.get("abilityPower"),
-                    "armor": stats.get("armor"),
-                    "armor_pen": stats.get("armorPen"),
-                    "armor_pen_percent": stats.get("armorPenPercent"),
-                    "attack_damage": stats.get("attackDamage"),
-                    "attack_speed": stats.get("attackSpeed"),
-                    "bonus_armor_pen_percent": stats.get("bonusArmorPenPercent"),
-                    "bonus_magic_pen_percent": stats.get("bonusMagicPenPercent"),
-                    "cc_reduction": stats.get("ccReduction"),
-                    "cooldown_reduction": stats.get("cooldownReduction"),
-                    "health": stats.get("health"),
-                    "health_max": stats.get("healthMax"),
-                    "health_regen": stats.get("healthRegen"),
-                    "lifesteal": stats.get("lifesteal"),
-                    "magic_pen": stats.get("magicPen"),
-                    "magic_pen_percent": stats.get("magicPenPercent"),
-                    "magic_resist": stats.get("magicResist"),
-                    "movement_speed": stats.get("movementSpeed"),
-                    "omnivamp": stats.get("omnivamp"),
-                    "physical_vamp": stats.get("physicalVamp"),
-                    "power": stats.get("power"),
-                    "power_max": stats.get("powerMax"),
-                    "power_regen": stats.get("powerRegen"),
-                    "spell_vamp": stats.get("spellVamp"),
-                    "magic_damage_done": dmg_stats.get("magicDamageDone"),
-                    "magic_damage_done_to_champions": dmg_stats.get(
-                        "magicDamageDoneToChampions"
-                    ),
-                    "magic_damage_taken": dmg_stats.get("magicDamageTaken"),
-                    "physical_damage_done": dmg_stats.get("physicalDamageDone"),
-                    "physical_damage_done_to_champions": dmg_stats.get(
-                        "physicalDamageDoneToChampions"
-                    ),
-                    "physical_damage_taken": dmg_stats.get("physicalDamageTaken"),
-                    "total_damage_done": dmg_stats.get("totalDamageDone"),
-                    "total_damage_done_to_champions": dmg_stats.get(
-                        "totalDamageDoneToChampions"
-                    ),
-                    "total_damage_taken": dmg_stats.get("totalDamageTaken"),
-                    "true_damage_done": dmg_stats.get("trueDamageDone"),
-                    "true_damage_done_to_champions": dmg_stats.get(
-                        "trueDamageDoneToChampions"
-                    ),
-                    "true_damage_taken": dmg_stats.get("trueDamageTaken"),
+
+                    "participant_id": pfm.participantId,
+                    "current_gold": pfm.currentGold,
+                    "jungle_minions_killed": pfm.jungleMinionsKilled,
+                    "gold_per_second": pfm.goldPerSecond,
+                    "level": pfm.level,
+                    "minions_killed": pfm.minionsKilled,
+                    "time_enemy_spent_controlled": pfm.timeEnemySpentControlled,
+                    "total_gold": pfm.totalGold,
+                    "xp": pfm.xp,
+                    "x": pfm.position.x,
+                    "y": pfm.position.y,
+                    "ability_haste": stats.abilityHaste,
+                    "ability_power": stats.abilityPower,
+                    "armor": stats.armor,
+                    "armor_pen": stats.armorPen,
+                    "armor_pen_percent": stats.armorPenPercent,
+                    "attack_damage": stats.attackDamage,
+                    "attack_speed": stats.attackSpeed,
+                    "bonus_armor_pen_percent": stats.bonusArmorPenPercent,
+                    "bonus_magic_pen_percent": stats.bonusMagicPenPercent,
+                    "cc_reduction": stats.ccReduction,
+                    "cooldown_reduction": stats.cooldownReduction,
+                    "health": stats.health,
+                    "health_max": stats.healthMax,
+                    "health_regen": stats.healthRegen,
+                    "lifesteal": stats.lifesteal,
+                    "magic_pen": stats.magicPen,
+                    "magic_pen_percent": stats.magicPenPercent,
+                    "magic_resist": stats.magicResist,
+                    "movement_speed": stats.movementSpeed,
+                    "omnivamp": stats.omnivamp,
+                    "physical_vamp": stats.physicalVamp,
+                    "power": stats.power,
+                    "power_max": stats.powerMax,
+                    "power_regen": stats.powerRegen,
+                    "spell_vamp": stats.spellVamp,
+                    "magic_damage_done": dmg_stats.magicDamageDone,
+                    "magic_damage_done_to_champions": dmg_stats.magicDamageDoneToChampions,
+                    "magic_damage_taken": dmg_stats.magicDamageTaken,
+                    "physical_damage_done": dmg_stats.physicalDamageDone,
+                    "physical_damage_done_to_champions": dmg_stats.physicalDamageDoneToChampions,
+                    "physical_damage_taken": dmg_stats.physicalDamageTaken,
+                    "total_damage_done": dmg_stats.totalDamageDone,
+                    "total_damage_done_to_champions": dmg_stats.totalDamageDoneToChampions,
+                    "total_damage_taken": dmg_stats.totalDamageTaken,
+                    "true_damage_done": dmg_stats.trueDamageDone,
+                    "true_damage_done_to_champions": dmg_stats.trueDamageDoneToChampions,
+                    "true_damage_taken": dmg_stats.trueDamageTaken,
                 }
                 pframes.append(ParticipantFrame(**p_frame_data))
-
             ParticipantFrame.objects.bulk_create(pframes)
 
-            victim_damage_received_events = []
-            victim_damage_dealt_events = []
-            events = get_frame_event_types()
-            for _event in _frame["events"]:
-                participant_id = _event.get("participantId", None)
-                if participant_id is None:
-                    participant_id = _event.get("creatorId", None)
-                pos = _event.get("position", {})
-                event_type = _event["type"]
-
-                for temp_event_type, val in events.items():
-                    if temp_event_type == event_type:
-                        kwargs = {}
-                        for _key, (_val, _default) in val["mapping"].items():
-                            _data = _event
-                            for lookup in _val.split("__"):
-                                _data = _data.get(lookup, {})
-                                if _data == {}:
-                                    _data = _default
-                            kwargs[_key] = _data
-                        created_model = val["model"](
-                            frame=frame,
-                            timestamp=_event["timestamp"],
-                            **kwargs,
+            for evm in fm.events:
+                match evm:
+                    case tmparsers.WardPlacedEventModel():
+                        ward_placed_events.append(WardPlacedEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            creator_id=evm.creatorId,
+                            ward_type=evm.wardType,
+                        ))
+                    case tmparsers.WardKillEventModel():
+                        ward_kill_events.append(WardKillEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            killer_id=evm.killerId,
+                            ward_type=evm.wardType,
+                        ))
+                    case tmparsers.PauseEndEventModel():
+                        ...
+                    case tmparsers.ObjectiveBountyPrestartEventModel():
+                        ...
+                    case tmparsers.ObjectiveBountyFinishEventModel():
+                        ...
+                    case tmparsers.ChampionTransformEventModel():
+                        ...
+                    case tmparsers.ItemPurchasedEventModel():
+                        item_purchase_events.append(ItemPurchasedEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            item_id=evm.itemId,
+                            participant_id=evm.participantId,
+                        ))
+                    case tmparsers.ItemDestroyedEventModel():
+                        item_destroyed_events.append(ItemDestroyedEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            item_id=evm.itemId,
+                            participant_id=evm.participantId,
+                        ))
+                    case tmparsers.ItemSoldEventModel():
+                        item_sold_events.append(ItemSoldEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            item_id=evm.itemId,
+                            participant_id=evm.participantId,
+                        ))
+                    case tmparsers.ItemUndoEventModel():
+                        item_undo_events.append(ItemUndoEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            participant_id=evm.participantId,
+                            before_id=evm.beforeId,
+                            after_id=evm.afterId,
+                            gold_gain=evm.goldGain,
+                        ))
+                    case tmparsers.SkillLevelUpEventModel():
+                        skill_level_up_events.append(SkillLevelUpEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            level_up_type=evm.levelUpType,
+                            participant_id=evm.participantId,
+                            skill_slot=evm.skillSlot,
+                        ))
+                    case tmparsers.LevelUpModel():
+                        level_up_events.append(LevelUpEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            level=evm.level,
+                            participant_id=evm.participantId,
+                        ))
+                    case tmparsers.ChampionSpecialKillEventModel():
+                        champion_special_kill_events.append(ChampionSpecialKillEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            assisting_participant_ids=evm.assistingParticipantIds,
+                            kill_type=evm.killType,
+                            killer_id=evm.killerId,
+                            multi_kill_length=evm.multiKillLength,
+                            x=evm.position.x,
+                            y=evm.position.y,
+                        ))
+                    case tmparsers.TurretPlateDestroyedEventModel():
+                        turret_plate_destroyed_events.append(TurretPlateDestroyedEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            killer_id=evm.killerId,
+                            lane_type=evm.laneType,
+                            x=evm.position.x,
+                            y=evm.position.y,
+                            team_id=evm.teamId,
+                        ))
+                    case tmparsers.EliteMonsterKillEventModel():
+                        elite_monster_kill_events.append(EliteMonsterKillEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            killer_id=evm.killerId,
+                            killer_team_id=evm.killerTeamId,
+                            bounty=evm.bounty,
+                            x=evm.position.x,
+                            y=evm.position.y,
+                            monster_type=evm.monsterType,
+                            monster_sub_type=evm.monsterSubType,
+                        ))
+                    case tmparsers.BuildingKillEventModel():
+                        building_kill_events.append(BuildingKillEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            killer_id=evm.killerId,
+                            bounty=evm.bounty,
+                            x=evm.position.x,
+                            y=evm.position.y,
+                            building_type=evm.buildingType,
+                            lane_type=evm.laneType,
+                            tower_type=evm.towerType,
+                            team_id=evm.teamId,
+                        ))
+                    case tmparsers.GameEndEventModel():
+                        GameEndEvent.objects.create(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            game_id=evm.gameId,
+                            real_timestamp=evm.realTimestamp,
+                            winning_team=evm.winningTeam,
                         )
-                        val["events"].append(created_model)
-                        if temp_event_type == "CHAMPION_KILL":
-                            for item in _event.get("victimDamageDealt", []):
-                                kwargs = {
-                                    "championkillevent": created_model,
-                                    "basic": item["basic"],
-                                    "magic_damage": item["magicDamage"],
-                                    "name": item["name"],
-                                    "participant_id": item["participantId"],
-                                    "physical_damage": item["physicalDamage"],
-                                    "spell_name": item["spellName"],
-                                    "spell_slot": item["spellSlot"],
-                                    "true_damage": item["trueDamage"],
-                                    "type": item["type"],
-                                }
-                                victim_damage_dealt_events.append(
-                                    VictimDamageDealt(**kwargs),
-                                )
-                            for item in _event.get("victimDamageReceived", []):
-                                kwargs = {
-                                    "championkillevent": created_model,
-                                    "basic": item["basic"],
-                                    "magic_damage": item["magicDamage"],
-                                    "name": item["name"],
-                                    "participant_id": item["participantId"],
-                                    "physical_damage": item["physicalDamage"],
-                                    "spell_name": item["spellName"],
-                                    "spell_slot": item["spellSlot"],
-                                    "true_damage": item["trueDamage"],
-                                    "type": item["type"],
-                                }
-                                victim_damage_received_events.append(
-                                    VictimDamageReceived(**kwargs),
-                                )
-
-            for val in events.values():
-                model = val["model"]
-                model.objects.bulk_create(val["events"])
-            VictimDamageDealt.objects.bulk_create(victim_damage_dealt_events)
-            VictimDamageReceived.objects.bulk_create(victim_damage_received_events)
+                    case tmparsers.ChampionKillEventModel():
+                        cke = ChampionKillEvent.objects.create(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            bounty=evm.bounty,
+                            shutdown_bounty=evm.shutdownBounty,
+                            kill_streak_length=evm.killStreakLength,
+                            killer_id=evm.killerId,
+                            victim_id=evm.victimId,
+                            x=evm.position.x,
+                            y=evm.position.y,
+                        )
+                        for vd in evm.victimDamageDealt or []:
+                            victim_damage_dealt_events.append(VictimDamageDealt(
+                                championkillevent_id=cke.id,
+                                basic=vd.basic,
+                                magic_damage=vd.magicDamage,
+                                name=vd.name,
+                                participant_id=vd.participantId,
+                                physical_damage=vd.physicalDamage,
+                                spell_name=vd.spellName,
+                                spell_slot=vd.spellSlot,
+                                true_damage=vd.trueDamage,
+                                type=vd.type,
+                            ))
+                        for vd in evm.victimDamageReceived or []:
+                            victim_damage_received_events.append(VictimDamageReceived(
+                                championkillevent_id=cke.id,
+                                basic=vd.basic,
+                                magic_damage=vd.magicDamage,
+                                name=vd.name,
+                                participant_id=vd.participantId,
+                                physical_damage=vd.physicalDamage,
+                                spell_name=vd.spellName,
+                                spell_slot=vd.spellSlot,
+                                true_damage=vd.trueDamage,
+                                type=vd.type,
+                            ))
+        WardPlacedEvent.objects.bulk_create(ward_placed_events)
+        WardKillEvent.objects.bulk_create(ward_kill_events)
+        ItemPurchasedEvent.objects.bulk_create(item_purchase_events)
+        ItemDestroyedEvent.objects.bulk_create(item_destroyed_events)
+        ItemSoldEvent.objects.bulk_create(item_sold_events)
+        ItemUndoEvent.objects.bulk_create(item_undo_events)
+        SkillLevelUpEvent.objects.bulk_create(skill_level_up_events)
+        LevelUpEvent.objects.bulk_create(level_up_events)
+        ChampionSpecialKillEvent.objects.bulk_create(champion_special_kill_events)
+        TurretPlateDestroyedEvent.objects.bulk_create(turret_plate_destroyed_events)
+        EliteMonsterKillEvent.objects.bulk_create(elite_monster_kill_events)
+        BuildingKillEvent.objects.bulk_create(building_kill_events)
+        VictimDamageDealt.objects.bulk_create(victim_damage_dealt_events)
+        VictimDamageReceived.objects.bulk_create(victim_damage_received_events)
 
 
 def import_spectate_from_data(data, region):
@@ -1066,17 +722,17 @@ def import_summoners_from_spectate(data, region):
     return summoners
 
 
-def get_player_ranks(summoner_list, threshold_days=1):
-    """ """
-    with ThreadPool(10) as pool:
-        pool.map(
-            lambda x: pt.import_positions(x, threshold_days=threshold_days),
-            summoner_list,
-        )
+def get_player_ranks(summoner_list, threshold_days=1, sync=True):
+    logger.info('Applying player ranks.')
+    jobs = [pt.import_positions.s(x.id, threshold_days=threshold_days) for x in summoner_list]
+    if jobs:
+        g = group(*jobs)
+        result = g()
+        if sync:
+            result.get(timeout=5)
 
 
 def apply_player_ranks(match, threshold_days=1):
-    """ """
     if not isinstance(match, Match):
         match = Match.objects.get(id=match)
 
@@ -1137,3 +793,216 @@ def get_sorted_participants(match, participants=None):
     else:
         ordered = list(participants)
     return ordered
+
+
+@transaction.atomic()
+def import_match_from_data(data, refresh=False, region=""):
+    game_mode = data["info"]["gameMode"]
+    if "tutorial" in game_mode.lower():
+        return False
+
+    try:
+        parsed = MatchResponseModel(**data)
+    except ValidationError:
+        logger.exception('Match could not be parsed.')
+        return
+
+    info = parsed.info
+    sem_ver = info.sem_ver
+    match_model = Match(
+        _id=parsed.metadata.matchId,
+        game_creation=info.gameCreation,
+        game_duration=info.gameDuration,
+        game_mode=info.gameMode,
+        map_id=info.mapId,
+        platform_id=info.platformId,
+        queue_id=info.queueId,
+        game_version=info.gameVersion,
+        major=sem_ver.get(0, ''),
+        minor=sem_ver.get(1, ''),
+        patch=sem_ver.get(2, ''),
+        build=sem_ver.get(3, ''),
+        is_fully_imported=True,
+    )
+    try:
+        match_model.save()
+    except IntegrityError:
+        if refresh:
+            Match.objects.filter(_id=parsed.metadata.matchId).delete()
+            match_model.save()
+        else:
+            logging.exception("Attempting to import game which was already imported.")
+            return
+
+    participants_data = info.participants
+    import_summoner_from_participant(participants_data, region)
+
+    for part in participants_data:
+        # PARTICIPANT
+        participant_model = Participant(
+            match=match_model,
+            _id=part.participantId,
+            summoner_id=part.summonerId,
+            puuid=part.puuid,
+            summoner_name=part.summonerName,
+            summoner_name_simplified=part.simple_name,
+            champion_id=part.championId,
+            champ_experience=part.champExperience,
+            summoner_1_id=part.summoner1Id,
+            summoner_1_casts=part.summoner1Casts,
+            summoner_2_id=part.summoner2Id,
+            summoner_2_casts=part.summoner2Casts,
+            team_id=part.teamId,
+            lane=part.lane,
+            role=part.role,
+            individual_position=part.individualPosition,
+            team_position=part.teamPosition,
+        )
+        participant_model.save()
+
+        # STATS
+        stats_model = Stats(
+            participant=participant_model,
+
+            all_in_pings=part.allInPings,
+            assist_me_pings=part.assistMePings,
+            bait_pings=part.baitPings,
+            basic_pings=part.basicPings,
+            command_pings=part.commandPings,
+            danger_pings=part.dangerPings,
+            enemy_missing_pings=part.enemyMissingPings,
+            enemy_vision_pings=part.enemyVisionPings,
+            get_back_pings=part.getBackPings,
+            hold_pings=part.holdPings,
+            need_vision_pings=part.needVisionPings,
+            on_my_way_pings=part.onMyWayPings,
+            push_pings=part.pushPings,
+            vision_cleared_pings=part.visionClearedPings,
+
+            game_ended_in_early_surrender=part.gameEndedInEarlySurrender,
+            game_ended_in_surrender=part.gameEndedInSurrender,
+            riot_id_name=part.riotIdName,
+            riot_id_tagline=part.riotIdTagline,
+
+            assists=part.assists,
+            champ_level=part.champLevel,
+            damage_dealt_to_objectives=part.damageDealtToObjectives,
+            damage_dealt_to_turrets=part.damageDealtToTurrets,
+            damage_self_mitigated=part.damageSelfMitigated,
+            deaths=part.deaths,
+            double_kills=part.doubleKills,
+            first_blood_assist=part.firstBloodAssist,
+            first_blood_kill=part.firstBloodKill,
+            first_tower_assist=part.firstTowerAssist,
+            first_tower_kill=part.firstTowerKill,
+            gold_earned=part.goldEarned,
+            inhibitor_kills=part.inhibitorKills,
+            item_0=part.item0,
+            item_1=part.item1,
+            item_2=part.item2,
+            item_3=part.item3,
+            item_4=part.item4,
+            item_5=part.item5,
+            item_6=part.item6,
+            killing_sprees=part.killingSprees,
+            kills=part.kills,
+            largest_critical_strike=part.largestCriticalStrike,
+            largest_killing_spree=part.largestKillingSpree,
+            largest_multi_kill=part.largestMultiKill,
+            longest_time_spent_living=part.longestTimeSpentLiving,
+            magic_damage_dealt=part.magicDamageDealt,
+            magic_damage_dealt_to_champions=part.magicDamageDealtToChampions,
+            magical_damage_taken=part.magicDamageTaken,
+            neutral_minions_killed=part.neutralMinionsKilled,
+            penta_kills=part.pentaKills,
+            stat_perk_0=part.stat_perk_0,
+            stat_perk_1=part.stat_perk_1,
+            stat_perk_2=part.stat_perk_2,
+            perk_0=part.perks.primary_style.selections[0].perk,
+            perk_1=part.perks.primary_style.selections[1].perk,
+            perk_2=part.perks.primary_style.selections[2].perk,
+            perk_3=part.perks.primary_style.selections[3].perk,
+            perk_4=part.perks.sub_style.selections[0].perk,
+            perk_5=part.perks.sub_style.selections[1].perk,
+
+            perk_0_var_1=part.perks.primary_style.selections[0].var1,
+            perk_1_var_1=part.perks.primary_style.selections[1].var1,
+            perk_2_var_1=part.perks.primary_style.selections[2].var1,
+            perk_3_var_1=part.perks.primary_style.selections[3].var1,
+            perk_4_var_1=part.perks.sub_style.selections[0].var1,
+            perk_5_var_1=part.perks.sub_style.selections[1].var1,
+
+            perk_0_var_2=part.perks.primary_style.selections[0].var2,
+            perk_1_var_2=part.perks.primary_style.selections[1].var2,
+            perk_2_var_2=part.perks.primary_style.selections[2].var2,
+            perk_3_var_2=part.perks.primary_style.selections[3].var2,
+            perk_4_var_2=part.perks.sub_style.selections[0].var2,
+            perk_5_var_2=part.perks.sub_style.selections[1].var2,
+
+            perk_0_var_3=part.perks.primary_style.selections[0].var3,
+            perk_1_var_3=part.perks.primary_style.selections[1].var3,
+            perk_2_var_3=part.perks.primary_style.selections[2].var3,
+            perk_3_var_3=part.perks.primary_style.selections[3].var3,
+            perk_4_var_3=part.perks.sub_style.selections[0].var3,
+            perk_5_var_3=part.perks.sub_style.selections[1].var3,
+
+            perk_primary_style=part.perks.primary_style.style,
+            perk_sub_style=part.perks.sub_style.style,
+            spell_1_casts=part.spell1Casts,
+            spell_2_casts=part.spell2Casts,
+            spell_3_casts=part.spell3Casts,
+            spell_4_casts=part.spell4Casts,
+            time_ccing_others=part.timeCCingOthers,
+            total_damage_dealt=part.totalDamageDealt,
+            total_damage_dealt_to_champions=part.totalDamageDealtToChampions,
+            total_damage_taken=part.totalDamageTaken,
+            total_damage_shielded_on_teammates=part.totalDamageShieldedOnTeammates,
+            total_heal=part.totalHeal,
+            total_heals_on_teammates=part.totalHealsOnTeammates,
+            total_minions_killed=part.totalMinionsKilled,
+            total_time_crowd_control_dealt=part.totalTimeCCDealt,
+            total_units_healed=part.totalUnitsHealed,
+            triple_kills=part.tripleKills,
+            true_damage_dealt=part.trueDamageDealt,
+            true_damage_dealt_to_champions=part.trueDamageDealtToChampions,
+            true_damage_taken=part.trueDamageTaken,
+            turret_kills=part.turretKills,
+            unreal_kills=part.unrealKills,
+            vision_score=part.visionScore,
+            vision_wards_bought_in_game=part.visionWardsBoughtInGame,
+            wards_killed=part.wardsKilled,
+            wards_placed=part.wardsPlaced,
+            win=part.win,
+        )
+        stats_model.save()
+
+    # TEAMS
+    teams = parsed.info.teams
+    for tmodel in teams:
+        team_model = Team(
+            match=match_model,
+            _id=tmodel.teamId,
+            baron_kills=tmodel.objectives.baron.kills,
+            first_baron=tmodel.objectives.baron.first,
+            dragon_kills=tmodel.objectives.dragon.kills,
+            first_dragon=tmodel.objectives.dragon.first,
+            first_blood=tmodel.objectives.champion.first,
+            first_inhibitor=tmodel.objectives.inhibitor.first,
+            inhibitor_kills=tmodel.objectives.inhibitor.kills,
+            first_rift_herald=tmodel.objectives.riftHerald.first,
+            rift_herald_kills=tmodel.objectives.riftHerald.kills,
+            first_tower=tmodel.objectives.tower.first,
+            tower_kills=tmodel.objectives.tower.kills,
+            win=tmodel.win,
+        )
+        team_model.save()
+
+        # BANS
+        bans = []
+        for bm in tmodel.bans:
+            bans.append(Ban(
+                champion_id=bm.championId,
+                pick_turn=bm.pickTurn,
+                team=team_model,
+            ))
+        Ban.objects.bulk_create(bans)

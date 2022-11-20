@@ -1,5 +1,6 @@
 FROM python:3.11-slim-buster
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONFAULTHANDLER=1
 WORKDIR /code
 COPY requirements.txt .
 

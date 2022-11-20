@@ -34,6 +34,7 @@ DOCKER_REACT_LINK = config('DOCKER_REACT_LINK', REACT_URL)
 
 REDIS_URL = config('REDIS_URL', 'localhost')
 CELERY_BROKER_URL = f"redis://{REDIS_URL}"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_URL}"
 
 CACHES = {
     "default": {

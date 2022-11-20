@@ -1,5 +1,6 @@
 """match/viewsapi.py
 """
+from celery import group
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -25,7 +26,6 @@ from player.serializers import RankPositionSerializer
 from data.models import Champion
 from data.serializers import BasicChampionWithImageSerializer
 
-from multiprocessing.dummy import Pool as ThreadPool
 import logging
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ class AdvancedTimelineView(RetrieveAPIView):
         if not getattr(match, 'advancedtimeline', None):
             mt.import_advanced_timeline(match.id)
             match.refresh_from_db()
-        return match.advancedtimeline
+        return getattr(match, 'advancedtimeline', None)
 
 
 class MatchBanListView(ListAPIView):
@@ -182,7 +182,6 @@ def get_spectate(request, format=None):
     """
     data = {}
     status_code = 200
-    pool = ThreadPool(10)
 
     if request.method == "POST":
         summoner_id = request.data["summoner_id"]
@@ -196,10 +195,9 @@ def get_spectate(request, format=None):
         else:
             mt.import_spectate_from_data(spectate_data, region)
             summoners = mt.import_summoners_from_spectate(spectate_data, region)
-            pool.map(
-                lambda x: pt.import_positions(x, threshold_days=3),
-                summoners.values(),
-            )
+            jobs = [pt.import_positions.s(x, threshold_days=3) for x in summoners.values()]
+            g = group(*jobs)
+            g().get()
             for part in spectate_data["participants"]:
                 positions = None
                 query = Summoner.objects.filter(region=region, _id=part["summonerId"])

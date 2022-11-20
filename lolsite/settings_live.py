@@ -1,5 +1,4 @@
 from .settings import *
-import os
 
 from decouple import config
 import sentry_sdk
@@ -37,6 +36,7 @@ DEFAULT_FILE_STORAGE = "custom_storages.MediaStorage"
 
 REDIS_URL = config('REDIS_URL', 'localhost')
 CELERY_BROKER_URL = f"redis://{REDIS_URL}"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_URL}"
 CSRF_TRUSTED_ORIGINS = ['https://hardstuck.club']
 
 CACHES = {
@@ -60,9 +60,14 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'default',
         },
+        'logfile': {
+            'class': 'logging.FileHandler',
+            'formatter': 'default',
+            'filename': '/var/log/my.log',
+        },
     },
     'root': {
-        'handlers': ['console'],
+        'handlers': ['console', 'logfile'],
         'level': 'INFO',
     },
 }

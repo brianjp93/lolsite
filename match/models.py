@@ -303,8 +303,6 @@ class Stats(models.Model):
     double_kills = models.IntegerField(default=0, blank=True)
     first_blood_assist = models.BooleanField(default=False, blank=True)
     first_blood_kill = models.BooleanField(default=False, blank=True)
-    first_inhibitor_assist = models.BooleanField(default=False, blank=True)
-    first_inhibitor_kill = models.BooleanField(default=False, blank=True)
     first_tower_assist = models.BooleanField(default=False, blank=True)
     first_tower_kill = models.BooleanField(default=False, blank=True)
     gold_earned = models.IntegerField(default=0, blank=True)
@@ -327,8 +325,6 @@ class Stats(models.Model):
     magic_damage_dealt_to_champions = models.IntegerField(default=0, blank=True)
     magical_damage_taken = models.IntegerField(default=0, blank=True)
     neutral_minions_killed = models.IntegerField(default=0, blank=True)
-    neutral_minions_killed_enemy_jungle = models.IntegerField(default=0, blank=True)
-    neutral_minions_killed_team_jungle = models.IntegerField(default=0, blank=True)
     penta_kills = models.IntegerField(default=0, blank=True)
 
     perk_0 = models.IntegerField(default=0, blank=True)
@@ -398,9 +394,29 @@ class Stats(models.Model):
     vision_score = models.IntegerField(default=0, blank=True)
     vision_wards_bought_in_game = models.IntegerField(default=0, blank=True)
     wards_killed = models.IntegerField(default=0, blank=True)
-    wards_placed = models.IntegerField(default=0, blank=True)
     detector_wards_placed = models.IntegerField(default=0, blank=True)
+    wards_placed = models.IntegerField(default=0, blank=True)
     win = models.BooleanField(default=False, blank=True)
+
+    all_in_pings = models.IntegerField(default=0, blank=True)
+    assist_me_pings = models.IntegerField(default=0, blank=True)
+    bait_pings = models.IntegerField(default=0, blank=True)
+    basic_pings = models.IntegerField(default=0, blank=True)
+    command_pings = models.IntegerField(default=0, blank=True)
+    danger_pings = models.IntegerField(default=0, blank=True)
+    enemy_missing_pings = models.IntegerField(default=0, blank=True)
+    enemy_vision_pings = models.IntegerField(default=0, blank=True)
+    get_back_pings = models.IntegerField(default=0, blank=True)
+    hold_pings = models.IntegerField(default=0, blank=True)
+    need_vision_pings = models.IntegerField(default=0, blank=True)
+    on_my_way_pings = models.IntegerField(default=0, blank=True)
+    push_pings = models.IntegerField(default=0, blank=True)
+    vision_cleared_pings = models.IntegerField(default=0, blank=True)
+
+    game_ended_in_early_surrender = models.BooleanField(default=False, blank=True)
+    game_ended_in_surrender = models.BooleanField(default=False, blank=True)
+    riot_id_name = models.CharField(max_length=128, default='', blank=True)
+    riot_id_tagline = models.CharField(max_length=128, default='', blank=True)
 
     def __str__(self):
         return f"Stats(participant={self.participant.summoner_name})"
@@ -554,6 +570,7 @@ class AdvancedTimeline(models.Model):
 
 
 class Frame(models.Model):
+    id: int | None
     timeline = models.ForeignKey(
         "AdvancedTimeline", on_delete=models.CASCADE, related_name="frames"
     )

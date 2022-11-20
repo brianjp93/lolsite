@@ -1,6 +1,5 @@
 from lolsite.celery import app
 
-from django.db import connection
 from django.utils import timezone
 from django.contrib.auth.models import User
 
@@ -96,6 +95,7 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         return summoner.id
 
 
+@app.task(name='player.tasks.import_positions')
 def import_positions(summoner, threshold_days=None):
     """Get most recent position data for Summoner.
 
@@ -178,7 +178,6 @@ def import_positions(summoner, threshold_days=None):
                 logger.info(f'Saving new rank position for {summoner}')
                 rankposition = RankPosition(**attrs)
                 rankposition.save()
-    connection.close()
 
 
 def simplify_email(email):

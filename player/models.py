@@ -64,6 +64,7 @@ def validate_password(password):
 
 
 class Summoner(models.Model):
+    id: int | None
     user = models.ForeignKey(
         User,
         default=None,
@@ -388,6 +389,7 @@ class SummonerLink(models.Model):
 
 
 class Comment(models.Model):
+    id: int | None
     markdown = models.CharField(max_length=10000, default=None, null=True, blank=True)
     summoner = models.ForeignKey(
         "Summoner", null=True, on_delete=models.SET_NULL, blank=True
