@@ -10,3 +10,6 @@ react/node_modules/
 react/build/
 data/db/
 static/
+
+celerybeat-schedule
+celerybeat.pid
