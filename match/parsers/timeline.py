@@ -109,7 +109,7 @@ class ChampionKillEventModel(BaseModelWithLogger):
     killStreakLength: int
     killerId: int
     position: PositionModel
-    shutdownBounty: int
+    shutdownBounty: int | None = 0
     timestamp: int
     victimDamageDealt: list[VictimDamageDealtModel] | None
     victimDamageReceived: list[VictimDamageReceivedModel] | None
@@ -143,7 +143,7 @@ class TurretPlateDestroyedEventModel(BaseModelWithLogger):
 
 class EliteMonsterKillEventModel(BaseModelWithLogger):
     type: Literal["ELITE_MONSTER_KILL"]
-    bounty: int
+    bounty: int | None = 0
     killerId: int
     killerTeamId: int
     monsterType: Literal["RIFTHERALD", "DRAGON", "BARON_NASHOR"]
@@ -164,7 +164,7 @@ class EliteMonsterKillEventModel(BaseModelWithLogger):
 class BuildingKillEventModel(BaseModelWithLogger):
     type: Literal["BUILDING_KILL"]
     assistingParticipantIds: list[int] = Field(default_factory=list)
-    bounty: int
+    bounty: int | None = 0
     buildingType: Literal["TOWER_BUILDING", "INHIBITOR_BUILDING"]
     killerId: int
     laneType: LaneType
@@ -237,7 +237,7 @@ EventType = Annotated[
 
 
 class ChampionStatModel(BaseModelWithLogger):
-    abilityHaste: int
+    abilityHaste: int | None = 0
     abilityPower: int
     armor: int
     armorPen: int
@@ -256,8 +256,8 @@ class ChampionStatModel(BaseModelWithLogger):
     magicPenPercent: int
     magicResist: int
     movementSpeed: int
-    omnivamp: int
-    physicalVamp: int
+    omnivamp: int | None = 0
+    physicalVamp: int | None = 0
     power: int
     powerMax: int
     powerRegen: int

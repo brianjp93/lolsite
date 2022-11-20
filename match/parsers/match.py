@@ -81,7 +81,7 @@ class ParticipantModel(BaseModelWithLogger):
     detectorWardsPlaced: int
     doubleKills: int
     dragonKills: int
-    eligibleForProgression: bool
+    eligibleForProgression: bool | None
     allInPings: int | None = 0
     assistMePings: int | None = 0
     baitPings: int | None = 0
@@ -106,7 +106,7 @@ class ParticipantModel(BaseModelWithLogger):
     goldSpent: int
     individualPosition: str
     inhibitorKills: int
-    inhibitorTakedowns: int
+    inhibitorTakedowns: int | None
     inhibitorsLost: int
     item0: int
     item1: int
@@ -129,7 +129,7 @@ class ParticipantModel(BaseModelWithLogger):
     neutralMinionsKilled: int
     nexusKills: int
     nexusLost: int
-    nexusTakedowns: int
+    nexusTakedowns: int | None
     objectivesStolen: int
     objectivesStolenAssists: int
     participantId: int
@@ -175,7 +175,7 @@ class ParticipantModel(BaseModelWithLogger):
     trueDamageDealtToChampions: int
     trueDamageTaken: int
     turretKills: int = 0
-    turretTakedowns: int
+    turretTakedowns: int | None
     turretsLost: int
     unrealKills: int
     visionScore: int
@@ -262,7 +262,7 @@ class MatchModel(BaseModelWithLogger):
     mapId: int
     platformId: str
     queueId: int
-    tournamentCode: str
+    tournamentCode: str | None
 
     @validator('gameDuration')
     def game_duration_is_sometimes_not_right(cls, v, values, **kwargs):
