@@ -27,6 +27,12 @@ class PauseEndEventModel(BaseModelWithLogger):
     timestamp: int
 
 
+class PauseStartEventModel(BaseModelWithLogger):
+    type: Literal["PAUSE_START"]
+    realTimestamp: int
+    timestamp: int
+
+
 class ItemPurchasedEventModel(BaseModelWithLogger):
     type: Literal["ITEM_PURCHASED"]
     timestamp: int
@@ -192,11 +198,21 @@ class ChampionTransformEventModel(BaseModelWithLogger):
 
 class ObjectiveBountyFinishEventModel(BaseModelWithLogger):
     type: Literal["OBJECTIVE_BOUNTY_FINISH"]
+    teamId: int
+    timestamp: int
+
+
+class DragonSoulGivenEventModel(BaseModelWithLogger):
+    type: Literal["DRAGON_SOUL_GIVEN"]
+    name: str
+    teamId: int
+    timestamp: int
 
 
 EventType = Annotated[
     Union[
         PauseEndEventModel,
+        PauseStartEventModel,
         ItemPurchasedEventModel,
         ItemUndoEventModel,
         ItemSoldEventModel,
@@ -214,6 +230,7 @@ EventType = Annotated[
         GameEndEventModel,
         ChampionTransformEventModel,
         ObjectiveBountyFinishEventModel,
+        DragonSoulGivenEventModel,
     ],
     Field(discriminator="type"),
 ]
