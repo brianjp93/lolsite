@@ -87,7 +87,7 @@ export function Summoner({route, region, store}: {route: any; region: string; st
         })
         .then((x) => x.results),
     {
-      retry: false,
+      retry: true,
       refetchOnWindowFocus: false,
       keepPreviousData: true,
       staleTime: 1000 * 60 * 3,
