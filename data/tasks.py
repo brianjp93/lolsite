@@ -55,6 +55,9 @@ def import_missing(
 
     """
     rito = Rito.objects.first()
+    if not rito:
+        logger.warning("Rito object not found.")
+        return
     thresh = timezone.now() - timezone.timedelta(hours=last_import_hours)
     if rito.last_data_import is None or rito.last_data_import < thresh:
         rito.last_data_import = timezone.now()
@@ -67,7 +70,8 @@ def import_missing(
                 import_all(version, language=language)
             else:
                 if until_found:
-                    return
+                    break
+        compute_changes(5)
 
 
 def import_last_versions(start, end, language="en_US", overwrite=True):

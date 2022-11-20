@@ -43,6 +43,22 @@ services:
       - db
       - react
       - redis
+  beat:
+    build:
+      context: .
+      dockerfile: ./docker/local/Dockerfile
+    command: celery -A lolsite beat -l INFO
+    volumes:
+      - .:/code
+    links:
+      - db:db
+      - react:react
+      - redis:redis
+    env_file: .docker_env
+    depends_on:
+      - db
+      - react
+      - redis
   redis:
     image: redis
   react:

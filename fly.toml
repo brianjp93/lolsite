@@ -9,6 +9,7 @@ processes = []
 [processes]
 web = "gunicorn --bind :8000 --workers 2 lolsite.wsgi:application"
 worker = "celery -A lolsite worker --loglevel=INFO"
+beat = "celery -A lolsite beat -l INFO"
 
 [deploy]
   release_command = "sh /release.sh"

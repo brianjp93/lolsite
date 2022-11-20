@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 from decouple import config
 import logging
+# must be imported for app to know about periodic task schedule
+from lolsite import periodic_tasks  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
