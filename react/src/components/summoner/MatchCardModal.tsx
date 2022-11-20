@@ -46,7 +46,7 @@ function MatchCardModal(props: MatchCardModalProps) {
   const matchQuery = useQuery(
     ['full-match', match_id],
     () => api.match.getMatch(match_id).then((response) => response.data),
-    {retry: false, refetchOnWindowFocus: false},
+    {retry: false, refetchOnWindowFocus: false, enabled: !!match_id},
   )
   const match = matchQuery.isSuccess ? matchQuery.data : {}
 
@@ -66,7 +66,7 @@ function MatchCardModal(props: MatchCardModalProps) {
       api.match
         .participants({match__id: match_id, apply_ranks: true})
         .then((response) => rankParticipants(response.data)),
-    {retry: false, refetchOnWindowFocus: false},
+    {retry: false, refetchOnWindowFocus: false, enabled: !!match_id},
   )
   const participants = participantQuery.isSuccess ? participantQuery.data : []
 
@@ -77,7 +77,7 @@ function MatchCardModal(props: MatchCardModalProps) {
         data.sort((a, b) => a.timestamp - b.timestamp)
         return data
       }),
-    {retry: false, refetchOnWindowFocus: false},
+    {retry: false, refetchOnWindowFocus: false, enabled: !!match_id},
   )
   const timeline = timelineQuery.data || []
 
