@@ -18,3 +18,9 @@ RIOT_API_TOKEN=token
 REACT_DEV=True
 
 SENTRY_DSN=
+
+# only use if you want to test logging to axiom
+# AXIOM_TOKEN=
+# AXIOM_ORG_ID=
+# AXIOM_URL=
+# AXIOM_DATASET=

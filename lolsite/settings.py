@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 import os
+from axiom.logging import AxiomHandler, Client
 from decouple import config
 import logging
 # must be imported for app to know about periodic task schedule
@@ -132,3 +133,30 @@ DEFAULT_FROM_EMAIL = "brianjp93@gmail.com"
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 RIOT_API_TOKEN = config('RIOT_API_TOKEN')
+
+
+AXIOM_URL = config('AXIOM_URL', '', cast=str)
+AXIOM_TOKEN = config('AXIOM_TOKEN', '', cast=str)
+AXIOM_ORG_ID = config('AXIOM_ORG_ID', '', cast=str)
+AXIOM_DATASET = config('AXIOM_DATASET', '', cast=str)
+
+
+# hack to make axiom logging work here...
+class CustomAxiomHandler(AxiomHandler):
+    def emit(self, record):
+        data = record.__dict__
+        if 'request' in data:
+            data['request'] = str(data['request'])
+        self.client.datasets.ingest_events(self.dataset, [data])
+
+
+axiom_client = Client(
+    AXIOM_URL,
+    AXIOM_TOKEN,
+    AXIOM_ORG_ID,
+)
+
+
+class MyHandler(logging.Handler):
+    def __new__(cls):
+        return CustomAxiomHandler(axiom_client, AXIOM_DATASET)
