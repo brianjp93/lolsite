@@ -58,17 +58,13 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'default',
         },
+        # 'axiom': {
+        #     'class': 'lolsite.settings_local.CustomAxiomHandler',
+        #     'formatter': 'default',
+        # }
     },
     'root': {
         'handlers': ['console'],
         'level': 'INFO',
     },
 }
-
-# uncomment to turn on axiom logging
-# if all((AXIOM_URL, AXIOM_TOKEN, AXIOM_ORG_ID, AXIOM_DATASET)):
-#     LOGGING['handlers']['axiom'] = {
-#         'class': 'lolsite.settings.MyHandler',
-#         'formatter': 'default',
-#     }
-#     LOGGING['root']['handlers'].append('axiom')
