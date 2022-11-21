@@ -58,10 +58,6 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'default',
         },
-        # 'axiom': {
-        #     'class': 'lolsite.settings_local.CustomAxiomHandler',
-        #     'formatter': 'default',
-        # }
     },
     'root': {
         'handlers': ['console'],

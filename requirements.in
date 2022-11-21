@@ -1,4 +1,3 @@
-axiom-py
 beautifulsoup4==4.7.1
 boto3==1.18
 cached-property<1.6
