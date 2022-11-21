@@ -4,6 +4,21 @@ from decouple import config
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 import dj_database_url
+from logging import Handler
+from axiom.logging import AxiomHandler, Client
+
+
+axiom_client = Client(
+    config('AXIOM_URL', cast=str),
+    config('AXIOM_TOKEN', cast=str),
+    config('AXIOM_ORG_ID', cast=str),
+)
+
+
+# hack to make axiom logging work here...
+class CustomAxiomHandler(Handler):
+    def __new__(cls):
+        return AxiomHandler(axiom_client, config('AXIOM_DATASET'))
 
 
 REACT_DEV = False
@@ -64,9 +79,13 @@ LOGGING = {
             'formatter': 'default',
             'filename': '/var/log/my.log',
         },
+        'axiom': {
+            'class': 'lolsite.settings_live.CustomAxiomHandler',
+            'formatter': 'default',
+        }
     },
     'root': {
-        'handlers': ['console', 'logfile'],
+        'handlers': ['axiom'],
         'level': 'INFO',
     },
 }
