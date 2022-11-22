@@ -8,6 +8,8 @@ amqp==5.1.1
     # via kombu
 asgiref==3.5.2
     # via django
+async-timeout==4.0.2
+    # via redis
 attrs==22.1.0
     # via hypothesis
 beautifulsoup4==4.7.1
@@ -22,7 +24,7 @@ botocore==1.21.65
     #   s3transfer
 cached-property==1.5.2
     # via -r requirements.in
-celery==5.2.3
+celery==5.2.7
     # via -r requirements.in
 certifi==2022.9.14
     # via
@@ -101,7 +103,7 @@ pytz==2022.2.1
     # via
     #   celery
     #   djangorestframework
-redis==4.1.2
+redis==4.3.4
     # via
     #   -r requirements.in
     #   django-redis
