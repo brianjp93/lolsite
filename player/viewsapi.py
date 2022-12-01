@@ -2,6 +2,7 @@
 """
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
 from rest_framework import permissions
+from rest_framework.request import HttpRequest, Request
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView, ListAPIView
@@ -324,8 +325,8 @@ def get_summoner_champions_overview(request, format=None):
     return Response(data, status=status_code)
 
 
-@api_view(["POST"])
-def summoner_search(request, format=None):
+@api_view(["GET"])
+def summoner_search(request: Request, format=None):
     """Provide at least 3 character simple_name to take advantage of trigram gin index.
 
     POST Parameters
@@ -345,16 +346,16 @@ def summoner_search(request, format=None):
     data = {}
     status_code = 200
 
-    if request.method == "POST":
-        simple_name__icontains = request.data.get("simple_name__icontains", None)
-        simple_name = request.data.get("simple_name", None)
-        region = request.data.get("region", None)
-        start = int(request.data.get("start", 0))
-        end = int(request.data.get("end", 10))
-        order_by = request.data.get("order_by", None)
+    if request.method == "GET":
+        simple_name__icontains = request.query_params.get("simple_name__icontains", None)
+        simple_name = request.query_params.get("simple_name", None)
+        region = request.query_params.get("region", None)
+        start = int(request.query_params.get("start", 0))
+        end = int(request.query_params.get("end", 10))
+        order_by = request.query_params.get("order_by", None)
         if end - start > 100:
             end = start + 100
-        fields = request.data.get("fields", None)
+        fields = request.query_params.get("fields", None)
 
         kwargs = {
             "simple_name__icontains": simple_name__icontains,

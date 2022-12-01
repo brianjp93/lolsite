@@ -268,6 +268,7 @@ def import_recent_matches(
                 queue=queue,
             )
             r = apicall()
+            logger.info('response: %s' % str(r))
             riot_match_request_time = time.time() - riot_match_request_time
             logger.info(
                 f"Riot API match filter request time : {riot_match_request_time}"

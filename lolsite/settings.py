@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "django_extensions",
     "rest_framework",
     "storages",
@@ -53,8 +54,10 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "corsheaders.middleware.CorsPostCsrfMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -107,12 +110,26 @@ USE_TZ = True
 
 
 STATICFILES_DIRS = []
-try:
-    STATICFILES_DIRS += [
-        os.path.join(BASE_DIR, "react", "build", "static"),
-    ]
-except:
-    logger.warning('Could not add react/build/static to staticfilesdirs.')
+
+
+CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = None
+CSRF_COOKIE_SECURE = True
+
+CORS_ALLOW_HEADERS = (
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "user-agent",
+    "x-requested-with",
+    "accept",
+    "origin",
+    "x-csrftoken",
+    "access-control-allow-credentials",
+    "cookie",
+)
 
 
 CELERY_ACCEPT_CONTENT = ["json"]

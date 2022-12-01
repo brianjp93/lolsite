@@ -1,7 +1,10 @@
+from django.http import HttpRequest
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import exceptions
 from rest_framework.generics import ListAPIView
+
+from data import constants
 
 from .models import ReforgedRune, ReforgedTree
 from .models import Champion, Item
@@ -14,6 +17,7 @@ from .serializers import ChampionSpellSerializer, BasicChampionWithImageSerializ
 
 from lolsite.helpers import query_debugger, LargeResultsSetPagination
 from django.core.cache import cache
+from django.conf import settings
 
 
 @api_view(["POST"])
@@ -345,3 +349,22 @@ def get_champion_spells(request, format=None):
     else:
         data = {"message": "Must use POST."}
     return Response(data, status=status_code)
+
+
+@api_view(['GET'])
+def get_static_url(request: HttpRequest, format=None):
+    uri = request.build_absolute_uri()
+    print(uri)
+    return Response(settings.STATIC_URL)
+
+
+@api_view(['GET'])
+def get_media_url(request, format=None):
+    uri = request.build_absolute_uri()
+    print(uri)
+    return Response(settings.MEDIA_URL)
+
+
+@api_view(['GET'])
+def get_queues(request, format=None):
+    return Response(constants.QUEUES)

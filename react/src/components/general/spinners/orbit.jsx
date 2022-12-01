@@ -1,6 +1,3 @@
-import React from 'react'
-
-
 export default function Orbit(props) {
     let size = props.size === undefined ? 100: props.size
     let color = props.color === undefined ? '#426892': props.color
