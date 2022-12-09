@@ -70,7 +70,7 @@ def import_match(match_id, region, refresh=False):
     api = get_riot_api()
     if api:
         r = api.match.get(match_id, region=region)
-        match = r.json()
+        match = r.content
 
         if r.status_code == 429:
             return "throttled"
@@ -804,15 +804,14 @@ def get_sorted_participants(match, participants=None):
 
 @transaction.atomic()
 def import_match_from_data(data, refresh=False, region=""):
-    game_mode = data["info"]["gameMode"]
-    if "tutorial" in game_mode.lower():
-        return False
-
     try:
-        parsed = MatchResponseModel(**data)
+        parsed = MatchResponseModel.parse_raw(data)
     except ValidationError:
         logger.exception('Match could not be parsed.')
         return
+
+    if "tutorial" in parsed.info.gameMode.lower():
+        return False
 
     info = parsed.info
     sem_ver = info.sem_ver
