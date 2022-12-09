@@ -417,9 +417,10 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         region = match.platform_id.lower()
         logger.info(f"Requesting info for match {match.id} in region {region}")
         try:
-            parsed = TimelineResponseModel(
-                **api.match.timeline(match._id, region=region).json()
-            )
+            response = api.match.timeline(match._id, region=region)
+            start = time.perf_counter()
+            parsed = TimelineResponseModel.parse_raw(response.content)
+            logger.info(f"AdvancedTimeline parsing took: {time.perf_counter() - start}")
         except ValidationError:
             logger.exception('AdvanceTimeline could not be parsed.')
             return
