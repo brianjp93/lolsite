@@ -672,19 +672,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         VictimDamageReceived.objects.bulk_create(victim_damage_received_events)
 
 
-def import_spectate_from_data(data, region):
-    """Import Spectate model from JSON data.
-
-    Parameters
-    ----------
-    data : dict
-    region : str
-
-    Returns
-    -------
-    None
-
-    """
+def import_spectate_from_data(data: dict, region: str):
     spectate_data = {
         "game_id": data["gameId"],
         "region": region,
