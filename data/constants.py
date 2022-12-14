@@ -214,6 +214,7 @@ QUEUES = [
     {"_id": 600, "_map": "Summoner's Rift", "description": "Blood Hunt Assassin games"},
     {"_id": 610, "_map": "Cosmic Ruins", "description": "Dark Star: Singularity games"},
     {"_id": 700, "_map": "Summoner's Rift", "description": "Clash games"},
+    {"_id": 720, "_map": "Summoner's Rift", "description": "ARAM Clash games"},
     {
         "_id": 800,
         "_map": "Twisted Treeline",
@@ -520,6 +521,16 @@ RANKS = {
 # SEASON TIMINGS
 # https://leagueoflegends.fandom.com/wiki/Patch#Pre-Season%20Six
 SEASON_PATCHES = {
+    13: {
+        "preseason": {
+            "start": (12, 22),
+            "end": (12, 100),
+        },
+        "season": {
+            "start": (13, 1),
+            "end": (13, 100),
+        },
+    },
     12: {
         "preseason": {
             "start": (11, 24),
@@ -527,7 +538,7 @@ SEASON_PATCHES = {
         },
         "season": {
             "start": (12, 1),
-            "end": (12, 100),
+            "end": (12, 21),
         },
     },
     11: {
