@@ -2,14 +2,14 @@
 """
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
 from rest_framework import permissions
-from rest_framework.request import HttpRequest, Request
+from rest_framework.request import HttpRequest, Request, exceptions
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView, ListAPIView
 
 from django.utils import timezone
 from django.core.cache import cache
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model, login
 from django.db.models.functions import Extract
 from django.db.models import Max, Min, F
 from django.shortcuts import get_object_or_404
@@ -33,7 +33,7 @@ from data.serializers import ProfileIconSerializer
 from match import tasks as mt
 from match.models import Match, sort_positions
 
-from .models import Summoner
+from .models import EmailVerification, Summoner
 from .serializers import (
     SummonerSerializer, RankPositionSerializer,
     FavoriteSerializer, CommentSerializer,
@@ -1381,3 +1381,24 @@ class NameChangeListView(ListAPIView):
         qs = NameChange.objects.filter(summoner=self.kwargs[self.lookup_field])
         qs = qs.order_by('-created_date')
         return qs
+
+
+@api_view(['POST'])
+def login_action(request, format=None):
+    email = request.POST.get("email")
+    password = request.POST.get("password")
+    user = authenticate(request, username=email, password=password)
+    if user:
+        if user.custom.is_email_verified:
+            login(request, user)
+            return Response()
+        else:
+            view_name = "/login?error=verification"
+            thresh = timezone.now() - timezone.timedelta(minutes=10)
+            query = user.emailverification_set.filter(created_date__gt=thresh)
+            if not query.exists():
+                # Create new email verification model.
+                EmailVerification.objects.create(user=user)
+            raise exceptions.PermissionDenied(code='not-verified')
+    else:
+        raise exceptions.NotAuthenticated()
