@@ -63,6 +63,7 @@ LOGGING = {
 }
 
 
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_DOMAIN = 'localhost'
 CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://localhost:3000"]
 CORS_ALLOWED_ORIGINS = ['http://localhost:3000']

@@ -1385,13 +1385,14 @@ class NameChangeListView(ListAPIView):
 
 @api_view(['POST'])
 def login_action(request, format=None):
-    email = request.POST.get("email")
-    password = request.POST.get("password")
+    email = request.data.get("email")
+    password = request.data.get("password")
     user = authenticate(request, username=email, password=password)
     if user:
         if user.custom.is_email_verified:
+            logger.info(f'Logging in user: {user}')
             login(request, user)
-            return Response()
+            return Response({'message': 'logged in.'})
         else:
             view_name = "/login?error=verification"
             thresh = timezone.now() - timezone.timedelta(minutes=10)
