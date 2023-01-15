@@ -1,5 +1,3 @@
-"""player.viewsapi
-"""
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
 from rest_framework import permissions
 from rest_framework.request import HttpRequest, Request, exceptions
@@ -9,7 +7,8 @@ from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIVie
 
 from django.utils import timezone
 from django.core.cache import cache
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.functions import Extract
 from django.db.models import Max, Min, F
 from django.shortcuts import get_object_or_404
@@ -43,8 +42,6 @@ from .serializers import (
 
 import random
 import logging
-
-User = get_user_model()
 
 
 logger = logging.getLogger(__name__)
@@ -1403,3 +1400,11 @@ def login_action(request, format=None):
             raise exceptions.PermissionDenied(code='not-verified')
     else:
         raise exceptions.NotAuthenticated()
+
+
+@api_view(['POST'])
+def logout_action(request, format=None):
+    user: User | AnonymousUser = request.user
+    if user.is_authenticated:
+        logout(request)
+    return Response('logged out')
