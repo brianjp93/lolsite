@@ -128,18 +128,8 @@ class Summoner(models.Model):
             checkpoint = None
         return checkpoint
 
-    def is_connected_to(self, user_id):
-        """Check if a summoner is connected to a user through a SummonerLink.
-
-        Parameters
-        ----------
-        user_id : int
-
-        Returns
-        -------
-        bool
-
-        """
+    def is_connected_to(self, user_id: int):
+        """Check if a summoner is connected to a user through a SummonerLink."""
         query = SummonerLink.objects.filter(
             summoner=self, user__id=user_id, verified=True
         )

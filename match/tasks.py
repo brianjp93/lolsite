@@ -305,6 +305,18 @@ def import_recent_matches(
     return import_count
 
 
+@app.task(name="match.tasks.bulk_import")
+def bulk_import(puuid: str, last_import_time_hours: int = 24, count=200, offset=10):
+    now = timezone.now()
+    thresh = now - timezone.timedelta(hours=last_import_time_hours)
+    summoner: Summoner = Summoner.objects.get(puuid=puuid)
+    if summoner.last_summoner_page_import is None or summoner.last_summoner_page_import < thresh:
+        logger.info(f"Doing summoner page import for {summoner} of {count} games.")
+        summoner.last_summoner_page_import = now
+        summoner.save()
+        import_recent_matches(offset, offset + count, puuid, region=summoner.region, sync=False)
+
+
 def get_top_played_with(
     summoner_id,
     team=True,

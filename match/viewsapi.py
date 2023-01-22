@@ -61,6 +61,7 @@ class MatchBySummoner(ListAPIView):
             pt.import_summoner.delay(region, name=name)
             summoner = summoner_query[0]
 
+        mt.bulk_import.delay(summoner.puuid)
         qs = qs.filter(
             participants__puuid=summoner.puuid,
             is_fully_imported=True,
