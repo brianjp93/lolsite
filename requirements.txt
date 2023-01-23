@@ -53,12 +53,15 @@ django==4.1.2
     #   -r requirements.in
     #   dj-database-url
     #   django-cors-headers
+    #   django-filter
     #   django-redis
     #   django-storages
     #   djangorestframework
 django-cors-headers==3.13.0
     # via -r requirements.in
 django-extensions==3.0.9
+    # via -r requirements.in
+django-filter==22.1
     # via -r requirements.in
 django-redis==5.2.0
     # via -r requirements.in
