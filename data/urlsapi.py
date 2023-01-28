@@ -11,6 +11,9 @@ urlpatterns = [
     path("champions/", data_views.get_champions),
     path("basic-champions/", data_views.BasicChampionView.as_view()),
     path("champion-spells/", data_views.get_champion_spells),
+    path("static-url/", data_views.get_static_url, name='get-static-url'),
+    path("media-url/", data_views.get_media_url, name='get-media-url'),
+    path("queues/", data_views.get_queues, name='queues'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
