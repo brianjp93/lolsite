@@ -1,14 +1,14 @@
-"""player.viewsapi
-"""
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
 from rest_framework import permissions
+from rest_framework.request import HttpRequest, Request, exceptions
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView, ListAPIView
 
 from django.utils import timezone
 from django.core.cache import cache
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.functions import Extract
 from django.db.models import Max, Min, F
 from django.shortcuts import get_object_or_404
@@ -32,7 +32,7 @@ from data.serializers import ProfileIconSerializer
 from match import tasks as mt
 from match.models import Match, sort_positions
 
-from .models import Summoner
+from .models import EmailVerification, Summoner
 from .serializers import (
     SummonerSerializer, RankPositionSerializer,
     FavoriteSerializer, CommentSerializer,
@@ -42,8 +42,6 @@ from .serializers import (
 
 import random
 import logging
-
-User = get_user_model()
 
 
 logger = logging.getLogger(__name__)
@@ -324,8 +322,8 @@ def get_summoner_champions_overview(request, format=None):
     return Response(data, status=status_code)
 
 
-@api_view(["POST"])
-def summoner_search(request, format=None):
+@api_view(["GET"])
+def summoner_search(request: Request, format=None):
     """Provide at least 3 character simple_name to take advantage of trigram gin index.
 
     POST Parameters
@@ -345,16 +343,16 @@ def summoner_search(request, format=None):
     data = {}
     status_code = 200
 
-    if request.method == "POST":
-        simple_name__icontains = request.data.get("simple_name__icontains", None)
-        simple_name = request.data.get("simple_name", None)
-        region = request.data.get("region", None)
-        start = int(request.data.get("start", 0))
-        end = int(request.data.get("end", 10))
-        order_by = request.data.get("order_by", None)
+    if request.method == "GET":
+        simple_name__icontains = request.query_params.get("simple_name__icontains", None)
+        simple_name = request.query_params.get("simple_name", None)
+        region = request.query_params.get("region", None)
+        start = int(request.query_params.get("start", 0))
+        end = int(request.query_params.get("end", 10))
+        order_by = request.query_params.get("order_by", None)
         if end - start > 100:
             end = start + 100
-        fields = request.data.get("fields", None)
+        fields = request.query_params.get("fields", None)
 
         kwargs = {
             "simple_name__icontains": simple_name__icontains,
@@ -1380,3 +1378,33 @@ class NameChangeListView(ListAPIView):
         qs = NameChange.objects.filter(summoner=self.kwargs[self.lookup_field])
         qs = qs.order_by('-created_date')
         return qs
+
+
+@api_view(['POST'])
+def login_action(request, format=None):
+    email = request.data.get("email")
+    password = request.data.get("password")
+    user = authenticate(request, username=email, password=password)
+    if user:
+        if user.custom.is_email_verified:
+            logger.info(f'Logging in user: {user}')
+            login(request, user)
+            return Response({'message': 'logged in.'})
+        else:
+            view_name = "/login?error=verification"
+            thresh = timezone.now() - timezone.timedelta(minutes=10)
+            query = user.emailverification_set.filter(created_date__gt=thresh)
+            if not query.exists():
+                # Create new email verification model.
+                EmailVerification.objects.create(user=user)
+            raise exceptions.PermissionDenied(code='not-verified')
+    else:
+        raise exceptions.NotAuthenticated()
+
+
+@api_view(['POST'])
+def logout_action(request, format=None):
+    user: User | AnonymousUser = request.user
+    if user.is_authenticated:
+        logout(request)
+    return Response('logged out')

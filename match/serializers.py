@@ -7,7 +7,7 @@ from . import models
 from match import tasks as mt
 
 from data.serializers import (
-    BasicChampionWithImageSerializer, ItemImageSerializer,
+    ItemImageSerializer,
 )
 
 from django.db.models import QuerySet
@@ -174,6 +174,21 @@ class StatsSerializer(serializers.ModelSerializer):
             'wards_placed',
             'detector_wards_placed',
             'win',
+
+            'all_in_pings',
+            'assist_me_pings',
+            'bait_pings',
+            'basic_pings',
+            'command_pings',
+            'danger_pings',
+            'enemy_missing_pings',
+            'enemy_vision_pings',
+            'get_back_pings',
+            'hold_pings',
+            'need_vision_pings',
+            'on_my_way_pings',
+            'push_pings',
+            'vision_cleared_pings',
         ]
 
     def __init__(self, instance=None, extra=None, **kwargs):

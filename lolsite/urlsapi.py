@@ -9,5 +9,5 @@ urlpatterns = [
     path("data/", include('data.urlsapi')),
     path("match/", include('match.urlsapi')),
     path("notification/", include('notification.urlsapi')),
-    path("general/demo-login/", lolsite_views.demo_login),
+    path("get-csrf/", lolsite_views.get_csrf_token),
 ]

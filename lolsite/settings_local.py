@@ -28,9 +28,6 @@ STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-REACT_URL = config('REACT_URL', None)
-DOCKER_REACT_LINK = config('DOCKER_REACT_LINK', REACT_URL)
-
 
 REDIS_URL = config('REDIS_URL', 'localhost')
 CELERY_BROKER_URL = f"redis://{REDIS_URL}"
@@ -64,3 +61,9 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_DOMAIN = 'localhost'
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://localhost:3000"]
+CORS_ALLOWED_ORIGINS = ['http://localhost:3000']

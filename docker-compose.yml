@@ -19,12 +19,10 @@ services:
       - .:/code
     links:
       - db:db
-      - react:react
       - redis:redis
     env_file: .docker_env
     depends_on:
       - db
-      - react
       - redis
     stdin_open: true
   worker:
@@ -36,12 +34,10 @@ services:
       - .:/code
     links:
       - db:db
-      - react:react
       - redis:redis
     env_file: .docker_env
     depends_on:
       - db
-      - react
       - redis
   beat:
     build:
@@ -52,20 +48,10 @@ services:
       - .:/code
     links:
       - db:db
-      - react:react
       - redis:redis
     env_file: .docker_env
     depends_on:
       - db
-      - react
       - redis
   redis:
     image: redis
-  react:
-    image: node:16-alpine
-    working_dir: /code
-    command: sh -c "npm install && npm run start"
-    volumes:
-      - ./react:/code
-    ports:
-      - "3000:3000"

@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 
 from django.contrib.auth.models import User
 from django.contrib.auth import login
+from django.middleware.csrf import get_token
 
 
 @api_view(["POST"])
@@ -39,3 +40,9 @@ def require_login(func):
             return func(request, *args, **kwargs)
 
     return wrapper
+
+
+@api_view(['GET'])
+def get_csrf_token(request, format=None):
+    token = get_token(request)
+    return Response(token)

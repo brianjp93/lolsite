@@ -70,7 +70,7 @@ def import_match(match_id, region, refresh=False):
     api = get_riot_api()
     if api:
         r = api.match.get(match_id, region=region)
-        match = r.json()
+        match = r.content
 
         if r.status_code == 429:
             return "throttled"
@@ -268,6 +268,7 @@ def import_recent_matches(
                 queue=queue,
             )
             r = apicall()
+            logger.info('response: %s' % str(r))
             riot_match_request_time = time.time() - riot_match_request_time
             logger.info(
                 f"Riot API match filter request time : {riot_match_request_time}"
@@ -302,6 +303,18 @@ def import_recent_matches(
             if index >= end:
                 please_continue = False
     return import_count
+
+
+@app.task(name="match.tasks.bulk_import")
+def bulk_import(puuid: str, last_import_time_hours: int = 24, count=200, offset=10):
+    now = timezone.now()
+    thresh = now - timezone.timedelta(hours=last_import_time_hours)
+    summoner: Summoner = Summoner.objects.get(puuid=puuid)
+    if summoner.last_summoner_page_import is None or summoner.last_summoner_page_import < thresh:
+        logger.info(f"Doing summoner page import for {summoner} of {count} games.")
+        summoner.last_summoner_page_import = now
+        summoner.save()
+        import_recent_matches(offset, offset + count, puuid, region=summoner.region, sync=False)
 
 
 def get_top_played_with(
@@ -416,9 +429,10 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         region = match.platform_id.lower()
         logger.info(f"Requesting info for match {match.id} in region {region}")
         try:
-            parsed = TimelineResponseModel(
-                **api.match.timeline(match._id, region=region).json()
-            )
+            response = api.match.timeline(match._id, region=region)
+            start = time.perf_counter()
+            parsed = TimelineResponseModel.parse_raw(response.content)
+            logger.info(f"AdvancedTimeline parsing took: {time.perf_counter() - start}")
         except ValidationError:
             logger.exception('AdvanceTimeline could not be parsed.')
             return
@@ -670,19 +684,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         VictimDamageReceived.objects.bulk_create(victim_damage_received_events)
 
 
-def import_spectate_from_data(data, region):
-    """Import Spectate model from JSON data.
-
-    Parameters
-    ----------
-    data : dict
-    region : str
-
-    Returns
-    -------
-    None
-
-    """
+def import_spectate_from_data(data: dict, region: str):
     spectate_data = {
         "game_id": data["gameId"],
         "region": region,
@@ -803,15 +805,14 @@ def get_sorted_participants(match, participants=None):
 
 @transaction.atomic()
 def import_match_from_data(data, refresh=False, region=""):
-    game_mode = data["info"]["gameMode"]
-    if "tutorial" in game_mode.lower():
-        return False
-
     try:
-        parsed = MatchResponseModel(**data)
+        parsed = MatchResponseModel.parse_raw(data)
     except ValidationError:
         logger.exception('Match could not be parsed.')
         return
+
+    if "tutorial" in parsed.info.gameMode.lower():
+        return False
 
     info = parsed.info
     sem_ver = info.sem_ver
