@@ -72,6 +72,12 @@ LOGGING = {
 }
 
 
+CORS_ALLOWED_ORIGINS = ['https://hardstuck.club']
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_DOMAIN = 'hardstuck.club'
+CSRF_TRUSTED_ORIGINS = ["https://hardstuck.club", "https://app.hardstuck.club"]
+
+
 def before_breadcrumb(crumb, hint):
     if crumb.get("category", None) == "django.security.DisallowedHost":
         return None
