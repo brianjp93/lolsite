@@ -61,7 +61,6 @@ class MatchBySummoner(ListAPIView):
             pt.import_summoner.delay(region, name=name)
             summoner = summoner_query[0]
 
-        mt.bulk_import.delay(summoner.puuid, count=200, offset=10)
         qs = qs.filter(
             participants__puuid=summoner.puuid,
             is_fully_imported=True,
@@ -82,6 +81,7 @@ class MatchBySummoner(ListAPIView):
             mt.import_recent_matches(
                 start, start + limit, summoner.puuid, region, queue=queue,
             )
+        mt.bulk_import.delay(summoner.puuid, count=200, offset=10)
         qs = qs.order_by('-game_creation')
         return qs
 
