@@ -73,15 +73,16 @@ class MatchBySummoner(ListAPIView):
             for name in with_names if len(name.strip()) > 0
         ]
         if with_names:
-            qs = qs.filter(
-                participants__summoner_name_simplified__in=with_names
-            )
+            with_summoners = Summoner.objects.filter(simple_name__in=with_names)
+            if len(with_summoners) > 0:
+                with_puuids = [x.puuid for x in with_summoners]
+                qs = qs.filter(participants__puuid__in=with_puuids)
 
         if sync_import in constants.TRUTHY:
             mt.import_recent_matches(
                 start, start + limit, summoner.puuid, region, queue=queue,
             )
-        mt.bulk_import.delay(summoner.puuid, count=200, offset=10)
+        mt.bulk_import.s(summoner.puuid, count=200, offset=10).apply_async(countdown=5)
         qs = qs.order_by('-game_creation')
         return qs
 
