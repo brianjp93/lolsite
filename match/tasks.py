@@ -734,10 +734,11 @@ def get_player_ranks(summoner_list, threshold_days=1, sync=True):
     logger.info('Applying player ranks.')
     jobs = [pt.import_positions.s(x.id, threshold_days=threshold_days) for x in summoner_list]
     if jobs:
-        g = group(*jobs)
-        result = g()
         if sync:
-            result.get(timeout=5)
+            for x in jobs:
+                x()
+        else:
+            group(*jobs)()
 
 
 def apply_player_ranks(match, threshold_days=1):
@@ -755,7 +756,7 @@ def apply_player_ranks(match, threshold_days=1):
         summoner_qs = Summoner.objects.filter(q)
         summoner_list = [x for x in summoner_qs]
         summoners = {x.puuid: x for x in summoner_qs}
-        get_player_ranks(summoner_list, threshold_days=threshold_days)
+        get_player_ranks(summoner_list, threshold_days=threshold_days, sync=True)
 
         for part in parts:
             if not part.tier:
