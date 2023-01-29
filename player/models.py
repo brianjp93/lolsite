@@ -99,9 +99,6 @@ class Summoner(models.Model):
     last_summoner_page_import = models.DateTimeField(null=True)
     created_date = models.DateTimeField(default=timezone.now, db_index=True)
 
-    class Meta:
-        unique_together = ("region", "account_id", "_id")
-
     def __str__(self):
         return f'Summoner(name="{self.name}", region={self.region})'
 
