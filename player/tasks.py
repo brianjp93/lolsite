@@ -61,38 +61,37 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
 
     """
     api = get_riot_api()
-    if api:
-        kwargs = {}
-        if account_id is not None:
-            kwargs["encrypted_account_id"] = account_id
-        elif name is not None:
-            kwargs["name"] = name
-        elif summoner_id is not None:
-            kwargs["encrypted_summoner_id"] = summoner_id
-        elif puuid is not None:
-            kwargs["encrypted_puuid"] = puuid
-        r = api.summoner.get(region=region, **kwargs)
+    kwargs = {}
+    if account_id is not None:
+        kwargs["encrypted_account_id"] = account_id
+    elif name is not None:
+        kwargs["name"] = name
+    elif summoner_id is not None:
+        kwargs["encrypted_summoner_id"] = summoner_id
+    elif puuid is not None:
+        kwargs["encrypted_puuid"] = puuid
+    r = api.summoner.get(region=region, **kwargs)
 
-        if r.status_code >= 400 and r.status_code < 500:
-            raise Exception(f"The request returned a {r.status_code} status.")
+    if r.status_code >= 400 and r.status_code < 500:
+        raise Exception(f"The request returned a {r.status_code} status.")
 
-        data = r.json()
+    data = r.json()
 
-        model_data = {
-            "account_id": data["accountId"],
-            "name": data["name"],
-            "simple_name": simplify(data["name"]),
-            "profile_icon_id": data["profileIconId"],
-            "puuid": data["puuid"],
-            "revision_date": data["revisionDate"],
-            "summoner_level": data["summonerLevel"],
-        }
-        summoner, _ = Summoner.objects.update_or_create(
-            _id=data['id'],
-            region=region.lower(),
-            defaults=model_data,
-        )
-        return summoner.id
+    model_data = {
+        "account_id": data["accountId"],
+        "name": data["name"],
+        "simple_name": simplify(data["name"]),
+        "profile_icon_id": data["profileIconId"],
+        "puuid": data["puuid"],
+        "revision_date": data["revisionDate"],
+        "summoner_level": data["summonerLevel"],
+    }
+    summoner, _ = Summoner.objects.update_or_create(
+        _id=data['id'],
+        region=region.lower(),
+        defaults=model_data,
+    )
+    return summoner.id
 
 
 @app.task(name='player.tasks.import_positions')
