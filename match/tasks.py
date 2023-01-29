@@ -291,11 +291,14 @@ def import_recent_matches(
                 import_count += len(new_matches)
                 jobs = [import_match.s(x, region) for x in new_matches]
                 if jobs:
-                    g = group(*jobs)
-                    result = g()
                     if sync:
                         start_time = time.perf_counter()
-                        result.get(timeout=5)
+                        for x in jobs:
+                            x()
+                        logger.info(f'synchronous group import took {time.perf_counter() - start_time}')
+                    else:
+                        group(*jobs)()
+                        start_time = time.perf_counter()
                         logger.info(f'group match import took {time.perf_counter() - start_time}')
             else:
                 has_more = False
