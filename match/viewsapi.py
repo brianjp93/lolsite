@@ -58,7 +58,7 @@ class MatchBySummoner(ListAPIView):
             summoner = get_object_or_404(Summoner, region=region, simple_name=name)
         else:
             # update in the background if we already have the user imported
-            pt.import_summoner.delay(region, name=name)
+            pt.import_summoner.s(region, name=name).apply_async(countdown=1)
             summoner = summoner_query[0]
 
         qs = qs.filter(
