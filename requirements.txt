@@ -48,7 +48,7 @@ deprecated==1.2.13
     # via redis
 dj-database-url==1.0.0
     # via -r requirements.in
-django==4.1.2
+django==4.1.6
     # via
     #   -r requirements.in
     #   dj-database-url
@@ -56,6 +56,8 @@ django==4.1.2
     #   django-filter
     #   django-redis
     #   django-storages
+    #   django-stubs
+    #   django-stubs-ext
     #   djangorestframework
 django-cors-headers==3.13.0
     # via -r requirements.in
@@ -67,6 +69,12 @@ django-redis==5.2.0
     # via -r requirements.in
 django-storages==1.13.1
     # via -r requirements.in
+django-stubs[compatible-mypy]==1.14.0
+    # via -r requirements.in
+django-stubs-ext==0.7.0
+    # via
+    #   -r requirements.in
+    #   django-stubs
 djangorestframework==3.14.0
     # via -r requirements.in
 factory-boy==3.2.1
@@ -87,6 +95,10 @@ kombu==5.2.4
     # via celery
 lolwrapper==1.5.1
     # via -r requirements.in
+mypy==0.991
+    # via django-stubs
+mypy-extensions==1.0.0
+    # via mypy
 packaging==21.3
     # via redis
 pillow==9.3.0
@@ -131,8 +143,18 @@ soupsieve==2.3.2.post1
     # via beautifulsoup4
 sqlparse==0.4.2
     # via django
+tomli==2.0.1
+    # via django-stubs
+types-pytz==2022.7.1.0
+    # via django-stubs
+types-pyyaml==6.0.12.4
+    # via django-stubs
 typing-extensions==4.4.0
-    # via pydantic
+    # via
+    #   django-stubs
+    #   django-stubs-ext
+    #   mypy
+    #   pydantic
 urllib3==1.26.12
     # via
     #   -r requirements.in

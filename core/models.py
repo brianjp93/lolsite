@@ -13,6 +13,8 @@ class VersionedModel(models.Model):
     minor = models.IntegerField(default=None, null=True, blank=True, db_index=True)
     patch = models.IntegerField(default=None, null=True, blank=True, db_index=True)
 
+    version: models.CharField[str, str]
+
     class Meta:
         abstract = True
 
@@ -39,7 +41,7 @@ def save_location(instance, name):
 @app.task(name='core.models.save_files')
 def save_files(model_id, app, model_name, force=False):
     model = apps.get_model(app, model_name=model_name)
-    obj = model.objects.get(id=model_id)
+    obj: 'ThumbnailedModel' = model.objects.get(id=model_id)
     if not obj.file or force:
         r = urllib.request.urlretrieve(obj.image_url())
         obj.file.save(obj.full, File(open(r[0], 'rb')))
@@ -58,6 +60,7 @@ def save_files(model_id, app, model_name, force=False):
 
 
 class ThumbnailedModel(models.Model):
+    id: int | None
     SIZES = [15, 30, 40]
     file = models.ImageField(upload_to=save_location, default=None, null=True, blank=True)
     file_15 = models.ImageField(upload_to=save_location, default=None, null=True, blank=True)

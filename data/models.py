@@ -1,3 +1,4 @@
+from typing import Self, Union
 from django.db import models
 from django.utils import timezone
 
@@ -64,8 +65,8 @@ class Map(models.Model):
             pass
         else:
             query = Item.objects.all().order_by("-major", "-minor", "-patch")
-            if query.exists():
-                version = query.first().version
+            if item := query.first():
+                version = item.version
             else:
                 version = "9.5.1"
         return f"https://ddragon.leagueoflegends.com/cdn/{version}/img/map/map{self._id}.png"
@@ -159,6 +160,10 @@ class Item(VersionedModel):
     stacks = models.IntegerField(null=True, blank=True)
     last_changed = models.CharField(max_length=16, default=None, null=True, blank=True)
 
+    image: Union['ItemImage', None]
+    gold: Union['ItemGold', None]
+    stats: models.QuerySet['ItemStat']
+
     class Meta:
         unique_together = ("_id", "version", "language")
 
@@ -167,24 +172,12 @@ class Item(VersionedModel):
 
     def image_url(self):
         url = ""
-        try:
+        if self.image:
             url = self.image.image_url()
-        except:
-            pass
         return url
 
-    def is_diff(self, other):
-        """Find differences between two items.
-
-        Parameters
-        ----------
-        other: Item
-
-        Returns
-        -------
-        dict
-
-        """
+    def is_diff(self, other: Self):
+        """Find differences between two items."""
         stat_diffs = {}
         all_stats = set(x.key for x in self.stats.all()) | set(
             x.key for x in other.stats.all()
@@ -193,12 +186,13 @@ class Item(VersionedModel):
         for key in all_stats:
             query0 = self.stats.filter(key=key)
             query1 = other.stats.filter(key=key)
-            if query0.exists() and query1.exists():
-                selfstat = query0.first()
-                otherstat = query1.first()
+            selfstat = query0.first()
+            otherstat = query1.first()
+            if selfstat and otherstat:
                 stat_diffs[key] = selfstat.value == otherstat.value
             else:
                 stat_diffs[key] = False
+        assert self.gold and other.gold
         diffs = {
             # "description": self.description == other.description,
             "gold__total": self.gold.total == other.gold.total,
@@ -329,6 +323,10 @@ class Champion(VersionedModel):
 
     created_date = models.DateTimeField(default=timezone.now)
 
+    image: Union['ChampionImage', None]
+    stats: Union['ChampionStats', None]
+    spells: models.QuerySet['ChampionSpell']
+
     class Meta:
         unique_together = ("_id", "version", "language")
 
@@ -337,19 +335,14 @@ class Champion(VersionedModel):
 
     def get_newest_version(self):
         query = Champion.objects.order_by("-major", "-minor", "-patch")
-        if query.exists():
-            return query.first().version
+        if champ := query.first():
+            return champ.version
         return None
 
     def image_url(self):
-        url = ""
-        try:
-            url = self.image.image_url()
-        except Exception:
-            pass
-        return url
+        return self.image.image_url() if self.image else ''
 
-    def is_diff(self, other):
+    def is_diff(self, other: Self):
         """Check to see if a champion has differences with another.
         """
         spell_attrs = [
@@ -363,6 +356,7 @@ class Champion(VersionedModel):
             "resource",
             "tooltip",
         ]
+        assert self.stats and other.stats
         stat_diffs = {
             "armor": self.stats.armor == other.stats.armor,
             "armor_per_level": self.stats.armor_per_level
@@ -413,10 +407,6 @@ class Champion(VersionedModel):
         else:
             out = {"general": stat_diffs, "spells": spell_diffs}
         return out
-
-
-def champion_image_location(instance, name):
-    pass
 
 
 class ChampionImage(ThumbnailedModel):
@@ -501,16 +491,13 @@ class ChampionPassive(models.Model):
     description = models.CharField(max_length=1024, default="", blank=True)
     name = models.CharField(max_length=128, default="", blank=True)
 
+    image: Union['ChampionPassiveImage', None]
+
     def __str__(self):
         return f'ChampionPassive(champion="{self.champion._id}", name="{self.name}", version="{self.champion.version}", language="{self.champion.language}")'
 
     def image_url(self):
-        url = ""
-        try:
-            url = self.image.image_url()
-        except:
-            pass
-        return url
+        return self.image.image_url() if self.image else ''
 
 
 class ChampionPassiveImage(models.Model):
@@ -577,6 +564,9 @@ class ChampionSpell(models.Model):
     resource = models.CharField(max_length=128, default="", blank=True)
     tooltip = models.CharField(max_length=2048, default="", blank=True)
 
+    effect_burn: models.QuerySet['ChampionEffectBurn']
+    image: Union['ChampionSpellImage', None]
+
     class Meta:
         unique_together = ("champion", "_id")
 
@@ -593,12 +583,7 @@ class ChampionSpell(models.Model):
         return out
 
     def image_url(self):
-        url = ""
-        try:
-            url = self.image.image_url()
-        except:
-            pass
-        return url
+        return self.image.image_url() if self.image else ''
 
 
 class ChampionSpellImage(models.Model):
@@ -667,6 +652,8 @@ class SummonerSpell(VersionedModel):
     summoner_level = models.IntegerField()
     tooltip = models.TextField(max_length=2048, default="", blank=True)
 
+    image: Union['SummonerSpellImage', None]
+
     class Meta:
         unique_together = ("key", "version", "language")
 
@@ -674,12 +661,7 @@ class SummonerSpell(VersionedModel):
         return f'SummonerSpell(_id="{self._id}", version="{self.version}", language="{self.language}")'
 
     def image_url(self):
-        url = ""
-        try:
-            url = self.image.image_url()
-        except:
-            pass
-        return url
+        return self.image.image_url() if self.image else ''
 
 
 class SummonerSpellEffectBurn(models.Model):

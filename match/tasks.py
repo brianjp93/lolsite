@@ -108,8 +108,7 @@ def handle_name_changes(days=30):
         timestamp = starts_at.timestamp() * 1000
         qs = qs.filter(match__game_creation__gt=timestamp)
     for participant in qs:
-        summoner = Summoner.objects.filter(puuid=participant.puuid).values('id').first()
-        if summoner:
+        if summoner := Summoner.objects.filter(puuid=participant.puuid).values('id').first():
             try:
                 NameChange.objects.get_or_create(summoner_id=summoner['id'], old_name=participant.summoner_name)
             except NameChange.MultipleObjectsReturned:
@@ -727,8 +726,7 @@ def import_summoners_from_spectate(data, region):
                 summoner.save()
                 summoners[summoner._id] = summoner.id
             except IntegrityError:
-                query = Summoner.objects.filter(region=region, _id=summoner_id)
-                if summoner := query.first():
+                if summoner := Summoner.objects.filter(region=region, _id=summoner_id).first():
                     summoners[summoner._id] = summoner.id
     return summoners
 

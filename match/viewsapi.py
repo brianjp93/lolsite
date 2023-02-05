@@ -197,14 +197,14 @@ def get_spectate(request, format=None):
         else:
             mt.import_spectate_from_data(spectate_data, region)
             summoners = mt.import_summoners_from_spectate(spectate_data, region)
-            jobs = [pt.import_positions.s(x, threshold_days=3) for x in summoners.values()]
-            g = group(*jobs)
-            g().get()
+
+            for x in summoners.values():
+                pt.import_positions(x, threshold_days=3)
+
             for part in spectate_data["participants"]:
                 positions = None
                 query = Summoner.objects.filter(region=region, _id=part["summonerId"])
-                if query.exists():
-                    summoner = query.first()
+                if summoner := query.first():
                     checkpoint = summoner.get_newest_rank_checkpoint()
                     positions = RankPositionSerializer(
                         checkpoint.positions.all(), many=True
