@@ -40,6 +40,7 @@ class MatchSerializer(serializers.ModelSerializer):
             'minor',
             'patch',
             'url',
+            'queue_id',
         ]
 
     def __init__(self, *args, summoner_name=None, **kwargs):
