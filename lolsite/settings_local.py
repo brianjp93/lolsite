@@ -1,9 +1,6 @@
 from .settings import *
 import os
 from decouple import config
-import django_stubs_ext
-
-django_stubs_ext.monkeypatch()
 
 
 REACT_DEV = config('REACT_DEV', False, cast=bool)

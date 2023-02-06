@@ -15,6 +15,9 @@ import logging
 # must be imported for app to know about periodic task schedule
 from lolsite import periodic_tasks  # noqa: F401
 
+import django_stubs_ext
+django_stubs_ext.monkeypatch()
+
 logger = logging.getLogger(__name__)
 
 
