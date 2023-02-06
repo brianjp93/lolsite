@@ -82,7 +82,7 @@ class MatchBySummoner(ListAPIView):
             mt.import_recent_matches(
                 start, start + limit, summoner.puuid, region, queue=queue,
             )
-        mt.bulk_import.s(summoner.puuid, count=200, offset=10).apply_async(countdown=5)
+        mt.bulk_import.s(summoner.puuid, count=40, offset=10).apply_async(countdown=5)
         qs = qs.order_by('-game_creation')
         return qs
 
