@@ -1,9 +1,9 @@
 """match/viewsapi.py
 """
-from celery import group
+from django.db.models import Q, Exists, OuterRef
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListAPIView, QuerySet, RetrieveAPIView
 
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
@@ -43,11 +43,36 @@ class MatchBySummoner(ListAPIView):
         queue = self.request.query_params.get('queue', None)
         if isinstance(queue, str) and queue.isdigit():
             queue = int(queue)
-        with_names = self.request.query_params.get('with_names', [])
+        played_with: list[str] = self.request.query_params.get('playedWith', '').split(',')
         sync_import = self.request.query_params.get('sync_import', False)
         start: int = self.paginator.get_offset(self.request)
         limit: int = self.paginator.get_limit(self.request)
 
+        summoner = self.get_summoner(name, region)
+
+        qs = qs.filter(participants__puuid=summoner.puuid)
+        if isinstance(queue, int):
+            qs = qs.filter(queue_id=queue)
+
+        played_with = [
+            pt.simplify(name)
+            for name in played_with if len(name.strip()) > 0
+        ]
+        if played_with:
+            sync_import = False
+            qs = self.get_played_with(played_with, region, qs)
+
+        if sync_import in constants.TRUTHY:
+            mt.import_recent_matches(
+                start, start + limit, summoner.puuid, region, queue=queue,
+            )
+        mt.bulk_import.s(summoner.puuid, count=40, offset=10).apply_async(countdown=5)
+        qs = qs.order_by('-game_creation')
+        return qs
+
+    @staticmethod
+    def get_summoner(name: str, region: str):
+        name = pt.simplify(name)
         summoner_query = Summoner.objects.filter(simple_name=name, region=region)
         if len(summoner_query) == 0:
             summoner_id = pt.import_summoner(region, name=name)
@@ -60,30 +85,22 @@ class MatchBySummoner(ListAPIView):
             # update in the background if we already have the user imported
             pt.import_summoner.s(region, name=name).apply_async(countdown=1)
             summoner = summoner_query[0]
+        return summoner
 
-        qs = qs.filter(
-            participants__puuid=summoner.puuid,
-            is_fully_imported=True,
-        )
-        if isinstance(queue, int):
-            qs = qs.filter(queue_id=queue)
-
-        with_names = [
+    @staticmethod
+    def get_played_with(names: list[str], region: str, qs: QuerySet[Summoner]):
+        played_with = [
             pt.simplify(name)
-            for name in with_names if len(name.strip()) > 0
-        ]
-        if with_names:
-            with_summoners = Summoner.objects.filter(simple_name__in=with_names)
-            if len(with_summoners) > 0:
-                with_puuids = [x.puuid for x in with_summoners]
-                qs = qs.filter(participants__puuid__in=with_puuids)
-
-        if sync_import in constants.TRUTHY:
-            mt.import_recent_matches(
-                start, start + limit, summoner.puuid, region, queue=queue,
-            )
-        mt.bulk_import.s(summoner.puuid, count=40, offset=10).apply_async(countdown=5)
-        qs = qs.order_by('-game_creation')
+            for name in names if len(name.strip()) > 0
+        ][:10]
+        summoner_ids = []
+        for simple_name in played_with:
+            sid = pt.import_summoner(region, name=simple_name)
+            if sid:
+                summoner_ids.append(sid)
+        with_summoners = Summoner.objects.filter(id__in=summoner_ids)
+        for x in with_summoners:
+            qs = qs.filter(Exists(Participant.objects.filter(puuid=x.puuid, match_id=OuterRef('id'))))
         return qs
 
 

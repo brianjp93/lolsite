@@ -73,7 +73,8 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
     r = api.summoner.get(region=region, **kwargs)
 
     if r.status_code >= 400 and r.status_code < 500:
-        raise Exception(f"The request returned a {r.status_code} status.")
+        logger.warning(f"Summoner not found.")
+        return None
 
     data = r.json()
 
