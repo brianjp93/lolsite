@@ -82,13 +82,13 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         "name": data["name"],
         "simple_name": simplify(data["name"]),
         "profile_icon_id": data["profileIconId"],
-        "puuid": data["puuid"],
         "revision_date": data["revisionDate"],
         "summoner_level": data["summonerLevel"],
+        "_id": data["id"],
+        'region': region.lower(),
     }
     summoner, _ = Summoner.objects.update_or_create(
-        _id=data['id'],
-        region=region.lower(),
+        puuid=data['puuid'],
         defaults=model_data,
     )
     return summoner.id

@@ -41,6 +41,8 @@ import time
 from functools import partial
 from typing import Optional
 
+from multiprocessing.pool import ThreadPool
+
 
 ROLES = ["top", "jg", "mid", "adc", "sup"]
 logger = logging.getLogger(__name__)
@@ -77,7 +79,18 @@ def import_match(match_id, region, refresh=False):
         if r.status_code == 404:
             return "not found"
 
-        import_match_from_data(match, refresh=refresh, region=region)
+        import_match_from_data(match, region, refresh=refresh)
+
+
+def fetch_match_json(match_id: str,  region: str, refresh=False):
+    api = get_riot_api()
+    r = api.match.get(match_id, region=region)
+    match = r.content
+    if r.status_code == 429:
+        return "throttled"
+    if r.status_code == 404:
+        return "not found"
+    return match
 
 
 def import_summoner_from_participant(participants: list[ParticipantModel], region):
@@ -224,7 +237,6 @@ def import_recent_matches(
     queue: Optional[int] = None,
     startTime: Optional[timezone.datetime] = None,
     endTime: Optional[timezone.datetime] = None,
-    sync=True,
 ):
     """Import recent matches for a puuid.
 
@@ -288,17 +300,15 @@ def import_recent_matches(
                 existing_ids = [x._id for x in Match.objects.filter(_id__in=matches)]
                 new_matches = list(set(matches) - set(existing_ids))
                 import_count += len(new_matches)
-                jobs = [import_match.s(x, region) for x in new_matches]
-                if jobs:
-                    if sync:
-                        start_time = time.perf_counter()
-                        for x in jobs:
-                            x()
-                        logger.info(f'synchronous group import took {time.perf_counter() - start_time}')
-                    else:
-                        group(*jobs)()
-                        start_time = time.perf_counter()
-                        logger.info(f'group match import took {time.perf_counter() - start_time}')
+                jobs = [(x, region) for x in new_matches]
+                pool = ThreadPool(processes=50)
+
+                start_time = time.perf_counter()
+                match_json_values = pool.map(lambda args: fetch_match_json(*args), jobs)
+                logger.info(f'Match fetch time: {time.perf_counter() - start_time}')
+                for match_json in match_json_values:
+                    import_match_from_data(match_json, region)
+                logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
             else:
                 has_more = False
             index += size
@@ -316,7 +326,7 @@ def bulk_import(puuid: str, last_import_time_hours: int = 24, count=200, offset=
         logger.info(f"Doing summoner page import for {summoner} of {count} games.")
         summoner.last_summoner_page_import = now
         summoner.save()
-        import_recent_matches(offset, offset + count, puuid, region=summoner.region, sync=False)
+        import_recent_matches(offset, offset + count, puuid, region=summoner.region)
 
 
 def get_top_played_with(
@@ -806,7 +816,7 @@ def get_sorted_participants(match, participants=None):
 
 
 @transaction.atomic()
-def import_match_from_data(data, refresh=False, region=""):
+def import_match_from_data(data, region: str, refresh=False):
     try:
         parsed = MatchResponseModel.parse_raw(data)
     except ValidationError:
