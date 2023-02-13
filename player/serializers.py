@@ -113,14 +113,19 @@ class CustomSerializer(DynamicSerializer):
 class FavoriteSerializer(DynamicSerializer):
     name = serializers.CharField()
     region = serializers.CharField()
+    puuid = serializers.SerializerMethodField()
 
     class Meta:
         model = Favorite
         fields = (
             'name',
             'region',
+            'puuid',
             'sort_int',
         )
+
+    def get_puuid(self, obj):
+        return obj.summoner.puuid
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
