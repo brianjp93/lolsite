@@ -116,8 +116,11 @@ class FavoriteSerializer(DynamicSerializer):
 
     class Meta:
         model = Favorite
-        fields = "__all__"
-
+        fields = (
+            'name',
+            'region',
+            'sort_int',
+        )
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
