@@ -510,11 +510,12 @@ def favorites(request, format=None):
                 data["message"] = "The summoner isn't being followed.  No action taken."
         elif verb == "order":
             id_list = request.data.get("favorite_ids")
-            for i, _id in enumerate(id_list):
-                if favorite.filter(id=_id).exists():
-                    favorite_model = favorite.get(id=_id)
+            flist = []
+            for i, puuid in enumerate(id_list):
+                if favorite_model := favorite.filter(summoner__puuid=puuid).first():
                     favorite_model.sort_int = i
-                    favorite_model.save()
+                    flist.append(favorite_model)
+            Favorite.objects.bulk_update(flist, fields=['sort_int'])
             data["message"] = "Saved ordering."
 
         favorite = user.favorite_set.all()
