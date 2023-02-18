@@ -1,18 +1,15 @@
 """lolsite/views.py
 """
 from django.core.exceptions import ObjectDoesNotExist
-from django.template.response import TemplateResponse
+from django.http.response import HttpResponse
 from django.templatetags.static import static
 
-from player.serializers import FavoriteSerializer, SummonerSerializer
 from player.models import Summoner, simplify
 
-from lolsite.context_processors import react_data_processor
 from match.models import Match
 from data import constants
 
 import re
-import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,24 +25,7 @@ QUEUE_DICT = {x['_id']: x for x in constants.QUEUES}
 
 
 def home(request, path=""):
-    """Return basic home address and let react render the rest.
-    """
-    logger.info('Loading home page.')
-
-    data = get_base_react_context(request)
-    data['meta'] = get_meta_data(request)
-    return TemplateResponse(request, "layout/home.html", data)
-
-
-def get_meta_data(request):
-    metacopy = META.copy()
-    meta = get_summoner_meta_data(request, metacopy)
-    if meta:
-        return meta
-    meta = get_match_meta_data(request, metacopy)
-    if meta:
-        return meta
-    return META
+    return HttpResponse('Hello world!')
 
 
 def get_summoner_meta_data(request, meta):
@@ -173,38 +153,3 @@ def get_match_meta_data(request, meta):
         meta['description'] = stats
         meta['image'] = image
         return meta
-
-
-def get_base_react_context(request):
-    """Get the react context data.
-    """
-    user = request.user
-    user_data = {}
-    favorite_data = []
-    default_summoner = {}
-    if hasattr(user, 'custom') and user.custom.default_summoner:
-        default_summoner = SummonerSerializer(user.custom.default_summoner, many=False).data
-    if user.is_authenticated:
-        try:
-            user_data = {
-                "email": request.user.email,
-                "is_email_verified": user.custom.is_email_verified,
-                "default_summoner": default_summoner,
-                "id": user.id,
-            }
-        except Exception:
-            logger.exception("Error while creating user_data dictionary")
-
-        try:
-            favorites = request.user.favorite_set.all().order_by("sort_int")
-            favorite_data = FavoriteSerializer(favorites, many=True).data
-        except Exception:
-            logger.exception("Error while retrieving favorites for user.")
-
-    data = {
-        "queues": json.dumps(constants.QUEUES),
-        "user": json.dumps(user_data),
-        "favorites": json.dumps(favorite_data),
-    }
-    data.update(react_data_processor(request))
-    return data
