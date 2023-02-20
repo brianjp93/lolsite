@@ -170,7 +170,7 @@ def _get_match_meta_data(name: str, region: str, match_id: str):
     deaths = part.stats.deaths
     deaths = 1 if deaths < 1 else deaths
     assists = part.stats.assists
-    minutes = match.game_duration / 60_000
+    minutes = match.game_duration / 60
     dpm = 0.0
     vspm = 0.0
     if minutes:
