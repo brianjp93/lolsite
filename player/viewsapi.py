@@ -775,22 +775,11 @@ def connect_account_with_profile_icon(request, format=None):
     return Response(data, status=status_code)
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 def get_connected_accounts(request, format=None):
-    """Get a list of connected Summoner Accounts.
-
-    Post Parameters
-    ---------------
-    None
-
-    Returns
-    -------
-    Summoners
-
-    """
     data = {}
     status_code = 200
-    if request.method == "POST":
+    if request.method == "GET":
         if request.user.is_authenticated:
             query = player_filters.get_connected_accounts_query(request.user)
             serialized = SummonerSerializer(query, many=True).data
