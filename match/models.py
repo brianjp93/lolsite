@@ -123,8 +123,8 @@ class MatchQuerySet(models.QuerySet):
 
     def get_perk_substyles(self):
         substyles = set()
-        for match in self.prefetch_related("participants"):
-            for part in match.participants.all().select_related("stats"):
+        for match in self.prefetch_related("participants", "participants__stats"):
+            for part in match.participants.all():
                 substyles.add(part.stats.perk_sub_style)
         qs = ReforgedTree.objects.filter(_id__in=substyles)
         qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
