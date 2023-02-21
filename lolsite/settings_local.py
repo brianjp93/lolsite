@@ -1,6 +1,7 @@
 from .settings import *
 import os
 from decouple import config
+import socket
 
 
 REACT_DEV = config('REACT_DEV', False, cast=bool)
@@ -11,6 +12,19 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 BASE_URL = "http://localhost:8000"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+INSTALLED_APPS += [
+    "debug_toolbar",
+]
+
+MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+] + MIDDLEWARE
+
+
+# settings internal ips for docker
+hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
 
 
 DATABASES = {

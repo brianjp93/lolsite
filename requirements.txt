@@ -53,6 +53,7 @@ django==4.1.6
     #   -r requirements.in
     #   dj-database-url
     #   django-cors-headers
+    #   django-debug-toolbar
     #   django-filter
     #   django-redis
     #   django-storages
@@ -60,6 +61,8 @@ django==4.1.6
     #   django-stubs-ext
     #   djangorestframework
 django-cors-headers==3.13.0
+    # via -r requirements.in
+django-debug-toolbar==3.8.1
     # via -r requirements.in
 django-extensions==3.0.9
     # via -r requirements.in
@@ -142,7 +145,9 @@ sortedcontainers==2.4.0
 soupsieve==2.3.2.post1
     # via beautifulsoup4
 sqlparse==0.4.2
-    # via django
+    # via
+    #   django
+    #   django-debug-toolbar
 tomli==2.0.1
     # via django-stubs
 types-pytz==2022.7.1.0

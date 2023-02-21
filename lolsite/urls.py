@@ -20,7 +20,15 @@ from player import views as player_views
 from django.conf.urls.static import static
 from django.conf import settings
 
-urlpatterns = [
+urlpatterns = []
+
+if settings.DEBUG:
+    print('Adding debug url pattern')
+    urlpatterns += [
+        path('__debug__/', include('debug_toolbar.urls')),
+    ]
+
+urlpatterns += [
     path("admin/", admin.site.urls),
     path("api/v1/", include("lolsite.urlsapi")),
     path("login/go/", player_views.login_action),
