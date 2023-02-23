@@ -121,6 +121,7 @@ class ChampionImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChampionImage
         fields = [
+            'image_url',
             'file',
             'file_15',
             'file_30',
