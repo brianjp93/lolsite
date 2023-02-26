@@ -92,7 +92,7 @@ def lp_sort(position):
     return lp
 
 
-class MatchQuerySet(models.QuerySet):
+class MatchQuerySet(models.QuerySet['Match']):
     def get_items(self, puuid=None):
         item_ids = set()
         qs = Stats.objects.filter(participant__match__in=self)
@@ -251,6 +251,8 @@ class Participant(models.Model):
     # label for ML training
     # 0=top, 1=jg, 2=mid, 3=adc, 4=sup
     role_label = models.IntegerField(default=None, null=True)
+
+    stats: 'Stats' | None
 
     class Meta:
         unique_together = ("match", "_id")
