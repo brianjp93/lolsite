@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from django.db import models
 from django.db.models import QuerySet
 from django.contrib.postgres.fields import ArrayField
@@ -252,7 +252,7 @@ class Participant(models.Model):
     # 0=top, 1=jg, 2=mid, 3=adc, 4=sup
     role_label = models.IntegerField(default=None, null=True)
 
-    stats: 'Stats' | None
+    stats: Union['Stats', None]
 
     class Meta:
         unique_together = ("match", "_id")
