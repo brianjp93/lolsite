@@ -173,6 +173,7 @@ class Match(VersionedModel):
 
     id: int | None
     pk: int | None
+    advancedtimeline: Union['AdvancedTimeline', None]
     participants: QuerySet['Participant']
     comments: QuerySet[Comment]
 

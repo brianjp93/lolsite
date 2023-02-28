@@ -419,23 +419,24 @@ def get_top_played_with(
 
 @app.task(name="match.tasks.import_advanced_timeline")
 def import_advanced_timeline(match_id: str, overwrite=False):
-    victim_damage_received_events = []
-    victim_damage_dealt_events = []
-    ward_placed_events = []
-    ward_kill_events = []
-    item_purchase_events = []
-    item_destroyed_events = []
-    item_sold_events = []
-    item_undo_events = []
-    skill_level_up_events = []
-    level_up_events = []
-    champion_special_kill_events = []
-    turret_plate_destroyed_events = []
-    elite_monster_kill_events = []
-    building_kill_events = []
+    victim_damage_received_events: list[VictimDamageReceived] = []
+    victim_damage_dealt_events: list[VictimDamageDealt] = []
+    ward_placed_events: list[WardPlacedEvent] = []
+    ward_kill_events: list[WardKillEvent] = []
+    item_purchase_events: list[ItemPurchasedEvent] = []
+    item_destroyed_events: list[ItemDestroyedEvent] = []
+    item_sold_events: list[ItemSoldEvent] = []
+    item_undo_events: list[ItemUndoEvent] = []
+    skill_level_up_events: list[SkillLevelUpEvent] = []
+    level_up_events: list[LevelUpEvent] = []
+    champion_special_kill_events: list[ChampionSpecialKillEvent] = []
+    turret_plate_destroyed_events: list[TurretPlateDestroyedEvent] = []
+    elite_monster_kill_events: list[EliteMonsterKillEvent] = []
+    building_kill_events: list[BuildingKillEvent] = []
     with transaction.atomic():
         match = Match.objects.select_related('advancedtimeline').get(id=match_id)
         if hasattr(match, 'advancedtimeline') and overwrite:
+            assert match.advancedtimeline
             match.advancedtimeline.delete()
         api = get_riot_api()
         region = match.platform_id.lower()
@@ -516,6 +517,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
             ParticipantFrame.objects.bulk_create(pframes)
 
             for evm in fm.events:
+                assert frame.id
                 match evm:
                     case tmparsers.WardPlacedEventModel():
                         ward_placed_events.append(WardPlacedEvent(
@@ -655,6 +657,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                             y=evm.position.y,
                         )
                         for vd in evm.victimDamageDealt or []:
+                            assert cke.id
                             victim_damage_dealt_events.append(VictimDamageDealt(
                                 championkillevent_id=cke.id,
                                 basic=vd.basic,
@@ -668,6 +671,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                                 type=vd.type,
                             ))
                         for vd in evm.victimDamageReceived or []:
+                            assert cke.id
                             victim_damage_received_events.append(VictimDamageReceived(
                                 championkillevent_id=cke.id,
                                 basic=vd.basic,
