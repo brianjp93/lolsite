@@ -186,42 +186,27 @@ def get_positions(request, format=None):
 
 @api_view(["POST"])
 def sign_up(request, format=None):
-    """Create an account.
-
-    POST Parameters
-    ---------------
-    email : str
-    password : str
-
-    Returns
-    -------
-    JSON
-
-    """
     data = {}
     status_code = 200
 
-    if request.method == "POST":
-        if request.user.is_authenticated:
-            data = {"message": "You are already logged in."}
-            status_code = 403
-        else:
-            email = request.data.get("email")
-            password = request.data.get("password")
-
-            user = pt.create_account(email, password)
-            if user:
-                data = {"message": "Account created."}
-            else:
-                if User.objects.filter(email__iexact=email):
-                    data = {
-                        "message": "The email given already exists.  Try logging in."
-                    }
-                else:
-                    data = {"message": "The email or password was invalid."}
-                status_code = 403
+    if request.user.is_authenticated:
+        data = {"message": "You are already logged in."}
+        status_code = 403
     else:
-        data = {"message": "This resource only supports POSTs."}
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        user = pt.create_account(email, password)
+        if user:
+            data = {"message": "Account created."}
+        else:
+            if User.objects.filter(email__iexact=email):
+                data = {
+                    "message": "The email given already exists.  Try logging in."
+                }
+            else:
+                data = {"message": "The email or password was invalid."}
+            status_code = 403
 
     return Response(data, status=status_code)
 
@@ -245,25 +230,21 @@ def verify_email(request, format=None):
     """
     data = {}
     status_code = 200
-    age_hours = 1
+    age_hours = 24
 
-    if request.method == "POST":
-        code = request.data.get("code")
-        verified = pt.verify_user_email(code, age_hours=age_hours)
-        if verified:
-            data = {"message": "Successfully verified email."}
-        else:
-            data = {
-                "message": (
-                    "Either the code does not exist, or it is ",
-                    "too old.  Request a new verification email.",
-                )
-            }
-            status_code = 404
-        pt.remove_old_email_verification(age_hours=age_hours)
+    code = request.data.get("code")
+    verified = pt.verify_user_email(code, age_hours=age_hours)
+    if verified:
+        data = {"message": "Successfully verified email."}
     else:
-        data = {"message": "This resource on supports POSTs."}
-
+        data = {
+            "message": (
+                "Either the code does not exist, or it is "
+                "too old.  Request a new verification email.",
+            )
+        }
+        status_code = 404
+    pt.remove_old_email_verification(age_hours=age_hours)
     return Response(data, status=status_code)
 
 

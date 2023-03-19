@@ -7,7 +7,7 @@ DEV = False
 DEBUG = False
 
 ALLOWED_HOSTS = ["localhost"]
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:3000"
 
 
 DATABASES = {
