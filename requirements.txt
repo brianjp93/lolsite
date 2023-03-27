@@ -8,8 +8,6 @@ amqp==5.1.1
     # via kombu
 asgiref==3.5.2
     # via django
-async-timeout==4.0.2
-    # via redis
 attrs==22.1.0
     # via hypothesis
 beautifulsoup4==4.7.1
@@ -44,8 +42,6 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.2.0
     # via celery
-deprecated==1.2.13
-    # via redis
 dj-database-url==1.0.0
     # via -r requirements.in
 django==4.1.6
@@ -102,8 +98,6 @@ mypy==0.991
     # via django-stubs
 mypy-extensions==1.0.0
     # via mypy
-packaging==21.3
-    # via redis
 pillow==9.3.0
     # via -r requirements.in
 prompt-toolkit==3.0.31
@@ -112,8 +106,6 @@ psycopg2-binary==2.9.5
     # via -r requirements.in
 pydantic==1.10.2
     # via -r requirements.in
-pyparsing==3.0.9
-    # via packaging
 python-dateutil==2.8.2
     # via
     #   botocore
@@ -124,7 +116,7 @@ pytz==2022.2.1
     # via
     #   celery
     #   djangorestframework
-redis==4.3.4
+redis==4.5.3
     # via
     #   -r requirements.in
     #   django-redis
@@ -173,8 +165,6 @@ vine==5.0.0
     #   kombu
 wcwidth==0.2.5
     # via prompt-toolkit
-wrapt==1.14.1
-    # via deprecated
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
