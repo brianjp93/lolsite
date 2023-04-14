@@ -6,7 +6,7 @@ from django.db.models import Count, Subquery, OuterRef
 from django.db.models import Case, When, Sum
 from django.db.models import IntegerField, Q, F
 from django.utils import timezone
-from django.db import transaction
+from django.db import connections, transaction
 from pydantic import ValidationError
 
 from .parsers.match import MatchResponseModel, ParticipantModel
@@ -228,6 +228,13 @@ def ranked_import(name=None, puuid=None, region=None, **kwargs):
             summoner.save()
 
 
+def pool_match_import(match_id: str, region: str, close_connections=True):
+    if close_connections:
+        connections.close_all()
+    match_json = fetch_match_json(match_id, region)
+    import_match_from_data(match_json, region)
+
+
 @app.task(name="match.tasks.import_recent_matches")
 def import_recent_matches(
     start: int,
@@ -301,14 +308,10 @@ def import_recent_matches(
                 new_matches = list(set(matches) - set(existing_ids))
                 import_count += len(new_matches)
                 jobs = [(x, region) for x in new_matches]
-                pool = ThreadPool(processes=50)
-
-                start_time = time.perf_counter()
-                match_json_values = pool.map(lambda args: fetch_match_json(*args), jobs)
-                logger.info(f'Match fetch time: {time.perf_counter() - start_time}')
-                for match_json in match_json_values:
-                    import_match_from_data(match_json, region)
-                logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
+                with ThreadPool(processes=50) as pool:
+                    start_time = time.perf_counter()
+                    pool.starmap(pool_match_import, jobs)
+                    logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
             else:
                 has_more = False
             index += size
