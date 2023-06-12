@@ -50,6 +50,10 @@ class MatchBySummoner(ListAPIView):
 
         summoner = self.get_summoner(name, region)
 
+        # only add view if requesting the first page.
+        if start == 0:
+            summoner.add_view()
+
         qs = qs.filter(participants__puuid=summoner.puuid)
         if isinstance(queue, int):
             qs = qs.filter(queue_id=queue)

@@ -170,6 +170,8 @@ class ParticipantModel(BaseModelWithLogger):
     totalTimeCCDealt: int
     totalTimeSpentDead: int
     totalUnitsHealed: int
+    totalAllyJungleMinionsKilled: int = 0
+    totalEnemyJungleMinionsKilled: int = 0
     tripleKills: int
     trueDamageDealt: int
     trueDamageDealtToChampions: int

@@ -132,6 +132,13 @@ class Summoner(models.Model):
         )
         return query.exists()
 
+    def add_view(self):
+        today = timezone.now().date()
+        if pageview := self.pageview_set.filter(bucket_date=today).first():
+            PageView.objects.filter(id=pageview.id).update(views=models.F('views') + 1)
+        else:
+            PageView.objects.create(summoner=self, bucket_date=today, views=1)
+
 
 class Pro(models.Model):
     position_choices = (
@@ -174,6 +181,12 @@ class Favorite(models.Model):
 
     def region(self):
         return self.summoner.region if self.summoner else ""
+
+
+class PageView(models.Model):
+    summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE)
+    bucket_date = models.DateField(default=timezone.now)
+    views = models.IntegerField(default=0)
 
 
 class NameChange(models.Model):

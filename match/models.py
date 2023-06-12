@@ -383,6 +383,8 @@ class Stats(models.Model):
     total_minions_killed = models.IntegerField(default=0, blank=True)
     total_time_crowd_control_dealt = models.IntegerField(default=0, blank=True)
     total_units_healed = models.IntegerField(default=0, blank=True)
+    total_ally_jungle_minions_killed = models.IntegerField(default=0, blank=True)
+    total_enemy_jungle_minions_killed = models.IntegerField(default=0, blank=True)
     triple_kills = models.IntegerField(default=0, blank=True)
     true_damage_dealt = models.IntegerField(default=0, blank=True)
     true_damage_dealt_to_champions = models.IntegerField(default=0, blank=True)

@@ -163,6 +163,8 @@ class StatsSerializer(serializers.ModelSerializer):
             'total_minions_killed',
             'total_time_crowd_control_dealt',
             'total_units_healed',
+            'total_ally_jungle_minions_killed',
+            'total_enemy_jungle_minions_killed',
             'triple_kills',
             'true_damage_dealt',
             'true_damage_dealt_to_champions',
