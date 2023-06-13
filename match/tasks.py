@@ -308,7 +308,7 @@ def import_recent_matches(
                 new_matches = list(set(matches) - set(existing_ids))
                 import_count += len(new_matches)
                 jobs = [(x, region) for x in new_matches]
-                with ThreadPool(processes=50) as pool:
+                with ThreadPool(processes=10) as pool:
                     start_time = time.perf_counter()
                     pool.starmap(pool_match_import, jobs)
                     logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
@@ -318,6 +318,21 @@ def import_recent_matches(
             if index >= end:
                 please_continue = False
     return import_count
+
+
+@app.task(name="match.tasks.import_matches_for_popular_accounts")
+def import_matches_for_popular_accounts(n=100):
+    now = timezone.now()
+    week = (now - timezone.timedelta(days=7)).date()
+    qs = Summoner.objects.all().annotate(
+        views=Sum('pageview__views', filter=Q(pageview__bucket_date__gte=week))
+    ).order_by('-views').filter(views__isnull=False)
+    for i, summoner in enumerate(qs[:n]):
+        logger.info(f"Importing matches for {summoner.name} ({i}) with {summoner.views=}")  # type: ignore
+        try:
+            import_recent_matches(0, 50, summoner.puuid, summoner.region)
+        except Exception:
+            logger.exception("Error while importing matches.")
 
 
 @app.task(name="match.tasks.bulk_import")
