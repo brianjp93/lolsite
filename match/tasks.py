@@ -766,12 +766,19 @@ def import_summoners_from_spectate(data, region):
 def get_player_ranks(summoner_list, threshold_days=1, sync=True):
     logger.info('Applying player ranks.')
     jobs = [pt.import_positions.s(x.id, threshold_days=threshold_days) for x in summoner_list]
+    jobs = [(x.id, threshold_days) for x in summoner_list]
     if jobs:
         if sync:
             for x in jobs:
-                x()
+                pt.import_positions(*x)
         else:
-            group(*jobs)()
+            with ThreadPool(processes=10) as pool:
+                def pool_position_import(a, b):
+                    pt.import_positions(a, b)
+                    connections.close_all()
+                start_time = time.perf_counter()
+                pool.starmap(pool_position_import, jobs)
+                logger.info(f'ThreadPool positions import: {time.perf_counter() - start_time}')
 
 
 def apply_player_ranks(match, threshold_days=1):
@@ -789,8 +796,9 @@ def apply_player_ranks(match, threshold_days=1):
         summoner_qs = Summoner.objects.filter(q)
         summoner_list = [x for x in summoner_qs]
         summoners = {x.puuid: x for x in summoner_qs}
-        get_player_ranks(summoner_list, threshold_days=threshold_days, sync=True)
+        get_player_ranks(summoner_list, threshold_days=threshold_days, sync=False)
 
+        to_save = []
         for part in parts:
             if not part.tier:
                 # only applying if it is not already applied
@@ -804,10 +812,11 @@ def apply_player_ranks(match, threshold_days=1):
                         if query:
                             position = query[0]
                             part.rank, part.tier = position.rank, position.tier
-                            part.save()
+                            to_save.append(part)
             else:
                 # if any tiers are already applied, stop
                 return
+        Participant.objects.bulk_update(to_save, fields=['rank', 'tier'])
 
 
 PARTICIPANT_ROLE_KEYS = {
