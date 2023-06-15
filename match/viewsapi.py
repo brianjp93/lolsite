@@ -115,11 +115,31 @@ class AdvancedTimelineView(RetrieveAPIView):
 
     def get_object(self):
         _id = self.kwargs[self.lookup_field]
-        match = get_object_or_404(Match.objects.all().select_related('advancedtimeline'), _id=_id)
+        match = get_object_or_404(Match.objects.all(), _id=_id)
         if not getattr(match, 'advancedtimeline', None):
             mt.import_advanced_timeline(match.id)
-            match.refresh_from_db()
-        return getattr(match, 'advancedtimeline', None)
+
+        qs = AdvancedTimeline.objects.filter(match___id=_id).prefetch_related(
+            'frames',
+            'frames__participantframes',
+            'frames__wardkillevent_set',
+            'frames__wardplacedevent_set',
+            'frames__levelupevent_set',
+            'frames__skilllevelupevent_set',
+            'frames__itempurchasedevent_set',
+            'frames__itemdestroyedevent_set',
+            'frames__itemsoldevent_set',
+            'frames__itemundoevent_set',
+            'frames__turretplatedestroyedevent_set',
+            'frames__elitemonsterkillevent_set',
+            'frames__championspecialkillevent_set',
+            'frames__buildingkillevent_set',
+            'frames__gameendevent_set',
+            'frames__championkillevent_set',
+            'frames__championkillevent_set__victimdamagereceived_set',
+            'frames__championkillevent_set__victimdamagedealt_set',
+        )
+        return qs.first()
 
 
 class MatchBanListView(ListAPIView):

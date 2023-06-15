@@ -470,6 +470,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         logger.info('Parsed AdvancedTimeline successfully.')
         data = parsed.info
         at = AdvancedTimeline(match=match, frame_interval=data.frameInterval)
+        start_writing = time.perf_counter()
         at.save()
 
         for fm in data.frames:
@@ -716,6 +717,8 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         BuildingKillEvent.objects.bulk_create(building_kill_events)
         VictimDamageDealt.objects.bulk_create(victim_damage_dealt_events)
         VictimDamageReceived.objects.bulk_create(victim_damage_received_events)
+        end_writing = time.perf_counter()
+        logger.info(f"Writing Advanced Timeline took {end_writing - start_writing}.")
 
 
 def import_spectate_from_data(data: dict, region: str):

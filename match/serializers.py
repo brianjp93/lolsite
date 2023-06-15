@@ -702,24 +702,7 @@ class FrameSerializer(serializers.ModelSerializer):
 
     def __new__(cls, instance=None, *args, **kwargs):
         if isinstance(instance, QuerySet):
-            instance = instance.prefetch_related(
-                "participantframes",
-                "wardkillevent_set",
-                "wardplacedevent_set",
-                "levelupevent_set",
-                "skilllevelupevent_set",
-                "itempurchasedevent_set",
-                "itemdestroyedevent_set",
-                "itemundoevent_set",
-                "turretplatedestroyedevent_set",
-                "elitemonsterkillevent_set",
-                "championspecialkillevent_set",
-                "buildingkillevent_set",
-                "gameendevent_set",
-                "championkillevent_set",
-                "championkillevent_set__victimdamagedealt_set",
-                "championkillevent_set__victimdamagereceived_set",
-            ).order_by('timestamp')
+            instance = instance.order_by('timestamp')
         return super().__new__(cls, instance, *args, **kwargs)
 
 
