@@ -185,6 +185,12 @@ class ParticipantModel(BaseModelWithLogger):
     wardsKilled: int = 0
     wardsPlaced: int = 0
     win: bool
+    playerAugment1: int = 0
+    playerAugment2: int = 0
+    playerAugment3: int = 0
+    playerAugment4: int = 0
+    playerSubteamId: int = 0
+    subteamPlacement: int = 0
 
     @property
     def simple_name(self):
