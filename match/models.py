@@ -219,7 +219,7 @@ class Participant(models.Model):
     match = models.ForeignKey(
         "Match", on_delete=models.CASCADE, related_name="participants"
     )
-    _id = models.IntegerField(db_index=True)  # participantID
+    _id = models.IntegerField()  # participantID
 
     summoner_id = models.CharField(
         max_length=128, default="", blank=True, null=True
@@ -573,7 +573,7 @@ class Frame(models.Model):
     timeline = models.ForeignKey(
         "AdvancedTimeline", on_delete=models.CASCADE, related_name="frames"
     )
-    timestamp = models.IntegerField(null=True, blank=True, db_index=True)
+    timestamp = models.IntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ['timestamp']
