@@ -1,8 +1,8 @@
-from django.http import HttpRequest
+from django.http import Http404, HttpRequest
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import exceptions
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from data import constants
 
@@ -11,7 +11,7 @@ from .models import Champion, Item
 
 from match.models import Match
 
-from .serializers import ItemSerializer
+from .serializers import ItemSerializer, SimpleItemSerializer
 from .serializers import ReforgedRuneSerializer, ChampionSerializer
 from .serializers import ChampionSpellSerializer, BasicChampionWithImageSerializer
 
@@ -77,6 +77,24 @@ def get_item(request, format=None):
         data["data"] = serialized_items
 
     return Response(data, status=status_code)
+
+
+class SimpleItemRetrieveView(RetrieveAPIView):
+    queryset = Item.objects.all().select_related('image', 'gold')
+    serializer_class = SimpleItemSerializer
+
+    def get_object(self):
+        qs = self.get_queryset()
+        _id = self.kwargs['_id']
+        major = self.kwargs['major']
+        minor = self.kwargs['minor']
+        if item := qs.filter(_id=_id, major=major, minor=minor).first():
+            return item
+
+        if item := qs.filter(_id).order_by('-major', '-minor').first():
+            return item
+
+        raise Http404
 
 
 @api_view(['GET'])

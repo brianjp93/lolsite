@@ -86,6 +86,22 @@ class ItemSerializer(serializers.ModelSerializer):
         return super().__new__(cls, instance, *args, **kwargs)
 
 
+class SimpleItemSerializer(serializers.ModelSerializer):
+    gold = ItemGoldSerializer()
+    image = ItemImageSerializer()
+
+    class Meta:
+        model = Item
+        fields = (
+            'id',
+            'name',
+            'description',
+            '_id',
+            'gold',
+            'image',
+        )
+
+
 class ReforgedRuneSerializer(serializers.ModelSerializer):
     image_url = serializers.CharField()
 
