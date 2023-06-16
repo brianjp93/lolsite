@@ -13,6 +13,9 @@ from player.models import Summoner, simplify
 
 import logging
 
+from player.tasks import import_summoner
+from player.utils import handle_multiple_summoners
+
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +77,9 @@ def _get_summoner_meta_data(name: str, region: str):
     meta = META.copy()
     name = simplify(name)
     qs = Summoner.objects.filter(region=region, simple_name=name)
+    if len(qs) > 1:
+        handle_multiple_summoners(name, region)
+        qs = Summoner.objects.filter(region=region, simple_name=name)
     wins = 0
     kills = 0
     deaths = 0
@@ -156,6 +162,8 @@ def _get_match_meta_data(name: str, region: str, match_id: str):
     except Summoner.DoesNotExist:
         logger.exception('Could not find summoner.')
         return
+    except Summoner.MultipleObjectsReturned:
+        summoner = handle_multiple_summoners(name, region)
     try:
         match = Match.objects.get(_id=match_id)
     except Match.DoesNotExist:
