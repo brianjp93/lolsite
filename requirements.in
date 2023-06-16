@@ -1,9 +1,8 @@
 beautifulsoup4==4.7.1
 boto3==1.18
-cached-property<1.6
 celery<5.3
 dj-database-url
-django>4,<4.2
+django>=4.2,<4.3
 django-debug-toolbar
 django-cors-headers
 django-extensions<3.1
@@ -18,7 +17,7 @@ gunicorn
 hypothesis
 lolwrapper==1.5.1
 Pillow>=9.0.0
-psycopg2-binary<3
+psycopg[binary]
 python-decouple<=3.3
 pydantic
 redis<5

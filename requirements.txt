@@ -6,7 +6,7 @@
 #
 amqp==5.1.1
     # via kombu
-asgiref==3.5.2
+asgiref==3.7.2
     # via django
 async-timeout==4.0.2
     # via redis
@@ -22,8 +22,6 @@ botocore==1.21.65
     # via
     #   boto3
     #   s3transfer
-cached-property==1.5.2
-    # via -r requirements.in
 celery==5.2.7
     # via -r requirements.in
 certifi==2022.12.7
@@ -48,7 +46,7 @@ deprecated==1.2.13
     # via redis
 dj-database-url==1.0.0
     # via -r requirements.in
-django==4.1.6
+django==4.2.2
     # via
     #   -r requirements.in
     #   dj-database-url
@@ -62,7 +60,7 @@ django==4.1.6
     #   djangorestframework
 django-cors-headers==3.13.0
     # via -r requirements.in
-django-debug-toolbar==3.8.1
+django-debug-toolbar==4.1.0
     # via -r requirements.in
 django-extensions==3.0.9
     # via -r requirements.in
@@ -70,7 +68,7 @@ django-filter==22.1
     # via -r requirements.in
 django-redis==5.2.0
     # via -r requirements.in
-django-storages==1.13.1
+django-storages==1.13.2
     # via -r requirements.in
 django-stubs[compatible-mypy]==1.14.0
     # via -r requirements.in
@@ -108,9 +106,11 @@ pillow==9.3.0
     # via -r requirements.in
 prompt-toolkit==3.0.31
     # via click-repl
-psycopg2-binary==2.9.5
+psycopg[binary]==3.1.9
     # via -r requirements.in
-pydantic==1.10.2
+psycopg-binary==3.1.9
+    # via psycopg
+pydantic==1.10.9
     # via -r requirements.in
 pyparsing==3.0.9
     # via packaging
@@ -159,6 +159,7 @@ typing-extensions==4.4.0
     #   django-stubs
     #   django-stubs-ext
     #   mypy
+    #   psycopg
     #   pydantic
 urllib3==1.26.12
     # via
