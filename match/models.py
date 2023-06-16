@@ -110,7 +110,7 @@ class MatchQuerySet(models.QuerySet['Match']):
 
     def get_spell_images(self):
         spell_ids = set()
-        for match in self.prefetch_related("participants"):
+        for match in self:
             for part in match.participants.all():
                 spell_ids.add(part.summoner_1_id)
                 spell_ids.add(part.summoner_2_id)
@@ -132,7 +132,7 @@ class MatchQuerySet(models.QuerySet['Match']):
 
     def get_runes(self):
         all_runes = set()
-        for match in self.prefetch_related("participants"):
+        for match in self:
             for part in match.participants.all():
                 for _i in range(6):
                     all_runes.add(getattr(part.stats, f"perk_{_i}"))

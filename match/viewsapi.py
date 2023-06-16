@@ -195,10 +195,8 @@ class ParticipantsView(ListAPIView):
             match_qs = Match.objects.filter(id=match_id)
         else:
             match_qs = Match.objects.filter(_id=match__id)
-        self.match_qs = match_qs
-        self.match = get_object_or_404(match_qs)
-        self.qs = self.match.participants.all().select_related('stats')
-        return self.qs
+        self.match_qs = match_qs.prefetch_related("participants", "participants__stats", 'teams__bans')
+        self.match = get_object_or_404(self.match_qs)
 
     def get(self, *args, **kwargs):
         self.get_queryset()
