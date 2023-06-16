@@ -265,3 +265,9 @@ def remove_old_email_verification(age_hours=1):
     thresh = timezone.now() - timezone.timedelta(hours=age_hours)
     query = EmailVerification.objects.filter(created_date__lt=thresh)
     query.delete()
+
+
+def handle_multiple_summoners(name: str, region: str):
+    for summoner in Summoner.objects.filter(region=region, simple_name=name):
+        import_summoner(region, name=summoner.simple_name)
+    return Summoner.objects.get(region=region, simple_name=name)

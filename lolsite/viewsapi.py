@@ -13,8 +13,7 @@ from player.models import Summoner, simplify
 
 import logging
 
-from player.tasks import import_summoner
-from player.utils import handle_multiple_summoners
+from player.tasks import handle_multiple_summoners
 
 
 logger = logging.getLogger(__name__)
