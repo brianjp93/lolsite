@@ -27,16 +27,20 @@ hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
 INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("LOLSITE_DB_NAME"),
-        "USER": config("LOLSITE_DB_USER"),
-        "HOST": config("LOLSITE_DB_HOST"),
-        "PORT": config("LOLSITE_DB_PORT"),
-        "PASSWORD": config("LOLSITE_DB_PASS", ''),
+if config("DATABASE_URL", ''):
+    import dj_database_url
+    DATABASES = {'default': dj_database_url.config()}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("LOLSITE_DB_NAME"),
+            "USER": config("LOLSITE_DB_USER"),
+            "HOST": config("LOLSITE_DB_HOST"),
+            "PORT": config("LOLSITE_DB_PORT"),
+            "PASSWORD": config("LOLSITE_DB_PASS", ''),
+        }
     }
-}
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")

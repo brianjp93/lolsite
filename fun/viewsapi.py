@@ -15,8 +15,7 @@ def get_inspirational_message(request, format=None):
     status_code = 200
     if request.method == "GET":
         query = InspirationalMessage.objects.all().order_by("-created_date")
-        if query.exists():
-            total = query.count()
+        if total := query.count():
             index = randint(0, total - 1)
             insp = query[index]
             serializer = InspirationalMessageSerializer(insp)

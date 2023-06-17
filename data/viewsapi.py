@@ -331,7 +331,7 @@ class BasicChampionView(ListAPIView):
                 major=champ.major,
                 minor=champ.minor,
                 patch=champ.patch
-            ).distinct('key')
+            ).distinct('key').select_related('image')
         return Champion.objects.none()
 
 
