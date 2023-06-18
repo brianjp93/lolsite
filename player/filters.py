@@ -59,6 +59,8 @@ def get_summoner_champions_overview(
     if minor_version is not None:
         query = query.filter(participant__match__minor=minor_version)
     if queue_in:
+        if not isinstance(queue_in, list):
+            queue_in = [queue_in]
         query = query.filter(participant__match__queue_id__in=queue_in)
     if start_datetime is not None:
         start_dt = parse_datetime(start_datetime)

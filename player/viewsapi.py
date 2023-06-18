@@ -261,7 +261,7 @@ def get_summoner_champions_overview(request, format=None):
         "major_version": request.query_params.get("major_version", None),
         "minor_version": request.query_params.get("minor_version", None),
         "season": request.query_params.get("season", None),
-        "queue_in": request.query_params.get("queue_in", None),
+        "queue_in": request.query_params.get("queue_in[]", None),
         "start_datetime": request.query_params.get("start_datetime", None),
         "end_datetime": request.query_params.get("end_datetime", None),
         "fields": request.query_params.get("fields", []),
