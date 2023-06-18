@@ -250,30 +250,6 @@ def verify_email(request, format=None):
 
 @api_view(["GET"])
 def get_summoner_champions_overview(request, format=None):
-    """Get overview stats for summoner champions.
-
-    GET Parameters
-    ---------------
-    summoner_id : ID
-        Internal DB ID
-    major_version : int
-    minor_version : int
-    season : int
-    queue_in : list
-        `Ex: [420, 410]`
-    order_by : str
-    start_datetime : ISO Datetime
-    end_datetime : ISO Datetime
-    start : int
-    end : int
-    fields : list[str]
-        leave empty to return all fields
-
-    Returns
-    -------
-    JSON
-
-    """
     data = {}
     status_code = 200
 
