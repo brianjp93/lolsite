@@ -248,11 +248,11 @@ def verify_email(request, format=None):
     return Response(data, status=status_code)
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 def get_summoner_champions_overview(request, format=None):
     """Get overview stats for summoner champions.
 
-    POST Parameters
+    GET Parameters
     ---------------
     summoner_id : ID
         Internal DB ID
@@ -277,28 +277,25 @@ def get_summoner_champions_overview(request, format=None):
     data = {}
     status_code = 200
 
-    if request.method == "POST":
-        start = int(request.data.get("start", 0))
-        end = int(request.data.get("end", 5))
-        order_by = request.data.get("order_by", None)
-        kwargs = {
-            "puuid": request.data.get("puuid", None),
-            "major_version": request.data.get("major_version", None),
-            "minor_version": request.data.get("minor_version", None),
-            "season": request.data.get("season", None),
-            "queue_in": request.data.get("queue_in", None),
-            "start_datetime": request.data.get("start_datetime", None),
-            "end_datetime": request.data.get("end_datetime", None),
-            "fields": request.data.get("fields", []),
-        }
-        query = player_filters.get_summoner_champions_overview(**kwargs)
-        if order_by is not None:
-            query = query.order_by(order_by)
-        count = query.count()
-        query = query[start:end]
-        data = {"data": query, "count": count}
-    else:
-        data = {"message": "Must use POST for this resource."}
+    start = int(request.query_params.get("start", 0))
+    end = int(request.query_params.get("end", 5))
+    order_by = request.query_params.get("order_by", None)
+    kwargs = {
+        "puuid": request.query_params.get("puuid", None),
+        "major_version": request.query_params.get("major_version", None),
+        "minor_version": request.query_params.get("minor_version", None),
+        "season": request.query_params.get("season", None),
+        "queue_in": request.query_params.get("queue_in", None),
+        "start_datetime": request.query_params.get("start_datetime", None),
+        "end_datetime": request.query_params.get("end_datetime", None),
+        "fields": request.query_params.get("fields", []),
+    }
+    query = player_filters.get_summoner_champions_overview(**kwargs)
+    if order_by is not None:
+        query = query.order_by(order_by)
+    count = query.count()
+    query = query[start:end]
+    data = {"data": query, "count": count}
 
     return Response(data, status=status_code)
 
