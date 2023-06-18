@@ -28,7 +28,6 @@ urlpatterns = [
     path("positions/", player_views.get_positions),
     path("sign-up/", player_views.sign_up),
     path("verify/", player_views.verify_email),
-    path("is-logged-in/", player_views.is_logged_in),
     path("rank-history/", player_views.get_rank_history),
     path("favorites/", player_views.favorites),
     path("generate-code/", player_views.generate_code),

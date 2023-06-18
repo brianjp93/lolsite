@@ -9,7 +9,6 @@ urlpatterns = [
     path("data/", include('data.urlsapi')),
     path("match/", include('match.urlsapi')),
     path("notification/", include('notification.urlsapi')),
-    path("get-csrf/", lolsite_views.get_csrf_token),
     path("summoner-metadata/<str:region>/<str:name>/", lolsite_views.get_summoner_meta_data),
     path("match-metadata/<str:region>/<str:name>/<str:match_id>/", lolsite_views.get_match_meta_data),
 ]

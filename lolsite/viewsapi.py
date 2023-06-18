@@ -66,12 +66,6 @@ def require_login(func):
     return wrapper
 
 
-@api_view(['GET'])
-def get_csrf_token(request, format=None):
-    token = get_token(request)
-    return Response(token)
-
-
 def _get_summoner_meta_data(name: str, region: str):
     meta = META.copy()
     name = simplify(name)

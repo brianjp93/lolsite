@@ -323,21 +323,6 @@ def summoner_search(request: Request, format=None):
 
 
 @api_view(["POST"])
-def is_logged_in(request, format=None):
-    """Check if a user is logged in.
-
-    Returns
-    -------
-    JSON Response
-
-    """
-    status_code = 200
-    is_authenticated = request.user.is_authenticated
-    data = {"data": {"is_logged_in": is_authenticated}}
-    return Response(data, status=status_code)
-
-
-@api_view(["POST"])
 def get_rank_history(request, format=None):
     """Get a history of a player's rank.
 
