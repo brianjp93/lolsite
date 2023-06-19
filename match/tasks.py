@@ -1,6 +1,5 @@
 """match/tasks.py
 """
-from celery import group
 from django.db.utils import IntegrityError
 from django.db.models import Count, Subquery, OuterRef
 from django.db.models import Case, When, Sum
@@ -8,6 +7,8 @@ from django.db.models import IntegerField, Q, F
 from django.utils import timezone
 from django.db import connections, transaction
 from pydantic import ValidationError
+
+from match.parsers.spectate import SpectateModel
 
 from .parsers.match import MatchResponseModel, ParticipantModel
 from .parsers.timeline import TimelineResponseModel
@@ -721,12 +722,12 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         logger.info(f"Writing Advanced Timeline took {end_writing - start_writing}.")
 
 
-def import_spectate_from_data(data: dict, region: str):
+def import_spectate_from_data(parsed: SpectateModel, region: str):
     spectate_data = {
-        "game_id": data["gameId"],
+        "game_id": parsed.gameId,
         "region": region,
-        "platform_id": data["platformId"],
-        "encryption_key": data["observers"]["encryptionKey"],
+        "platform_id": parsed.platformId,
+        "encryption_key": parsed.observers.encryptionKey,
     }
     spectate = Spectate(**spectate_data)
     try:
@@ -736,32 +737,22 @@ def import_spectate_from_data(data: dict, region: str):
         pass
 
 
-def import_summoners_from_spectate(data, region):
-    """
-
-    Returns
-    -------
-    dict
-        A mapping from the encrypted summoner ID to the internal ID
-        {summoner._id: summoner.id}
-
-    """
+def import_summoners_from_spectate(parsed: SpectateModel, region):
     summoners = {}
-    for part in data["participants"]:
-        summoner_id = part["summonerId"]
-        if summoner_id:
+    for part in parsed.participants:
+        if part.summonerId:
             sum_data = {
-                "name": part["summonerName"],
+                "name": part.summonerName,
                 "region": region,
-                "profile_icon_id": part["profileIconId"],
-                "_id": part["summonerId"],
+                "profile_icon_id": part.profileIconId,
+                "_id": part.summonerId,
             }
             summoner = Summoner(**sum_data)
             try:
                 summoner.save()
                 summoners[summoner._id] = summoner.id
             except IntegrityError:
-                if summoner := Summoner.objects.filter(region=region, _id=summoner_id).first():
+                if summoner := Summoner.objects.filter(region=region, _id=part.summonerId).first():
                     summoners[summoner._id] = summoner.id
     return summoners
 

@@ -9,6 +9,7 @@ from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 from data import constants
 from match import tasks as mt
+from match.parsers.spectate import SpectateModel
 
 from .models import Match, AdvancedTimeline
 from .models import Participant, sort_positions, Ban
@@ -229,17 +230,18 @@ def get_spectate(request, format=None):
         region = request.data["region"]
         api = get_riot_api()
         r = api.spectator.get(summoner_id, region)
-        spectate_data = r.json()
         if r.status_code == 404:
             data = {"message": "No live game found."}
             status_code = 404
         else:
-            mt.import_spectate_from_data(spectate_data, region)
-            summoners = mt.import_summoners_from_spectate(spectate_data, region)
+            parsed = SpectateModel.parse_raw(r.content)
+            mt.import_spectate_from_data(parsed, region)
+            summoners = mt.import_summoners_from_spectate(parsed, region)
 
             for x in summoners.values():
                 pt.import_positions(x, threshold_days=3)
 
+            spectate_data = parsed.dict()
             for part in spectate_data["participants"]:
                 positions = None
                 query = Summoner.objects.filter(region=region, _id=part["summonerId"])
