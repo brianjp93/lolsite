@@ -245,9 +245,12 @@ def get_spectate(request, format=None):
                 query = Summoner.objects.filter(region=region, _id=part["summonerId"])
                 if summoner := query.first():
                     checkpoint = summoner.get_newest_rank_checkpoint()
-                    positions = RankPositionSerializer(
-                        checkpoint.positions.all(), many=True
-                    ).data
+                    if checkpoint:
+                        positions = RankPositionSerializer(
+                            checkpoint.positions.all(), many=True
+                        ).data
+                    else:
+                        positions = []
                     positions = sort_positions(positions)
                 part["positions"] = positions
 

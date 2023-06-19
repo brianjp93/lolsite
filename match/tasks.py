@@ -229,10 +229,10 @@ def ranked_import(name=None, puuid=None, region=None, **kwargs):
 
 
 def pool_match_import(match_id: str, region: str, close_connections=True):
-    if close_connections:
-        connections.close_all()
     match_json = fetch_match_json(match_id, region)
     import_match_from_data(match_json, region)
+    if close_connections:
+        connections.close_all()
 
 
 @app.task(name="match.tasks.import_recent_matches")
