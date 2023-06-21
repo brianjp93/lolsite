@@ -824,6 +824,7 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
             "summoner_2_image",
             "champion_id",
             "stats",
+            "team_position",
         ]
 
     def __init__(self, instance=None, extra=None, **kwargs):
