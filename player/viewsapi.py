@@ -532,7 +532,7 @@ def generate_code(request, format=None):
                 version = Champion.objects.first().get_newest_version()
                 icon = ProfileIcon.objects.get(_id=icon_id, version=version)
                 icon_data = ProfileIconSerializer(icon, many=False).data
-                data = {"uuid": link.uuid, "icon": icon_data}
+                data = {"uuid": link.uuid, "icon": icon_data, "summoner_name": summoner.name}
             else:
                 data = {"message": 'action must be "create" or "get".'}
                 status_code = 400
@@ -695,7 +695,7 @@ def connect_account_with_profile_icon(request, format=None):
                         else:
                             data = {
                                 "success": False,
-                                "message": "The profile icon was incorrect.",
+                                "message": "The profile icon set on the Summoner was incorrect.",
                             }
                     else:
                         # no summonerlink exists
