@@ -1,3 +1,4 @@
+from django.db.models import Exists, OuterRef
 from django.http import Http404, HttpRequest
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -6,7 +7,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from data import constants
 
-from .models import ReforgedRune, ReforgedTree
+from .models import ItemMap, ReforgedRune, ReforgedTree
 from .models import Champion, Item
 
 from match.models import Match
@@ -18,6 +19,10 @@ from .serializers import ChampionSpellSerializer, BasicChampionWithImageSerializ
 from lolsite.helpers import query_debugger, LargeResultsSetPagination
 from django.core.cache import cache
 from django.conf import settings
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(["POST"])
@@ -122,33 +127,16 @@ def get_item_history(request, _id, format=None):
     return Response(data)
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 def all_items(request, format=None):
-    """Get all items for a version.
-
-    USING CACHE
-
-    POST Parameters
-    ---------------
-    major : int
-        Version - major
-    minor : int
-        Version - minor
-    patch : str
-        Version - exact patch string
-
-    Returns
-    -------
-    JSON String
-
-    """
     data = {}
     status_code = 200
     # 120 minute cache
 
-    major = request.data.get("major", None)
-    minor = request.data.get("minor", None)
-    patch = request.data.get("patch", None)
+    major = request.query_params.get("major", None)
+    minor = request.query_params.get("minor", None)
+    patch = request.query_params.get("patch", None)
+    map_id = request.query_params.get("map_id", None)
 
     if patch is not None:
         version = patch
@@ -160,7 +148,13 @@ def all_items(request, format=None):
     else:
         version = f"{major}.{minor}.1"
 
+    logger.info(f"Filtering for items in {version=}")
+
     query = Item.objects.filter(version=version)
+    if map_id is not None:
+        query = query.filter(
+            Exists(ItemMap.objects.filter(item=OuterRef('id'), key=map_id, value=True))
+        )
     items = ItemSerializer(query, many=True).data
     if items:
         data = {"data": items, "version": version}
