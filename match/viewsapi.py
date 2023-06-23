@@ -268,26 +268,18 @@ def get_spectate(request, format=None):
     return Response(data, status=status_code)
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 def check_for_live_game(request, format=None):
-    """Quickly check if a summoner is in a game.
-
-    Returns
-    -------
-    Riot Spectate JSON Response
-
-    """
-    data = {}
+    summoner_id = request.query_params["summoner_id"]
+    region = request.query_params["region"]
+    api = get_riot_api()
+    r = api.spectator.get(summoner_id, region)
+    if 200 <= r.status_code < 300:
+        spectate_model = SpectateModel.parse_raw(r.content)
+        data = spectate_model.dict()
+    else:
+        data = "not found"
     status_code = 200
-
-    if request.method == "POST":
-        summoner_id = request.data["summoner_id"]
-        region = request.data["region"]
-        api = get_riot_api()
-        r = api.spectator.get(summoner_id, region)
-        data = {"data": r.json()}
-        status_code = r.status_code
-
     return Response(data, status=status_code)
 
 
