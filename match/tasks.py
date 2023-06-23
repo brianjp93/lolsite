@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 from match.parsers.spectate import SpectateModel
 
-from .parsers.match import MatchResponseModel, ParticipantModel
+from .parsers.match import BanType, MatchModel, MatchResponseModel, ParticipantModel, TeamModel
 from .parsers.timeline import TimelineResponseModel
 from .parsers import timeline as tmparsers
 
@@ -840,6 +840,169 @@ def get_sorted_participants(match, participants=None):
     return ordered
 
 
+def build_participant(part: ParticipantModel, match: Match):
+    return Participant(
+        match=match,
+        _id=part.participantId,
+        summoner_id=part.summonerId,
+        puuid=part.puuid,
+        summoner_name=part.summonerName,
+        summoner_name_simplified=part.simple_name,
+        champion_id=part.championId,
+        champ_experience=part.champExperience,
+        summoner_1_id=part.summoner1Id,
+        summoner_1_casts=part.summoner1Casts,
+        summoner_2_id=part.summoner2Id,
+        summoner_2_casts=part.summoner2Casts,
+        team_id=part.teamId,
+        lane=part.lane,
+        role=part.role,
+        individual_position=part.individualPosition,
+        team_position=part.teamPosition,
+    )
+
+def build_team(team: TeamModel, match: Match):
+    return Team(
+        match=match,
+        _id=team.teamId,
+        baron_kills=team.objectives.baron.kills,
+        first_baron=team.objectives.baron.first,
+        dragon_kills=team.objectives.dragon.kills,
+        first_dragon=team.objectives.dragon.first,
+        first_blood=team.objectives.champion.first,
+        first_inhibitor=team.objectives.inhibitor.first,
+        inhibitor_kills=team.objectives.inhibitor.kills,
+        first_rift_herald=team.objectives.riftHerald.first,
+        rift_herald_kills=team.objectives.riftHerald.kills,
+        first_tower=team.objectives.tower.first,
+        tower_kills=team.objectives.tower.kills,
+        win=team.win,
+    )
+
+def build_ban(ban: BanType, team: Team):
+    return Ban(
+        champion_id=ban.championId,
+        pick_turn=ban.pickTurn,
+        team=team,
+    )
+
+def build_stats(part: ParticipantModel):
+    return Stats(
+        # participant=participant_model,
+
+        all_in_pings=part.allInPings,
+        assist_me_pings=part.assistMePings,
+        bait_pings=part.baitPings,
+        basic_pings=part.basicPings,
+        command_pings=part.commandPings,
+        danger_pings=part.dangerPings,
+        enemy_missing_pings=part.enemyMissingPings,
+        enemy_vision_pings=part.enemyVisionPings,
+        get_back_pings=part.getBackPings,
+        hold_pings=part.holdPings,
+        need_vision_pings=part.needVisionPings,
+        on_my_way_pings=part.onMyWayPings,
+        push_pings=part.pushPings,
+        vision_cleared_pings=part.visionClearedPings,
+
+        game_ended_in_early_surrender=part.gameEndedInEarlySurrender,
+        game_ended_in_surrender=part.gameEndedInSurrender,
+        riot_id_name=part.riotIdName,
+        riot_id_tagline=part.riotIdTagline,
+
+        assists=part.assists,
+        champ_level=part.champLevel,
+        damage_dealt_to_objectives=part.damageDealtToObjectives,
+        damage_dealt_to_turrets=part.damageDealtToTurrets,
+        damage_self_mitigated=part.damageSelfMitigated,
+        deaths=part.deaths,
+        double_kills=part.doubleKills,
+        first_blood_assist=part.firstBloodAssist,
+        first_blood_kill=part.firstBloodKill,
+        first_tower_assist=part.firstTowerAssist,
+        first_tower_kill=part.firstTowerKill,
+        gold_earned=part.goldEarned,
+        inhibitor_kills=part.inhibitorKills,
+        item_0=part.item0,
+        item_1=part.item1,
+        item_2=part.item2,
+        item_3=part.item3,
+        item_4=part.item4,
+        item_5=part.item5,
+        item_6=part.item6,
+        killing_sprees=part.killingSprees,
+        kills=part.kills,
+        largest_critical_strike=part.largestCriticalStrike,
+        largest_killing_spree=part.largestKillingSpree,
+        largest_multi_kill=part.largestMultiKill,
+        longest_time_spent_living=part.longestTimeSpentLiving,
+        magic_damage_dealt=part.magicDamageDealt,
+        magic_damage_dealt_to_champions=part.magicDamageDealtToChampions,
+        magical_damage_taken=part.magicDamageTaken,
+        neutral_minions_killed=part.neutralMinionsKilled,
+        penta_kills=part.pentaKills,
+        stat_perk_0=part.stat_perk_0,
+        stat_perk_1=part.stat_perk_1,
+        stat_perk_2=part.stat_perk_2,
+        perk_0=part.perks.primary_style.selections[0].perk,
+        perk_1=part.perks.primary_style.selections[1].perk,
+        perk_2=part.perks.primary_style.selections[2].perk,
+        perk_3=part.perks.primary_style.selections[3].perk,
+        perk_4=part.perks.sub_style.selections[0].perk,
+        perk_5=part.perks.sub_style.selections[1].perk,
+
+        perk_0_var_1=part.perks.primary_style.selections[0].var1,
+        perk_1_var_1=part.perks.primary_style.selections[1].var1,
+        perk_2_var_1=part.perks.primary_style.selections[2].var1,
+        perk_3_var_1=part.perks.primary_style.selections[3].var1,
+        perk_4_var_1=part.perks.sub_style.selections[0].var1,
+        perk_5_var_1=part.perks.sub_style.selections[1].var1,
+
+        perk_0_var_2=part.perks.primary_style.selections[0].var2,
+        perk_1_var_2=part.perks.primary_style.selections[1].var2,
+        perk_2_var_2=part.perks.primary_style.selections[2].var2,
+        perk_3_var_2=part.perks.primary_style.selections[3].var2,
+        perk_4_var_2=part.perks.sub_style.selections[0].var2,
+        perk_5_var_2=part.perks.sub_style.selections[1].var2,
+
+        perk_0_var_3=part.perks.primary_style.selections[0].var3,
+        perk_1_var_3=part.perks.primary_style.selections[1].var3,
+        perk_2_var_3=part.perks.primary_style.selections[2].var3,
+        perk_3_var_3=part.perks.primary_style.selections[3].var3,
+        perk_4_var_3=part.perks.sub_style.selections[0].var3,
+        perk_5_var_3=part.perks.sub_style.selections[1].var3,
+
+        perk_primary_style=part.perks.primary_style.style,
+        perk_sub_style=part.perks.sub_style.style,
+        spell_1_casts=part.spell1Casts,
+        spell_2_casts=part.spell2Casts,
+        spell_3_casts=part.spell3Casts,
+        spell_4_casts=part.spell4Casts,
+        time_ccing_others=part.timeCCingOthers,
+        total_damage_dealt=part.totalDamageDealt,
+        total_damage_dealt_to_champions=part.totalDamageDealtToChampions,
+        total_damage_taken=part.totalDamageTaken,
+        total_damage_shielded_on_teammates=part.totalDamageShieldedOnTeammates,
+        total_heal=part.totalHeal,
+        total_heals_on_teammates=part.totalHealsOnTeammates,
+        total_minions_killed=part.totalMinionsKilled,
+        total_time_crowd_control_dealt=part.totalTimeCCDealt,
+        total_units_healed=part.totalUnitsHealed,
+        total_ally_jungle_minions_killed=part.totalAllyJungleMinionsKilled or 0,
+        total_enemy_jungle_minions_killed=part.totalEnemyJungleMinionsKilled or 0,
+        triple_kills=part.tripleKills,
+        true_damage_dealt=part.trueDamageDealt,
+        true_damage_dealt_to_champions=part.trueDamageDealtToChampions,
+        true_damage_taken=part.trueDamageTaken,
+        turret_kills=part.turretKills,
+        unreal_kills=part.unrealKills,
+        vision_score=part.visionScore,
+        vision_wards_bought_in_game=part.visionWardsBoughtInGame,
+        wards_killed=part.wardsKilled,
+        wards_placed=part.wardsPlaced,
+        win=part.win,
+    )
+
 @transaction.atomic()
 def import_match_from_data(data, region: str, refresh=False):
     try:
@@ -881,174 +1044,30 @@ def import_match_from_data(data, region: str, refresh=False):
     participants_data = info.participants
     import_summoner_from_participant(participants_data, region)
 
+    participants: list[Participant] = []
+    stats: list[Stats] = []
     for part in participants_data:
         # PARTICIPANT
-        participant_model = Participant(
-            match=match_model,
-            _id=part.participantId,
-            summoner_id=part.summonerId,
-            puuid=part.puuid,
-            summoner_name=part.summonerName,
-            summoner_name_simplified=part.simple_name,
-            champion_id=part.championId,
-            champ_experience=part.champExperience,
-            summoner_1_id=part.summoner1Id,
-            summoner_1_casts=part.summoner1Casts,
-            summoner_2_id=part.summoner2Id,
-            summoner_2_casts=part.summoner2Casts,
-            team_id=part.teamId,
-            lane=part.lane,
-            role=part.role,
-            individual_position=part.individualPosition,
-            team_position=part.teamPosition,
-        )
-        participant_model.save()
+        participant_model = build_participant(part, match_model)
+        participants.append(participant_model)
 
         # STATS
-        stats_model = Stats(
-            participant=participant_model,
-
-            all_in_pings=part.allInPings,
-            assist_me_pings=part.assistMePings,
-            bait_pings=part.baitPings,
-            basic_pings=part.basicPings,
-            command_pings=part.commandPings,
-            danger_pings=part.dangerPings,
-            enemy_missing_pings=part.enemyMissingPings,
-            enemy_vision_pings=part.enemyVisionPings,
-            get_back_pings=part.getBackPings,
-            hold_pings=part.holdPings,
-            need_vision_pings=part.needVisionPings,
-            on_my_way_pings=part.onMyWayPings,
-            push_pings=part.pushPings,
-            vision_cleared_pings=part.visionClearedPings,
-
-            game_ended_in_early_surrender=part.gameEndedInEarlySurrender,
-            game_ended_in_surrender=part.gameEndedInSurrender,
-            riot_id_name=part.riotIdName,
-            riot_id_tagline=part.riotIdTagline,
-
-            assists=part.assists,
-            champ_level=part.champLevel,
-            damage_dealt_to_objectives=part.damageDealtToObjectives,
-            damage_dealt_to_turrets=part.damageDealtToTurrets,
-            damage_self_mitigated=part.damageSelfMitigated,
-            deaths=part.deaths,
-            double_kills=part.doubleKills,
-            first_blood_assist=part.firstBloodAssist,
-            first_blood_kill=part.firstBloodKill,
-            first_tower_assist=part.firstTowerAssist,
-            first_tower_kill=part.firstTowerKill,
-            gold_earned=part.goldEarned,
-            inhibitor_kills=part.inhibitorKills,
-            item_0=part.item0,
-            item_1=part.item1,
-            item_2=part.item2,
-            item_3=part.item3,
-            item_4=part.item4,
-            item_5=part.item5,
-            item_6=part.item6,
-            killing_sprees=part.killingSprees,
-            kills=part.kills,
-            largest_critical_strike=part.largestCriticalStrike,
-            largest_killing_spree=part.largestKillingSpree,
-            largest_multi_kill=part.largestMultiKill,
-            longest_time_spent_living=part.longestTimeSpentLiving,
-            magic_damage_dealt=part.magicDamageDealt,
-            magic_damage_dealt_to_champions=part.magicDamageDealtToChampions,
-            magical_damage_taken=part.magicDamageTaken,
-            neutral_minions_killed=part.neutralMinionsKilled,
-            penta_kills=part.pentaKills,
-            stat_perk_0=part.stat_perk_0,
-            stat_perk_1=part.stat_perk_1,
-            stat_perk_2=part.stat_perk_2,
-            perk_0=part.perks.primary_style.selections[0].perk,
-            perk_1=part.perks.primary_style.selections[1].perk,
-            perk_2=part.perks.primary_style.selections[2].perk,
-            perk_3=part.perks.primary_style.selections[3].perk,
-            perk_4=part.perks.sub_style.selections[0].perk,
-            perk_5=part.perks.sub_style.selections[1].perk,
-
-            perk_0_var_1=part.perks.primary_style.selections[0].var1,
-            perk_1_var_1=part.perks.primary_style.selections[1].var1,
-            perk_2_var_1=part.perks.primary_style.selections[2].var1,
-            perk_3_var_1=part.perks.primary_style.selections[3].var1,
-            perk_4_var_1=part.perks.sub_style.selections[0].var1,
-            perk_5_var_1=part.perks.sub_style.selections[1].var1,
-
-            perk_0_var_2=part.perks.primary_style.selections[0].var2,
-            perk_1_var_2=part.perks.primary_style.selections[1].var2,
-            perk_2_var_2=part.perks.primary_style.selections[2].var2,
-            perk_3_var_2=part.perks.primary_style.selections[3].var2,
-            perk_4_var_2=part.perks.sub_style.selections[0].var2,
-            perk_5_var_2=part.perks.sub_style.selections[1].var2,
-
-            perk_0_var_3=part.perks.primary_style.selections[0].var3,
-            perk_1_var_3=part.perks.primary_style.selections[1].var3,
-            perk_2_var_3=part.perks.primary_style.selections[2].var3,
-            perk_3_var_3=part.perks.primary_style.selections[3].var3,
-            perk_4_var_3=part.perks.sub_style.selections[0].var3,
-            perk_5_var_3=part.perks.sub_style.selections[1].var3,
-
-            perk_primary_style=part.perks.primary_style.style,
-            perk_sub_style=part.perks.sub_style.style,
-            spell_1_casts=part.spell1Casts,
-            spell_2_casts=part.spell2Casts,
-            spell_3_casts=part.spell3Casts,
-            spell_4_casts=part.spell4Casts,
-            time_ccing_others=part.timeCCingOthers,
-            total_damage_dealt=part.totalDamageDealt,
-            total_damage_dealt_to_champions=part.totalDamageDealtToChampions,
-            total_damage_taken=part.totalDamageTaken,
-            total_damage_shielded_on_teammates=part.totalDamageShieldedOnTeammates,
-            total_heal=part.totalHeal,
-            total_heals_on_teammates=part.totalHealsOnTeammates,
-            total_minions_killed=part.totalMinionsKilled,
-            total_time_crowd_control_dealt=part.totalTimeCCDealt,
-            total_units_healed=part.totalUnitsHealed,
-            total_ally_jungle_minions_killed=part.totalAllyJungleMinionsKilled or 0,
-            total_enemy_jungle_minions_killed=part.totalEnemyJungleMinionsKilled or 0,
-            triple_kills=part.tripleKills,
-            true_damage_dealt=part.trueDamageDealt,
-            true_damage_dealt_to_champions=part.trueDamageDealtToChampions,
-            true_damage_taken=part.trueDamageTaken,
-            turret_kills=part.turretKills,
-            unreal_kills=part.unrealKills,
-            vision_score=part.visionScore,
-            vision_wards_bought_in_game=part.visionWardsBoughtInGame,
-            wards_killed=part.wardsKilled,
-            wards_placed=part.wardsPlaced,
-            win=part.win,
-        )
-        stats_model.save()
+        stats_model = build_stats(part)
+        stats.append(stats_model)
+    participants = Participant.objects.bulk_create(participants)
+    for stat, part_model in zip(stats, participants):
+        stat.participant = part_model
+    Stats.objects.bulk_create(stats)
 
     # TEAMS
     teams = parsed.info.teams
     for tmodel in teams:
-        team_model = Team(
-            match=match_model,
-            _id=tmodel.teamId,
-            baron_kills=tmodel.objectives.baron.kills,
-            first_baron=tmodel.objectives.baron.first,
-            dragon_kills=tmodel.objectives.dragon.kills,
-            first_dragon=tmodel.objectives.dragon.first,
-            first_blood=tmodel.objectives.champion.first,
-            first_inhibitor=tmodel.objectives.inhibitor.first,
-            inhibitor_kills=tmodel.objectives.inhibitor.kills,
-            first_rift_herald=tmodel.objectives.riftHerald.first,
-            rift_herald_kills=tmodel.objectives.riftHerald.kills,
-            first_tower=tmodel.objectives.tower.first,
-            tower_kills=tmodel.objectives.tower.kills,
-            win=tmodel.win,
-        )
+        team_model = build_team(tmodel, match_model)
         team_model.save()
 
         # BANS
         bans = []
         for bm in tmodel.bans:
-            bans.append(Ban(
-                champion_id=bm.championId,
-                pick_turn=bm.pickTurn,
-                team=team_model,
-            ))
+            ban = build_ban(bm, team_model)
+            bans.append(ban)
         Ban.objects.bulk_create(bans)
