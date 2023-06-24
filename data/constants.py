@@ -108,6 +108,9 @@ SEASONS = [
     },
 ]
 
+FLEX_QUEUE = 440
+SOLO_QUEUE = 420
+
 QUEUES = [
     {
         "_id": 0,

@@ -327,7 +327,7 @@ def import_matches_for_popular_accounts(n=100):
     week = (now - timezone.timedelta(days=7)).date()
     qs = Summoner.objects.all().annotate(
         views=Sum('pageview__views', filter=Q(pageview__bucket_date__gte=week))
-    ).order_by('-views').filter(views__isnull=False)
+    ).order_by('-views').filter(views__isnull=False, views__gt=1)
     for i, summoner in enumerate(qs[:n]):
         logger.info(f"Importing matches for {summoner.name} ({i}) with {summoner.views=}")  # type: ignore
         try:

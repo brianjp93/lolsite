@@ -3,6 +3,7 @@
 Model definitions for the player app.
 
 """
+from typing import TypedDict
 import uuid
 
 from django.conf import settings
@@ -138,6 +139,26 @@ class Summoner(models.Model):
             PageView.objects.filter(id=pageview.id).update(views=models.F('views') + 1)
         else:
             PageView.objects.create(summoner=self, bucket_date=today, views=1)
+
+    class SuspiciousAccountOutput(TypedDict):
+        quick_ff_count: int
+        total: int
+
+    def suspicious_account(self, queue=dc.FLEX_QUEUE) -> SuspiciousAccountOutput:
+        from match.models import Match
+        dt = timezone.now() - timezone.timedelta(days=30)
+        quick_surrender_count = Match.objects.filter(
+            game_duration__lt=1000 * 60 * 5,
+            queue_id=queue,
+            game_creation__gte=dt.timestamp() * 1000,
+            participants__puuid=self.puuid,
+        ).count()
+        all_games_count = Match.objects.filter(
+            participants__puuid=self.puuid,
+            queue_id=queue,
+            game_creation__gte=dt.timestamp() * 1000
+        ).count()
+        return {'quick_ff_count': quick_surrender_count, 'total': all_games_count}
 
 
 class Pro(models.Model):
