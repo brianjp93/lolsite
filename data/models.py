@@ -26,7 +26,7 @@ class Queue(models.Model):
         """Return the corresponding map model.
         """
         try:
-            return Map.objects.all()[:1].get(name__iexact=self._map)
+            return Map.objects.filter(name__iexact=self._map)[:1].get()
         except Map.DoesNotExist:
             return None
 
