@@ -218,23 +218,13 @@ class ParticipantsView(ListAPIView):
 
 @api_view(["GET"])
 def get_spectate(request, format=None):
-    """Get spectate data, augmented with internal data
-
-    Returns
-    -------
-    JSON - augmented spectate data
-
-    """
-    data = {}
     status_code = 200
-
     summoner_id = request.query_params["summoner_id"]
     region = request.query_params["region"]
     api = get_riot_api()
     r = api.spectator.get(summoner_id, region)
     if r.status_code == 404:
-        data = {"message": "No live game found."}
-        status_code = 404
+        data = 'not found'
     else:
         parsed = SpectateModel.parse_raw(r.content)
         mt.import_spectate_from_data(parsed, region)
@@ -264,7 +254,7 @@ def get_spectate(request, format=None):
             if champion := query.first():
                 part['champion'] = BasicChampionWithImageSerializer(champion).data
 
-        data = {"data": spectate_data}
+        data = spectate_data
 
     return Response(data, status=status_code)
 
