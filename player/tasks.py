@@ -80,7 +80,7 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
 
     model_data = {
         "account_id": data["accountId"],
-        "name": data["name"],
+        "name": data["name"].strip(),
         "simple_name": simplify(data["name"]),
         "profile_icon_id": data["profileIconId"],
         "revision_date": data["revisionDate"],

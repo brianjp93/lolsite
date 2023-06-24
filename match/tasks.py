@@ -100,7 +100,7 @@ def import_summoner_from_participant(participants: list[ParticipantModel], regio
         if part.summonerId:
             summoner = Summoner(
                 _id=part.summonerId,
-                name=part.summonerName,
+                name=part.summonerName.strip(),
                 simple_name=part.simple_name,
                 region=region.lower(),
                 puuid=part.puuid,
