@@ -53,10 +53,9 @@ class ReputationSerializer(serializers.ModelSerializer):
         """
         if not user.is_authenticated:
             return 0
-        user_summoners = Summoner.objects.filter(
+        user_summoners = list(Summoner.objects.filter(
             summonerlinks__user=user,
-        ).values_list('puuid')
-        user_summoners = [x[0] for x in user_summoners]
+        ).values_list('puuid', flat=True))
 
         # The summoner we are checking cannot belong to the user.
         if summoner.puuid in user_summoners:
@@ -76,7 +75,18 @@ class SummonerSerializer(DynamicSerializer):
 
     class Meta:
         model = Summoner
-        fields = "__all__"
+        fields = (
+            'id',
+            'has_match_overlap',
+            "profile_icon",
+            "_id",
+            "region",
+            "name",
+            "simple_name",
+            "profile_icon_id",
+            "puuid",
+            "summoner_level",
+        )
 
     def get_has_match_overlap(self, obj):
         request = self.context.get('request')
