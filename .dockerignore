@@ -3,6 +3,9 @@ media/
 .vim/
 .vscode/
 .git/
+.hypothesis
+.mypy_cache
+.pytest_cache
 .pytest_cache/
 go.fish
 schema.prisma
