@@ -60,26 +60,12 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
 
 class StatsSerializer(serializers.ModelSerializer):
-    item_0_image = serializers.SerializerMethodField()
-    item_1_image = serializers.SerializerMethodField()
-    item_2_image = serializers.SerializerMethodField()
-    item_3_image = serializers.SerializerMethodField()
-    item_4_image = serializers.SerializerMethodField()
-    item_5_image = serializers.SerializerMethodField()
-    item_6_image = serializers.SerializerMethodField()
     perk_0_image_url = serializers.SerializerMethodField()
     perk_sub_style_image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Stats
         fields = [
-            'item_0_image',
-            'item_1_image',
-            'item_2_image',
-            'item_3_image',
-            'item_4_image',
-            'item_5_image',
-            'item_6_image',
             'perk_0_image_url',
             'perk_sub_style_image_url',
             'participant',
@@ -196,7 +182,6 @@ class StatsSerializer(serializers.ModelSerializer):
 
     def __init__(self, instance=None, extra=None, **kwargs):
         extra = extra or {}
-        self.items = extra.get('items', {})
         self.perk_substyles = extra.get('perk_substyles', {})
         self.runes = extra.get('runes', {})
         super().__init__(instance=instance, **kwargs)
@@ -207,41 +192,6 @@ class StatsSerializer(serializers.ModelSerializer):
             return rune.image_url()
         return ''
 
-    def get_item_0_image(self, obj):
-        item = self.items.get(obj.item_0)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_1_image(self, obj):
-        item = self.items.get(obj.item_1)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_2_image(self, obj):
-        item = self.items.get(obj.item_2)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_3_image(self, obj):
-        item = self.items.get(obj.item_3)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_4_image(self, obj):
-        item = self.items.get(obj.item_4)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_5_image(self, obj):
-        item = self.items.get(obj.item_5)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_6_image(self, obj):
-        item = self.items.get(obj.item_6)
-        if item:
-            return ItemImageSerializer(item.image).data
-
     def get_perk_sub_style_image_url(self, obj):
         return self.perk_substyles.get(obj.perk_sub_style, '') or ''
 
@@ -251,17 +201,6 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = [
             '_id',
-            'baron_kills',
-            'dragon_kills',
-            'first_baron',
-            'first_blood',
-            'first_dragon',
-            'first_inhibitor',
-            'first_rift_herald',
-            'rift_herald_kills',
-            'first_tower',
-            'inhibitor_kills',
-            'tower_kills',
             'win',
         ]
 
@@ -321,7 +260,11 @@ class FullTeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = "__all__"
+        fields = [
+            "_id",
+            "win",
+            "bans",
+        ]
 
 
 class FullMatchSerializer(serializers.ModelSerializer):
@@ -727,13 +670,6 @@ class AdvancedTimelineSerializer(serializers.ModelSerializer):
 
 
 class BasicStatsSerializer(serializers.ModelSerializer):
-    item_0_image = serializers.SerializerMethodField()
-    item_1_image = serializers.SerializerMethodField()
-    item_2_image = serializers.SerializerMethodField()
-    item_3_image = serializers.SerializerMethodField()
-    item_4_image = serializers.SerializerMethodField()
-    item_5_image = serializers.SerializerMethodField()
-    item_6_image = serializers.SerializerMethodField()
     perk_0_image_url = serializers.SerializerMethodField()
     perk_sub_style_image_url = serializers.SerializerMethodField()
 
@@ -746,14 +682,11 @@ class BasicStatsSerializer(serializers.ModelSerializer):
             "gold_earned", "total_heal", "time_ccing_others",
             "item_0", "item_1", "item_2",
             "item_3", "item_4", "item_5", "item_6",
-            'item_0_image', 'item_1_image', 'item_2_image',
-            'item_3_image', 'item_4_image', 'item_5_image',
-            'item_6_image', 'perk_0_image_url', 'perk_sub_style_image_url',
+            'perk_0_image_url', 'perk_sub_style_image_url',
         ]
 
     def __init__(self, instance=None, extra=None, **kwargs):
         self.extra = extra or {}
-        self.items = self.extra.get('items', {})
         self.runes = self.extra.get('runes', {})
         self.perk_substyles = self.extra.get('perk_substyles', {})
         super().__init__(instance=instance, **kwargs)
@@ -766,41 +699,6 @@ class BasicStatsSerializer(serializers.ModelSerializer):
 
     def get_perk_sub_style_image_url(self, obj):
         return self.perk_substyles.get(obj.perk_sub_style) or ''
-
-    def get_item_0_image(self, obj):
-        item = self.items.get(obj.item_0)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_1_image(self, obj):
-        item = self.items.get(obj.item_1)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_2_image(self, obj):
-        item = self.items.get(obj.item_2)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_3_image(self, obj):
-        item = self.items.get(obj.item_3)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_4_image(self, obj):
-        item = self.items.get(obj.item_4)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_5_image(self, obj):
-        item = self.items.get(obj.item_5)
-        if item:
-            return ItemImageSerializer(item.image).data
-
-    def get_item_6_image(self, obj):
-        item = self.items.get(obj.item_6)
-        if item:
-            return ItemImageSerializer(item.image).data
 
 
 class BasicParticipantSerializer(serializers.ModelSerializer):
@@ -830,7 +728,6 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
     def __init__(self, instance=None, extra=None, **kwargs):
         self.extra = extra or {}
         self.spell_images = self.extra.get('spell_images', {})
-        self.items = self.extra.get('items', {})
         super().__init__(instance=instance, **kwargs)
 
     def get_stats(self, obj):
