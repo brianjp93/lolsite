@@ -1337,3 +1337,11 @@ def logout_action(request, format=None):
     if user.is_authenticated:
         logout(request)
     return Response('logged out')
+
+
+@api_view(['GET'])
+def is_suspicious_account(request, format=None):
+    puuid = request.query_params['puuid']
+    summoner = get_object_or_404(Summoner, puuid=puuid)
+    sus = summoner.suspicious_account()
+    return Response(sus)

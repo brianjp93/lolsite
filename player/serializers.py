@@ -1,6 +1,6 @@
 """player/serializers.py
 """
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.db.models import Q
 from rest_framework import serializers
 
@@ -11,8 +11,6 @@ from .models import RankPosition, Custom
 from .models import Favorite, Comment, NameChange
 
 from match.models import Participant
-
-User = get_user_model()
 
 
 class ReputationSerializer(serializers.ModelSerializer):
@@ -54,7 +52,7 @@ class ReputationSerializer(serializers.ModelSerializer):
 
         """
         if not user.is_authenticated:
-            return False
+            return 0
         user_summoners = Summoner.objects.filter(
             summonerlinks__user=user,
         ).values_list('puuid')
@@ -62,14 +60,14 @@ class ReputationSerializer(serializers.ModelSerializer):
 
         # The summoner we are checking cannot belong to the user.
         if summoner.puuid in user_summoners:
-            return False
+            return 0
 
         if not user_summoners:
             raise serializers.ValidationError({'user': ['This user has no linked summoner accounts.']})
         q = Q()
         for puuid in user_summoners:
             q |= Q(puuid=summoner.puuid, match__participants__puuid=puuid)
-        return Participant.objects.filter(q).exists()
+        return Participant.objects.filter(q).count()
 
 
 class SummonerSerializer(DynamicSerializer):
@@ -87,7 +85,7 @@ class SummonerSerializer(DynamicSerializer):
                 return ReputationSerializer.user_has_match_overlap(request.user, obj)
             except serializers.ValidationError:
                 pass
-        return False
+        return 0
 
     def get_profile_icon(self, obj):
         query = ProfileIcon.objects.filter(_id=obj.profile_icon_id)
