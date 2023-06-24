@@ -3,8 +3,10 @@
 Model definitions for the player app.
 
 """
+import time
 from typing import TypedDict
 import uuid
+import logging
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -19,6 +21,8 @@ from data.models import ProfileIcon
 
 from player.utils import get_admin
 
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -146,7 +150,8 @@ class Summoner(models.Model):
 
     def suspicious_account(self, queue=dc.FLEX_QUEUE) -> SuspiciousAccountOutput:
         from match.models import Match
-        dt = timezone.now() - timezone.timedelta(days=30)
+        dt = timezone.now() - timezone.timedelta(days=90)
+        start = time.perf_counter()
         quick_surrender_count = Match.objects.filter(
             game_duration__lt=1000 * 60 * 5,
             queue_id=queue,
@@ -158,6 +163,8 @@ class Summoner(models.Model):
             queue_id=queue,
             game_creation__gte=dt.timestamp() * 1000
         ).count()
+        end = time.perf_counter()
+        logger.info(f"{self.name} suspicious_account query took {end - start:.2f} seconds.")
         return {'quick_ff_count': quick_surrender_count, 'total': all_games_count}
 
 
