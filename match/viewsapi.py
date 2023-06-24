@@ -141,7 +141,7 @@ class AdvancedTimelineView(RetrieveAPIView):
             'frames__championkillevent_set__victimdamagedealt_set',
         )
         try:
-            qs[:1].get()
+            return qs[:1].get()
         except AdvancedTimeline.DoesNotExist:
             return None
 
