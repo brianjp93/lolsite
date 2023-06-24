@@ -746,7 +746,7 @@ def import_summoners_from_spectate(parsed: SpectateModel, region):
     for part in parsed.participants:
         if part.summonerId:
             sum_data = {
-                "name": part.summonerName,
+                "name": part.summonerName.strip(),
                 "region": region,
                 "profile_icon_id": part.profileIconId,
                 "_id": part.summonerId,
