@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Exists, OuterRef
 from django.http import Http404, HttpRequest
 from rest_framework.response import Response
@@ -93,8 +94,10 @@ class SimpleItemRetrieveView(RetrieveAPIView):
         _id = self.kwargs['_id']
         major = self.kwargs['major']
         minor = self.kwargs['minor']
-        if item := qs.filter(_id=_id, major=major, minor=minor).first():
-            return item
+        try:
+            return qs.get(_id=_id, major=major, minor=minor)
+        except ObjectDoesNotExist:
+            pass
 
         if item := qs.filter(_id).order_by('-major', '-minor').first():
             return item

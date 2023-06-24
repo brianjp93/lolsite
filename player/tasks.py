@@ -29,7 +29,7 @@ def import_pros(overwrite=False):
             pro = Pro(ign=alias)
             pro.save()
         else:
-            pro = query.first()
+            pro = query[:1].get()
         for ign, region in constants.PROS[alias]:
             ign = simplify(ign)
             query = Summoner.objects.filter(region=region, simple_name=ign)
@@ -37,7 +37,7 @@ def import_pros(overwrite=False):
                 summoner_id = import_summoner(region, name=ign)
                 summoner = Summoner.objects.get(id=summoner_id)
             else:
-                summoner = query.first()
+                summoner = query[:1].get()
             if not summoner.pro == pro:
                 summoner.pro = pro
                 summoner.save()
@@ -240,7 +240,7 @@ def verify_user_email(code, age_hours=1):
     thresh = timezone.now() - timezone.timedelta(hours=age_hours)
     query = EmailVerification.objects.filter(code=code, created_date__gte=thresh)
     if query.exists():
-        email_verification = query.first()
+        email_verification = query[:1].get()
         custom = email_verification.user.custom
         custom.is_email_verified = True
         custom.save()

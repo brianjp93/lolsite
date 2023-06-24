@@ -208,8 +208,8 @@ def import_reforgedrunes(version="", language="en_US", overwrite=False):
                     query = ReforgedTree.objects.filter(
                         language=language, version=version, _id=tree_data["id"]
                     )
-                    if query.exists():
-                        query.first().delete()
+                    if obj := query.first():
+                        obj.delete()
                         reforgedtree_model.save()
                 else:
                     raise error
@@ -437,8 +437,8 @@ def import_profile_icons(version="", language="en_US", overwrite=False):
                     query = ProfileIcon.objects.filter(
                         version=version, language=language, _id=profile_data["id"]
                     )
-                    if query.exists():
-                        query.first().delete()
+                    if obj := query.first():
+                        obj.delete()
                         profile_icon_model.save()
                     else:
                         raise Exception(
@@ -550,8 +550,8 @@ def import_champions(version="", language="en_US", overwrite=False):
             tag_data = champion_data["tags"]
             for tag in tag_data:
                 query = ChampionTag.objects.filter(name=tag)
-                if query.exists():
-                    tag_model = query.first()
+                if tag_model := query.first():
+                    pass
                 else:
                     tag_model = ChampionTag(name=tag)
                     tag_model.save()
@@ -576,8 +576,7 @@ def import_champion_advanced(champion_id, overwrite=False):
     api = get_riot_api()
     if api:
         query = Champion.objects.filter(id=champion_id)
-        if query.exists():
-            champion_model = query.first()
+        if champion_model := query.first():
             r = api.lolstaticdata.champions(
                 name=champion_model._id,
                 language=champion_model.language,
@@ -767,8 +766,8 @@ def import_summoner_spells(version="", language="en_US"):
                 query = SummonerSpell.objects.filter(
                     version=version, language=language, key=_spell["key"]
                 )
-                if query.exists():
-                    query.first().delete()
+                if obj := query.first():
+                    obj.delete()
                     spell_model.save()
 
             for i, effect_burn_data in enumerate(_spell["effectBurn"]):
@@ -846,8 +845,7 @@ def compute_champion_last_change(index=None, start_patch=None, language="en_US")
         )
         for champion in champions:
             query = prev_champions.filter(_id=champion._id)
-            if query.exists():
-                prev_champion = query.first()
+            if prev_champion := query.first():
                 if champion.is_diff(prev_champion):
                     champion.last_changed = champion.version
                 else:
@@ -871,8 +869,7 @@ def compute_item_last_change(index=None, start_patch=None, language="en_US"):
         prev_items = Item.objects.filter(language=language, version=prev_version)
         for item in items:
             query = prev_items.filter(_id=item._id)
-            if query.exists():
-                prev_item = query.first()
+            if prev_item := query.first():
                 if item.is_diff(prev_item):
                     item.last_changed = item.version
                 else:

@@ -10,7 +10,7 @@ import urllib
 
 class VersionedModel(models.Model):
     major = models.IntegerField(default=None, null=True, blank=True, db_index=True)
-    minor = models.IntegerField(default=None, null=True, blank=True, db_index=True)
+    minor = models.IntegerField(default=None, null=True, blank=True)
     patch = models.IntegerField(default=None, null=True, blank=True)
 
     version: models.CharField[str, str]

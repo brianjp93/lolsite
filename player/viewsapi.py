@@ -1,4 +1,5 @@
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import permissions
 from rest_framework.request import HttpRequest, Request, exceptions
 from rest_framework.response import Response
@@ -452,9 +453,12 @@ def favorites(request, format=None):
             id_list = request.data.get("favorite_ids")
             flist = []
             for i, puuid in enumerate(id_list):
-                if favorite_model := favorite.filter(summoner__puuid=puuid).first():
+                try:
+                    favorite_model = favorite.filter(summoner__puuid=puuid)[:1].get()
                     favorite_model.sort_int = i
                     flist.append(favorite_model)
+                except ObjectDoesNotExist:
+                    pass
             Favorite.objects.bulk_update(flist, fields=['sort_int'])
             data["message"] = "Saved ordering."
 
@@ -490,15 +494,14 @@ def generate_code(request, format=None):
             action = request.data.get("action", "get")
             if action == "get":
                 query = SummonerLink.objects.filter(user=request.user, verified=False)
-                if query.exists():
-                    link = query.first()
+                if link := query.first():
                     now = timezone.now()
                     if now > (link.created_date + timezone.timedelta(hours=2)):
                         link.delete()
                         data = {"message": "Old link.  Please create a new link."}
                         status_code = 400
                     else:
-                        version = Champion.objects.first().get_newest_version()
+                        version = Champion.objects.all()[:1].get().get_newest_version()
                         icon = ProfileIcon.objects.get(
                             _id=link.profile_icon_id, version=version
                         )
@@ -513,8 +516,7 @@ def generate_code(request, format=None):
                 region = request.data["region"]
 
                 query = SummonerLink.objects.filter(user=user, verified=False)
-                if query.exists():
-                    link = query.first()
+                if link := query.first():
                     link.delete()
 
                 summoner_id = pt.import_summoner(region, name=summoner_name)
@@ -530,7 +532,7 @@ def generate_code(request, format=None):
                 link.save()
                 link.refresh_from_db()
 
-                version = Champion.objects.first().get_newest_version()
+                version = Champion.objects.all()[:1].get().get_newest_version()
                 icon = ProfileIcon.objects.get(_id=icon_id, version=version)
                 icon_data = ProfileIconSerializer(icon, many=False).data
                 data = {"uuid": link.uuid, "icon": icon_data, "summoner_name": summoner.name}
@@ -579,9 +581,7 @@ def connect_account(request, format=None):
         else:
             # SUMMONER FOUND AND IMPORTED
             query = Summoner.objects.filter(id=_id)
-            if query.exists():
-                summoner = query.first()
-
+            if summoner := query.first():
                 r = api.thirdpartycode.get(summoner._id, region=summoner.region)
 
                 client_code = r.text.strip('"')
@@ -600,8 +600,7 @@ def connect_account(request, format=None):
                     query = SummonerLink.objects.filter(
                         user=request.user, verified=False
                     )
-                    if query.exists():
-                        summonerlink = query.first()
+                    if summonerlink := query.first():
                         if client_code == summonerlink.uuid:
                             summonerlink.verified = True
                             summonerlink.summoner = summoner
@@ -666,9 +665,7 @@ def connect_account_with_profile_icon(request, format=None):
         else:
             # SUMMONER FOUND AND IMPORTED
             query = Summoner.objects.filter(id=_id)
-            if query.exists():
-                summoner = query.first()
-
+            if summoner := query.first():
                 query = SummonerLink.objects.filter(
                     user=request.user, summoner=summoner, verified=True
                 )
@@ -683,8 +680,7 @@ def connect_account_with_profile_icon(request, format=None):
                     query = SummonerLink.objects.filter(
                         user=request.user, verified=False
                     )
-                    if query.exists():
-                        summonerlink = query.first()
+                    if summonerlink := query.first():
                         if summoner.profile_icon_id == summonerlink.profile_icon_id:
                             summonerlink.verified = True
                             summonerlink.summoner = summoner

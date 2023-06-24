@@ -25,11 +25,10 @@ class Queue(models.Model):
     def get_map(self):
         """Return the corresponding map model.
         """
-        out = None
-        query = Map.objects.filter(name__iexact=self._map)
-        if query.exists():
-            out = query.first()
-        return out
+        try:
+            return Map.objects.all()[:1].get(name__iexact=self._map)
+        except Map.DoesNotExist:
+            return None
 
 
 class Season(models.Model):
@@ -65,9 +64,10 @@ class Map(models.Model):
             pass
         else:
             query = Item.objects.all().order_by("-major", "-minor", "-patch")
-            if item := query.first():
+            try:
+                item = query[:1].get()
                 version = item.version
-            else:
+            except Item.DoesNotExist:
                 version = "9.5.1"
         return f"https://ddragon.leagueoflegends.com/cdn/{version}/img/map/map{self._id}.png"
 
@@ -186,8 +186,8 @@ class Item(VersionedModel):
         for key in all_stats:
             query0 = self.stats.filter(key=key)
             query1 = other.stats.filter(key=key)
-            selfstat = query0.first()
-            otherstat = query1.first()
+            selfstat = query0[:1].get()
+            otherstat = query1[:1].get()
             if selfstat and otherstat:
                 stat_diffs[key] = selfstat.value == otherstat.value
             else:
@@ -394,8 +394,8 @@ class Champion(VersionedModel):
             query0 = selfspells.filter(name=name)
             query1 = otherspells.filter(name=name)
             if query0.exists() and query1.exists():
-                spell0 = query0.first()
-                spell1 = query1.first()
+                spell0 = query0[:1].get()
+                spell1 = query1[:1].get()
                 spell_diffs[name] = all(
                     getattr(spell0, attr) == getattr(spell1, attr)
                     for attr in spell_attrs

@@ -1,4 +1,5 @@
 from typing import List, Union
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import QuerySet
 from django.contrib.postgres.fields import ArrayField
@@ -211,7 +212,10 @@ class Match(VersionedModel):
 
     def is_summoner_in_game(self, summoners: List[Summoner]):
         """Find if a summoner is in the game."""
-        return self.participants.filter(puuid__in=[x.puuid for x in summoners]).first()
+        try:
+            return self.participants.filter(puuid__in=[x.puuid for x in summoners])[:1].get()
+        except ObjectDoesNotExist:
+            return None
 
 
 class Participant(models.Model):
@@ -277,15 +281,21 @@ class Participant(models.Model):
     def spell_1_image_url(self):
         url = ""
         query = SummonerSpell.objects.filter(key=self.summoner_1_id)
-        if spell := query.first():
+        try:
+            spell = query[:1].get()
             url = spell.image_url()
+        except SummonerSpell.DoesNotExist:
+            pass
         return url
 
     def spell_2_image_url(self):
         url = ""
         query = SummonerSpell.objects.filter(key=self.summoner_2_id)
-        if spell := query.first():
+        try:
+            spell = query[:1].get()
             url = spell.image_url()
+        except SummonerSpell.DoesNotExist:
+            pass
         return url
 
 
@@ -494,8 +504,11 @@ class Stats(models.Model):
                     version_query.exists(),
                 ]
             ):
-                if item := version_query.first():
+                try:
+                    item = version_query[:1].get()
                     url = item.image_url()
+                except ObjectDoesNotExist:
+                    pass
             elif item := query.first():
                 url = item.image_url()
         return url

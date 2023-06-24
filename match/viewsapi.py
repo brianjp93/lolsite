@@ -140,7 +140,10 @@ class AdvancedTimelineView(RetrieveAPIView):
             'frames__championkillevent_set__victimdamagereceived_set',
             'frames__championkillevent_set__victimdamagedealt_set',
         )
-        return qs.first()
+        try:
+            qs[:1].get()
+        except AdvancedTimeline.DoesNotExist:
+            return None
 
 
 class MatchBanListView(ListAPIView):
@@ -213,7 +216,7 @@ class ParticipantsView(ListAPIView):
         return Response(data, status=status_code)
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 def get_spectate(request, format=None):
     """Get spectate data, augmented with internal data
 
@@ -225,45 +228,43 @@ def get_spectate(request, format=None):
     data = {}
     status_code = 200
 
-    if request.method == "POST":
-        summoner_id = request.data["summoner_id"]
-        region = request.data["region"]
-        api = get_riot_api()
-        r = api.spectator.get(summoner_id, region)
-        if r.status_code == 404:
-            data = {"message": "No live game found."}
-            status_code = 404
-        else:
-            parsed = SpectateModel.parse_raw(r.content)
-            mt.import_spectate_from_data(parsed, region)
-            summoners = mt.import_summoners_from_spectate(parsed, region)
+    summoner_id = request.query_params["summoner_id"]
+    region = request.query_params["region"]
+    api = get_riot_api()
+    r = api.spectator.get(summoner_id, region)
+    if r.status_code == 404:
+        data = {"message": "No live game found."}
+        status_code = 404
+    else:
+        parsed = SpectateModel.parse_raw(r.content)
+        mt.import_spectate_from_data(parsed, region)
+        summoners = mt.import_summoners_from_spectate(parsed, region)
 
-            for x in summoners.values():
-                pt.import_positions(x, threshold_days=3)
+        for x in summoners.values():
+            pt.import_positions(x, threshold_days=3)
 
-            spectate_data = parsed.dict()
-            for part in spectate_data["participants"]:
-                positions = None
-                query = Summoner.objects.filter(region=region, _id=part["summonerId"])
-                if summoner := query.first():
-                    checkpoint = summoner.get_newest_rank_checkpoint()
-                    if checkpoint:
-                        positions = RankPositionSerializer(
-                            checkpoint.positions.all(), many=True
-                        ).data
-                    else:
-                        positions = []
-                    positions = sort_positions(positions)
-                part["positions"] = positions
+        spectate_data = parsed.dict()
+        for part in spectate_data["participants"]:
+            positions = None
+            query = Summoner.objects.filter(region=region, _id=part["summonerId"])
+            if summoner := summoners.get(part["summonerId"]):
+                checkpoint = summoner.get_newest_rank_checkpoint()
+                if checkpoint:
+                    positions = RankPositionSerializer(
+                        checkpoint.positions.all(), many=True
+                    ).data
+                else:
+                    positions = []
+                positions = sort_positions(positions)
+            part["positions"] = positions
 
-                query = Champion.objects.filter(key=part["championId"]).order_by(
-                    "-version"
-                )
-                if query.exists():
-                    champion = query.first()
-                    part['champion'] = BasicChampionWithImageSerializer(champion).data
+            query = Champion.objects.filter(key=part["championId"]).order_by(
+                "-version"
+            ).select_related('image')
+            if champion := query.first():
+                part['champion'] = BasicChampionWithImageSerializer(champion).data
 
-            data = {"data": spectate_data}
+        data = {"data": spectate_data}
 
     return Response(data, status=status_code)
 

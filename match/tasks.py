@@ -122,16 +122,20 @@ def handle_name_changes(days=30):
         timestamp = starts_at.timestamp() * 1000
         qs = qs.filter(match__game_creation__gt=timestamp)
     for participant in qs:
-        if summoner := Summoner.objects.filter(puuid=participant.puuid).values('id').first():
-            try:
-                NameChange.objects.get_or_create(summoner_id=summoner['id'], old_name=participant.summoner_name)
-            except NameChange.MultipleObjectsReturned:
-                qs = NameChange.objects.filter(
-                    summoner_id=summoner['id'],
-                    old_name=participant.summoner_name,
-                ).order_by('created_date')
-                for nc in qs[1:]:
-                    nc.delete()
+        try:
+            summoner = Summoner.objects.filter(puuid=participant.puuid).values('id').get()
+        except Summoner.DoesNotExist:
+            return
+
+        try:
+            NameChange.objects.get_or_create(summoner_id=summoner['id'], old_name=participant.summoner_name)
+        except NameChange.MultipleObjectsReturned:
+            qs = NameChange.objects.filter(
+                summoner_id=summoner['id'],
+                old_name=participant.summoner_name,
+            ).order_by('created_date')
+            for nc in qs[1:]:
+                nc.delete()
 
 
 def full_import(name=None, puuid=None, region=None, **kwargs):
@@ -750,10 +754,13 @@ def import_summoners_from_spectate(parsed: SpectateModel, region):
             summoner = Summoner(**sum_data)
             try:
                 summoner.save()
-                summoners[summoner._id] = summoner.id
+                summoners[summoner._id] = summoner
             except IntegrityError:
-                if summoner := Summoner.objects.filter(region=region, _id=part.summonerId).first():
-                    summoners[summoner._id] = summoner.id
+                try:
+                    summoner = Summoner.objects.get(region=region, _id=part.summonerId)
+                    summoners[summoner._id] = summoner
+                except Summoner.DoesNotExist:
+                    pass
     return summoners
 
 
