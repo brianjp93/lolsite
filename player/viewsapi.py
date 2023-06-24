@@ -102,15 +102,16 @@ class SummonerByNameView(RetrieveAPIView):
     def get_object(self):
         name = pt.simplify(self.kwargs[self.lookup_field])
         region = self.kwargs['region']
-        summoner = Summoner.objects.filter(
-            simple_name=name,
-            region=region,
-        ).first()
-        if summoner:
-            pt.import_summoner.delay(self.kwargs['region'], name=name)
-            return summoner
-        summoner_id = pt.import_summoner(self.kwargs['region'], name=name)
-        return get_object_or_404(Summoner, id=summoner_id)
+        try:
+            summoner = Summoner.objects.filter(
+                simple_name=name,
+                region=region,
+            ).get()
+        except Summoner.DoesNotExist:
+            summoner_id = pt.import_summoner(self.kwargs['region'], name=name)
+            return get_object_or_404(Summoner, id=summoner_id)
+        pt.import_summoner.delay(self.kwargs['region'], name=name)
+        return summoner
 
 
 @api_view(["POST"])
