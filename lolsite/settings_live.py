@@ -71,12 +71,12 @@ LOGGING = {
 }
 
 
-CORS_ALLOWED_ORIGINS = ['https://hardstuck.club']
+CORS_ALLOWED_ORIGINS = ['https://hardstuck.club', 'https://dev.hardstuck.club']
 CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_DOMAIN = '.hardstuck.club'
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_DOMAIN = 'hardstuck.club'
-CSRF_TRUSTED_ORIGINS = ["https://hardstuck.club", "https://app.hardstuck.club"]
+CSRF_TRUSTED_ORIGINS = ["https://hardstuck.club", "https://app.hardstuck.club", "https://dev.hardstuck.club"]
 
 
 def before_breadcrumb(crumb, hint):
