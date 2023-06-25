@@ -32,6 +32,7 @@ urlpatterns = [
     path("favorites/", player_views.favorites),
     path("generate-code/", player_views.generate_code),
     path("connect-account/", player_views.connect_account),
+    path("unlink-account/", player_views.unlink_account),
     path(
         "connect-account-with-profile-icon/",
         player_views.connect_account_with_profile_icon,

@@ -548,6 +548,18 @@ def generate_code(request, format=None):
     return Response(data, status=status_code)
 
 
+@api_view(["DELETE"])
+def unlink_account(request, format=None):
+    puuid = request.data['puuid']
+    summoner = get_object_or_404(Summoner, puuid=puuid)
+    user: User = request.user
+    if not user.is_authenticated:
+        raise exceptions.AuthenticationFailed("Not logged in.")
+    link = get_object_or_404(SummonerLink, user=user, summoner=summoner, verified=True)
+    link.delete()
+    return Response()
+
+
 @api_view(["POST"])
 def connect_account(request, format=None):
     """Attempt to connect a User to a LoL Summoner
