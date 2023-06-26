@@ -150,6 +150,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(DynamicSerializer):
     summoner = SummonerSerializer()
+    markdown = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -165,6 +166,11 @@ class CommentSerializer(DynamicSerializer):
             "summoner",
             "is_deleted",
         ]
+
+    def get_markdown(self, obj):
+        if obj.is_deleted:
+            return ""
+        return obj.markdown
 
 
 class NameChangeSerializer(serializers.ModelSerializer):
