@@ -270,4 +270,4 @@ def remove_old_email_verification(age_hours=1):
 def handle_multiple_summoners(name: str, region: str):
     for summoner in Summoner.objects.filter(region=region, simple_name=name):
         import_summoner(region, puuid=summoner.puuid)
-    return Summoner.objects.get(region=region, simple_name=name)
+    return Summoner.objects.filter(region=region, simple_name=name)[:1].get()
