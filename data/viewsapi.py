@@ -105,6 +105,21 @@ class SimpleItemRetrieveView(RetrieveAPIView):
         raise Http404
 
 
+class SimpleItemListView(ListAPIView):
+    serializer_class = SimpleItemSerializer
+    pagination_class = LargeResultsSetPagination
+
+    def get_queryset(self):
+        qs = Item.objects.all().select_related('image', 'gold')
+        ids = self.request.query_params.get('ids', None)
+        major = self.kwargs['major']
+        minor = self.kwargs['minor']
+        qs = qs.filter(major=major, minor=minor)
+        if ids:
+            qs = qs.filter(_id__in=ids)
+        return qs
+
+
 @api_view(['GET'])
 def get_item_history(request, _id, format=None):
     """Get the stat history of an item.
