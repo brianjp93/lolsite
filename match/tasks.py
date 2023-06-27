@@ -1021,6 +1021,9 @@ def import_match_from_data(data, region: str, refresh=False):
     if "tutorial" in parsed.info.gameMode.lower():
         return False
 
+    if parsed.info.gameDuration == 0:
+        return False
+
     info = parsed.info
     sem_ver = info.sem_ver
     match_model = Match(
