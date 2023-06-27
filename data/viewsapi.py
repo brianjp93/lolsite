@@ -398,3 +398,8 @@ def get_media_url(request, format=None):
 @api_view(['GET'])
 def get_queues(request, format=None):
     return Response(constants.QUEUES)
+
+
+@api_view(['GET'])
+def get_google_recaptcha_site_key(request, format=None):
+    return Response(settings.GOOGLE_RECAPTCHA_KEY)

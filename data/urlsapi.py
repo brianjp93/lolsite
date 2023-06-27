@@ -16,6 +16,7 @@ urlpatterns = [
     path("static-url/", data_views.get_static_url, name='get-static-url'),
     path("media-url/", data_views.get_media_url, name='get-media-url'),
     path("queues/", data_views.get_queues, name='queues'),
+    path("google-recaptcha-site-key/", data_views.get_google_recaptcha_site_key),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

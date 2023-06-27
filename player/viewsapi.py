@@ -1,5 +1,6 @@
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
 from django.core.exceptions import ObjectDoesNotExist
+import requests
 from rest_framework import permissions
 from rest_framework.request import Request, exceptions
 from rest_framework.response import Response
@@ -8,6 +9,7 @@ from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIVie
 
 from django.utils import timezone
 from django.core.cache import cache
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.functions import Extract
@@ -197,6 +199,22 @@ def sign_up(request, format=None):
     else:
         email = request.data.get("email")
         password = request.data.get("password")
+        token = request.data.get('token')
+
+        response = requests.post(
+            f'https://recaptchaenterprise.googleapis.com/v1/projects/{settings.GOOGLE_RECAPTCHA_PROJECT_ID}/assessments?key={settings.GOOGLE_RECAPTCHA_API_KEY}',
+            json={
+                "event": {
+                    "token": token,
+                    "siteKey": settings.GOOGLE_RECAPTCHA_KEY,
+                    "expectedAction": "LOGIN"
+                }
+            }
+        )
+        score = response.json()['riskAnalysis']['score']
+        logger.info(f'Got {score=} for signup: {email=}')
+        # TODO: do something with this score
+        # decline signup if score is too low
 
         user = pt.create_account(email, password)
         if user:
