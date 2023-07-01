@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.core.paginator import Paginator
 from django.core.cache import cache
 
-from .models import Summoner, NameChange
+from .models import Comment, Summoner, NameChange
 from .models import RankCheckpoint, RankPosition
 from .models import Custom, EmailVerification, SummonerLink
 
@@ -70,6 +70,17 @@ class CustomAdmin(admin.ModelAdmin):
 class EmailVerificationAdmin(admin.ModelAdmin):
     list_display = ("user", "code")
     raw_id_fields = ("user",)
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ("match", "summoner", "markdown_content")
+    raw_id_fields = ('match', 'summoner', 'reply_to', 'liked_by', 'disliked_by')
+
+    def markdown_content(self, obj):
+        if obj.markdown:
+            return obj.markdown[:20]
+        return ''
 
 
 admin.site.register(Summoner, SummonerAdmin)

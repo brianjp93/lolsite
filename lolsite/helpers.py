@@ -5,7 +5,7 @@ https://gist.github.com/goutomroy/d61fc8a8445954c71b5585af042e5cf4
 from django.db import connection, reset_queries
 import time
 import functools
-from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework.pagination import CursorPagination, PageNumberPagination, LimitOffsetPagination
 
 
 def query_debugger(func):
@@ -78,3 +78,7 @@ class CustomLimitOffsetPagination(LimitOffsetPagination):
         if self.count == 0 or self.offset > self.count:
             return []
         return queryset[self.offset:self.offset + self.limit]
+
+
+class CustomCursorPagination(CursorPagination):
+    page_size = 20

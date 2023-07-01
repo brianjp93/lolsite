@@ -437,9 +437,9 @@ class Comment(models.Model):
         related_name="replies",
     )
     likes = models.IntegerField(default=0, db_index=True, blank=True)
-    liked_by = models.ManyToManyField(User, related_name="liked_comments")
+    liked_by = models.ManyToManyField(User, related_name="liked_comments", blank=True)
     dislikes = models.IntegerField(default=0, db_index=True, blank=True)
-    disliked_by = models.ManyToManyField(User, related_name="disliked_comments")
+    disliked_by = models.ManyToManyField(User, related_name="disliked_comments", blank=True)
     is_deleted = models.BooleanField(default=False, null=True)
 
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)

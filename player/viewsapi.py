@@ -1,13 +1,14 @@
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
-from django.core.exceptions import ObjectDoesNotExist
 import requests
 from rest_framework import permissions
-from rest_framework.request import Request, exceptions
-from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView, ListAPIView
+from rest_framework.request import Request, exceptions
+from rest_framework.response import Response
+from rest_framework import filters
 
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -18,7 +19,7 @@ from django.shortcuts import get_object_or_404
 
 from lolsite.viewsapi import require_login
 from lolsite.tasks import get_riot_api
-from lolsite.helpers import query_debugger
+from lolsite.helpers import CustomCursorPagination, query_debugger
 
 from player import tasks as pt
 from player import constants as player_constants
@@ -898,10 +899,21 @@ def comment_count(request, format=None):
 
 class CommentListView(ListAPIView):
     serializer_class = CommentSerializer
+    pagination_class = CustomCursorPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['created_date']
+    ordering = ['-created_date']
 
     def get_queryset(self):
         match_id = self.kwargs['match_id']
-        return Comment.objects.filter(match_id=match_id).order_by('-created_date')
+        return Comment.objects.filter(
+            match_id=match_id
+        ).select_related('summoner')
+
+
+class CommentRetrieveView(RetrieveAPIView):
+    serializer_class = CommentSerializer
+    queryset = Comment.objects.all().select_related('summoner')
 
 
 @api_view(["POST"])
