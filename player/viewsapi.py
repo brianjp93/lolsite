@@ -2,7 +2,10 @@
 import requests
 from rest_framework import permissions
 from rest_framework.decorators import api_view
-from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView, ListAPIView
+from rest_framework.generics import (
+    RetrieveAPIView, CreateAPIView, UpdateAPIView,
+    ListAPIView, RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.request import Request, exceptions
 from rest_framework.response import Response
 from rest_framework import filters
@@ -38,6 +41,7 @@ from match.models import Match, sort_positions
 
 from .models import EmailVerification, Summoner
 from .serializers import (
+    CommentCreateSerializer, CommentUpdateSerializer,
     SummonerSerializer, RankPositionSerializer,
     FavoriteSerializer, CommentSerializer,
     ReputationSerializer, UserSerializer,
@@ -911,9 +915,28 @@ class CommentListView(ListAPIView):
         ).select_related('summoner')
 
 
-class CommentRetrieveView(RetrieveAPIView):
-    serializer_class = CommentSerializer
+class CommentCreateView(CreateAPIView):
+    serializer_class = CommentCreateSerializer
+
+
+class CommentRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all().select_related('summoner')
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return CommentSerializer
+        elif self.request.method in ('PUT', 'PATCH', 'DELETE'):
+            return CommentUpdateSerializer
+        raise exceptions.MethodNotAllowed(self.request.method)
+
+    def perform_destroy(self, instance):
+        user = self.request.user
+        if not user.is_authenticated:
+            raise exceptions.NotAuthenticated('User must be logged in.')
+        if not user.summonerlinks.filter(summoner=instance.summoner).exists():  # type: ignore
+            raise exceptions.PermissionDenied('User does not own this comment.')
+        instance.is_deleted = True
+        instance.save()
 
 
 @api_view(["POST"])

@@ -173,6 +173,59 @@ class CommentSerializer(DynamicSerializer):
         return obj.markdown
 
 
+class CommentCreateSerializer(serializers.ModelSerializer):
+    summoner = serializers.SlugRelatedField('puuid', queryset=Summoner.objects.all())
+
+    class Meta:
+        model = Comment
+        fields = [
+            'markdown',
+            'match',
+            'reply_to',
+            'summoner',
+        ]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        request = self.context['request']
+        self.fields['summoner'].queryset = Summoner.objects.filter(
+            id__in=request.user.summonerlinks.all().values_list('summoner_id', flat=True)
+        )
+
+    def validate_summoner(self, obj: Summoner):
+        if 'request' not in self.context:
+            return obj
+        request = self.context['request']
+        user: User = request.user
+        if not user.is_authenticated:
+            raise serializers.ValidationError('No connected summoners.', code='summoner_not_connected')
+        if user.summonerlinks.filter(summoner=obj).first():  # type: ignore
+            return obj
+        raise serializers.ValidationError('The selected summoner is not connected to this account.', code='summoner_not_connected')
+
+
+class CommentUpdateSerializer(serializers.ModelSerializer):
+    markdown = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = Comment
+        fields = [
+            'markdown',
+        ]
+
+    def validate(self, attrs):
+        request = self.context['request']
+        user = request.user
+        assert self.instance
+        if self.instance.is_deleted:
+            raise serializers.ValidationError('Comment is deleted, cannot update.', code='comment_already_deleted')
+        if not user.is_authenticated:
+            raise serializers.ValidationError('Comment not owned by user.', code='invalid_comment_update')
+        if not user.summonerlinks.filter(summoner=self.instance.summoner).exists():
+            raise serializers.ValidationError('Comment not owned by user.', code='invalid_comment_update')
+        return super().validate(attrs)
+
+
 class NameChangeSerializer(serializers.ModelSerializer):
     class Meta:
         model = NameChange
