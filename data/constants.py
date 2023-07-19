@@ -517,6 +517,22 @@ RANKS = {
             "challenger",
         ],
         "DIVISIONS": ["I", "II", "III", "IV"],
+    },
+    13.2: {
+        "TIERS": [
+            "unranked",
+            "iron",
+            "bronze",
+            "silver",
+            "gold",
+            "platinum",
+            "emerald",
+            "diamond",
+            "master",
+            "grandmaster",
+            "challenger",
+        ],
+        "DIVISIONS": ["I", "II", "III", "IV"],
     }
 }
 

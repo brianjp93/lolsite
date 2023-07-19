@@ -285,7 +285,7 @@ class RankPosition(models.Model):
 
 
 def encode_rank_to_int(tier, division, lp):
-    ranks = dc.RANKS[9]
+    ranks = dc.RANKS[13.2]
     tier_index = ranks["TIERS"].index(tier.lower())
     division_index = (
         len(ranks["DIVISIONS"]) - 1 - ranks["DIVISIONS"].index(division.upper())
@@ -295,7 +295,7 @@ def encode_rank_to_int(tier, division, lp):
 
 
 def decode_int_to_rank(rank_integer):
-    ranks = dc.RANKS[9]
+    ranks = dc.RANKS[13.2]
     lp = rank_integer % 10_000
     rest = rank_integer // 10_000
     division_index = len(ranks["DIVISIONS"]) - 1 - rest % 100
