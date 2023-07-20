@@ -99,7 +99,7 @@ class SimpleItemRetrieveView(RetrieveAPIView):
         except ObjectDoesNotExist:
             pass
 
-        if item := qs.filter(_id).order_by('-major', '-minor').first():
+        if item := qs.filter(_id=_id).order_by('-major', '-minor').first():
             return item
 
         raise Http404
