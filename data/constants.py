@@ -303,6 +303,11 @@ QUEUES = [
         "_map": "Ultimate Spellbook",
         "description": "Ultimate Spellbook games",
     },
+    {
+        "_id": 1700,
+        "_map": "Rings of Wrath",
+        "description": "2v2v2v2",
+    },
     {"_id": 2000, "_map": "Summoner's Rift", "description": "Tutorial Part 1"},
     {"_id": 2010, "_map": "Summoner's Rift", "description": "Tutorial Part 2"},
     {"_id": 2020, "_map": "Summoner's Rift", "description": "Tutorial Part 3"},
