@@ -1,6 +1,9 @@
+from string import ascii_uppercase
+
 from typing import Self, Union
 from django.db import models
 from django.utils import timezone
+from django.contrib.postgres import fields
 
 from core.models import VersionedModel, ThumbnailedModel
 
@@ -635,6 +638,23 @@ class ChampionSpellVar(models.Model):
         return f'ChampionSpellVar(spell="{self.spell._id}", key="{self.key}")'
 
 
+class CDSummonerSpell(VersionedModel):
+    ext_id = models.BigIntegerField()
+    name = models.CharField(max_length=32, default="")
+    description = models.CharField(max_length=2048, default="", blank=True)
+    summoner_level = models.IntegerField()
+    cooldown = models.IntegerField()
+    game_modes = fields.ArrayField(models.CharField(max_length=32), default=list)
+    icon_path = models.CharField(max_length=256, default="")
+
+    def image_url(self):
+        og_name = self.icon_path.split("/")[-1].lower()
+        return f"https://raw.communitydragon.org/{self.major}.{self.minor}/plugins/rcp-be-lol-game-data/global/default/data/spells/icons2d/{og_name}"
+
+    class Meta:
+        unique_together = ("ext_id", "major", "minor")
+
+
 class SummonerSpell(VersionedModel):
     _id = models.CharField(max_length=128, default="", blank=True, db_index=True)
     key = models.IntegerField(db_index=True)
@@ -662,6 +682,15 @@ class SummonerSpell(VersionedModel):
 
     def image_url(self):
         return self.image.image_url() if self.image else ''
+
+    def cd_image_url(self):
+        out = [self._id[0].lower()]
+        for ch in self._id[1:]:
+            if ch in ascii_uppercase:
+                out.append('_')
+            out.append(ch.lower())
+        name = ''.join(out)
+        return f"https://raw.communitydragon.org/{self.major}.{self.minor}/plugins/rcp-be-lol-game-data/global/default/data/spells/icons2d/{name}.png"
 
 
 class SummonerSpellEffectBurn(models.Model):

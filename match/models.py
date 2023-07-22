@@ -9,7 +9,7 @@ import zoneinfo
 import logging
 
 from core.models import VersionedModel
-from data.models import ReforgedTree, ReforgedRune
+from data.models import CDSummonerSpell, ReforgedTree, ReforgedRune
 from data.models import Item, SummonerSpellImage
 from data.models import SummonerSpell, Champion
 
@@ -115,12 +115,11 @@ class MatchQuerySet(models.QuerySet['Match']):
             for part in match.participants.all():
                 spell_ids.add(part.summoner_1_id)
                 spell_ids.add(part.summoner_2_id)
-        qs = SummonerSpellImage.objects.filter(spell__key__in=spell_ids)
-        qs = qs.select_related("spell")
-        qs = qs.order_by("spell___id", "-spell__major", "-spell__minor").distinct(
-            "spell___id"
+        qs = CDSummonerSpell.objects.filter(ext_id__in=spell_ids)
+        qs = qs.order_by("ext_id", "-major", "-minor").distinct(
+            "ext_id"
         )
-        return {x.spell.key: x.image_url() for x in qs}
+        return {x.ext_id: x.image_url() for x in qs}
 
     def get_perk_substyles(self):
         substyles = set()
@@ -697,13 +696,13 @@ class SkillLevelUpEvent(Event):
 
 class ItemPurchasedEvent(Event):
     id: int | None
-    item_id = models.PositiveSmallIntegerField()
+    item_id = models.PositiveIntegerField()
     participant_id = models.PositiveSmallIntegerField()
 
 
 class ItemDestroyedEvent(Event):
     id: int | None
-    item_id = models.PositiveSmallIntegerField()
+    item_id = models.PositiveIntegerField()
     participant_id = models.PositiveSmallIntegerField()
 
 
@@ -716,8 +715,8 @@ class ItemSoldEvent(Event):
 class ItemUndoEvent(Event):
     id: int | None
     participant_id = models.PositiveSmallIntegerField()
-    before_id = models.PositiveSmallIntegerField()
-    after_id = models.PositiveSmallIntegerField()
+    before_id = models.PositiveIntegerField()
+    after_id = models.PositiveIntegerField()
     gold_gain = models.SmallIntegerField()
 
 

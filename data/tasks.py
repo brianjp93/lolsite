@@ -1,9 +1,14 @@
 """data/tasks.py
 """
+import requests
+from data.parsers.summoner_spells import CDSummonerSpellParser
+
+from pydantic import parse_raw_as
+
 from .models import Rito
 from .models import Season, Map, Queue
 from .models import GameMode, GameType
-from .models import ReforgedTree, ReforgedRune
+from .models import ReforgedTree, ReforgedRune, CDSummonerSpell
 
 from .models import Item, ItemEffect, FromItem, IntoItem
 from .models import ItemGold, ItemImage, ItemMap, ItemStat
@@ -28,6 +33,13 @@ from lolsite.celery import app
 from lolsite.tasks import get_riot_api
 import json
 import logging
+
+
+"""
+TODO: Consider using
+https://raw.communitydragon.org/13.14/plugins/rcp-be-lol-game-data/global/default/v1/
+for data imports
+"""
 
 
 logger = logging.getLogger('django')
@@ -109,11 +121,16 @@ def import_all(version, language="en_US", overwrite=False, api_only=False):
         import_gametypes()
 
     # require api connection
+    major, minor, *_ = version.split('.')
+    major = int(major)
+    minor = int(minor)
+
     import_items(version=version, language=language, overwrite=overwrite)
     import_profile_icons(version=version, language=language, overwrite=overwrite)
     import_champions(version=version, language=language, overwrite=overwrite)
     import_all_champion_advanced(version, language=language, overwrite=overwrite)
     import_summoner_spells(version=version, language=language)
+    import_cdspells(major, minor)
     import_reforgedrunes(version=version, language=language, overwrite=overwrite)
 
 
@@ -733,6 +750,27 @@ def import_all_champion_advanced(version, language="en_US", overwrite=False):
             has_lore = True
         if not has_lore or overwrite:
             import_champion_advanced(champion.id, overwrite)
+
+
+def import_cdspells(major: int, minor: int):
+    version = f'{major}.{minor}'
+    url = f'https://raw.communitydragon.org/{version}/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells.json'
+    r = requests.get(url)
+    spells = parse_raw_as(list[CDSummonerSpellParser], r.content)
+    spell_models = []
+    for spell in spells:
+        spell_models.append(CDSummonerSpell(
+            ext_id=spell.id,
+            major=major,
+            minor=minor,
+            name=spell.name,
+            description=spell.description,
+            summoner_level=spell.summonerLevel,
+            cooldown=spell.cooldown,
+            game_modes=spell.gameModes,
+            icon_path=spell.iconPath,
+        ))
+    CDSummonerSpell.objects.bulk_create(spell_models, ignore_conflicts=True)
 
 
 def import_summoner_spells(version="", language="en_US"):
