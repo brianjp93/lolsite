@@ -115,15 +115,19 @@ class MatchQuerySet(models.QuerySet['Match']):
             for part in match.participants.all():
                 spell_ids.add(part.summoner_1_id)
                 spell_ids.add(part.summoner_2_id)
-        qs = CDSummonerSpell.objects.filter(ext_id__in=spell_ids)
-        qs = qs.order_by("ext_id", "-major", "-minor").distinct(
-            "ext_id"
+        qs = CDSummonerSpell.objects.filter(
+            ext_id__in=spell_ids,
+        ).order_by(
+            "ext_id", "-major", "-minor",
+        ).distinct(
+            "ext_id",
         )
+        print(qs)
         return {x.ext_id: x.image_url() for x in qs}
 
     def get_perk_substyles(self):
         substyles = set()
-        for match in self.prefetch_related("participants", "participants__stats"):
+        for match in self:
             for part in match.participants.all():
                 substyles.add(part.stats.perk_sub_style)
         qs = ReforgedTree.objects.filter(_id__in=substyles)

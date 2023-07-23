@@ -6,10 +6,6 @@ from .models import (
 from . import models
 from match import tasks as mt
 
-from data.serializers import (
-    ItemImageSerializer,
-)
-
 from django.db.models import QuerySet
 from django.core.cache import cache
 
@@ -275,13 +271,6 @@ class FullMatchSerializer(serializers.ModelSerializer):
         model = Match
         fields = "__all__"
 
-    def __new__(cls, instance, *args, **kwargs):
-        if isinstance(instance, QuerySet):
-            instance = instance.prefetch_related(
-                'participants', 'teams', 'participants__stats',
-            )
-        return super().__new__(cls, instance, *args, **kwargs)
-
     def __init__(self, instance=None, **kwargs):
         self.extra = {}
         match_qs = None
@@ -289,6 +278,8 @@ class FullMatchSerializer(serializers.ModelSerializer):
             match_qs = Match.objects.filter(id=instance.id)
         if match_qs:
             self.extra = match_qs.get_related()
+        elif isinstance(instance, models.QuerySet):
+            self.extra = instance.get_related()
         super().__init__(instance, **kwargs)
 
     def get_participants(self, obj):

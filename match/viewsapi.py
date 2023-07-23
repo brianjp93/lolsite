@@ -199,7 +199,7 @@ class ParticipantsView(ListAPIView):
             match_qs = Match.objects.filter(id=match_id)
         else:
             match_qs = Match.objects.filter(_id=match__id)
-        self.match_qs = match_qs.prefetch_related("participants", "participants__stats", 'teams__bans')
+        self.match_qs = match_qs.prefetch_related("participants", "participants__stats", 'teams__bans', 'teams')
         self.match = get_object_or_404(self.match_qs)
 
     def get(self, *args, **kwargs):
@@ -211,7 +211,7 @@ class ParticipantsView(ListAPIView):
 
         # I am using the FullMatchSerializer here because it's mostly the participants
         # and it is being cached
-        participants = FullMatchSerializer(self.match).data['participants']
+        participants = FullMatchSerializer(self.match_qs, many=True).data[0]['participants']
         data = {"data": participants}
         return Response(data, status=status_code)
 
