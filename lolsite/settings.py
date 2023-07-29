@@ -140,13 +140,13 @@ CELERY_RESULT_SERIALIZER = "json"
 
 
 # SENDGRID CONNECTION
-EMAIL_HOST = "smtp.sendgrid.net"
-EMAIL_HOST_USER = "apikey"
-EMAIL_HOST_PASSWORD = config("SENDGRID_KEY", "")
+EMAIL_HOST = "smtp.postmarkapp.com"
+EMAIL_HOST_USER = config("EMAIL_KEY", "")
+EMAIL_HOST_PASSWORD = config("EMAIL_KEY", "")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-DEFAULT_FROM_EMAIL = "no-reply@hardstuck.club"
+DEFAULT_FROM_EMAIL = "support@hardstuck.club"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
