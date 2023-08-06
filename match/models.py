@@ -122,7 +122,6 @@ class MatchQuerySet(models.QuerySet['Match']):
         ).distinct(
             "ext_id",
         )
-        print(qs)
         return {x.ext_id: x.image_url() for x in qs}
 
     def get_perk_substyles(self):
