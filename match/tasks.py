@@ -7,6 +7,7 @@ from django.db.models import IntegerField, Q, F
 from django.utils import timezone
 from django.db import connections, transaction
 from pydantic import ValidationError
+from data.constants import ARENA_QUEUE
 
 from match.parsers.spectate import SpectateModel
 
@@ -837,11 +838,13 @@ def participant_key(participant: Participant):
     )
 
 
-def get_sorted_participants(match, participants=None):
+def get_sorted_participants(match: Match, participants=None):
     if not participants:
         participants = match.participants.all().select_related("stats")
     if len(participants) == 10:
         ordered = sorted(list(participants), key=participant_key)
+    elif match.queue_id == ARENA_QUEUE:
+        ordered = sorted(list(participants), key=lambda x: x.placement)
     else:
         ordered = list(participants)
     return ordered
