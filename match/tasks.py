@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 from match.parsers.spectate import SpectateModel
 
-from .parsers.match import BanType, MatchModel, MatchResponseModel, ParticipantModel, TeamModel
+from .parsers.match import BanType, MatchResponseModel, ParticipantModel, TeamModel
 from .parsers.timeline import TimelineResponseModel
 from .parsers import timeline as tmparsers
 
@@ -866,6 +866,8 @@ def build_participant(part: ParticipantModel, match: Match):
         role=part.role,
         individual_position=part.individualPosition,
         team_position=part.teamPosition,
+        placement=part.placement,
+        subteam_placement=part.subteamPlacement,
     )
 
 def build_team(team: TeamModel, match: Match):

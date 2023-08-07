@@ -134,6 +134,8 @@ class ParticipantModel(BaseModelWithLogger):
     objectivesStolenAssists: int
     participantId: int
     pentaKills: int
+    placement: int = 0
+    subTeamPlacement: int = 0
     physicalDamageDealt: int
     physicalDamageDealtToChampions: int
     physicalDamageTaken: int

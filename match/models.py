@@ -244,6 +244,9 @@ class Participant(models.Model):
     summoner_2_casts = models.IntegerField(default=0)
     team_id = models.IntegerField()
 
+    placement = models.IntegerField(default=0)
+    subteam_placement = models.IntegerField(default=0)
+
     # from timeline
     lane = models.CharField(max_length=64, default="", blank=True)
     role = models.CharField(max_length=64, default="", blank=True)
