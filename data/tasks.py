@@ -1,9 +1,8 @@
-"""data/tasks.py
-"""
 import requests
+from data.parsers.profile_icons import CDProfileIconListParser
 from data.parsers.summoner_spells import CDSummonerSpellListParser
 
-from .models import Rito
+from .models import CDProfileIcon, Rito
 from .models import Season, Map, Queue
 from .models import GameMode, GameType
 from .models import ReforgedTree, ReforgedRune, CDSummonerSpell
@@ -124,11 +123,16 @@ def import_all(version, language="en_US", overwrite=False, api_only=False):
     minor = int(minor)
 
     import_items(version=version, language=language, overwrite=overwrite)
+
     import_profile_icons(version=version, language=language, overwrite=overwrite)
+    import_cd_profile_icons(major=major, minor=minor)
+
     import_champions(version=version, language=language, overwrite=overwrite)
     import_all_champion_advanced(version, language=language, overwrite=overwrite)
+
     import_summoner_spells(version=version, language=language)
     import_cdspells(major, minor)
+
     import_reforgedrunes(version=version, language=language, overwrite=overwrite)
 
 
@@ -769,6 +773,38 @@ def import_cdspells(major: int, minor: int):
             icon_path=spell.iconPath,
         ))
     CDSummonerSpell.objects.bulk_create(spell_models, ignore_conflicts=True)
+
+
+def import_cd_profile_icons(major: int, minor: int):
+    version = f'{major}.{minor}'
+    url = f'https://raw.communitydragon.org/{version}/plugins/rcp-be-lol-game-data/global/default/v1/summoner-icons.json'
+    r = requests.get(url)
+    icons = CDProfileIconListParser.model_validate_json(r.content).root
+    icon_dict = {x.id: x for x in icons}
+    new_icons = icon_dict.copy()
+    qs = CDProfileIcon.objects.filter(ext_id__in=icon_dict)
+    to_update = []
+    for pi in qs:
+        pi.major = major
+        pi.minor = minor
+        pi.title = icon_dict[pi.ext_id].title
+        pi.image_path = icon_dict[pi.ext_id].imagePath
+        to_update.append(pi)
+        del new_icons[pi.ext_id]
+    CDProfileIcon.objects.bulk_update(to_update, fields=['major', 'minor', 'title', 'image_path'])
+
+    to_create = []
+    for icon in new_icons.values():
+        to_create.append(CDProfileIcon(
+            ext_id=icon.id,
+            major=major,
+            minor=minor,
+            title=icon.title,
+            image_path=icon.imagePath,
+            year_released=icon.yearReleased,
+            is_legacy=icon.isLegacy,
+        ))
+    CDProfileIcon.objects.bulk_create(to_create)
 
 
 def import_summoner_spells(version="", language="en_US"):

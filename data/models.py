@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.postgres import fields
 
-from core.models import VersionedModel, ThumbnailedModel
+from core.models import TimestampedModel, VersionedModel, ThumbnailedModel
 
 
 class Rito(models.Model):
@@ -311,6 +311,20 @@ class ProfileIcon(VersionedModel):
 
     def image_url(self):
         return f"https://ddragon.leagueoflegends.com/cdn/{self.version}/img/profileicon/{self.full}"
+
+
+class CDProfileIcon(VersionedModel, TimestampedModel):
+    ext_id = models.CharField(max_length=64, unique=True)
+    title = models.CharField(max_length=64)
+    year_released = models.IntegerField()
+    is_legacy = models.BooleanField(default=False)
+    image_path = models.CharField(max_length=256)
+
+    def __str__(self):
+        return f"CDProfileIcon(title={self.title})"
+
+    def image_url(self):
+        return f"https://raw.communitydragon.org/{self.major}.{self.minor}/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/{self.ext_id}.jpg"
 
 
 class Champion(VersionedModel):

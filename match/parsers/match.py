@@ -1,3 +1,4 @@
+import time
 import logging
 from typing import Literal
 from typing_extensions import Annotated
@@ -292,6 +293,7 @@ class MatchResponseModel(BaseModelWithLogger):
 
 def do_test():
     api = get_riot_api()
-    data = api.match.get('NA1_4495779664', 'na').json()
-    print(f'{data=}')
-    return MatchResponseModel(**data)
+    response = api.match.get('NA1_4495779664', 'na')
+    start = time.perf_counter()
+    MatchResponseModel.model_validate_json(response.content)
+    print(f'Parse Time: {time.perf_counter() - start}')

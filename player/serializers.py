@@ -1,10 +1,8 @@
-"""player/serializers.py
-"""
 from django.contrib.auth.models import User
 from django.db.models import Q
 from rest_framework import serializers
 
-from data.models import ProfileIcon
+from data.models import CDProfileIcon
 from data.serializers import DynamicSerializer
 from .models import Summoner, Reputation
 from .models import RankPosition, Custom
@@ -98,11 +96,8 @@ class SummonerSerializer(DynamicSerializer):
         return 0
 
     def get_profile_icon(self, obj):
-        query = ProfileIcon.objects.filter(_id=obj.profile_icon_id)
-        query = query.order_by('_id', "-major", "-minor", "-patch").distinct('_id')
-        if query:
-            profile_icon = query[0]
-            return profile_icon.image_url()
+        if icon := CDProfileIcon.objects.filter(ext_id=obj.profile_icon_id).first():
+            return icon.image_url()
         return ''
 
 
