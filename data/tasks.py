@@ -311,7 +311,7 @@ def import_items(version="", language="en_US", overwrite=False):
                     else:
                         raise Exception("Could not find queried item.")
                 else:
-                    raise error
+                    continue
 
             # FromItem
             from_items = _item.get("from", [])
