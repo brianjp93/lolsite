@@ -96,21 +96,7 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
 
 
 @app.task(name='player.tasks.import_positions')
-def import_positions(summoner, threshold_days=None):
-    """Get most recent position data for Summoner.
-
-    Parameters
-    ----------
-    summoner : Summoner or Summoner.id
-        The internal ID of the Summoner model
-    threshold_days : int
-        Only update if the last update was more than {threshold_days} days ago
-
-    Returns
-    -------
-    None
-
-    """
+def import_positions(summoner: Summoner|int, threshold_days=None):
     if not isinstance(summoner, Summoner):
         summoner = Summoner.objects.get(id=summoner)
 
@@ -131,7 +117,9 @@ def import_positions(summoner, threshold_days=None):
         positions = r.json()
         create_new = False
         # need to check if anything has changed
+        queue_types = {x['queueType'] for x in positions}
         if rankcheckpoint:
+            current_queue_types = {x.queue_type for x in rankcheckpoint.positions.all()}
             for pos in positions:
                 try:
                     attrs = {
@@ -146,10 +134,11 @@ def import_positions(summoner, threshold_days=None):
                         ),
                     }
                     rankcheckpoint.positions.get(**attrs)
-                    logger.info("Nothing has changed, not creating a new checkpoint")
-                except:
-                    logger.info("Change detected.")
+                except RankPosition.DoesNotExist:
                     create_new = True
+            if len(current_queue_types - queue_types):
+                logger.info(f"We have {len(current_queue_types)} rank positions, but riot only has {len(queue_types)}. We will remove some of ours.")
+                create_new = True
         else:
             create_new = True
 
@@ -178,6 +167,8 @@ def import_positions(summoner, threshold_days=None):
                 logger.info(f'Saving new rank position for {summoner}')
                 rankposition = RankPosition(**attrs)
                 rankposition.save()
+        else:
+            logger.info("No ranked changes.")
 
 
 def simplify_email(email):
