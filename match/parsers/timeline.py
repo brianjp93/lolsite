@@ -1,5 +1,5 @@
 from typing import Annotated, Literal, TypeAlias, Union
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from core.parsers import BaseModelWithLogger
 from lolsite.tasks import get_riot_api
 
@@ -111,11 +111,12 @@ class ChampionKillEventModel(BaseModelWithLogger):
     position: PositionModel
     shutdownBounty: int | None = 0
     timestamp: int
-    victimDamageDealt: list[VictimDamageDealtModel] | None
-    victimDamageReceived: list[VictimDamageReceivedModel] | None
+    victimDamageDealt: list[VictimDamageDealtModel] | None = None
+    victimDamageReceived: list[VictimDamageReceivedModel] | None = None
     victimId: int
 
-    @validator("victimDamageDealt", "victimDamageReceived", pre=True, always=True)
+    @field_validator("victimDamageDealt", "victimDamageReceived", mode='before')
+    @classmethod
     def victim_damage_defaults(cls, v):
         if not v:
             return []
@@ -127,14 +128,14 @@ class ChampionSpecialKillEventModel(BaseModelWithLogger):
     assistingParticipantIds: list[int] | None = None
     killType: str
     killerId: int
-    multiKillLength: int | None
+    multiKillLength: int | None = None
     position: PositionModel
     timestamp: int
 
 
 class TurretPlateDestroyedEventModel(BaseModelWithLogger):
     type: Literal["TURRET_PLATE_DESTROYED"]
-    killerId: str
+    killerId: int
     laneType: Literal["BOT_LANE", "MID_LANE", "TOP_LANE"]
     position: PositionModel
     teamId: int
@@ -171,7 +172,7 @@ class BuildingKillEventModel(BaseModelWithLogger):
     position: PositionModel
     teamId: int
     timestamp: int
-    towerType: TowerType | None
+    towerType: TowerType | None = None
 
 
 class ObjectiveBountyPrestartEventModel(BaseModelWithLogger):
@@ -317,9 +318,10 @@ class TimelineResponseModel(BaseModelWithLogger):
     info: TimelineInfoModel
 
 
-def test_parse(match_id="NA1_4494749511"):
+def do_test(match_id="NA1_4739487600"):
     api = get_riot_api()
     r = api.match.timeline(match_id, "na")
     data = r.json()
     parsed = TimelineResponseModel(**data)
+    print(parsed)
     return parsed

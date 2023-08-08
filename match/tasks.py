@@ -468,7 +468,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         try:
             response = api.match.timeline(match._id, region=region)
             start = time.perf_counter()
-            parsed = TimelineResponseModel.parse_raw(response.content)
+            parsed = TimelineResponseModel.model_validate_json(response.content)
             logger.info(f"AdvancedTimeline parsing took: {time.perf_counter() - start}")
         except ValidationError:
             logger.exception('AdvanceTimeline could not be parsed.')
@@ -1018,7 +1018,7 @@ def build_stats(part: ParticipantModel):
 @transaction.atomic()
 def import_match_from_data(data, region: str, refresh=False):
     try:
-        parsed = MatchResponseModel.parse_raw(data)
+        parsed = MatchResponseModel.model_validate_json(data)
     except ValidationError:
         logger.exception('Match could not be parsed.')
         return

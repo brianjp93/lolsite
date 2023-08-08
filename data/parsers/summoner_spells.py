@@ -1,4 +1,6 @@
 import logging
+
+from pydantic import RootModel
 from core.parsers import BaseModelWithLogger
 
 
@@ -13,3 +15,7 @@ class CDSummonerSpellParser(BaseModelWithLogger):
     cooldown: int
     gameModes: list[str]
     iconPath: str
+
+
+class CDSummonerSpellListParser(RootModel):
+    root: list[CDSummonerSpellParser]

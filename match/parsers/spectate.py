@@ -1,5 +1,6 @@
 from typing import Any
 from core.parsers import BaseModelWithLogger
+from lolsite.tasks import get_riot_api
 
 
 class SpectateObserver(BaseModelWithLogger):
@@ -43,3 +44,11 @@ class SpectateModel(BaseModelWithLogger):
     observers: SpectateObserver
     participants: list[SpectateParticipant]
     bannedChampions: list[SpectateBan]
+
+
+def do_test():
+    pass
+    # todo
+    # api = get_riot_api()
+    # r = api.spectator.get()
+    # data = r.json()

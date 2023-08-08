@@ -226,14 +226,14 @@ def get_spectate(request, format=None):
     if r.status_code == 404:
         data = 'not found'
     else:
-        parsed = SpectateModel.parse_raw(r.content)
+        parsed = SpectateModel.model_validate_json(r.content)
         mt.import_spectate_from_data(parsed, region)
         summoners = mt.import_summoners_from_spectate(parsed, region)
 
         for x in summoners.values():
             pt.import_positions(x, threshold_days=3)
 
-        spectate_data = parsed.dict()
+        spectate_data = parsed.model_dump()
         for part in spectate_data["participants"]:
             positions = None
             query = Summoner.objects.filter(region=region, _id=part["summonerId"])
@@ -266,8 +266,8 @@ def check_for_live_game(request, format=None):
     api = get_riot_api()
     r = api.spectator.get(summoner_id, region)
     if 200 <= r.status_code < 300:
-        spectate_model = SpectateModel.parse_raw(r.content)
-        data = spectate_model.dict()
+        spectate_model = SpectateModel.model_validate_json(r.content)
+        data = spectate_model.model_dump()
     else:
         data = "not found"
     status_code = 200

@@ -1,6 +1,8 @@
 import logging
 from typing import Literal
-from pydantic import Field, validator
+from typing_extensions import Annotated
+from pydantic import field_validator, Field, model_validator
+from pydantic.functional_validators import BeforeValidator
 from core.parsers import BaseModelWithLogger
 from lolsite.tasks import get_riot_api
 
@@ -27,7 +29,8 @@ class PrimaryPerkStyleModel(BaseModelWithLogger):
     style: int
     selections: list[SelectionModel]
 
-    @validator('selections')
+    @field_validator('selections')
+    @classmethod
     def validate_selections(cls, v):
         if len(v) != 4:
             raise ValueError(f'selections should have length 4 but had length {len(v)}')
@@ -39,7 +42,8 @@ class SubPerkStyleModel(BaseModelWithLogger):
     style: int
     selections: list[SelectionModel]
 
-    @validator('selections')
+    @field_validator('selections')
+    @classmethod
     def validate_selections(cls, v):
         if len(v) != 2:
             raise ValueError(f'selections should have length 2 but had length {len(v)}')
@@ -53,12 +57,21 @@ class PerksModel(BaseModelWithLogger):
     @property
     def primary_style(self):
         out = [x for x in self.styles if x.description == 'primaryStyle'][0]
-        return PrimaryPerkStyleModel(**out.dict())
+        return PrimaryPerkStyleModel(**out.model_dump())
 
     @property
     def sub_style(self):
         out = [x for x in self.styles if x.description == 'subStyle'][0]
-        return SubPerkStyleModel(**out.dict())
+        return SubPerkStyleModel(**out.model_dump())
+
+
+def ping_validator(v: int|None):
+    if not v:
+        return 0
+    return v
+
+
+Ping = Annotated[int, BeforeValidator(ping_validator)]
 
 
 class ParticipantModel(BaseModelWithLogger):
@@ -82,20 +95,20 @@ class ParticipantModel(BaseModelWithLogger):
     doubleKills: int
     dragonKills: int
     eligibleForProgression: bool | None
-    allInPings: int | None = 0
-    assistMePings: int | None = 0
-    baitPings: int | None = 0
-    basicPings: int | None = 0
-    commandPings: int | None = 0
-    dangerPings: int | None = 0
-    enemyMissingPings: int | None = 0
-    enemyVisionPings: int | None = 0
-    getBackPings: int | None = 0
-    holdPings: int | None = 0
-    needVisionPings: int | None = 0
-    onMyWayPings: int | None = 0
-    pushPings: int | None = 0
-    visionClearedPings: int | None = 0
+    allInPings: Ping = 0
+    assistMePings: Ping = 0
+    baitPings: Ping = 0
+    basicPings: Ping = 0
+    commandPings: Ping = 0
+    dangerPings: Ping = 0
+    enemyMissingPings: Ping = 0
+    enemyVisionPings: Ping = 0
+    getBackPings: Ping = 0
+    holdPings: Ping = 0
+    needVisionPings: Ping = 0
+    onMyWayPings: Ping = 0
+    pushPings: Ping = 0
+    visionClearedPings: Ping = 0
     firstBloodAssist: bool
     firstBloodKill: bool
     firstTowerAssist: bool
@@ -210,20 +223,6 @@ class ParticipantModel(BaseModelWithLogger):
     def stat_perk_2(self):
         return self.perks.statPerks.get('defense', 0)
 
-    @validator(
-        'allInPings', 'pushPings', 'assistMePings',
-        'baitPings', 'commandPings', 'dangerPings',
-        'enemyMissingPings', 'enemyVisionPings', 'getBackPings',
-        'holdPings', 'needVisionPings', 'onMyWayPings',
-        'pushPings', 'visionClearedPings',
-        pre=True,
-        always=True,
-    )
-    def validate_pings(cls, v):
-        if not v:
-            return 0
-        return v
-
 
 class BanType(BaseModelWithLogger):
     championId: int
@@ -274,11 +273,11 @@ class MatchModel(BaseModelWithLogger):
     queueId: int
     tournamentCode: str | None
 
-    @validator('gameDuration')
-    def game_duration_is_sometimes_not_right(cls, v, values, **kwargs):
-        if values['gameEndTimestamp']:
-            return v * 1000
-        return v
+    @model_validator(mode='before')
+    def game_duration_is_sometimes_not_right(cls, data):
+        if data['gameEndTimestamp']:
+            data['gameDuration'] *= 1000
+        return data
 
     @property
     def sem_ver(self):
@@ -294,4 +293,5 @@ class MatchResponseModel(BaseModelWithLogger):
 def do_test():
     api = get_riot_api()
     data = api.match.get('NA1_4495779664', 'na').json()
+    print(f'{data=}')
     return MatchResponseModel(**data)

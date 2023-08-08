@@ -20,7 +20,7 @@ lolwrapper==1.5.1
 Pillow>=9.0.0
 psycopg[binary]
 python-decouple<=3.3
-pydantic
+pydantic<3
 redis<5
 requests
 sentry-sdk<2

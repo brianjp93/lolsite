@@ -1,9 +1,7 @@
 """data/tasks.py
 """
 import requests
-from data.parsers.summoner_spells import CDSummonerSpellParser
-
-from pydantic import parse_raw_as
+from data.parsers.summoner_spells import CDSummonerSpellListParser
 
 from .models import Rito
 from .models import Season, Map, Queue
@@ -756,7 +754,7 @@ def import_cdspells(major: int, minor: int):
     version = f'{major}.{minor}'
     url = f'https://raw.communitydragon.org/{version}/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells.json'
     r = requests.get(url)
-    spells = parse_raw_as(list[CDSummonerSpellParser], r.content)
+    spells = CDSummonerSpellListParser.model_validate_json(r.content).root
     spell_models = []
     for spell in spells:
         spell_models.append(CDSummonerSpell(
