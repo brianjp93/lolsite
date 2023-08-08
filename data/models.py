@@ -153,7 +153,7 @@ class Item(VersionedModel):
     group = models.CharField(max_length=128, default="", blank=True)
     description = models.CharField(max_length=2048, default="", blank=True)
     name = models.CharField(max_length=256, default="", blank=True)
-    plaintext = models.CharField(max_length=256, default="", blank=True)
+    plaintext = models.CharField(max_length=512, default="", blank=True)
     required_ally = models.CharField(max_length=256, default="", blank=True)
     required_champion = models.CharField(max_length=256, default="", blank=True)
     in_store = models.BooleanField(default=True)
