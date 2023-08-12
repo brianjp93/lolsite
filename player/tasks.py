@@ -127,8 +127,8 @@ def import_positions(summoner: Summoner|int, threshold_days=None):
                         "wins": pos["wins"],
                         "losses": pos["losses"],
                         "queue_type": pos["queueType"],
-                        "rank": pos["rank"],
-                        "tier": pos["tier"],
+                        "rank": pos.get("rank", ""),
+                        "tier": pos.get('tier', ''),
                         "series_progress": pos.get("miniSeries", {}).get(
                             "progress", None
                         ),
