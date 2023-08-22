@@ -785,12 +785,13 @@ def import_cd_profile_icons(major: int, minor: int):
     qs = CDProfileIcon.objects.filter(ext_id__in=icon_dict)
     to_update = []
     for pi in qs:
+        ext_id = int(pi.ext_id)
+        del new_icons[ext_id]
         pi.major = major
         pi.minor = minor
-        pi.title = icon_dict[pi.ext_id].title
-        pi.image_path = icon_dict[pi.ext_id].imagePath
+        pi.title = icon_dict[ext_id].title
+        pi.image_path = icon_dict[ext_id].imagePath
         to_update.append(pi)
-        del new_icons[pi.ext_id]
     CDProfileIcon.objects.bulk_update(to_update, fields=['major', 'minor', 'title', 'image_path'])
 
     to_create = []
