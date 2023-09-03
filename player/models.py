@@ -79,7 +79,7 @@ class Summoner(models.Model):
         related_name="summoners",
     )
     _id = models.CharField(
-        max_length=128, default="", blank=True, unique=True, db_index=True
+        max_length=128, default="", blank=True, db_index=True
     )
     region = models.CharField(max_length=8, default="", blank=True, db_index=True)
     account_id = models.CharField(
