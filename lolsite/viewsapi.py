@@ -95,7 +95,7 @@ def _get_summoner_meta_data(name: str, region: str):
             deaths += part.stats.deaths
             assists += part.stats.assists
             damage += part.stats.total_damage_dealt_to_champions
-            seconds += match.game_duration
+            seconds += (match.game_duration / 1000)
             vision_score += part.stats.vision_score
 
             # overall stats
