@@ -13,7 +13,6 @@ kill_timeout = "5s"
 
 [deploy]
   release_command = "sh /release.sh"
-  strategy = "bluegreen"
 
 [env]
   DJANGO_SETTINGS_MODULE = "lolsite.settings_live"
