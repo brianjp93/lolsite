@@ -116,9 +116,11 @@ class SummonerByNameView(RetrieveAPIView):
                 region=region,
             ).get()
         except Summoner.DoesNotExist:
-            summoner_id = pt.import_summoner(self.kwargs['region'], name=name)
+            summoner_id = pt.import_summoner(region, name=name)
             return get_object_or_404(Summoner, id=summoner_id)
-        pt.import_summoner.delay(self.kwargs['region'], name=name)
+        except Summoner.MultipleObjectsReturned:
+            return pt.handle_multiple_summoners(name, region)
+        pt.import_summoner.delay(region, name=name)
         return summoner
 
 
