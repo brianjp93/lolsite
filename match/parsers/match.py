@@ -95,7 +95,7 @@ class ParticipantModel(BaseModelWithLogger):
     detectorWardsPlaced: int
     doubleKills: int
     dragonKills: int
-    eligibleForProgression: bool | None
+    eligibleForProgression: bool | None = None
     allInPings: Ping = 0
     assistMePings: Ping = 0
     baitPings: Ping = 0
