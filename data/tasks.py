@@ -758,6 +758,9 @@ def import_cdspells(major: int, minor: int):
     version = f'{major}.{minor}'
     url = f'https://raw.communitydragon.org/{version}/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells.json'
     r = requests.get(url)
+    if r.status_code == 404:
+        logger.info("Spells not found, skipping.")
+        return
     spells = CDSummonerSpellListParser.model_validate_json(r.content).root
     spell_models = []
     for spell in spells:
@@ -779,6 +782,9 @@ def import_cd_profile_icons(major: int, minor: int):
     version = f'{major}.{minor}'
     url = f'https://raw.communitydragon.org/{version}/plugins/rcp-be-lol-game-data/global/default/v1/summoner-icons.json'
     r = requests.get(url)
+    if r.status_code == 404:
+        logger.info("Profile icons not found, skipping.")
+        return
     icons = CDProfileIconListParser.model_validate_json(r.content).root
     icon_dict = {x.id: x for x in icons}
     new_icons = icon_dict.copy()
