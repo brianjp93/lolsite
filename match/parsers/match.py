@@ -235,6 +235,11 @@ class TeamObjectiveModel(BaseModelWithLogger):
     kills: int
 
 
+class Horde(BaseModelWithLogger):
+    first: bool
+    kills: int
+
+
 class TeamObjectives(BaseModelWithLogger):
     baron: TeamObjectiveModel
     champion: TeamObjectiveModel
@@ -242,6 +247,7 @@ class TeamObjectives(BaseModelWithLogger):
     inhibitor: TeamObjectiveModel
     riftHerald: TeamObjectiveModel
     tower: TeamObjectiveModel
+    horde: Horde | None = None
 
 
 class TeamModel(BaseModelWithLogger):
