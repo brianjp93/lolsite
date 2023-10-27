@@ -10,7 +10,7 @@ django-filter
 django-redis
 django-storages<1.14
 django-stubs[compatible-mypy]
-mypy<1.4
+mypy
 django-stubs-ext
 djangorestframework
 factory_boy
