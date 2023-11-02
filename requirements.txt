@@ -10,15 +10,13 @@ annotated-types==0.6.0
     # via pydantic
 asgiref==3.7.2
     # via django
-async-timeout==4.0.3
-    # via redis
 attrs==23.1.0
     # via hypothesis
 beautifulsoup4==4.12.2
     # via -r requirements.in
 billiard==3.6.4.0
     # via celery
-boto3==1.18
+boto3==1.18.0
     # via -r requirements.in
 botocore==1.21.65
     # via
@@ -46,7 +44,7 @@ click-repl==0.3.0
     # via celery
 dj-database-url==2.1.0
     # via -r requirements.in
-django==4.2.6
+django==4.2.7
     # via
     #   -r requirements.in
     #   dj-database-url
