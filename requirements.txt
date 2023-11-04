@@ -94,7 +94,7 @@ jmespath==0.10.0
     #   botocore
 kombu==5.3.2
     # via celery
-lolwrapper==1.5.1
+lolwrapper==1.6.1
     # via -r requirements.in
 mypy==1.6.1
     # via
