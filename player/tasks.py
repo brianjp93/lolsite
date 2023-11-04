@@ -87,6 +87,8 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
         "summoner_level": data["summonerLevel"],
         "_id": data["id"],
         'region': region.lower(),
+        'riot_id_name': data.get("riotIdName", ""),
+        'riot_id_tagline': data.get("riotIdTagline", ""),
     }
     summoner, _ = Summoner.objects.update_or_create(
         puuid=data['puuid'],

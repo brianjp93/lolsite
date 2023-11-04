@@ -93,6 +93,8 @@ class Summoner(models.Model):
         unique=True,
         db_index=True,
     )
+    riot_id_name = models.CharField(default="", max_length=32)
+    riot_id_tagline = models.CharField(default="", max_length=8)
     revision_date = models.BigIntegerField(default=0)
     summoner_level = models.IntegerField(default=0)
     pro = models.ForeignKey("Pro", null=True, on_delete=models.SET_NULL, blank=True)

@@ -243,6 +243,8 @@ class Participant(models.Model):
     summoner_2_id = models.IntegerField()
     summoner_2_casts = models.IntegerField(default=0)
     team_id = models.IntegerField()
+    riot_id_name = models.CharField(default="", max_length=32)
+    riot_id_tagline = models.CharField(default="", max_length=8)
 
     placement = models.IntegerField(default=0)
     subteam_placement = models.IntegerField(default=0)

@@ -105,6 +105,8 @@ def import_summoner_from_participant(participants: list[ParticipantModel], regio
                 simple_name=part.simple_name,
                 region=region.lower(),
                 puuid=part.puuid,
+                riot_id_name=part.riotIdName,
+                riot_id_tagline=part.riotIdTagline,
             )
             sums.append(summoner)
     Summoner.objects.bulk_create(sums, ignore_conflicts=True)
@@ -871,6 +873,8 @@ def build_participant(part: ParticipantModel, match: Match):
         team_position=part.teamPosition,
         placement=part.placement,
         subteam_placement=part.subteamPlacement,
+        riot_id_name=part.riotIdName,
+        riot_id_tagline=part.riotIdTagline,
     )
 
 def build_team(team: TeamModel, match: Match):
