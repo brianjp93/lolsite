@@ -24,3 +24,4 @@ pydantic<3
 redis<5
 requests
 sentry-sdk<2
+openai

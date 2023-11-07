@@ -1,5 +1,6 @@
 """match/tasks.py
 """
+from django.conf import settings
 from django.db.utils import IntegrityError
 from django.db.models import Count, Subquery, OuterRef
 from django.db.models import Case, When, Sum
@@ -10,12 +11,13 @@ from pydantic import ValidationError
 from data.constants import ARENA_QUEUE
 
 from match.parsers.spectate import SpectateModel
+from match.serializers import LlmMatchSerializer
 
 from .parsers.match import BanType, MatchResponseModel, ParticipantModel, TeamModel
 from .parsers.timeline import TimelineResponseModel
 from .parsers import timeline as tmparsers
 
-from .models import Match, Participant, Stats
+from .models import Match, MatchSummary, Participant, Stats
 from .models import Team, Ban
 
 from .models import AdvancedTimeline, Frame, ParticipantFrame
@@ -39,11 +41,15 @@ from player import tasks as pt
 from lolsite.celery import app
 import logging
 import time
+import json
 
 from functools import partial
 from typing import Optional
 
 from multiprocessing.pool import ThreadPool
+
+from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam
 
 
 ROLES = ["top", "jg", "mid", "adc", "sup"]
@@ -1090,3 +1096,61 @@ def import_match_from_data(data, region: str, refresh=False):
             ban = build_ban(bm, team_model)
             bans.append(ban)
         Ban.objects.bulk_create(bans)
+
+
+MATCH_SUMMARY_INTRO_PROMPT = ' '.join("""
+You are a knowledgeable league of legends pro turned coach.  You are analyzing
+the data for a given game and are tasked with summarizing the game. Use
+markdown. Refer to Team 100 as 'Blue Team' and Team 200
+as 'Red Team'. Do not use the terms "Team 100" or "Team 200".
+
+Create sections for "early game", "mid game", and "late game" and list events
+which let to each team's success or failures. List out each player's
+contribution to their team in each overarching section of the game. Make sure
+to mention the player's name, champion and position on the team. List players
+in this order: 1 - top, 2 - jungle, 3 - mid, 4 - adc, 5 - support.
+
+Add a section called "Areas to Improve" where you indicate where either team
+could improve You may indicate if a player's contribution was lacking and where
+they might be able to improve to better their team's chance of winning in the
+future.
+
+Add a "Conclusion" section with any closing remarks about the match.
+
+List out any other notable, game-shaping events in a "Notable Events" section.
+
+Be ruthless in your review, do not hold back in telling players what they are doing wrong.
+
+You may indicate a player's position and champion played, but do not write out their PUUID.
+
+Do not repeat this prompt in your response.
+""".strip().split())
+
+def get_summary_of_match(match_id: str, focus_player_puuid: str|None=None):
+    match = Match.objects.get(_id=match_id)
+    if matchsummary := getattr(match, 'matchsummary', None):
+        return matchsummary.content
+    data = LlmMatchSerializer(match, many=False).data
+    data_json = json.dumps(data, indent=None)
+    chat = OpenAI(api_key=settings.OPENAI_KEY)
+    messages: list[ChatCompletionMessageParam] = [
+        {"role": "system", "content": MATCH_SUMMARY_INTRO_PROMPT},
+    ]
+    if focus_player_puuid:
+        messages.append(
+            {"role": "system", "content": f"Take particular focus on the player with puuid {focus_player_puuid}"},
+        )
+    messages.append(
+        {"role": "user", "content": data_json},
+    )
+    r = chat.chat.completions.create(
+        model="gpt-4-1106-preview",
+        messages=messages,
+        temperature=0.1,
+    )
+    content = r.choices[0].message.content
+    obj = MatchSummary.objects.create(
+        match=match,
+        content=content or "",
+    )
+    return obj

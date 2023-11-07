@@ -158,6 +158,12 @@ class MatchQuerySet(models.QuerySet['Match']):
         }
 
 
+class MatchSummary(models.Model):
+    match = models.OneToOneField('Match', on_delete=models.CASCADE)
+    content = models.TextField(default="")
+    created_at = models.DateTimeField(default=timezone.now)
+
+
 class Match(VersionedModel):
     _id = models.CharField(unique=True, db_index=True, max_length=32)
     game_creation = models.BigIntegerField(db_index=True)
@@ -179,6 +185,8 @@ class Match(VersionedModel):
     advancedtimeline: Union['AdvancedTimeline', None]
     participants: QuerySet['Participant']
     comments: QuerySet[Comment]
+
+    matchsummary: MatchSummary | None
 
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
