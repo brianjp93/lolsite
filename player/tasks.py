@@ -3,6 +3,8 @@ from lolsite.celery import app
 from django.utils import timezone
 from django.contrib.auth.models import User
 
+from player.parsers.account_parsers import AccountParser
+
 from .models import Summoner
 from .models import simplify
 from .models import RankCheckpoint, RankPosition
@@ -44,7 +46,15 @@ def import_pros(overwrite=False):
 
 
 @app.task(name="player.tasks.import_summoner")
-def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=None):
+def import_summoner(
+    region=None,
+    account_id=None,
+    name=None,
+    summoner_id=None,
+    puuid=None,
+    riot_id_name=None,
+    riot_id_tagline=None,
+):
     """Import a summoner by one a several identifiers.
 
     Parameters
@@ -62,18 +72,29 @@ def import_summoner(region, account_id=None, name=None, summoner_id=None, puuid=
     """
     api = get_riot_api()
     kwargs = {}
-    if account_id is not None:
-        kwargs["encrypted_account_id"] = account_id
-    elif name is not None:
-        kwargs["name"] = name
-    elif summoner_id is not None:
-        kwargs["encrypted_summoner_id"] = summoner_id
-    elif puuid is not None:
-        kwargs["encrypted_puuid"] = puuid
-    r = api.summoner.get(region=region, **kwargs)
+    if region:
+        if account_id is not None:
+            kwargs["encrypted_account_id"] = account_id
+        elif name is not None:
+            kwargs["name"] = name
+        elif summoner_id is not None:
+            kwargs["encrypted_summoner_id"] = summoner_id
+        elif puuid is not None:
+            kwargs["encrypted_puuid"] = puuid
+        r = api.summoner.get(region=region, **kwargs)
+    elif riot_id_name and riot_id_tagline:
+        r = api.account.by_riot_id(game_name=riot_id_name, tag_line=riot_id_tagline)
+        print(r.json())
+        if 400 <= r.status_code < 500:
+            logger.warning("Summoner not found.")
+            return None
+        data = AccountParser.model_validate_json(r.content)
+        r = api.summoner.get(encrypted_puuid=data.puuid)
+    else:
+        raise Exception("Improper function call.")
 
     if r.status_code >= 400 and r.status_code < 500:
-        logger.warning(f"Summoner not found.")
+        logger.warning("Summoner not found.")
         return None
 
     data = r.json()
@@ -260,7 +281,7 @@ def remove_old_email_verification(age_hours=1):
     query.delete()
 
 
-def handle_multiple_summoners(name: str, region: str):
-    for summoner in Summoner.objects.filter(region=region, simple_name=name):
+def handle_multiple_summoners(region: str, **kwargs):
+    for summoner in Summoner.objects.filter(region=region, **kwargs):
         import_summoner(region, puuid=summoner.puuid)
-    return Summoner.objects.filter(region=region, simple_name=name)[:1].get()
+    return Summoner.objects.filter(region=region, **kwargs)[:1].get()

@@ -95,6 +95,7 @@ class Summoner(models.Model):
     )
     riot_id_name = models.CharField(default="", max_length=32)
     riot_id_tagline = models.CharField(default="", max_length=8)
+    simple_riot_id =  models.CharField(default="", max_length=41)
     revision_date = models.BigIntegerField(default=0)
     summoner_level = models.IntegerField(default=0)
     pro = models.ForeignKey("Pro", null=True, on_delete=models.SET_NULL, blank=True)
@@ -115,6 +116,8 @@ class Summoner(models.Model):
     def save(self, *args, **kwargs):
         if self.name:
             self.simple_name = simplify(self.name)
+        if self.riot_id_name and self.riot_id_tagline:
+            self.simple_riot_id = simplify(f"{self.riot_id_name}#{self.riot_id_tagline}")
 
         super(Summoner, self).save(*args, **kwargs)
 
