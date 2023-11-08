@@ -130,17 +130,18 @@ class SummonerByRiotId(RetrieveAPIView):
     def get_object(self):
         riot_id_name = self.kwargs['riot_id_name']
         riot_id_tagline = self.kwargs['riot_id_tagline']
+        region = self.kwargs['region']
         try:
             summoner = Summoner.objects.filter(
                 riot_id_name=riot_id_name,
                 riot_id_tagline=riot_id_tagline,
             ).get()
         except Summoner.DoesNotExist:
-            summoner_id = pt.import_summoner(region, name=name)
+            summoner_id = pt.import_summoner(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
             return get_object_or_404(Summoner, id=summoner_id)
         except Summoner.MultipleObjectsReturned:
             return pt.handle_multiple_summoners(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
-        pt.import_summoner.delay(region=region, name=name)
+        pt.import_summoner.delay(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
         return summoner
 
 
