@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    Match, Participant, Stats, Team, Ban,
+    Match, MatchSummary, Participant, Stats, Team, Ban,
     AdvancedTimeline, Frame, ParticipantFrame,
 )
 from . import models
@@ -769,3 +769,104 @@ class BasicMatchSerializer(serializers.ModelSerializer):
             data = super().to_representation(instance)
             cache.set(cache_key, data, CACHE_TIME)
         return data
+
+
+class LlmStatsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Stats
+        fields = [
+            "assists",
+            "champ_level",
+            "damage_dealt_to_turrets",
+            "damage_dealt_to_objectives",
+            "gold_earned",
+            "kills",
+            "deaths",
+            "damage_self_mitigated",
+            "time_ccing_others",
+            "total_heal",
+            "total_heals_on_teammates",
+            "total_time_crowd_control_dealt",
+            "win",
+            "vision_score",
+        ]
+
+class LlmParticipantSerializer(serializers.ModelSerializer):
+    stats = LlmStatsSerializer(many=False)
+
+    class Meta:
+        model = Participant
+        fields = [
+            "id",
+            "summoner_name",
+            "lane",
+            "role",
+            "individual_position",
+            "team_position",
+
+            "stats",
+        ]
+
+class LlmParticipantFrames(serializers.ModelSerializer):
+    class Meta:
+        model = ParticipantFrame
+        fields = [
+            "participant_id",
+            "jungle_minions_killed",
+            "total_gold",
+            "xp",
+            "total_damage_done_to_champions",
+            "total_damage_taken",
+            "movement_speed",
+        ]
+
+class LlmFrameSerializer(serializers.ModelSerializer):
+    participantframes = LlmParticipantFrames(many=True)
+    turretplatedestroyedevent_set = TurretPlateDestroyedEventSerializer(many=True)
+    elitemonsterkillevent_set = EliteMonsterKillEventSerializer(many=True)
+    buildingkillevent_set = BuildingKillEventSerializer(many=True)
+
+    class Meta:
+        model = Frame
+        fields = [
+            "timestamp",
+            "participantframes",
+            "turretplatedestroyedevent_set",
+            "elitemonsterkillevent_set",
+            "buildingkillevent_set",
+        ]
+
+class LlmTimelineSerializer(serializers.ModelSerializer):
+    frames = LlmFrameSerializer(many=True)
+
+    class Meta:
+        model = AdvancedTimeline
+        fields = [
+            "frames"
+        ]
+
+class LlmMatchSerializer(serializers.ModelSerializer):
+    participants = LlmParticipantSerializer(many=True)
+    teams = TeamSerializer(many=True)
+    advancedtimeline = LlmTimelineSerializer(many=False)
+
+    class Meta:
+        model = Match
+        fields = [
+            "game_duration",
+            "game_creation",
+            "queue_id",
+            "major",
+            "minor",
+            "participants",
+            "teams",
+            "advancedtimeline",
+        ]
+
+
+class MatchSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MatchSummary
+        fields = [
+            "content",
+        ]

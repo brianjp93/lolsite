@@ -9,6 +9,7 @@ urlpatterns = [
         name="matches-by-summoner",
     ),
     path("<slug:match_id>/timeline/", match_api.AdvancedTimelineView.as_view()),
+    path("<slug:match_id>/summary/", match_api.MatchSummaryView.as_view()),
     path("participants/", match_api.ParticipantsView.as_view()),
     path("get-spectate/", match_api.get_spectate),
     path("check-for-live-game/", match_api.check_for_live_game),

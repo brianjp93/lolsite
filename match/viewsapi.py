@@ -1,6 +1,8 @@
 """match/viewsapi.py
 """
 from django.db.models import Q, Exists, OuterRef
+from django.contrib.auth.models import User
+from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.generics import ListAPIView, QuerySet, RetrieveAPIView
@@ -11,9 +13,9 @@ from data import constants
 from match import tasks as mt
 from match.parsers.spectate import SpectateModel
 
-from .models import Match, AdvancedTimeline
+from .models import Match, AdvancedTimeline, MatchSummary
 from .models import Participant, sort_positions, Ban
-from .serializers import FullMatchSerializer, BasicMatchSerializer
+from .serializers import FullMatchSerializer, BasicMatchSerializer, MatchSummarySerializer
 from .serializers import MatchSerializer, AdvancedTimelineSerializer, BanSerializer
 
 from player.models import Summoner
@@ -108,6 +110,25 @@ class MatchBySummoner(ListAPIView):
             qs = qs.filter(Exists(Participant.objects.filter(puuid=x.puuid, match_id=OuterRef('id'))))
         return qs
 
+def user_can_create_match_summary(user: User):
+    if user.is_superuser:
+        return True
+    return False
+
+class MatchSummaryView(RetrieveAPIView):
+    serializer_class = MatchSummarySerializer
+    lookup_field = 'match_id'
+
+    def get_object(self):
+        _id = self.kwargs[self.lookup_field]
+        match = get_object_or_404(Match.objects.all(), _id=_id)
+        if matchsummary := getattr(match, 'matchsummary', None):
+            return matchsummary
+        else:
+            if user_can_create_match_summary(self.request.user):
+                obj = mt.get_summary_of_match(match._id)
+                return obj
+        raise Http404("Game not found.")
 
 class AdvancedTimelineView(RetrieveAPIView):
     serializer_class = AdvancedTimelineSerializer
