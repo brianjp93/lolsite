@@ -126,7 +126,8 @@ class MatchSummaryView(RetrieveAPIView):
             return matchsummary
         else:
             if user_can_create_match_summary(self.request.user):
-                obj = mt.get_summary_of_match(match._id)
+                mt.get_summary_of_match.delay(match._id)
+                obj = get_object_or_404(MatchSummary, match=match)
                 return obj
         raise Http404("Game not found.")
 

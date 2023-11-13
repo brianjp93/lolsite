@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import QuerySet
 from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 import zoneinfo
 import logging
@@ -159,8 +160,14 @@ class MatchQuerySet(models.QuerySet['Match']):
 
 
 class MatchSummary(models.Model):
+    class Status(models.TextChoices):
+        RETRIEVING = "r", _("Retrieving")
+        COMPLETE = "c", _("Complete")
+        FAILED = "f", _("Failed")
+
     match = models.OneToOneField('Match', on_delete=models.CASCADE)
     content = models.TextField(default="")
+    status = models.CharField(choices=Status.choices, max_length=1, default=Status.RETRIEVING)
     created_at = models.DateTimeField(default=timezone.now)
 
 

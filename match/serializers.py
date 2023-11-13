@@ -814,10 +814,11 @@ class LlmParticipantFrames(serializers.ModelSerializer):
             "participant_id",
             "jungle_minions_killed",
             "total_gold",
-            "xp",
+            "level",
             "total_damage_done_to_champions",
             "total_damage_taken",
-            "movement_speed",
+            "x",
+            "y",
         ]
 
 class LlmFrameSerializer(serializers.ModelSerializer):
@@ -869,4 +870,5 @@ class MatchSummarySerializer(serializers.ModelSerializer):
         model = MatchSummary
         fields = [
             "content",
+            "status",
         ]

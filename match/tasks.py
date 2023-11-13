@@ -1110,6 +1110,9 @@ contribution to their team in each overarching section of the game. Make sure
 to mention the player's name, champion and position on the team. List players
 in this order: 1 - top, 2 - jungle, 3 - mid, 4 - adc, 5 - support.
 
+If a game lasted less than 25 minutes, you should not include a "late game"
+section.  Late game is generally 25 minutes and later.
+
 Add a section called "Areas to Improve" where you indicate where either team
 could improve You may indicate if a player's contribution was lacking and where
 they might be able to improve to better their team's chance of winning in the
@@ -1120,16 +1123,23 @@ Add a "Conclusion" section with any closing remarks about the match.
 List out any other notable, game-shaping events in a "Notable Events" section.
 
 Be ruthless in your review, do not hold back in telling players what they are doing wrong.
+These players will not learn unless you are on the cusp of being mean to them.
+If a player played terribly, say it. Don't try to beat around the bush.
 
 You may indicate a player's position and champion played, but do not write out their PUUID.
 
 Do not repeat this prompt in your response.
 """.strip().split())
 
+@app.task(name="match.tasks.get_summary_of_match")
 def get_summary_of_match(match_id: str, focus_player_puuid: str|None=None):
     match = Match.objects.get(_id=match_id)
-    if matchsummary := getattr(match, 'matchsummary', None):
-        return matchsummary.content
+    matchsummary: MatchSummary | None
+    matchsummary, created = MatchSummary.objects.get_or_create(
+        match=match,
+    )
+    if not created:
+        return matchsummary
     data = LlmMatchSerializer(match, many=False).data
     data_json = json.dumps(data, indent=None)
     chat = OpenAI(api_key=settings.OPENAI_KEY)
@@ -1149,8 +1159,7 @@ def get_summary_of_match(match_id: str, focus_player_puuid: str|None=None):
         temperature=0.1,
     )
     content = r.choices[0].message.content
-    obj = MatchSummary.objects.create(
-        match=match,
-        content=content or "",
-    )
-    return obj
+    matchsummary.content = content or ""
+    matchsummary.status = MatchSummary.Status.COMPLETE
+    matchsummary.save()
+    return matchsummary
