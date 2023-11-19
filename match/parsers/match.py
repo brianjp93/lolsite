@@ -75,6 +75,21 @@ def ping_validator(v: int|None):
 Ping = Annotated[int, BeforeValidator(ping_validator)]
 
 
+class MissionsModel(BaseModelWithLogger):
+    playerScore0: int|None = 0
+    playerScore1: int|None = 0
+    playerScore2: int|None = 0
+    playerScore3: int|None = 0
+    playerScore4: int|None = 0
+    playerScore5: int|None = 0
+    playerScore6: int|None = 0
+    playerScore7: int|None = 0
+    playerScore8: int|None = 0
+    playerScore9: int|None = 0
+    playerScore10: int|None = 0
+    playerScore11: int|None = 0
+
+
 class ParticipantModel(BaseModelWithLogger):
     challenges: dict[str, float | int] = Field(default_factory=dict)
     perks: PerksModel
@@ -207,6 +222,19 @@ class ParticipantModel(BaseModelWithLogger):
     playerAugment4: int = 0
     playerSubteamId: int = 0
     subteamPlacement: int = 0
+    playerScore0: int|None = 0
+    playerScore1: int|None = 0
+    playerScore2: int|None = 0
+    playerScore3: int|None = 0
+    playerScore4: int|None = 0
+    playerScore5: int|None = 0
+    playerScore6: int|None = 0
+    playerScore7: int|None = 0
+    playerScore8: int|None = 0
+    playerScore9: int|None = 0
+    playerScore10: int|None = 0
+    playerScore11: int|None = 0
+    missions: MissionsModel|None = None
 
     @property
     def simple_name(self):
