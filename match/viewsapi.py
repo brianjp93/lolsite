@@ -41,7 +41,8 @@ class MatchBySummoner(ListAPIView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        name = pt.simplify(self.kwargs['name'])
+        riot_id_name = pt.simplify(self.kwargs['riot_id_name'])
+        riot_id_tagline = self.kwargs['riot_id_tagline']
         region = self.kwargs['region']
         queue = self.request.query_params.get('queue', None)
         if isinstance(queue, str) and queue.isdigit():
@@ -51,7 +52,7 @@ class MatchBySummoner(ListAPIView):
         start: int = self.paginator.get_offset(self.request)
         limit: int = self.paginator.get_limit(self.request)
 
-        summoner = self.get_summoner(name, region)
+        summoner = self.get_summoner(riot_id_name, riot_id_tagline, region)
 
         # only add view if requesting the first page.
         if start == 0:
@@ -78,19 +79,23 @@ class MatchBySummoner(ListAPIView):
         return qs
 
     @staticmethod
-    def get_summoner(name: str, region: str):
-        name = pt.simplify(name)
-        summoner_query = Summoner.objects.filter(simple_name=name, region=region)
+    def get_summoner(riot_id_name: str, riot_id_tagline: str, region: str):
+        riot_id_name = pt.simplify(riot_id_name)
+        summoner_query = Summoner.objects.filter(simple_riot_id=riot_id_name, riot_id_tagline=riot_id_tagline, region=region)
         if len(summoner_query) == 0:
-            summoner_id = pt.import_summoner(region, name=name)
+            summoner_id = pt.import_summoner(
+                riot_id_name=riot_id_name,
+                riot_id_tagline=riot_id_tagline,
+                region=region,
+            )
             summoner = get_object_or_404(Summoner, id=summoner_id)
         elif len(summoner_query) >= 2:
             for summoner in summoner_query:
-                pt.import_summoner(region, puuid=summoner.puuid)
-            summoner = get_object_or_404(Summoner, region=region, simple_name=name)
+                pt.import_summoner(region=region, puuid=summoner.puuid)
+            summoner = get_object_or_404(Summoner, region=region, simple_riot_id=riot_id_name, riot_id_tagline=riot_id_tagline)
         else:
             # update in the background if we already have the user imported
-            pt.import_summoner.s(region, name=name).apply_async(countdown=1)
+            pt.import_summoner.s(riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline, region=region).apply_async(countdown=1)
             summoner = summoner_query[0]
         return summoner
 

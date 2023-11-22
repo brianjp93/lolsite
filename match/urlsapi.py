@@ -4,7 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
     path(
-        "by-summoner/<str:region>/<str:name>/",
+        "by-summoner/<str:region>/<str:riot_id_name>/<str:riot_id_tagline>/",
         match_api.MatchBySummoner.as_view(),
         name="matches-by-summoner",
     ),

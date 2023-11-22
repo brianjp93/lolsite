@@ -84,6 +84,8 @@ class SummonerSerializer(DynamicSerializer):
             "profile_icon_id",
             "puuid",
             "summoner_level",
+            "riot_id_name",
+            "riot_id_tagline",
         )
 
     def get_has_match_overlap(self, obj):

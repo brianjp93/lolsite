@@ -171,7 +171,7 @@ class ParticipantModel(BaseModelWithLogger):
     profileIcon: int
     puuid: str
     quadraKills: int
-    riotIdName: str
+    riotIdGameName: str
     riotIdTagline: str
     role: str
     sightWardsBoughtInGame: int

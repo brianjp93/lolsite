@@ -82,13 +82,16 @@ def get_summoner(request, format=None):
             name = pt.simplify(name)
             query = Summoner.objects.filter(simple_name=name, region=region)
         elif puuid:
-            query = Summoner.objects.filter(puuid=puuid, region=region)
+            print('found puuid', puuid)
+            summoner_id = pt.import_summoner(region=region, puuid=puuid)
+            query = Summoner.objects.filter(id=summoner_id)
+            print(query)
         else:
             query = None
 
         if query:
             summoner = query[0]
-            serializer = SummonerSerializer(summoner)
+            serializer = SummonerSerializer(summoner, context={'request': request})
             data["data"] = serializer.data
         else:
             data["error"] = "No summoner found"
@@ -103,27 +106,6 @@ class MyUserView(RetrieveAPIView):
         return self.request.user
 
 
-class SummonerByNameView(RetrieveAPIView):
-    lookup_field = 'name'
-    serializer_class = SummonerSerializer
-
-    def get_object(self):
-        name = pt.simplify(self.kwargs[self.lookup_field])
-        region = self.kwargs['region']
-        try:
-            summoner = Summoner.objects.filter(
-                simple_name=name,
-                region=region,
-            ).get()
-        except Summoner.DoesNotExist:
-            summoner_id = pt.import_summoner(region, name=name)
-            return get_object_or_404(Summoner, id=summoner_id)
-        except Summoner.MultipleObjectsReturned:
-            return pt.handle_multiple_summoners(region, simple_name=name)
-        pt.import_summoner.delay(region, name=name)
-        return summoner
-
-
 class SummonerByRiotId(RetrieveAPIView):
     serializer_class = SummonerSerializer
 
@@ -135,6 +117,7 @@ class SummonerByRiotId(RetrieveAPIView):
             summoner = Summoner.objects.filter(
                 riot_id_name=riot_id_name,
                 riot_id_tagline=riot_id_tagline,
+                region=region,
             ).get()
         except Summoner.DoesNotExist:
             summoner_id = pt.import_summoner(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
