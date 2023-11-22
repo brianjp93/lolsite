@@ -171,8 +171,8 @@ class ParticipantModel(BaseModelWithLogger):
     profileIcon: int
     puuid: str
     quadraKills: int
-    riotIdGameName: str
-    riotIdTagline: str
+    riotIdGameName: str | None = ""
+    riotIdTagline: str | None = ""
     role: str
     sightWardsBoughtInGame: int
     spell1Casts: int = 0
