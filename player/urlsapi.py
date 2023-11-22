@@ -19,7 +19,6 @@ urlpatterns = [
         player_views.ReputationUpdateView.as_view(),
         name="update-reputation",
     ),
-    path("summoner/<str:region>/by-name/<str:name>/", player_views.SummonerByNameView.as_view()),
     path("summoner/by-riot-id/<str:region>/<str:riot_id_name>/<str:riot_id_tagline>/", player_views.SummonerByRiotId.as_view()),
     path("summoner/", player_views.get_summoner),
     path("summoner/<int:summoner_pk>/name-changes/", player_views.NameChangeListView.as_view()),

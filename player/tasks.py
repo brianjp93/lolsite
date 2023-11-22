@@ -72,7 +72,18 @@ def import_summoner(
     """
     api = get_riot_api()
     kwargs = {}
-    if region:
+    game_name = ""
+    tagline = ""
+    if riot_id_name and riot_id_tagline and region:
+        r = api.account.by_riot_id(riot_id_name, riot_id_tagline, region=region)
+        if 400 <= r.status_code < 500:
+            logger.warning("Summoner not found.")
+            return None
+        acc = AccountParser.model_validate_json(r.content)
+        game_name = acc.gameName
+        tagline = acc.tagLine
+        r = api.summoner.get(encrypted_puuid=acc.puuid, region=region)
+    elif region:
         if account_id is not None:
             kwargs["encrypted_account_id"] = account_id
         elif name is not None:
@@ -81,15 +92,11 @@ def import_summoner(
             kwargs["encrypted_summoner_id"] = summoner_id
         elif puuid is not None:
             kwargs["encrypted_puuid"] = puuid
+            r = api.account.by_puuid(puuid, region=region)
+            acc = AccountParser.model_validate_json(r.content)
+            game_name = acc.gameName
+            tagline = acc.tagLine
         r = api.summoner.get(region=region, **kwargs)
-    elif riot_id_name and riot_id_tagline:
-        r = api.account.by_riot_id(game_name=riot_id_name, tag_line=riot_id_tagline)
-        print(r.json())
-        if 400 <= r.status_code < 500:
-            logger.warning("Summoner not found.")
-            return None
-        data = AccountParser.model_validate_json(r.content)
-        r = api.summoner.get(encrypted_puuid=data.puuid)
     else:
         raise Exception("Improper function call.")
 
@@ -98,7 +105,6 @@ def import_summoner(
         return None
 
     data = r.json()
-
     model_data = {
         "account_id": data["accountId"],
         "name": data["name"].strip(),
@@ -108,9 +114,11 @@ def import_summoner(
         "summoner_level": data["summonerLevel"],
         "_id": data["id"],
         'region': region.lower(),
-        'riot_id_name': data.get("riotIdName", ""),
-        'riot_id_tagline': data.get("riotIdTagline", ""),
     }
+    if game_name:
+        model_data['riot_id_name'] = game_name
+    if tagline:
+        model_data['riot_id_tagline'] = tagline
     summoner, _ = Summoner.objects.update_or_create(
         puuid=data['puuid'],
         defaults=model_data,

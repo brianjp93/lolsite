@@ -66,13 +66,13 @@ def require_login(func):
     return wrapper
 
 
-def _get_summoner_meta_data(name: str, region: str):
+def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str):
     meta = META.copy()
-    name = simplify(name)
-    qs = Summoner.objects.filter(region=region, simple_name=name)
+    riot_id_name = simplify(riot_id_name)
+    qs = Summoner.objects.filter(region=region, simple_riot_id=riot_id_name)
     if len(qs) > 1:
-        handle_multiple_summoners(region, simple_name=name)
-        qs = Summoner.objects.filter(region=region, simple_name=name)
+        handle_multiple_summoners(region, simple_riot_id=riot_id_name, riot_id_tagline=riot_id_tagline)
+        qs = Summoner.objects.filter(region=region, simple_riot_id=riot_id_name, riot_id_tagline=riot_id_tagline)
     wins = 0
     kills = 0
     deaths = 0
@@ -143,7 +143,8 @@ def _get_summoner_meta_data(name: str, region: str):
 
 @api_view(['GET'])
 def get_summoner_meta_data(request, region, name, format=None):
-    meta = _get_summoner_meta_data(name, region)
+    riot_id_name, riot_id_tagline = name.split('-')
+    meta = _get_summoner_meta_data(riot_id_name, riot_id_tagline, region)
     return Response(meta)
 
 

@@ -111,7 +111,7 @@ def import_summoner_from_participant(participants: list[ParticipantModel], regio
                 simple_name=part.simple_name,
                 region=region.lower(),
                 puuid=part.puuid,
-                riot_id_name=part.riotIdName,
+                riot_id_name=part.riotIdGameName,
                 riot_id_tagline=part.riotIdTagline,
             )
             sums.append(summoner)
@@ -879,7 +879,7 @@ def build_participant(part: ParticipantModel, match: Match):
         team_position=part.teamPosition,
         placement=part.placement,
         subteam_placement=part.subteamPlacement,
-        riot_id_name=part.riotIdName,
+        riot_id_name=part.riotIdGameName,
         riot_id_tagline=part.riotIdTagline,
     )
 
@@ -929,7 +929,7 @@ def build_stats(part: ParticipantModel):
 
         game_ended_in_early_surrender=part.gameEndedInEarlySurrender,
         game_ended_in_surrender=part.gameEndedInSurrender,
-        riot_id_name=part.riotIdName,
+        riot_id_name=part.riotIdGameName,
         riot_id_tagline=part.riotIdTagline,
 
         assists=part.assists,
