@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view
 
 from django.contrib.auth.models import User
 from django.contrib.auth import login
-from django.middleware.csrf import get_token
 from django.templatetags.static import static
 
 from match.models import Match, Participant
@@ -68,8 +67,10 @@ def require_login(func):
 
 def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str):
     meta = META.copy()
+    if not riot_id_name or not riot_id_tagline:
+        return meta
     riot_id_name = simplify(riot_id_name)
-    qs = Summoner.objects.filter(region=region, simple_riot_id=riot_id_name)
+    qs = Summoner.objects.filter(region=region, simple_riot_id=riot_id_name, riot_id_tagline=riot_id_tagline)
     if len(qs) > 1:
         handle_multiple_summoners(region, simple_riot_id=riot_id_name, riot_id_tagline=riot_id_tagline)
         qs = Summoner.objects.filter(region=region, simple_riot_id=riot_id_name, riot_id_tagline=riot_id_tagline)
@@ -143,7 +144,10 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
 
 @api_view(['GET'])
 def get_summoner_meta_data(request, region, name, format=None):
-    riot_id_name, riot_id_tagline = name.split('-')
+    if '-' in name:
+        riot_id_name, riot_id_tagline = name.split('-')
+    else:
+        return Response(META)
     meta = _get_summoner_meta_data(riot_id_name, riot_id_tagline, region)
     return Response(meta)
 
