@@ -70,7 +70,7 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
     if not riot_id_name or not riot_id_tagline:
         return meta
     riot_id_name = simplify(riot_id_name)
-    full_id = f"{riot_id_name}#{riot_id_tagline}"
+    full_id = simplify(f"{riot_id_name}#{riot_id_tagline}")
     qs = Summoner.objects.filter(region=region, simple_riot_id=full_id)
     if len(qs) > 1:
         handle_multiple_summoners(region, simple_riot_id=full_id)
@@ -158,7 +158,7 @@ def _get_match_meta_data(riot_id_name: str, riot_id_tagline: str, region: str, m
     riot_id_name = simplify(riot_id_name)
     if not riot_id_name or not riot_id_tagline:
         return meta
-    full_id = f"{riot_id_name}#{riot_id_tagline}"
+    full_id = simplify(f"{riot_id_name}#{riot_id_tagline}")
     try:
         summoner = Summoner.objects.get(region=region, simple_riot_id=full_id)
     except Summoner.DoesNotExist:
