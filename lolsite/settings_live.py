@@ -94,6 +94,7 @@ def before_send(event, hint):
 sentry_sdk.init(
     dsn=config("SENTRY_DSN", ""),
     integrations=[DjangoIntegration()],
+    enable_tracing=True,
     before_breadcrumb=before_breadcrumb,
     before_send=before_send,
 )
