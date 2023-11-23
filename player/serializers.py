@@ -118,8 +118,10 @@ class CustomSerializer(DynamicSerializer):
 class FavoriteSerializer(DynamicSerializer):
     name = serializers.CharField()
     region = serializers.CharField()
-    puuid = serializers.SerializerMethodField()
-    summoner_id = serializers.SerializerMethodField()
+    puuid = serializers.CharField(source="summoner.puuid")
+    summoner_id = serializers.CharField(source="summoner._id")
+    riot_id_name = serializers.CharField(source="summoner.riot_id_name")
+    riot_id_tagline = serializers.CharField(source="summoner.riot_id_tagline")
 
     class Meta:
         model = Favorite
@@ -129,13 +131,9 @@ class FavoriteSerializer(DynamicSerializer):
             'puuid',
             'sort_int',
             'summoner_id',
+            'riot_id_name',
+            'riot_id_tagline',
         )
-
-    def get_puuid(self, obj):
-        return obj.summoner.puuid
-
-    def get_summoner_id(self, obj):
-        return obj.summoner._id
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
