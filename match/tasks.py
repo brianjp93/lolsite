@@ -1,8 +1,9 @@
 """match/tasks.py
 """
 from django.conf import settings
+from django.db.models.functions import Concat
 from django.db.utils import IntegrityError
-from django.db.models import Count, Subquery, OuterRef
+from django.db.models import Count, Subquery, OuterRef, Value
 from django.db.models import Case, When, Sum
 from django.db.models import IntegerField, Q, F
 from django.utils import timezone
@@ -42,6 +43,7 @@ from lolsite.celery import app
 import logging
 import time
 import json
+from datetime import timedelta
 
 from functools import partial
 from typing import Optional
@@ -123,21 +125,32 @@ def handle_name_changes(days=30):
     """Create NameChange objects from Participant Data."""
     qs = Participant.objects.all().annotate(
         current_name=Subquery(
-            Summoner.objects.filter(puuid=OuterRef('puuid')).values('name')[:1]
+            Summoner.objects.filter(puuid=OuterRef('puuid')).values('simple_riot_id')[:1]
         )
-    ).exclude(current_name=F('summoner_name'))
+    ).exclude(
+        Q(current_name__iexact=Concat(
+            F("riot_id_name"),
+            Value("#"),
+            F("riot_id_tagline"),
+        ))
+        | Q(current_name="")
+    )
     if days:
-        starts_at = timezone.now() - timezone.timedelta(days=days)
+        starts_at = timezone.now() - timedelta(days=days)
         timestamp = starts_at.timestamp() * 1000
         qs = qs.filter(match__game_creation__gt=timestamp)
     for participant in qs:
         try:
-            summoner = Summoner.objects.filter(puuid=participant.puuid).values('id').get()
+            summoner = Summoner.objects.filter(
+                puuid=participant.puuid,
+            ).values('id').get()
         except Summoner.DoesNotExist:
             return
 
         try:
-            NameChange.objects.get_or_create(summoner_id=summoner['id'], old_name=participant.summoner_name)
+            _, created = NameChange.objects.get_or_create(summoner_id=summoner['id'], old_name=participant.summoner_name)
+            if created:
+                logger.info(f"Created NameChange. Old Name = {participant.summoner_name}")
         except NameChange.MultipleObjectsReturned:
             qs = NameChange.objects.filter(
                 summoner_id=summoner['id'],
@@ -337,7 +350,7 @@ def import_recent_matches(
 @app.task(name="match.tasks.import_matches_for_popular_accounts")
 def import_matches_for_popular_accounts(n=100):
     now = timezone.now()
-    week = (now - timezone.timedelta(days=7)).date()
+    week = (now - timedelta(days=7)).date()
     qs = Summoner.objects.all().annotate(
         views=Sum('pageview__views', filter=Q(pageview__bucket_date__gte=week))
     ).order_by('-views').filter(views__isnull=False, views__gt=1)
@@ -352,7 +365,7 @@ def import_matches_for_popular_accounts(n=100):
 @app.task(name="match.tasks.bulk_import")
 def bulk_import(puuid: str, last_import_time_hours: int = 24, count=200, offset=10):
     now = timezone.now()
-    thresh = now - timezone.timedelta(hours=last_import_time_hours)
+    thresh = now - timedelta(hours=last_import_time_hours)
     summoner: Summoner = Summoner.objects.get(puuid=puuid)
     if summoner.last_summoner_page_import is None or summoner.last_summoner_page_import < thresh:
         logger.info(f"Doing summoner page import for {summoner} of {count} games.")
@@ -409,7 +422,7 @@ def get_top_played_with(
         p = p.filter(match__id__in=m_id_list)
     elif recent_days is not None:
         now = timezone.now()
-        start_time = now - timezone.timedelta(days=recent_days)
+        start_time = now - timedelta(days=recent_days)
         start_time = int(start_time.timestamp() * 1000)
         p = p.filter(match__game_creation__gt=start_time)
 
@@ -796,7 +809,7 @@ def apply_player_ranks(match, threshold_days=1):
         match = Match.objects.get(id=match)
 
     now = timezone.now()
-    one_day_ago = now - timezone.timedelta(days=1)
+    one_day_ago = now - timedelta(days=1)
     if match.get_creation() > one_day_ago:
         # ok -- apply ranks
         parts = match.participants.all()

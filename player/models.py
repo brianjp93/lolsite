@@ -7,6 +7,7 @@ import time
 from typing import TypedDict
 import uuid
 import logging
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -155,7 +156,7 @@ class Summoner(models.Model):
 
     def suspicious_account(self, queue=dc.FLEX_QUEUE) -> SuspiciousAccountOutput:
         from match.models import Match
-        dt = timezone.now() - timezone.timedelta(days=90)
+        dt = timezone.now() - timedelta(days=90)
         start = time.perf_counter()
         quick_surrender_count = Match.objects.filter(
             game_duration__lt=1000 * 60 * 5,
