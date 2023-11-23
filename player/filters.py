@@ -223,7 +223,7 @@ def summoner_search(
     if region is not None:
         query = query.filter(region=region)
     if simple_riot_id__icontains:
-        query = query.filter(simple_riot_id__icontains=simple_riot_id__icontains.lower())
+        query = query.filter(simple_riot_id__contains=simple_riot_id__icontains.lower())
     if order_by is not None:
         query = query.order_by(order_by)
     return query
