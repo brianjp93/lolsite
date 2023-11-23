@@ -70,10 +70,11 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
     if not riot_id_name or not riot_id_tagline:
         return meta
     riot_id_name = simplify(riot_id_name)
-    qs = Summoner.objects.filter(region=region, simple_riot_id=riot_id_name, riot_id_tagline=riot_id_tagline)
+    full_id = f"{riot_id_name}#{riot_id_tagline}"
+    qs = Summoner.objects.filter(region=region, simple_riot_id=full_id)
     if len(qs) > 1:
-        handle_multiple_summoners(region, simple_riot_id=riot_id_name, riot_id_tagline=riot_id_tagline)
-        qs = Summoner.objects.filter(region=region, simple_riot_id=riot_id_name, riot_id_tagline=riot_id_tagline)
+        handle_multiple_summoners(region, simple_riot_id=full_id)
+        qs = Summoner.objects.filter(region=region, simple_riot_id=full_id)
     wins = 0
     kills = 0
     deaths = 0
@@ -143,7 +144,7 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
 
 
 @api_view(['GET'])
-def get_summoner_meta_data(request, region, name, format=None):
+def get_summoner_meta_data(request, region: str, name: str, format=None):
     if '-' in name:
         riot_id_name, riot_id_tagline = name.split('-')
     else:
@@ -152,16 +153,19 @@ def get_summoner_meta_data(request, region, name, format=None):
     return Response(meta)
 
 
-def _get_match_meta_data(name: str, region: str, match_id: str):
+def _get_match_meta_data(riot_id_name: str, riot_id_tagline: str, region: str, match_id: str):
     meta = META.copy()
-    name = simplify(name)
+    riot_id_name = simplify(riot_id_name)
+    if not riot_id_name or not riot_id_tagline:
+        return meta
+    full_id = f"{riot_id_name}#{riot_id_tagline}"
     try:
-        summoner = Summoner.objects.get(region=region, simple_name=name)
+        summoner = Summoner.objects.get(region=region, simple_riot_id=full_id)
     except Summoner.DoesNotExist:
         logger.exception('Could not find summoner.')
         return
     except Summoner.MultipleObjectsReturned:
-        summoner = handle_multiple_summoners(region, simple_name=name)
+        summoner = handle_multiple_summoners(region, simple_riot_id=full_id)
     try:
         match = Match.objects.get(_id=match_id)
     except Match.DoesNotExist:
@@ -208,5 +212,9 @@ def _get_match_meta_data(name: str, region: str, match_id: str):
 
 @api_view(['GET'])
 def get_match_meta_data(request, region, name, match_id, format=None):
-    meta = _get_match_meta_data(name, region, match_id)
+    if '-' in name:
+        riot_id_name, riot_id_tagline = name.split('-')
+    else:
+        return Response(META)
+    meta = _get_match_meta_data(riot_id_name, riot_id_tagline, region, match_id)
     return Response(meta)
