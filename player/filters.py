@@ -212,21 +212,8 @@ def get_summoner_champions_overview(
 
 
 def summoner_search(
-    simple_name__icontains=None, simple_name=None, region=None, order_by=None,
+    simple_name__icontains=None, simple_name=None, region=None, order_by=None, simple_riot_id__icontains=None,
 ):
-    """filter for summoners.
-
-    Parameters
-    ----------
-    simple_name__icontains : str
-    simple_name : str
-    region : str
-
-    Returns
-    -------
-    QueryResponse
-
-    """
     query = Summoner.objects.all()
 
     if simple_name__icontains is not None:
@@ -235,6 +222,8 @@ def summoner_search(
         query = query.filter(simple_name=simple_name)
     if region is not None:
         query = query.filter(region=region)
+    if simple_riot_id__icontains:
+        query = query.filter(simple_riot_id__icontains=simple_riot_id__icontains.lower())
     if order_by is not None:
         query = query.order_by(order_by)
     return query
