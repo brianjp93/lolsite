@@ -81,7 +81,7 @@ class MatchBySummoner(ListAPIView):
     @staticmethod
     def get_summoner(riot_id_name: str, riot_id_tagline: str, region: str):
         riot_id_name = pt.simplify(riot_id_name)
-        full_id = f"{riot_id_name}#{riot_id_tagline}"
+        full_id = pt.simplify("{riot_id_name}#{riot_id_tagline}")
         summoner_query = Summoner.objects.filter(simple_riot_id=full_id, region=region)
         if len(summoner_query) == 0:
             summoner_id = pt.import_summoner(
@@ -93,7 +93,6 @@ class MatchBySummoner(ListAPIView):
         elif len(summoner_query) >= 2:
             for summoner in summoner_query:
                 pt.import_summoner(region=region, puuid=summoner.puuid)
-            full_id = f"{riot_id_name}#{riot_id_tagline}"
             summoner = get_object_or_404(Summoner, region=region, simple_riot_id=full_id)
         else:
             # update in the background if we already have the user imported
