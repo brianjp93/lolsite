@@ -230,17 +230,6 @@ def summoner_search(
 
 
 def get_connected_accounts_query(user):
-    """Get a queryset of a user's connected summoners.
-
-    Parameters
-    ----------
-    user : User
-
-    Return
-    ------
-    Summoner QuerySet
-
-    """
     id_list = [
         x.summoner.id
         for x in SummonerLink.objects.filter(user=user, verified=True)

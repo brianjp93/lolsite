@@ -108,10 +108,19 @@ class MatchBySummoner(ListAPIView):
         ][:10]
         summoner_ids = []
         for simple_name in played_with:
-            sid = pt.import_summoner(region, name=simple_name)
+            if "#" in simple_name:
+                riot_id_name, riot_id_tagline = simple_name.split("#")
+                sid = pt.import_summoner(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
+            else:
+                obj = Summoner.objects.filter(region=region, riot_id_name__iexact=simple_name).first()
+                sid = None
+                if obj:
+                    sid = obj.id
             if sid:
                 summoner_ids.append(sid)
         with_summoners = Summoner.objects.filter(id__in=summoner_ids)
+        if not with_summoners:
+            return qs.none()
         for x in with_summoners:
             qs = qs.filter(Exists(Participant.objects.filter(puuid=x.puuid, match_id=OuterRef('id'))))
         return qs
