@@ -313,6 +313,7 @@ QUEUES = [
     {"_id": 2010, "_map": "Summoner's Rift", "description": "Tutorial Part 2"},
     {"_id": 2020, "_map": "Summoner's Rift", "description": "Tutorial Part 3"},
 ]
+QUEUE_DICT = {x['_id']: x for x in QUEUES}
 
 MAPS = [
     {

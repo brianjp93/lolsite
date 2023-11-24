@@ -11,8 +11,9 @@ import logging
 
 from core.models import VersionedModel
 from data.models import CDSummonerSpell, ReforgedTree, ReforgedRune
-from data.models import Item, SummonerSpellImage
+from data.models import Item
 from data.models import SummonerSpell, Champion
+from data import constants
 
 from player.models import simplify, Summoner, Comment
 
@@ -233,6 +234,9 @@ class Match(VersionedModel):
             return self.participants.filter(puuid__in=[x.puuid for x in summoners])[:1].get()
         except ObjectDoesNotExist:
             return None
+
+    def queue_name(self):
+        return constants.QUEUE_DICT.get(self.queue_id, "")
 
 
 class Participant(models.Model):
