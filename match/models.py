@@ -185,6 +185,7 @@ class Match(VersionedModel):
     game_version = models.CharField(max_length=32, default="", blank=True)
     build = models.IntegerField()
     is_fully_imported = models.BooleanField(default=False, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     objects = MatchQuerySet.as_manager()
 
