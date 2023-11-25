@@ -119,6 +119,8 @@ def import_summoner(
         model_data['riot_id_name'] = game_name
     if tagline:
         model_data['riot_id_tagline'] = tagline
+    if game_name and tagline:
+        model_data['simple_riot_id'] = simplify(f"{game_name}#{tagline}")
     summoner, _ = Summoner.objects.update_or_create(
         puuid=data['puuid'],
         defaults=model_data,
