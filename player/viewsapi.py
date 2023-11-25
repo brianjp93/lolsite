@@ -57,21 +57,6 @@ logger = logging.getLogger(__name__)
 
 @api_view(["POST"])
 def get_summoner(request, format=None):
-    """
-
-    POST Parameters
-    ---------------
-    name : str
-    puuid : str
-    region : str
-    update : bool
-        Whether or not to check riot for update first
-
-    Returns
-    -------
-    JSON Summoner Model
-
-    """
     data = {}
     status_code = 200
     if request.method == "POST":
@@ -82,15 +67,16 @@ def get_summoner(request, format=None):
             name = pt.simplify(name)
             query = Summoner.objects.filter(simple_name=name, region=region)
         elif puuid:
-            print('found puuid', puuid)
-            summoner_id = pt.import_summoner(region=region, puuid=puuid)
-            query = Summoner.objects.filter(id=summoner_id)
-            print(query)
+            query = Summoner.objects.filter(puuid=puuid)
+            if summoner := query.first():
+                pt.import_summoner.delay(region=summoner.region, puuid=puuid)
+            else:
+                summoner_id = pt.import_summoner(region=region, puuid=puuid)
+                query = Summoner.objects.filter(id=summoner_id)
         else:
-            query = None
+            query = Summoner.objects.none()
 
-        if query:
-            summoner = query[0]
+        if summoner := query.first():
             serializer = SummonerSerializer(summoner, context={'request': request})
             data["data"] = serializer.data
         else:
