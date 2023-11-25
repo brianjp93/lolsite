@@ -69,7 +69,11 @@ def get_summoner(request, format=None):
         elif puuid:
             query = Summoner.objects.filter(puuid=puuid)
             if summoner := query.first():
-                pt.import_summoner.delay(region=summoner.region, puuid=puuid)
+                if not summoner.riot_id_name or not summoner.riot_id_tagline:
+                    summoner_id = pt.import_summoner(region=summoner.region, puuid=puuid)
+                    summoner.refresh_from_db()
+                else:
+                    pt.import_summoner.delay(region=summoner.region, puuid=puuid)
             else:
                 summoner_id = pt.import_summoner(region=region, puuid=puuid)
                 query = Summoner.objects.filter(id=summoner_id)
