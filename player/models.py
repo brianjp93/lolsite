@@ -29,18 +29,11 @@ User = get_user_model()
 
 
 def simplify(name):
-    """Return the lowercase, no space version of a string.
-
-    Parameters
-    ----------
-    name : str
-
-    Returns
-    -------
-    str
-
-    """
     return "".join(name.split()).lower()
+
+
+def get_simple_riot_id(riot_id_name: str, riot_id_tagline: str):
+    return simplify(f"{riot_id_name}#{riot_id_tagline}")
 
 
 def validate_password(password):
@@ -96,7 +89,7 @@ class Summoner(models.Model):
     )
     riot_id_name = models.CharField(default="", max_length=32)
     riot_id_tagline = models.CharField(default="", max_length=8)
-    simple_riot_id =  models.CharField(default="", max_length=41)
+    simple_riot_id =  models.CharField(default="", max_length=41, db_index=True)
     revision_date = models.BigIntegerField(default=0)
     summoner_level = models.IntegerField(default=0)
     pro = models.ForeignKey("Pro", null=True, on_delete=models.SET_NULL, blank=True)

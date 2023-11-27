@@ -30,7 +30,7 @@ from player import filters as player_filters
 from player.models import (
     RankPosition, Comment, Favorite,
     SummonerLink, decode_int_to_rank, validate_password,
-    Reputation, NameChange,
+    Reputation, NameChange, get_simple_riot_id,
 )
 
 from data.models import ProfileIcon, Champion
@@ -103,10 +103,10 @@ class SummonerByRiotId(RetrieveAPIView):
         riot_id_name = self.kwargs['riot_id_name']
         riot_id_tagline = self.kwargs['riot_id_tagline']
         region = self.kwargs['region']
+        simple_riot_id = get_simple_riot_id(riot_id_name, riot_id_tagline)
         try:
             summoner = Summoner.objects.filter(
-                riot_id_name=riot_id_name,
-                riot_id_tagline=riot_id_tagline,
+                simple_riot_id=simple_riot_id,
                 region=region,
             ).get()
         except Summoner.DoesNotExist:
