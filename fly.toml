@@ -21,7 +21,7 @@ kill_timeout = "5s"
 
 [processes]
   beat = "celery -A lolsite beat -l INFO"
-  web = "gunicorn --bind :8000 --workers 12 lolsite.wsgi:application"
+  web = "gunicorn --bind :8000 --workers 10 lolsite.wsgi:application"
   worker = "celery -A lolsite worker --loglevel=INFO"
 
 [[services]]
