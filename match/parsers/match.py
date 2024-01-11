@@ -91,7 +91,7 @@ class MissionsModel(BaseModelWithLogger):
 
 
 class ParticipantModel(BaseModelWithLogger):
-    challenges: dict[str, float | int] = Field(default_factory=dict)
+    challenges: dict[str, float | int | list[float | int]] = Field(default_factory=dict)
     perks: PerksModel
     assists: int
     baronKills: int
