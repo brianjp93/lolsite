@@ -147,7 +147,7 @@ class EliteMonsterKillEventModel(BaseModelWithLogger):
     bounty: int | None = 0
     killerId: int
     killerTeamId: int
-    monsterType: Literal["RIFTHERALD", "DRAGON", "BARON_NASHOR"]
+    monsterType: Literal["RIFTHERALD", "DRAGON", "BARON_NASHOR", "HORDE"]
     monsterSubType: Literal[
         "AIR_DRAGON",
         "CHEMTECH_DRAGON",
