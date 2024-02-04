@@ -75,7 +75,7 @@ def import_summoner(
     game_name = ""
     tagline = ""
     if riot_id_name and riot_id_tagline and region:
-        r = api.account.by_riot_id(riot_id_name, riot_id_tagline, region=region)
+        r = api.account.by_riot_id(riot_id_name, riot_id_tagline)
         if 400 <= r.status_code < 500:
             logger.warning("Summoner not found.")
             return None
