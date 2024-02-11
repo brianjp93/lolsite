@@ -87,7 +87,7 @@ class Summoner(models.Model):
         unique=True,
         db_index=True,
     )
-    riot_id_name = models.CharField(default="", max_length=32)
+    riot_id_name = models.CharField(default="", max_length=64)
     riot_id_tagline = models.CharField(default="", max_length=8)
     simple_riot_id =  models.CharField(default="", max_length=41, db_index=True)
     revision_date = models.BigIntegerField(default=0)
