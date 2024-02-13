@@ -310,6 +310,11 @@ QUEUES = [
         "_map": "Rings of Wrath",
         "description": "2v2v2v2",
     },
+    {
+        "_id": 1900,
+        "_map": "Summoner's Rift",
+        "description": "U.R.F.",
+    },
     {"_id": 2000, "_map": "Summoner's Rift", "description": "Tutorial Part 1"},
     {"_id": 2010, "_map": "Summoner's Rift", "description": "Tutorial Part 2"},
     {"_id": 2020, "_map": "Summoner's Rift", "description": "Tutorial Part 3"},
