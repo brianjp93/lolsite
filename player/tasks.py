@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 from player.parsers.account_parsers import AccountParser
 
-from .models import Summoner
+from .models import NameChange, Summoner
 from .models import simplify
 from .models import RankCheckpoint, RankPosition
 from .models import Custom, EmailVerification
@@ -55,21 +55,6 @@ def import_summoner(
     riot_id_name=None,
     riot_id_tagline=None,
 ):
-    """Import a summoner by one a several identifiers.
-
-    Parameters
-    ----------
-    region : str
-    account_id : ID
-    name : str
-    summoner_id : ID
-    puuid : ID
-
-    Returns
-    -------
-    summoner_id
-
-    """
     api = get_riot_api()
     kwargs = {}
     game_name = ""
@@ -121,11 +106,35 @@ def import_summoner(
         model_data['riot_id_tagline'] = tagline
     if game_name and tagline:
         model_data['simple_riot_id'] = simplify(f"{game_name}#{tagline}")
+    if old_summoner := Summoner.objects.filter(puuid=data['puuid']).first():
+        if game_name and tagline:
+            handle_name_change(old_summoner, game_name, tagline)
     summoner, _ = Summoner.objects.update_or_create(
         puuid=data['puuid'],
         defaults=model_data,
     )
     return summoner.id
+
+
+def handle_name_change(summoner: Summoner, riot_id: str, riot_tagline: str):
+    """Add a new NameChange, if the name is different from what is currently
+    stored in the Summoner model.
+
+    """
+    simple_riot_id = simplify(f"{riot_id}#{riot_tagline}")
+    if not simple_riot_id:
+        return
+    if summoner.simple_riot_id:
+        old_name = summoner.simple_riot_id
+        og = f"{summoner.riot_id_name}#{summoner.riot_id_tagline}"
+    else:
+        old_name = summoner.simple_name
+        og = summoner.name
+    if simple_riot_id != old_name:
+        return NameChange.objects.create(
+            summoner=summoner,
+            old_name=og,
+        )
 
 
 @app.task(name='player.tasks.import_positions')

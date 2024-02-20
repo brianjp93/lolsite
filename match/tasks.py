@@ -120,46 +120,6 @@ def import_summoner_from_participant(participants: list[ParticipantModel], regio
     Summoner.objects.bulk_create(sums, ignore_conflicts=True)
 
 
-@app.task(name="match.tasks.handle_name_changes")
-def handle_name_changes(days=30):
-    """Create NameChange objects from Participant Data."""
-    qs = Participant.objects.all().annotate(
-        current_name=Subquery(
-            Summoner.objects.filter(puuid=OuterRef('puuid')).values('simple_riot_id')[:1]
-        )
-    ).exclude(
-        Q(current_name__iexact=Concat(
-            F("riot_id_name"),
-            Value("#"),
-            F("riot_id_tagline"),
-        ))
-        | Q(current_name="")
-    )
-    if days:
-        starts_at = timezone.now() - timedelta(days=days)
-        timestamp = starts_at.timestamp() * 1000
-        qs = qs.filter(match__game_creation__gt=timestamp)
-    for participant in qs:
-        try:
-            summoner = Summoner.objects.filter(
-                puuid=participant.puuid,
-            ).values('id').get()
-        except Summoner.DoesNotExist:
-            return
-
-        try:
-            _, created = NameChange.objects.get_or_create(summoner_id=summoner['id'], old_name=participant.summoner_name)
-            if created:
-                logger.info(f"Created NameChange. Old Name = {participant.summoner_name}")
-        except NameChange.MultipleObjectsReturned:
-            qs = NameChange.objects.filter(
-                summoner_id=summoner['id'],
-                old_name=participant.summoner_name,
-            ).order_by('created_date')
-            for nc in qs[1:]:
-                nc.delete()
-
-
 def full_import(name=None, puuid=None, region=None, **kwargs):
     """Import only unimported games for a summoner.
 
