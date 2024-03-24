@@ -76,6 +76,19 @@ Ping = Annotated[int, BeforeValidator(ping_validator)]
 
 
 class MissionsModel(BaseModelWithLogger):
+    PlayerScore0: int|None = 0
+    PlayerScore1: int|None = 0
+    PlayerScore2: int|None = 0
+    PlayerScore3: int|None = 0
+    PlayerScore4: int|None = 0
+    PlayerScore5: int|None = 0
+    PlayerScore6: int|None = 0
+    PlayerScore7: int|None = 0
+    PlayerScore8: int|None = 0
+    PlayerScore9: int|None = 0
+    PlayerScore10: int|None = 0
+    PlayerScore11: int|None = 0
+
     playerScore0: int|None = 0
     playerScore1: int|None = 0
     playerScore2: int|None = 0
@@ -307,6 +320,7 @@ class MatchModel(BaseModelWithLogger):
     platformId: str
     queueId: int
     tournamentCode: str | None
+    endOfGameResult: Literal['GameComplete'] | None = None
 
     @model_validator(mode='before')
     def game_duration_is_sometimes_not_right(cls, data):
