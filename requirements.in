@@ -1,11 +1,11 @@
 beautifulsoup4<5
 boto3==1.18
-celery<5.3
+celery>=5.3.6
 dj-database-url
-django>=4.2,<4.3
+django>=5,<6
 django-debug-toolbar
 django-cors-headers
-django-extensions<3.1
+django-extensions
 django-filter
 django-redis
 django-storages<1.14
@@ -25,3 +25,4 @@ redis<5
 requests
 sentry-sdk<2
 openai
+pytz

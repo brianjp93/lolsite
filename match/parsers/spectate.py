@@ -30,6 +30,7 @@ class SpectateParticipant(BaseModelWithLogger):
     gameCustomizationObjects: list[Any]
     perks: SpectatePerk
     puuid: str
+    riotId: str
 
 
 class SpectateModel(BaseModelWithLogger):

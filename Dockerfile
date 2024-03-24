@@ -1,5 +1,5 @@
-ARG PYTHON_VERSION=3.11
-FROM python:${PYTHON_VERSION}
+ARG PYTHON_VERSION=3.12.2
+FROM python:${PYTHON_VERSION}-slim-bullseye
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y \
