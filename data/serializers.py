@@ -68,21 +68,52 @@ class ItemSerializer(serializers.ModelSerializer):
     image = ItemImageSerializer()
     stats = serializers.SerializerMethodField()
     maps = serializers.SerializerMethodField()
+    stat_efficiency = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
-        fields = "__all__"
+        fields = [
+            'id',
+            'gold',
+            'image',
+            'maps',
+            'stat_efficiency',
+            'major',
+            'minor',
+            'patch',
+            '_id',
+            'version',
+            'language',
+            'colloq',
+            'description',
+            'name',
+            'plaintext',
+            'required_ally',
+            'required_champion',
+            'in_store',
+            'consumed',
+            'consume_on_full',
+            'last_changed',
+            'stats',
+            'diff',
+            'stacks',
+        ]
 
     def get_maps(self, instance):
         return {x.key: x.value for x in instance.maps.all()}
 
     def get_stats(self, instance):
-        return {x.key: x.value for x in instance.stats.all()}
+        return {
+            x: getattr(instance, x, None) for x in instance.stat_list
+        }
+
+    def get_stat_efficiency(self, instance):
+        return instance.stat_efficiency()
 
     def __new__(cls, instance, *args, **kwargs):
         if isinstance(instance, QuerySet):
             instance = instance.select_related('image', 'gold')
-            instance = instance.prefetch_related('stats', 'maps')
+            instance = instance.prefetch_related('maps')
         return super().__new__(cls, instance, *args, **kwargs)
 
 

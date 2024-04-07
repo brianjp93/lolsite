@@ -1,5 +1,8 @@
 # data constants to add to DB
 
+from typing import TypedDict
+
+
 MIN_PASSWORD_LENGTH = 7
 
 TRUTHY = ["true", "True", "TRUE", True]
@@ -663,4 +666,54 @@ SEASON_PATCHES = {
             "end": (3, 13),
         },
     },
+}
+
+class ItemStatCosts(TypedDict):
+    flat_armor: float
+    percent_crit: float
+    flat_health: float
+    percent_health_regen: float
+    flat_ability_power: float
+    flat_movement_speed: float
+    flat_mana: float
+    flat_attack_damage: float
+    flat_magic_resist: float
+    percent_attack_speed: float
+    percent_movement_speed: float
+    percent_life_steal: float
+    flat_lethality: float
+    flat_ability_haste: float
+    percent_heal_and_shield_power: float
+    percent_omnivamp: float
+    percent_armor_penetration: float
+    percent_base_mana_regen: float
+    percent_tenacity: float
+    percent_magic_penetration: float
+    percent_crit_damage: float
+    flat_magic_penetration: float
+
+# gold per stat
+ITEM_STAT_COSTS: ItemStatCosts = {
+    'flat_armor': 300 / 15,
+    'percent_crit': 600 / 15,
+    'flat_health': 400 / 150,
+    'percent_health_regen': 300 / 100,
+    'flat_ability_power': 400 / 20,
+    'flat_movement_speed': 300 / 25,
+    'flat_mana': 350 / 250,
+    'flat_attack_damage': 350 / 10,
+    'flat_magic_resist': 450 / 25,
+    'percent_attack_speed': 300 / 12,
+    'percent_movement_speed': 284 / 5,  # calculated from aether wisp
+    'percent_life_steal': 375 / 7,  # calculated from vampiric scepter
+    'flat_lethality': 1000 / 30,
+    'flat_ability_haste': 250 / 5,
+    'percent_heal_and_shield_power': 550 / 8,
+    'percent_base_mana_regen': 250 / 50,
+    'percent_omnivamp': 220.57 / 5,
+    'percent_armor_penetration': 41.6666667,  # value from https://leagueoflegends.fandom.com/wiki/Armor_penetration
+    'percent_tenacity': 15,  # completely arbitrary (don't know how this should be calculated)
+    'percent_crit_damage': 4.5,  # calculated from IE as 100% efficient
+    'percent_magic_penetration': 46.15,  # value from https://leagueoflegends.fandom.com/wiki/Magic_penetration
+    'flat_magic_penetration': 31.11,
 }
