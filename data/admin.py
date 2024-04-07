@@ -59,7 +59,7 @@ class ReforgedRuneAdmin(admin.ModelAdmin):
 
 
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ("name", "version", "last_changed", "language")
+    list_display = ("name", 'major', 'minor', 'patch', "last_changed", "language")
     list_filter = ("version", "language")
     search_fields = ('name', )
 

@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, Count, OuterRef
 from django.http import Http404, HttpRequest
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -379,6 +379,13 @@ def get_champion_spells(request, format=None):
     else:
         data = {"message": "Must use POST."}
     return Response(data, status=status_code)
+
+
+@api_view(['GET'])
+def get_item_diff(request: HttpRequest, item_id: int, format=None):
+    qs = Item.objects.filter(_id=item_id, diff__isnull=False).order_by('-major', '-minor', '-patch')
+    data = ItemSerializer(qs, many=True).data
+    return Response(data)
 
 
 @api_view(['GET'])

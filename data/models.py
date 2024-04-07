@@ -1,11 +1,17 @@
+import re
 from string import ascii_uppercase
 
 from typing import Self, Union
 from django.db import models
 from django.utils import timezone
 from django.contrib.postgres import fields
+import logging
 
 from core.models import TimestampedModel, VersionedModel, ThumbnailedModel
+from data.constants import ITEM_STAT_COSTS
+
+
+logger = logging.getLogger(__name__)
 
 
 class Rito(models.Model):
@@ -142,6 +148,8 @@ class ReforgedRune(models.Model):
         return f"https://ddragon.leagueoflegends.com/cdn/img/{self.icon}"
 
 
+stat_parser = re.compile(r'(\d+)(%?)(?:</attention>)? ([^<\d]+)')
+
 class Item(VersionedModel):
     _id = models.IntegerField(db_index=True)
     version = models.CharField(max_length=128, default="", db_index=True, blank=True)
@@ -163,9 +171,60 @@ class Item(VersionedModel):
     stacks = models.IntegerField(null=True, blank=True)
     last_changed = models.CharField(max_length=16, default=None, null=True, blank=True)
 
+    # parsed stats
+    flat_armor = models.IntegerField(null=True, blank=True)
+    percent_crit = models.IntegerField(null=True, blank=True)
+    flat_health = models.IntegerField(null=True, blank=True)
+    percent_health_regen = models.IntegerField(null=True, blank=True)
+    flat_ability_power = models.IntegerField(null=True, blank=True)
+    flat_movement_speed = models.IntegerField(null=True, blank=True)
+    flat_mana = models.IntegerField(null=True, blank=True)
+    flat_attack_damage = models.IntegerField(null=True, blank=True)
+    flat_magic_resist = models.IntegerField(null=True, blank=True)
+    percent_attack_speed = models.IntegerField(null=True, blank=True)
+    percent_movement_speed = models.IntegerField(null=True, blank=True)
+    percent_life_steal = models.IntegerField(null=True, blank=True)
+    flat_lethality = models.IntegerField(null=True, blank=True)
+    flat_ability_haste = models.IntegerField(null=True, blank=True)
+    percent_heal_and_shield_power = models.IntegerField(null=True, blank=True)
+    percent_omnivamp = models.IntegerField(null=True, blank=True)
+    percent_armor_penetration = models.IntegerField(null=True, blank=True)
+    percent_base_mana_regen = models.IntegerField(null=True, blank=True)
+    percent_tenacity = models.IntegerField(null=True, blank=True)
+    percent_magic_penetration = models.IntegerField(null=True, blank=True)
+    flat_magic_penetration = models.IntegerField(null=True, blank=True)
+    percent_crit_damage = models.IntegerField(null=True, blank=True)
+
+    diff = models.JSONField(default=None, null=True)
+
     image: Union['ItemImage', None]
     gold: Union['ItemGold', None]
     stats: models.QuerySet['ItemStat']
+
+    stat_list = [
+        'flat_armor',
+        'percent_crit',
+        'flat_health',
+        'percent_health_regen',
+        'flat_ability_power',
+        'flat_movement_speed',
+        'flat_mana',
+        'flat_attack_damage',
+        'flat_magic_resist',
+        'percent_attack_speed',
+        'percent_movement_speed',
+        'percent_life_steal',
+        'flat_lethality',
+        'flat_ability_haste',
+        'percent_heal_and_shield_power',
+        'percent_omnivamp',
+        'percent_armor_penetration',
+        'percent_base_mana_regen',
+        'percent_tenacity',
+        'percent_magic_penetration',
+        'percent_crit_damage',
+        'flat_magic_penetration',
+    ]
 
     class Meta:
         unique_together = ("_id", "version", "language")
@@ -181,31 +240,95 @@ class Item(VersionedModel):
 
     def is_diff(self, other: Self):
         """Find differences between two items."""
-        stat_diffs = {}
-        all_stats = set(x.key for x in self.stats.all()) | set(
-            x.key for x in other.stats.all()
-        )
-        all_stats = sorted(list(all_stats))
-        for key in all_stats:
-            query0 = self.stats.filter(key=key)
-            query1 = other.stats.filter(key=key)
-            selfstat = query0[:1].get()
-            otherstat = query1[:1].get()
-            if selfstat and otherstat:
-                stat_diffs[key] = selfstat.value == otherstat.value
-            else:
-                stat_diffs[key] = False
+        diff = {}
+        for stat in self.stat_list:
+            new_stat = getattr(self, stat)
+            old_stat = getattr(other, stat)
+            if new_stat != old_stat:
+                diff[stat] = {
+                    'prev': old_stat,
+                    'curr': new_stat,
+                }
         assert self.gold and other.gold
-        diffs = {
-            # "description": self.description == other.description,
-            "gold__total": self.gold.total == other.gold.total,
-            "gold__sell": self.gold.total == other.gold.total,
-        }
-        if all(diffs.values()) and all(stat_diffs.values()):
-            out = False
+        if self.gold.total != other.gold.total:
+            diff['gold_total'] = {
+                'prev': other.gold.total,
+                'curr': self.gold.total,
+            }
+        return diff
+
+    def stat_efficiency(self):
+        ret = {}
+        for stat in self.stat_list:
+            amount = getattr(self, stat, None)
+            if not amount:
+                continue
+            if cost := ITEM_STAT_COSTS.get(stat, None):
+                ret[stat] = cost * amount
+        calc_gold = sum(ret.values())
+        ret['calculated_cost'] = calc_gold
+        assert self.gold
+        ret['gold_efficiency'] = calc_gold / (self.gold.total or 1) * 100
+        return ret
+
+    def set_stats(self, save=True):
+        if 'stats>' in self.description:
+            desc = self.description.split('stats>')[1]
         else:
-            out = {"general": diffs, "stats": stat_diffs}
-        return out
+            desc = self.description
+        for num, percent, stat in stat_parser.findall(desc):
+            num = int(num)
+            match stat.lower():
+                case 'armor':
+                    self.flat_armor = num
+                case 'health':
+                    self.flat_health = num
+                case 'base health regen':
+                    self.percent_health_regen = num
+                case 'ability power':
+                    self.flat_ability_power = num
+                case 'move speed':
+                    if percent:
+                        self.percent_movement_speed = num
+                    else:
+                        self.flat_movement_speed = num
+                case 'mana':
+                    self.flat_mana = num
+                case 'attack damage':
+                    self.flat_attack_damage = num
+                case 'magic resist':
+                    self.flat_magic_resist = num
+                case 'attack speed':
+                    self.percent_attack_speed = num
+                case 'life steal':
+                    self.percent_life_steal = num
+                case 'lethality':
+                    self.flat_lethality = num
+                case 'ability haste':
+                    self.flat_ability_haste = num
+                case 'heal and shield power':
+                    self.percent_heal_and_shield_power = num
+                case 'omnivamp':
+                    self.percent_omnivamp = num
+                case 'armor penetration':
+                    self.percent_armor_penetration = num
+                case 'base mana regen':
+                    self.percent_base_mana_regen = num
+                case 'tenacity':
+                    self.percent_tenacity = num
+                case 'magic penetration':
+                    if percent:
+                        self.percent_magic_penetration = num
+                    else:
+                        self.flat_magic_penetration = num
+                case 'critical strike chance':
+                    self.percent_crit = num
+                case 'critical strike damage':
+                    self.percent_crit_damage = num
+                case _:
+                    logger.warn(f"Found unknown stat: {stat}")
+        if save:
+            self.save()
 
 
 class ItemEffect(models.Model):

@@ -948,18 +948,22 @@ def compute_item_last_change(index=None, start_patch=None, language="en_US"):
     versions = list(reversed(versions[:index]))
     for i, version in enumerate(versions[1:], 1):
         prev_version = versions[i - 1]
-        items = Item.objects.filter(language=language, version=version)
-        prev_items = Item.objects.filter(language=language, version=prev_version)
-        for item in items:
-            query = prev_items.filter(_id=item._id)
-            if prev_item := query.first():
-                if item.is_diff(prev_item):
+        items = Item.objects.filter(language=language, version=version).select_related('gold')
+        items = {x._id: x for x in items}
+        prev_items = Item.objects.filter(language=language, version=prev_version).select_related('gold')
+        prev_items = {x._id: x for x in prev_items}
+        save_list = []
+        for item in items.values():
+            if prev_item := prev_items.get(item._id, None):
+                if diff := item.is_diff(prev_item):
                     item.last_changed = item.version
+                    item.diff = diff
                 else:
                     item.last_changed = prev_item.last_changed
             else:
                 item.last_changed = item.version
-            item.save()
+            save_list.append(item)
+        Item.objects.bulk_update(save_list, fields=['last_changed', 'diff'])
 
 
 @app.task(name="data.tasks.compute_changes")
