@@ -90,10 +90,11 @@ def import_summoner(
         return None
 
     data = r.json()
+    name = data.get('name', '')
     model_data = {
         "account_id": data["accountId"],
-        "name": data["name"].strip(),
-        "simple_name": simplify(data["name"]),
+        "name": data.get('name', '').strip(),
+        "simple_name": simplify(name),
         "profile_icon_id": data["profileIconId"],
         "revision_date": data["revisionDate"],
         "summoner_level": data["summonerLevel"],
