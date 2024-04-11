@@ -102,7 +102,7 @@ class Summoner(models.Model):
     created_date = models.DateTimeField(default=timezone.now, db_index=True)
 
     def __str__(self):
-        return f'Summoner(name="{self.name}", region={self.region})'
+        return f'Summoner(region={self.region}, riotId={self.simple_riot_id})'
 
     def get_profile_icon(self):
         return ProfileIcon.objects.filter(_id=self.profile_icon_id).order_by('-major', '-minor').first()

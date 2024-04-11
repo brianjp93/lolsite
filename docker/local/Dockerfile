@@ -5,7 +5,7 @@ WORKDIR /code
 COPY requirements.txt .
 
 RUN apt-get update -y \
-    && apt-get install -y build-essential gcc g++ python3-dev procps libcurl4-openssl-dev libssl-dev
+    && apt-get install -y build-essential gcc g++ python3-dev procps libcurl4-openssl-dev libssl-dev git
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt

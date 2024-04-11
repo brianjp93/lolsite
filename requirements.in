@@ -16,7 +16,7 @@ djangorestframework
 factory_boy
 gunicorn
 hypothesis
-lolwrapper==1.8.1
+lolwrapper @ git+https://github.com/brianjp93/lolapi.git@c6fd95185ad664eb01fed4f1367e1dc315459664
 Pillow>=9.0.0
 psycopg[binary]
 python-decouple<=3.3
