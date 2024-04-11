@@ -256,10 +256,10 @@ class ParticipantsView(ListAPIView):
 @api_view(["GET"])
 def get_spectate(request, format=None):
     status_code = 200
-    summoner_id = request.query_params["summoner_id"]
+    puuid = request.query_params["puuid"]
     region = request.query_params["region"]
     api = get_riot_api()
-    r = api.spectator.get(summoner_id, region)
+    r = api.spectator.get(puuid, region)
     if r.status_code == 404:
         data = 'not found'
     else:
@@ -298,10 +298,10 @@ def get_spectate(request, format=None):
 
 @api_view(["GET"])
 def check_for_live_game(request, format=None):
-    summoner_id = request.query_params["summoner_id"]
+    puuid = request.query_params["puuid"]
     region = request.query_params["region"]
     api = get_riot_api()
-    r = api.spectator.get(summoner_id, region)
+    r = api.spectator.get(puuid, region)
     if 200 <= r.status_code < 300:
         spectate_model = SpectateModel.model_validate_json(r.content)
         data = spectate_model.model_dump()

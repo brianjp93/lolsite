@@ -36,7 +36,7 @@ from .models import Spectate
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
-from player.models import Summoner, NameChange
+from player.models import Summoner, NameChange, simplify
 from player import tasks as pt
 
 from lolsite.celery import app
@@ -726,9 +726,12 @@ def import_spectate_from_data(parsed: SpectateModel, region: str):
 def import_summoners_from_spectate(parsed: SpectateModel, region):
     summoners = {}
     for part in parsed.participants:
-        if part.summonerId:
+        if part.riotId:
+            name, tagline = part.riotId.split('#')
             sum_data = {
-                "name": part.summonerName.strip(),
+                "riot_id_name": name,
+                "riot_id_tagline": tagline,
+                "simple_riot_id": simplify(part.riotId),
                 "region": region,
                 "profile_icon_id": part.profileIconId,
                 "_id": part.summonerId,

@@ -24,7 +24,6 @@ class SpectateParticipant(BaseModelWithLogger):
     spell2Id: int
     championId: int
     profileIconId: int
-    summonerName: str
     bot: bool
     summonerId: str
     gameCustomizationObjects: list[Any]
