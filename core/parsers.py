@@ -1,11 +1,11 @@
-from pydantic import model_validator, BaseModel, Extra
+from pydantic import model_validator, BaseModel
 import logging
 
 
 logger = logging.getLogger(__name__)
 
 
-class BaseModelWithLogger(BaseModel, extra=Extra.allow):
+class BaseModelWithLogger(BaseModel, extra='allow'):
     @model_validator(mode="after")
     def log_extra(self):
         extra = self.__pydantic_extra__
