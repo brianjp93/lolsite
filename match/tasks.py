@@ -1,11 +1,10 @@
 """match/tasks.py
 """
 from django.conf import settings
-from django.db.models.functions import Concat
 from django.db.utils import IntegrityError
-from django.db.models import Count, Subquery, OuterRef, Value
+from django.db.models import Count, Subquery, OuterRef
 from django.db.models import Case, When, Sum
-from django.db.models import IntegerField, Q, F
+from django.db.models import IntegerField, Q
 from django.utils import timezone
 from django.db import connections, transaction
 from pydantic import ValidationError
@@ -36,7 +35,7 @@ from .models import Spectate
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
-from player.models import Summoner, NameChange, simplify
+from player.models import Summoner, simplify
 from player import tasks as pt
 
 from lolsite.celery import app
