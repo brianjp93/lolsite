@@ -299,7 +299,7 @@ def import_items(version="", language="en_US", overwrite=False):
             }
             item_model = Item(**item_model_data)
             try:
-                item_model.save()
+                item_model.set_stats(save=True)
             except IntegrityError as error:
                 if overwrite:
                     query = Item.objects.filter(
@@ -307,7 +307,7 @@ def import_items(version="", language="en_US", overwrite=False):
                     )
                     if query.exists():
                         query.first().delete()
-                        item_model.save()
+                        item_model.set_stats(save=True)
                     else:
                         raise Exception("Could not find queried item.")
                 else:
@@ -960,6 +960,7 @@ def compute_item_last_change(index=None, start_patch=None, language="en_US"):
                     item.diff = diff
                 else:
                     item.last_changed = prev_item.last_changed
+                    item.diff = None
             else:
                 item.last_changed = item.version
             save_list.append(item)
