@@ -39,7 +39,7 @@ from data.serializers import ProfileIconSerializer
 from match import tasks as mt
 from match.models import Match, sort_positions
 
-from .models import EmailVerification, Summoner, simplify
+from .models import EmailVerification, Follow, Summoner, simplify
 from .serializers import (
     CommentCreateSerializer, CommentUpdateSerializer,
     SummonerSerializer, RankPositionSerializer,
@@ -415,6 +415,23 @@ def get_rank_history(request, format=None):
             pass
 
     return Response(data, status=status_code)
+
+
+@api_view(['POST', 'DELETE', 'GET'])
+def following(request, format=None):
+    user = request.user
+    if request.method == 'POST':
+        _id = request.data['id']
+        Follow.objects.get_or_create(
+            summoner=Summoner.objects.get(id=_id),
+            user=user,
+        )
+    elif request.method == 'DELETE':
+        _id = request.data['id']
+        user.follow_set.filter(summoner__id=_id).delete()
+    qs = Summoner.objects.filter(follow__user=user)
+    data = SummonerSerializer(qs, many=True).data
+    return Response(data)
 
 
 @api_view(["GET", "POST"])
