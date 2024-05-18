@@ -210,6 +210,14 @@ class Favorite(models.Model):
         return self.summoner.region if self.summoner else ""
 
 
+class Follow(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    summoner = models.ForeignKey("Summoner", on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['user', 'summoner']
+
+
 class PageView(models.Model):
     summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE)
     bucket_date = models.DateField(default=timezone.now)
