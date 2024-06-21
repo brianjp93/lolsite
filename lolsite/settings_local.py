@@ -13,10 +13,6 @@ ALLOWED_HOSTS = ['*']
 BASE_URL = "http://localhost:3000"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-INSTALLED_APPS += [
-    "debug_toolbar",
-]
-
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ] + MIDDLEWARE
@@ -42,9 +38,9 @@ else:
         }
     }
 
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-MEDIA_URL = "/media/"
+MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 REDIS_URL = config('REDIS_URL', 'localhost')

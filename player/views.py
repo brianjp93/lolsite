@@ -1,9 +1,13 @@
 """player/views.py
 """
+from functools import cached_property
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
+from django.views import generic
 
+from match.models import Match
+from match.viewsapi import MatchBySummoner
 from player.models import EmailVerification
 
 
@@ -53,3 +57,28 @@ def logout_action(request):
     # user = request.user
     logout(request)
     return redirect("home")
+
+
+class SummonerPage(generic.ListView):
+    paginate_by = 10
+    template_name = "player/summoner.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['object_list']
+        context['summoner'] = self.summoner
+        return context
+
+    @cached_property
+    def summoner(self):
+        name = self.kwargs['name']
+        tagline = self.kwargs['tagline']
+        region = self.kwargs['region']
+        return MatchBySummoner.get_summoner(name, tagline, region)
+
+    def get_queryset(self):
+        summoner = self.summoner
+        qs = Match.objects.filter(participants__puuid=summoner.puuid)
+        qs = qs.prefetch_related('participants', 'participants__stats')
+        qs = qs.order_by('-game_creation')
+        return qs

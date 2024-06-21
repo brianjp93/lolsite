@@ -17,6 +17,7 @@ COPY requirements.txt .
 COPY release.sh /release.sh
 RUN pip install -r requirements.txt
 
+RUN tailwindcss -i ./lolsite/static/src/main.css -o ./lolsite/static/src/output.css --minify
 COPY . .
 
 EXPOSE 8000

@@ -55,3 +55,12 @@ services:
       - redis
   redis:
     image: redis
+  tailwind:
+    build:
+      context: .
+      dockerfile: ./docker/local/Dockerfile
+    command: tailwindcss -i ./lolsite/static/src/main.css -o ./lolsite/static/src/output.css --minify --watch
+    volumes:
+      - .:/code
+    env_file: .docker_env
+    stdin_open: true

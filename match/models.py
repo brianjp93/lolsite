@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import QuerySet
 from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
+from functools import cached_property
 from django.utils.translation import gettext_lazy as _
 
 import zoneinfo
@@ -219,6 +220,17 @@ class Match(VersionedModel):
         else:
             url = ""
         return url
+
+    @cached_property
+    def sorted_participants(self):
+        from match.tasks import get_sorted_participants
+        return get_sorted_participants(self, participants=self.participants.all())
+
+    def team100(self):
+        return [x for x in self.sorted_participants if x.team_id == 100]
+
+    def team200(self):
+        return [x for x in self.sorted_participants if x.team_id != 100]
 
     def get_creation(self):
         """Get creation as datetime"""

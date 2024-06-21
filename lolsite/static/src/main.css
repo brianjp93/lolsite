@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+
+html {
+  font-family: Raleway, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans,
+    sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
+    Noto Color Emoji;
+  font-weight: normal;
+  font-style: normal;
+  @apply bg-slate-100;
+}
+
+.alert {
+  &.alert-info {
+    @apply text-blue-950 border-2 rounded border-blue-900 bg-blue-200 p-2;
+  }
+}
+
+a {
+  @apply hover:underline text-cyan-800 hover:cursor-pointer;
+}
+
+h1 {
+  @apply text-6xl font-bold;
+}
+h2 {
+  @apply text-4xl font-bold;
+}
+h3 {
+  @apply text-3xl font-bold;
+}
+h4 {
+  @apply text-2xl font-bold;
+}
+h5 {
+  @apply text-xl font-bold;
+}
+h6 {
+  @apply text-lg font-bold;
+}
+
+.forms input {
+  @apply w-full border-gray-400 border rounded-md px-2 py-1;
+}
+.forms select {
+  @apply w-full border-gray-400 border rounded-md p-2;
+}
+.forms div.choices {
+  @apply w-full border-gray-400 border rounded-md !mb-0 bg-white;
+
+  .choices__inner {
+    @apply !min-h-0 !px-2 !py-1 !border-0 !rounded-none !bg-transparent;
+  }
+}
+.choices__input {
+  @apply !bg-transparent !mb-0;
+}
+.forms label {
+  @apply text-sm mt-2 block;
+}
+
+select.searchable {
+  @apply hidden;
+}
+
+label:has(+ [required]) {
+  @apply font-bold;
+
+  &:after {
+    content: "*";
+    @apply text-red-700 ml-1;
+  }
+}
+
+label > input[type="checkbox"] {
+  @apply w-fit;
+}
+
+.btn {
+  @apply px-4 py-1 shadow-md bg-gray-600 hover:bg-gray-800 text-white font-bold text-center;
+
+  &.btn-default {
+    @apply bg-white hover:bg-gray-200 text-black;
+  }
+
+  &.btn-success {
+    @apply bg-green-600 hover:bg-green-800 text-white;
+  }
+
+  &.btn-black {
+    @apply bg-black hover:bg-slate-800 hover:shadow-lg text-slate-100;
+  }
+
+  &.btn-danger {
+    @apply bg-rose-600 hover:bg-rose-800 text-white;
+  }
+
+  &.btn-warning {
+    @apply bg-orange-600 hover:bg-orange-800 text-white;
+  }
+
+  &.btn-link {
+    @apply border-0 !shadow-none hover:underline text-cyan-700 hover:cursor-pointer bg-transparent;
+  }
+
+  &:disabled {
+    @apply bg-gray-500 hover:bg-gray-500 cursor-not-allowed;
+  }
+}
+
+a.btn {
+  @apply py-[0.41rem]
+}
+
+ul > li {
+  list-style-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
+</svg>');
+  @apply ml-4;
+
+  &::marker {
+    font-size: 1.3em;
+    line-height: 0.1;
+  }
+}
+
+ul.errorlist li {
+  @apply text-sm text-rose-800 font-bold;
+}
+
+/* styling for calendar elements */
+.ec-title {
+  @apply text-xl font-bold;
+}
+.ec-day,
+.ec-time {
+  @apply text-sm font-bold;
+}
+
+.ec-event-body {
+  @apply overflow-hidden;
+}
+
+.ec-body {
+  @apply min-h-[300px] max-h-[500px];
+}
+
+.ec-button {
+  @apply px-4 py-1 !rounded-none shadow border-2 font-bold border-gray-800 !bg-transparent hover:!bg-gray-200 text-black;
+
+  &[disabled],
+  &.disabled,
+  &.ec-active {
+    @apply !cursor-default !bg-gray-400;
+  }
+}
+
+.ec-draggable {
+  @apply !cursor-grab active:!cursor-grabbing;
+}
+
+div.nav-item {
+  > a {
+    @apply flex font-bold gap-x-2 text-slate-100;
+  }
+
+  > a > div {
+    @apply pt-[.2rem];
+  }
+
+  > form button {
+    @apply !text-slate-100;
+  }
+}
+
+@tailwind utilities;
