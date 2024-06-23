@@ -1,40 +1,13 @@
 {% extends 'layout/base.html' %}
 {% load static %}
 {% block content %}
-<div class="flex flex-col gap-y-2">
-  {% for match in object_list %}
-  <div x-dt1>
-    {{ match.get_creation.isoformat }}
+  <div>
+    <form action="">
+      {{ filterset.form }}
+      <button type="submit">Search</button>
+    </form>
   </div>
-
-  <div class="text-sm">
-    <div class="flex gap-x-2">
-      <div class="flex flex-col">
-        {% for part in match.team100 %}
-        <div class="flex gap-x-2">
-          <div>
-            {{ part.riot_id_name }}#{{ part.riot_id_tagline }}
-          </div>
-          <div class="ml-auto">
-            {{ part.stats.kills }} / {{ part.stats.deaths}} / {{ part.stats.assists }}
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-      <div class="flex flex-col">
-        {% for part in match.team200 %}
-        <div class="flex gap-x-2">
-          <div>
-            {{ part.riot_id_name }}#{{ part.riot_id_tagline }}
-          </div>
-          <div class="ml-auto">
-            {{ part.stats.kills }} / {{ part.stats.deaths}} / {{ part.stats.assists }}
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
+  <div id="matchlist" class="flex flex-col gap-y-2">
+    {% include "player/_matchlist.html" %}
   </div>
-  {% endfor %}
-</div>
 {% endblock content %}

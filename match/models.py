@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import QuerySet
 from django.contrib.postgres.fields import ArrayField
+from django.urls import reverse
 from django.utils import timezone
 from functools import cached_property
 from django.utils.translation import gettext_lazy as _
@@ -96,7 +97,7 @@ def lp_sort(position):
     return lp
 
 
-class MatchQuerySet(models.QuerySet['Match']):
+class MatchQuerySet(models.QuerySet["Match"]):
     def get_items(self, puuid=None):
         item_ids = set()
         qs = Stats.objects.filter(participant__match__in=self)
@@ -118,12 +119,18 @@ class MatchQuerySet(models.QuerySet['Match']):
             for part in match.participants.all():
                 spell_ids.add(part.summoner_1_id)
                 spell_ids.add(part.summoner_2_id)
-        qs = CDSummonerSpell.objects.filter(
-            ext_id__in=spell_ids,
-        ).order_by(
-            "ext_id", "-major", "-minor",
-        ).distinct(
-            "ext_id",
+        qs = (
+            CDSummonerSpell.objects.filter(
+                ext_id__in=spell_ids,
+            )
+            .order_by(
+                "ext_id",
+                "-major",
+                "-minor",
+            )
+            .distinct(
+                "ext_id",
+            )
         )
         return {x.ext_id: x.image_url() for x in qs}
 
@@ -152,12 +159,28 @@ class MatchQuerySet(models.QuerySet['Match']):
         )
         return {x._id: x for x in rune_data}
 
+    def get_champions(self):
+        all_champions = set()
+        for match in self:
+            for part in match.participants.all():
+                all_champions.add(part.champion_id)
+        qs = (
+            Champion.objects.filter(
+                key__in=all_champions,
+            )
+            .select_related("image")
+            .order_by("key", "-major", "-minor")
+            .distinct()
+        )
+        return {x.key: x for x in qs}
+
     def get_related(self):
         return {
             "items": self.get_items(),
             "runes": self.get_runes(),
             "perk_substyles": self.get_perk_substyles(),
             "spell_images": self.get_spell_images(),
+            "champions": self.get_champions(),
         }
 
 
@@ -167,9 +190,11 @@ class MatchSummary(models.Model):
         COMPLETE = "c", _("Complete")
         FAILED = "f", _("Failed")
 
-    match = models.OneToOneField('Match', on_delete=models.CASCADE)
+    match = models.OneToOneField("Match", on_delete=models.CASCADE)
     content = models.TextField(default="")
-    status = models.CharField(choices=Status.choices, max_length=1, default=Status.RETRIEVING)
+    status = models.CharField(
+        choices=Status.choices, max_length=1, default=Status.RETRIEVING
+    )
     created_at = models.DateTimeField(default=timezone.now)
 
 
@@ -192,8 +217,8 @@ class Match(VersionedModel):
 
     id: int | None
     pk: int | None
-    advancedtimeline: Union['AdvancedTimeline', None]
-    participants: QuerySet['Participant']
+    advancedtimeline: Union["AdvancedTimeline", None]
+    participants: QuerySet["Participant"]
     comments: QuerySet[Comment]
 
     matchsummary: MatchSummary | None
@@ -202,8 +227,7 @@ class Match(VersionedModel):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
 
     def get_absolute_url(self, pname: str | None = None):
-        """Get url of match.
-        """
+        """Get url of match."""
         if pname is None:
             pname = ""
             if part := self.participants.all().first():
@@ -224,6 +248,7 @@ class Match(VersionedModel):
     @cached_property
     def sorted_participants(self):
         from match.tasks import get_sorted_participants
+
         return get_sorted_participants(self, participants=self.participants.all())
 
     def team100(self):
@@ -244,7 +269,9 @@ class Match(VersionedModel):
     def is_summoner_in_game(self, summoners: List[Summoner]):
         """Find if a summoner is in the game."""
         try:
-            return self.participants.filter(puuid__in=[x.puuid for x in summoners])[:1].get()
+            return self.participants.filter(puuid__in=[x.puuid for x in summoners])[
+                :1
+            ].get()
         except ObjectDoesNotExist:
             return None
 
@@ -259,14 +286,10 @@ class Participant(models.Model):
     )
     _id = models.IntegerField()  # participantID
 
-    summoner_id = models.CharField(
-        max_length=128, default="", blank=True, null=True
-    )
+    summoner_id = models.CharField(max_length=128, default="", blank=True, null=True)
     puuid = models.CharField(max_length=128, default=None, db_index=True, null=True)
     summoner_name = models.CharField(max_length=256, default="", blank=True)
-    summoner_name_simplified = models.CharField(
-        max_length=128, default="", blank=True
-    )
+    summoner_name_simplified = models.CharField(max_length=128, default="", blank=True)
 
     champion_id = models.IntegerField()
     champ_experience = models.IntegerField(default=None, null=True, blank=True)
@@ -296,10 +319,13 @@ class Participant(models.Model):
     # 0=top, 1=jg, 2=mid, 3=adc, 4=sup
     role_label = models.IntegerField(default=None, null=True)
 
-    stats: Union['Stats', None]
+    stats: Union["Stats", None]
 
     class Meta:
         unique_together = ("match", "_id")
+
+    def get_absolute_url(self):
+        return reverse("player:summoner-puuid", kwargs={"puuid": self.puuid})
 
     def save(self, *args, **kwargs):
         self.summoner_name_simplified = simplify(self.summoner_name)
@@ -309,6 +335,13 @@ class Participant(models.Model):
         return (
             f"Participant(summoner_name={self.summoner_name}, match={self.match._id})"
         )
+
+    def get_name(self):
+        if self.riot_id_name and self.riot_id_tagline:
+            name = f"{self.riot_id_name}#{self.riot_id_tagline}"
+        else:
+            name = self.summoner_name
+        return " ".join(name.split()).strip()
 
     def get_champion(self):
         return (
@@ -464,8 +497,8 @@ class Stats(models.Model):
 
     game_ended_in_early_surrender = models.BooleanField(default=False, blank=True)
     game_ended_in_surrender = models.BooleanField(default=False, blank=True)
-    riot_id_name = models.CharField(max_length=128, default='', blank=True)
-    riot_id_tagline = models.CharField(max_length=128, default='', blank=True)
+    riot_id_name = models.CharField(max_length=128, default="", blank=True)
+    riot_id_tagline = models.CharField(max_length=128, default="", blank=True)
 
     def __str__(self):
         return f"Stats(participant={self.participant.summoner_name})"
@@ -628,7 +661,7 @@ class Frame(models.Model):
     timestamp = models.IntegerField(null=True, blank=True)
 
     class Meta:
-        ordering = ['timestamp']
+        ordering = ["timestamp"]
 
     def __str__(self):
         return f"Frame(match={self.timeline.match._id}, timestamp={self.timestamp})"

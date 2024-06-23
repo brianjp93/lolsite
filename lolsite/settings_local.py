@@ -2,14 +2,11 @@ from .settings import *
 import os
 from decouple import config
 import socket
+import dj_database_url
 
-
-REACT_DEV = config('REACT_DEV', False, cast=bool)
-DEV = False
 DEBUG = True
 
-
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 BASE_URL = "http://localhost:3000"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
@@ -20,23 +17,9 @@ MIDDLEWARE = [
 
 # settings internal ips for docker
 hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
+INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2", "localhost"]
 
-
-if config("DATABASE_URL", ''):
-    import dj_database_url
-    DATABASES = {'default': dj_database_url.config()}
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": config("LOLSITE_DB_NAME"),
-            "USER": config("LOLSITE_DB_USER"),
-            "HOST": config("LOLSITE_DB_HOST"),
-            "PORT": config("LOLSITE_DB_PORT"),
-            "PASSWORD": config("LOLSITE_DB_PASS", ''),
-        }
-    }
+DATABASES = {'default': dj_database_url.config()}
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
@@ -81,3 +64,10 @@ CSRF_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_DOMAIN = 'localhost'
 CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://localhost:3000"]
 CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+
+def show_toolbar(request):
+    return True
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK" : show_toolbar,
+}

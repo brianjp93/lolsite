@@ -8,7 +8,7 @@ html {
     Noto Color Emoji;
   font-weight: normal;
   font-style: normal;
-  @apply bg-slate-100;
+  @apply bg-black text-gray-300;
 }
 
 .alert {
@@ -113,51 +113,8 @@ a.btn {
   @apply py-[0.41rem]
 }
 
-ul > li {
-  list-style-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
-</svg>');
-  @apply ml-4;
-
-  &::marker {
-    font-size: 1.3em;
-    line-height: 0.1;
-  }
-}
-
 ul.errorlist li {
   @apply text-sm text-rose-800 font-bold;
-}
-
-/* styling for calendar elements */
-.ec-title {
-  @apply text-xl font-bold;
-}
-.ec-day,
-.ec-time {
-  @apply text-sm font-bold;
-}
-
-.ec-event-body {
-  @apply overflow-hidden;
-}
-
-.ec-body {
-  @apply min-h-[300px] max-h-[500px];
-}
-
-.ec-button {
-  @apply px-4 py-1 !rounded-none shadow border-2 font-bold border-gray-800 !bg-transparent hover:!bg-gray-200 text-black;
-
-  &[disabled],
-  &.disabled,
-  &.ec-active {
-    @apply !cursor-default !bg-gray-400;
-  }
-}
-
-.ec-draggable {
-  @apply !cursor-grab active:!cursor-grabbing;
 }
 
 div.nav-item {

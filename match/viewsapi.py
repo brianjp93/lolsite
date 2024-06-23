@@ -101,7 +101,7 @@ class MatchBySummoner(ListAPIView):
         return summoner
 
     @staticmethod
-    def get_played_with(names: list[str], region: str, qs: QuerySet[Summoner]):
+    def get_played_with(names: list[str], region: str, qs: QuerySet[Match]):
         played_with = [
             pt.simplify(name)
             for name in names if len(name.strip()) > 0

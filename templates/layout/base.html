@@ -2,86 +2,92 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=.8" />
-  <meta name="description" content="{% block metadescription %}{% endblock metadescription %}" />
-  <title>
-    {% block title %}
-    HardStuck
-    {% endblock title %}
-  </title>
-  {% if meta %}
-  <meta property="og:type" content="{{ meta.type }}">
-  <meta property="og:url" content="{{ meta.url }}">
-  <meta property="og:title" content="{{ meta.title }}">
-  <meta property="og:description" content="{{ meta.description }}">
-  <meta property="og:image" content="{{ meta.image }}">
-  {% endif %}
-  <link rel="shortcut icon" type="image/png" href="{% static 'logo-clean.png' %}" />
-  {% block header_css %}
-  <link rel="stylesheet" href="{% static 'src/output.css' %}">
-  {% endblock header_css %}
-  {% block header_js %}
-  <script defer type="text/javascript" src="{% static 'src/htmx.min.js' %}"></script>
-  <script>
-    function formatDt1(value) {
-      return (new Date(Date.parse(value))).toLocaleString()
-    }
-
-    function replaceDt1(value) {
-      for (const el of document.querySelectorAll("[x-dt1]")) {
-        try {
-          const dtString = formatDt1(el.textContent.trim());
-          el.textContent = dtString;
-          el.removeAttribute("x-dt1")
-        } catch (exception) {
-          // whatever
-          console.log("Bad date format.")
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=.8" />
+    <meta name="description"
+          content="{% block metadescription %}{% endblock metadescription %}" />
+    <title>
+      {% block title %}
+        HardStuck
+      {% endblock title %}
+    </title>
+    {% if meta %}
+      <meta property="og:type" content="{{ meta.type }}">
+      <meta property="og:url" content="{{ meta.url }}">
+      <meta property="og:title" content="{{ meta.title }}">
+      <meta property="og:description" content="{{ meta.description }}">
+      <meta property="og:image" content="{{ meta.image }}">
+    {% endif %}
+    <link rel="shortcut icon"
+          type="image/png"
+          href="{% static 'logo-clean.png' %}" />
+    {% block header_css %}
+      <link rel="stylesheet" href="{% static 'src/output.css' %}">
+    {% endblock header_css %}
+    {% block header_js %}
+      <script defer type="text/javascript" src="{% static 'src/htmx.min.js' %}"></script>
+      <script>
+        function formatDt1(value) {
+          return (new Date(Date.parse(value))).toLocaleString()
         }
-      }
-    }
-    document.addEventListener("DOMContentLoaded", replaceDt1)
-  </script>
-  {% if debug %}
-  <script>
-    htmx.logger = function (elt, event, data) {
-      if (console) {
-        console.log(event, elt, data);
-      }
-    }
-  </script>
-  <script>
-    if (typeof window.htmx !== "undefined") {
-      htmx.on("htmx:afterSettle", function (detail) {
-        if (
-          typeof window.djdt !== "undefined" &&
-          detail.target instanceof HTMLBodyElement
-        ) {
-          djdt.show_toolbar();
-        }
-      });
-    }
-  </script>
-  {% endif %}
-  {% endblock header_js %}
-  {% block header %}
-  {% endblock header %}
-</head>
 
-<body id="body-wrap">
-  <script>
-    document.body.addEventListener('htmx:configRequest', (event) => {
-      event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
-    })
-  </script>
-  {% block content %}
-  {% endblock content %}
-  {% block htmlfooter %}
-  {% endblock htmlfooter %}
-  {% block footer %}
-  {% endblock footer %}
-</body>
+        function replaceDt1(value) {
+          for (const el of document.querySelectorAll("[x-dt1]")) {
+            try {
+              const dtString = formatDt1(el.textContent.trim());
+              el.textContent = dtString;
+              el.removeAttribute("x-dt1")
+            } catch (exception) {
+              // whatever
+              console.log("Bad date format.")
+            }
+          }
+        }
+        document.addEventListener("DOMContentLoaded", replaceDt1)
+      </script>
+      {% if debug %}
+        <script>
+          htmx.logger = function(elt, event, data) {
+            if (console) {
+              console.log(event, elt, data);
+            }
+          }
+        </script>
+        <script>
+          if (typeof window.htmx !== "undefined") {
+            htmx.on("htmx:afterSettle", function(detail) {
+              if (
+                typeof window.djdt !== "undefined" &&
+                detail.target instanceof HTMLBodyElement
+              ) {
+                djdt.show_toolbar();
+              }
+            });
+          }
+        </script>
+      {% endif %}
+    {% endblock header_js %}
+    {% block header %}
+    {% endblock header %}
+  </head>
+
+  <body>
+    <script>
+      document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+      })
+    </script>
+    {% block navbar %}
+      {% include "layout/navbar.html" %}
+    {% endblock navbar%}
+
+    {% block content %}
+    {% endblock content %}
+
+    {% block footer %}
+    {% endblock footer %}
+  </body>
 
 </html>

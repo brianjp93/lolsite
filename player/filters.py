@@ -2,8 +2,9 @@
 """
 from data import constants as dc
 from data.models import Champion
+from match.viewsapi import MatchBySummoner
 from player.models import Summoner, SummonerLink
-from match.models import Stats
+from match.models import Match, Stats
 
 from django.db.models import Sum, Count, F, FloatField
 from django.db.models import ExpressionWrapper, Value, Case, When
@@ -11,6 +12,8 @@ from django.db.models import Subquery, OuterRef
 from django.db.models import IntegerField, Q
 
 from django.utils.dateparse import parse_datetime
+
+import django_filters
 
 
 def get_summoner_champions_overview(
@@ -236,3 +239,21 @@ def get_connected_accounts_query(user):
     ]
     return Summoner.objects.filter(id__in=id_list)
 
+
+class SummonerMatchFilter(django_filters.FilterSet):
+    played_with = django_filters.CharFilter(method="played_with_filter", label="Played With")
+
+    def __init__(self, *args, **kwargs):
+        self.region = kwargs.pop('region')
+        self.puuid = kwargs.pop('puuid')
+        super().__init__(*args, **kwargs)
+
+    @property
+    def qs(self):
+        qs = super().qs
+        qs = qs.filter(participants__puuid=self.puuid)
+        return qs
+
+    def played_with_filter(self, queryset, _, value):
+        names = value.split(',')
+        return MatchBySummoner.get_played_with(names, self.region, queryset)
