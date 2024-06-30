@@ -2,10 +2,19 @@
 {% load static %}
 {% block content %}
   <div>
-    <form action="">
+    <form class="forms" action="">
       {{ filterset.form }}
       <button type="submit">Search</button>
     </form>
+  </div>
+  <div class="flex gap-x-2 my-2">
+    {% if page_obj.has_previous %}
+      <a href="{{ prev_url }}" class="btn btn-default">prev</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+      <a href="{{ next_url }}" class="btn btn-default">next</a>
+    {% endif %}
+    <div class="my-auto text-sm font-bold">Page: {{ page_obj.number }}</div>
   </div>
   <div id="matchlist" class="flex flex-col gap-y-2">
     {% include "player/_matchlist.html" %}

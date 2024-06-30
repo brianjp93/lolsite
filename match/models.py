@@ -134,6 +134,27 @@ class MatchQuerySet(models.QuerySet["Match"]):
         )
         return {x.ext_id: x.image_url() for x in qs}
 
+    def get_spells(self):
+        spell_ids = set()
+        for match in self:
+            for part in match.participants.all():
+                spell_ids.add(part.summoner_1_id)
+                spell_ids.add(part.summoner_2_id)
+        qs = (
+            CDSummonerSpell.objects.filter(
+                ext_id__in=spell_ids,
+            )
+            .order_by(
+                "ext_id",
+                "-major",
+                "-minor",
+            )
+            .distinct(
+                "ext_id",
+            ))
+
+        return {x.ext_id: x for x in qs}
+
     def get_perk_substyles(self):
         substyles = set()
         for match in self:
@@ -180,6 +201,7 @@ class MatchQuerySet(models.QuerySet["Match"]):
             "runes": self.get_runes(),
             "perk_substyles": self.get_perk_substyles(),
             "spell_images": self.get_spell_images(),
+            "spells": self.get_spells(),
             "champions": self.get_champions(),
         }
 
@@ -276,7 +298,7 @@ class Match(VersionedModel):
             return None
 
     def queue_name(self):
-        return constants.QUEUE_DICT.get(self.queue_id, "")
+        return constants.QUEUE_DICT.get(self.queue_id, {}).get('description', self.queue_id)
 
 
 class Participant(models.Model):

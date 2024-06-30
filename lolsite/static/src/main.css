@@ -41,10 +41,10 @@ h6 {
 }
 
 .forms input {
-  @apply w-full border-gray-400 border rounded-md px-2 py-1;
+  @apply w-full border-gray-900 border rounded-md px-2 py-1 bg-gray-800;
 }
 .forms select {
-  @apply w-full border-gray-400 border rounded-md p-2;
+  @apply w-full border-gray-900 border rounded-md px-2 py-[.345rem] bg-gray-800;
 }
 .forms div.choices {
   @apply w-full border-gray-400 border rounded-md !mb-0 bg-white;
@@ -81,7 +81,7 @@ label > input[type="checkbox"] {
   @apply px-4 py-1 shadow-md bg-gray-600 hover:bg-gray-800 text-white font-bold text-center;
 
   &.btn-default {
-    @apply bg-white hover:bg-gray-200 text-black;
+    @apply bg-gray-800 hover:bg-gray-600 text-white;
   }
 
   &.btn-success {

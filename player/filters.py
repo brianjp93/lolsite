@@ -242,6 +242,7 @@ def get_connected_accounts_query(user):
 
 class SummonerMatchFilter(django_filters.FilterSet):
     played_with = django_filters.CharFilter(method="played_with_filter", label="Played With")
+    queue = django_filters.ChoiceFilter(choices=[(420, "soloq"), (400, "draft 5v5")], empty_label="Any", label='Queue', method='queue_filter')
 
     def __init__(self, *args, **kwargs):
         self.region = kwargs.pop('region')
@@ -257,3 +258,8 @@ class SummonerMatchFilter(django_filters.FilterSet):
     def played_with_filter(self, queryset, _, value):
         names = value.split(',')
         return MatchBySummoner.get_played_with(names, self.region, queryset)
+
+    def queue_filter(self, qs, _, value):
+        if value:
+            return qs.filter(queue_id=value)
+        return qs

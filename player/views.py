@@ -1,6 +1,8 @@
 """player/views.py"""
 
 from functools import cached_property
+import urllib.parse
+
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
@@ -12,6 +14,21 @@ from match.viewsapi import MatchBySummoner
 from player.filters import SummonerMatchFilter
 from player.models import EmailVerification
 from player.viewsapi import get_by_puuid
+
+
+def get_page_urls(request, query_param='page'):
+    page = int(request.GET.get(query_param, 1))
+    base_path = request.path
+    search = request.GET.copy()
+    next_page_params = search.copy()
+    next_page_params['page'] = str(page + 1)
+
+    prev_page_params = search.copy()
+    prev_page_params['page'] = str(page - 1)
+
+    next_url = base_path + "?" + urllib.parse.urlencode(next_page_params)
+    prev_url = base_path + "?" + urllib.parse.urlencode(prev_page_params)
+    return prev_url, next_url
 
 
 def login_action(request):
@@ -67,11 +84,15 @@ class SummonerPage(generic.ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        prev_url, next_url = get_page_urls(self.request)
+        context['next_url'] = next_url
+        context['prev_url'] = prev_url
         context["summoner"] = self.summoner
         context["filterset"] = self.filterset
         self.set_related_objects(context["object_list"])
         self.set_focus_participants(context["object_list"])
         return context
+
 
     def set_focus_participants(self, object_list: list):
         for obj in object_list:
@@ -111,6 +132,9 @@ class SummonerPage(generic.ListView):
 
                 # champion
                 part.champion = related["champions"].get(part.champion_id, None)
+
+                part.spell_1 = related['spells'].get(part.summoner_1_id)
+                part.spell_2 = related['spells'].get(part.summoner_2_id)
 
     @cached_property
     def summoner(self):
