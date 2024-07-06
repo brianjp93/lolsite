@@ -11,6 +11,7 @@ from django.views import generic
 
 from match.models import Match
 from match.viewsapi import MatchBySummoner
+from match import tasks as mt
 from player.filters import SummonerMatchFilter
 from player.models import EmailVerification
 from player.viewsapi import get_by_puuid
@@ -79,10 +80,26 @@ def logout_action(request):
 
 
 class SummonerPage(generic.ListView):
-    paginate_by = 10
+    paginate_by: int = 10  # type: ignore
     template_name = "player/summoner.html"
 
     def get_context_data(self, *args, **kwargs):
+        region = self.kwargs['region']
+        page = int(self.request.GET.get('page', 1))
+        queue = self.request.GET.get('queue', None)
+        limit = self.paginate_by
+        start = page * (limit - 1)
+        end = start + limit
+        mt.import_recent_matches(
+            start,
+            end,
+            self.summoner.puuid,
+            region,
+            queue,
+        )
+        if page == 1:
+            mt.bulk_import.s(self.summoner.puuid, count=40, offset=start + limit).apply_async(countdown=2)
+
         context = super().get_context_data(*args, **kwargs)
         prev_url, next_url = get_page_urls(self.request)
         context['next_url'] = next_url

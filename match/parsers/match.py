@@ -233,6 +233,8 @@ class ParticipantModel(BaseModelWithLogger):
     playerAugment2: int = 0
     playerAugment3: int = 0
     playerAugment4: int = 0
+    playerAugment5: int = 0
+    playerAugment6: int = 0
     playerSubteamId: int = 0
     subteamPlacement: int = 0
     playerScore0: int|None = 0
