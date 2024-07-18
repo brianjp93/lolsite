@@ -88,7 +88,7 @@ class SummonerPage(generic.ListView):
         page = int(self.request.GET.get('page', 1))
         queue = self.request.GET.get('queue', None)
         limit = self.paginate_by
-        start = page * (limit - 1)
+        start = limit * (page - 1)
         end = start + limit
         mt.import_recent_matches(
             start,
