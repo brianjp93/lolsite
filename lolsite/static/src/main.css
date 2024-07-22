@@ -105,7 +105,7 @@ label > input[type="checkbox"] {
   }
 
   &:disabled {
-    @apply bg-gray-500 hover:bg-gray-500 cursor-not-allowed;
+    @apply opacity-30 cursor-not-allowed;
   }
 }
 

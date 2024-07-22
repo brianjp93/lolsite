@@ -164,6 +164,15 @@ class MatchQuerySet(models.QuerySet["Match"]):
         qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
         return {x._id: x.image_url() for x in qs}
 
+    def get_substyles(self):
+        substyles = set()
+        for match in self:
+            for part in match.participants.all():
+                substyles.add(part.stats.perk_sub_style)
+        qs = ReforgedTree.objects.filter(_id__in=substyles)
+        qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
+        return {x._id: x for x in qs}
+
     def get_runes(self):
         all_runes = set()
         for match in self:
@@ -200,6 +209,7 @@ class MatchQuerySet(models.QuerySet["Match"]):
             "items": self.get_items(),
             "runes": self.get_runes(),
             "perk_substyles": self.get_perk_substyles(),
+            "substyles": self.get_substyles(),
             "spell_images": self.get_spell_images(),
             "spells": self.get_spells(),
             "champions": self.get_champions(),

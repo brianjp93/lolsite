@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_htmx",
+    "django_cotton",
     "corsheaders",
     "debug_toolbar",
     "django_extensions",
@@ -74,13 +75,20 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": ["templates"],
-        "APP_DIRS": True,
+        "APP_DIRS": False,
         "OPTIONS": {
+            "loaders": [
+                "django.template.loaders.app_directories.Loader",
+                "django_cotton.cotton_loader.Loader",
+            ],
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+            ],
+            'builtins': [
+                'django_cotton.templatetags.cotton',
             ],
         },
     },
@@ -113,7 +121,7 @@ USE_L10N = True
 USE_TZ = True
 
 
-# STATICFILES_DIRS = []
+STATICFILES_DIRS = ["lolsite/static"]
 
 
 CORS_ALLOW_CREDENTIALS = True

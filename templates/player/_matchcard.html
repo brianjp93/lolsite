@@ -16,20 +16,12 @@
            alt="{{ match.focus.champion.name }}">
       <img src="{{ match.focus.spell_1.image_url }}" alt="">
       <img src="{{ match.focus.spell_2.image_url }}" alt="">
-      <img src="{{ match.focus.item_6.image_url }}" alt="">
-      <img src="{{ match.focus.item_6.image_url }}" alt="">
+      <img src="{{ match.focus.rune.image_url }}" alt="{{match.focus.rune.name}}">
+      <img src="{{ match.focus.substyle.image_url }}" alt="">
       <img src="{{ match.focus.item_6.image_url }}" alt="">
     </div>
 
-    <div class="grid grid-rows-2 grid-cols-3 gap-1 mt-auto mb-auto">
-      {% for item in match.focus.items %}
-        <div class="rounded border border-gray-400 w-8 h-8">
-          {% if item %}
-            <img class="rounded" src="{{ item.image_url }}" alt="">
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
+    <c-player.item-block :items="match.focus.items"/>
 
     <div class="text-xs">
       <div class="flex gap-x-2">

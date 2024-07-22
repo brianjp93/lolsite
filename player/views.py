@@ -152,6 +152,8 @@ class SummonerPage(generic.ListView):
 
                 part.spell_1 = related['spells'].get(part.summoner_1_id)
                 part.spell_2 = related['spells'].get(part.summoner_2_id)
+                part.rune = related['runes'].get(part.stats.perk_0)
+                part.substyle = related['substyles'].get(part.stats.perk_sub_style)
 
     @cached_property
     def summoner(self):

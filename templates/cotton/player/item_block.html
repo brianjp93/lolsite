@@ -1,0 +1,9 @@
+<div class="grid grid-rows-2 grid-cols-3 gap-1 mt-auto mb-auto">
+  {% for item in items %}
+    <div class="rounded border border-gray-400 w-8 h-8">
+      {% if item %}
+        <img class="rounded" src="{{ item.image_url }}" alt="">
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
