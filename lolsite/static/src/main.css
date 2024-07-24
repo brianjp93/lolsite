@@ -131,4 +131,9 @@ div.nav-item {
   }
 }
 
+.tooltip {
+  z-index: 10;
+  @apply bg-gray-700 p-4 rounded absolute bottom-0 left-0;
+}
+
 @tailwind utilities;

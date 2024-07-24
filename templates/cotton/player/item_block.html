@@ -2,7 +2,9 @@
   {% for item in items %}
     <div class="rounded border border-gray-400 w-8 h-8">
       {% if item %}
-        <img class="rounded" src="{{ item.image_url }}" alt="">
+        <c-data.item-hover :item="item">
+          <img class="rounded" src="{{ item.image_url }}" alt="{{item.name}}">
+        </c-data.item-hover>
       {% endif %}
     </div>
   {% endfor %}

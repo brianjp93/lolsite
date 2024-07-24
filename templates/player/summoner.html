@@ -1,6 +1,7 @@
 {% extends 'layout/base.html' %}
 {% load static %}
 {% block content %}
+<div class="container mx-auto px-2">
   <div>
     <form class="forms" action="">
       {{ filterset.form }}
@@ -37,4 +38,5 @@
   <div id="matchlist" class="flex flex-col gap-y-2">
     {% include "player/_matchlist.html" %}
   </div>
+</div>
 {% endblock content %}
