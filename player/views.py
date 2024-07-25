@@ -87,17 +87,18 @@ class SummonerPage(generic.ListView):
         region = self.kwargs['region']
         page = int(self.request.GET.get('page', 1))
         queue = self.request.GET.get('queue', None)
+        queue = int(queue) if queue is not None else None
         limit = self.paginate_by
         start = limit * (page - 1)
         end = start + limit
-        mt.import_recent_matches(
-            start,
-            end,
-            self.summoner.puuid,
-            region,
-            queue,
-        )
         if page == 1:
+            mt.import_recent_matches(
+                start,
+                end,
+                self.summoner.puuid,
+                region,
+                queue,
+            )
             mt.bulk_import.s(self.summoner.puuid, count=40, offset=start + limit).apply_async(countdown=2)
 
         context = super().get_context_data(*args, **kwargs)

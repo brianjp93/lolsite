@@ -4,7 +4,7 @@ from data import constants as dc
 from data.models import Champion
 from match.viewsapi import MatchBySummoner
 from player.models import Summoner, SummonerLink
-from match.models import Match, Stats
+from match.models import Stats
 
 from django.db.models import Sum, Count, F, FloatField
 from django.db.models import ExpressionWrapper, Value, Case, When
