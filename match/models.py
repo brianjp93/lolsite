@@ -444,6 +444,15 @@ class Participant(models.Model):
             pass
         return url
 
+    def result(self):
+        match: Match = self.match
+        if stats := getattr(self, 'stats', None):
+            if stats.win:
+                return 'win'
+            elif match.game_duration / 1000 / 60 < 5:
+                return 'remake'
+        return 'loss'
+
 
 class Stats(models.Model):
     participant = models.OneToOneField("Participant", on_delete=models.CASCADE)
@@ -971,4 +980,4 @@ class Spectate(models.Model):
     region = models.CharField(max_length=32, default="", blank=True)
 
     class Meta:
-        unique_together = ("game_id", "region")
+       unique_together = ("game_id", "region")

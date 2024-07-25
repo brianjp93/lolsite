@@ -1,6 +1,20 @@
-<div class="border border-zinc-400 rounded p-2">
+<div
+  class="
+    border rounded p-2
+    {% if match.focus.result == 'win' %}
+      bg-gradient-to-r to-black p-2 from-[#172f1e] border-green-800
+    {% elif match.focus.result == 'loss' %}
+      bg-gradient-to-r to-black p-2 from-[#2b1717] border-red-800
+    {% else %}
+      border-zinc-400 
+    {% endif %}
+  "
+>
+
   <div class="flex gap-x-2">
-    <a href="{% url 'match:match-detail' slug=match.slug %}" class="text-xs mb-1" hx-boost="true">
+    <a href="{% url 'match:match-detail' slug=match.slug %}"
+       class="text-xs mb-1"
+       hx-boost="true">
       View Match
     </a>
     <div x-dt1 class="text-xs">
@@ -14,15 +28,60 @@
   <div class="flex gap-x-2">
 
     <div class="grid grid-cols-3 grid-rows-3 w-16 h-16">
-      <img class="col-span-2 row-span-2"
-           src="{{ match.focus.champion.image.file_40.url }}"
-           alt="{{ match.focus.champion.name }}">
-      <img src="{{ match.focus.spell_1.image_url }}" alt="">
-      <img src="{{ match.focus.spell_2.image_url }}" alt="">
-      <img src="{{ match.focus.rune.image_url }}"
-           alt="{{ match.focus.rune.name }}">
-      <img src="{{ match.focus.substyle.image_url }}" alt="">
-      <img src="{{ match.focus.item_6.image_url }}" alt="">
+      <div class="col-span-2 row-span-2">
+        <c-tooltip>
+          <img src="{{ match.focus.champion.image.file_40.url }}"
+               alt="{{ match.focus.champion.name }}">
+          <c-slot name="content">
+          <div class="flex gap-x-2">
+            <h3>
+              {{ match.focus.champion.name }}
+            </h3>
+            <div class="text-sm">
+              {{ match.focus.champion.title }}
+            </div>
+          </div>
+          <div>
+            {{ match.focus.champion.lore }}
+          </div>
+          </c-slot>
+        </c-tooltip>
+      </div>
+      <c-tooltip>
+        <img src="{{ match.focus.spell_1.image_url }}" alt="">
+        <c-slot name="content">
+          <h3>{{ match.focus.spell_1.name }}</h3>
+          <div>{{ match.focus.spell_1.description }}</div>
+        </c-slot>
+      </c-tooltip>
+      <c-tooltip>
+        <img src="{{ match.focus.spell_2.image_url }}" alt="">
+        <c-slot name="content">
+          <h3>{{ match.focus.spell_2.name }}</h3>
+          <div>{{ match.focus.spell_2.description }}</div>
+        </c-slot>
+      </c-tooltip>
+      <c-tooltip>
+        <img src="{{ match.focus.rune.image_url }}"
+             alt="{{ match.focus.rune.name }}">
+        <c-slot name="content">
+          <h3>{{ match.focus.rune.name }}</h3>
+          <div>{{ match.focus.rune.long_description|safe }}</div>
+        </c-slot>
+      </c-tooltip>
+      <c-tooltip>
+        <img src="{{ match.focus.substyle.image_url }}" alt="" title="{{ match.focus.substyle.name }}">
+        <c-slot name="content">
+          <h3>{{ match.focus.substyle.name }}</h3>
+        </c-slot>
+      </c-tooltip>
+      <c-tooltip>
+        <img src="{{ match.focus.item_6.image_url }}" alt="">
+        <c-slot name="content">
+          <h3>{{ match.focus.item_6.name }}</h3>
+          <div>{{ match.focus.item_6.description|safe }}</div>
+        </c-slot>
+      </c-tooltip>
     </div>
 
     <c-player.item-block :items="match.focus.items" />

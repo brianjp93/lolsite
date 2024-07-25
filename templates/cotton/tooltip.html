@@ -1,14 +1,10 @@
 <div
   class="relative cursor-pointer"
-  title="show item info"
   x-data="{ isOpen: false }"
   @click="isOpen = !isOpen"
 >
   {{ slot }}
   <div class="tooltip min-w-80" x-show="isOpen" style="display: none;">
-    <h3>{{ item.name }}</h3>
-    <div>
-      {{ item.description|safe }}
-    </div>
+    {{ content }}
   </div>
 </div>
