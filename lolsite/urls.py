@@ -10,6 +10,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", include("lolsite.urlsapi")),
     path("", include("player.urls")),
+    path("", include("match.urls")),
     path("", views.Home.as_view()),
     path("login/go/", player_views.login_action),
     path("logout/", player_views.logout_action, name="logout"),

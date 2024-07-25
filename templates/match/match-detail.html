@@ -1,0 +1,8 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mx-auto">
+  <div>Platform: {{ object.platform_id }}</div>
+  <div>Queue: {{ object.queue_name }}</div>
+</div>
+{% endblock content%}

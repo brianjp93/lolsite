@@ -314,6 +314,11 @@ QUEUES = [
         "description": "2v2v2v2",
     },
     {
+        "_id": 1820,
+        "_map": "Swarm Map",
+        "description": "Swarm",
+    },
+    {
         "_id": 1900,
         "_map": "Summoner's Rift",
         "description": "U.R.F.",

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container mx-auto px-2">
   <div>
-    <form class="forms" action="">
+    <form class="forms" action="" hx-boost="true">
       {{ filterset.form }}
       <button type="submit">Search</button>
     </form>
@@ -11,6 +11,7 @@
   <div class="flex gap-x-2 my-2">
     {% if page_obj.has_previous %}
       <a
+        hx-boost="true"
         href="{{ prev_url }}"
         class="btn btn-default">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -27,7 +28,7 @@
       </button>
     {% endif %}
     {% if page_obj.has_next %}
-      <a href="{{ next_url }}" class="btn btn-default">
+      <a href="{{ next_url }}" class="btn btn-default" hx-boost="true">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
         </svg>

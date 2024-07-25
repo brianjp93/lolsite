@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Iterable, List, Union
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import QuerySet
@@ -230,6 +230,44 @@ class MatchSummary(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
 
+def set_related_match_objects(object_list: Iterable['Match']):
+    qs = Match.objects.filter(id__in=[x.id for x in object_list])
+    qs = qs.prefetch_related("participants", "participants__stats")
+    related = qs.get_related()
+    for obj in object_list:
+        for part in obj.participants.all():
+            part.items = []
+            keys = [
+                "item_0",
+                "item_1",
+                "item_2",
+                "item_3",
+                "item_4",
+                "item_5",
+                "item_6",
+            ]
+            for key in keys:
+                setattr(part, key, None)
+
+            for key in keys:
+                if item_id := getattr(part.stats, key):
+                    item = related["items"].get(item_id)
+                    setattr(part, key, item)
+                    part.items.append(item)
+                else:
+                    part.items.append(None)
+            if part.items:
+                part.items.pop()
+
+            # champion
+            part.champion = related["champions"].get(part.champion_id, None)
+
+            part.spell_1 = related['spells'].get(part.summoner_1_id)
+            part.spell_2 = related['spells'].get(part.summoner_2_id)
+            part.rune = related['runes'].get(part.stats.perk_0)
+            part.substyle = related['substyles'].get(part.stats.perk_sub_style)
+
+
 class Match(VersionedModel):
     _id = models.CharField(unique=True, db_index=True, max_length=32)
     game_creation = models.BigIntegerField(db_index=True)
@@ -254,6 +292,10 @@ class Match(VersionedModel):
     comments: QuerySet[Comment]
 
     matchsummary: MatchSummary | None
+
+    @property
+    def slug(self):
+        return self._id
 
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"

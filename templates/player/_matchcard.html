@@ -1,5 +1,8 @@
 <div class="border border-zinc-400 rounded p-2">
   <div class="flex gap-x-2">
+    <a href="{% url 'match:match-detail' slug=match.slug %}" class="text-xs mb-1" hx-boost="true">
+      View Match
+    </a>
     <div x-dt1 class="text-xs">
       {{ match.get_creation.isoformat }}
     </div>
@@ -8,7 +11,7 @@
     </div>
   </div>
 
-  <div class="flex gap-x-1">
+  <div class="flex gap-x-2">
 
     <div class="grid grid-cols-3 grid-rows-3 w-16 h-16">
       <img class="col-span-2 row-span-2"
@@ -16,15 +19,16 @@
            alt="{{ match.focus.champion.name }}">
       <img src="{{ match.focus.spell_1.image_url }}" alt="">
       <img src="{{ match.focus.spell_2.image_url }}" alt="">
-      <img src="{{ match.focus.rune.image_url }}" alt="{{match.focus.rune.name}}">
+      <img src="{{ match.focus.rune.image_url }}"
+           alt="{{ match.focus.rune.name }}">
       <img src="{{ match.focus.substyle.image_url }}" alt="">
       <img src="{{ match.focus.item_6.image_url }}" alt="">
     </div>
 
-    <c-player.item-block :items="match.focus.items"/>
+    <c-player.item-block :items="match.focus.items" />
 
     <div class="text-xs">
-      <div class="flex gap-x-2">
+      <div class="flex gap-x-3">
         <div class="flex flex-col">
           {% for part in match.team100 %}
             {% include "player/_team_participant_row.html" %}

@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
 
-from match.models import Match
+from match.models import Match, set_related_match_objects
 from match.viewsapi import MatchBySummoner
 from match import tasks as mt
 from player.filters import SummonerMatchFilter
@@ -106,10 +106,9 @@ class SummonerPage(generic.ListView):
         context['prev_url'] = prev_url
         context["summoner"] = self.summoner
         context["filterset"] = self.filterset
-        self.set_related_objects(context["object_list"])
+        set_related_match_objects(context['object_list'])
         self.set_focus_participants(context["object_list"])
         return context
-
 
     def set_focus_participants(self, object_list: list):
         for obj in object_list:
@@ -117,43 +116,6 @@ class SummonerPage(generic.ListView):
             for part in obj.participants.all():
                 if part.puuid == self.summoner.puuid:
                     obj.focus = part
-
-    def set_related_objects(self, object_list: list):
-        matches = Match.objects.filter(id__in=[x.id for x in object_list])
-        matches = matches.prefetch_related("participants", "participants__stats")
-        related = matches.get_related()
-        for obj in object_list:
-            for part in obj.participants.all():
-                part.items = []
-                keys = [
-                    "item_0",
-                    "item_1",
-                    "item_2",
-                    "item_3",
-                    "item_4",
-                    "item_5",
-                    "item_6",
-                ]
-                for key in keys:
-                    setattr(part, key, None)
-
-                for key in keys:
-                    if item_id := getattr(part.stats, key):
-                        item = related["items"].get(item_id)
-                        setattr(part, key, item)
-                        part.items.append(item)
-                    else:
-                        part.items.append(None)
-                if part.items:
-                    part.items.pop()
-
-                # champion
-                part.champion = related["champions"].get(part.champion_id, None)
-
-                part.spell_1 = related['spells'].get(part.summoner_1_id)
-                part.spell_2 = related['spells'].get(part.summoner_2_id)
-                part.rune = related['runes'].get(part.stats.perk_0)
-                part.substyle = related['substyles'].get(part.stats.perk_sub_style)
 
     @cached_property
     def summoner(self):

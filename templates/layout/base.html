@@ -31,6 +31,9 @@
       <script defer type="text/javascript" src="{% static 'src/alpine.min.js' %}"></script>
       <script>
         function runInitScripts() {
+          {% if debug %}
+            console.log('Running init script')
+          {% endif %}
           replaceDt1(null)
         }
         function formatDt1(value) {
@@ -51,15 +54,16 @@
         }
 
         document.addEventListener("DOMContentLoaded", runInitScripts)
+        htmx.on("htmx:afterSettle", () => {
+          runInitScripts()
+        })
 
 
       </script>
       {% if debug %}
         <script>
           htmx.logger = function(elt, event, data) {
-            if (console) {
-              console.log(event, elt, data);
-            }
+            console.log(event, elt, data);
           }
         </script>
         <script>

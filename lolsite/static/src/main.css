@@ -18,7 +18,7 @@ html {
 }
 
 a {
-  @apply hover:underline text-cyan-800 hover:cursor-pointer;
+  @apply hover:underline text-sky-800 font-bold hover:cursor-pointer;
 }
 
 h1 {
@@ -45,6 +45,7 @@ h6 {
 }
 .forms select {
   @apply w-full border-gray-900 border rounded-md px-2 py-[.345rem] bg-gray-800;
+  @apply w-full
 }
 .forms div.choices {
   @apply w-full border-gray-400 border rounded-md !mb-0 bg-white;
