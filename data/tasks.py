@@ -76,7 +76,7 @@ def import_missing(
         for version in json.loads(rito.versions):
             query = Champion.objects.filter(version=version, language=language)
             [major, minor, *_] = version.split('.')
-            if not CDProfileIcon.objects.filter(major=major, minor=minor).exist():
+            if not CDProfileIcon.objects.filter(major=major, minor=minor).exists():
                 import_cd_profile_icons(int(major), int(minor))
             if not query.exists():
                 import_all(version, language=language)
