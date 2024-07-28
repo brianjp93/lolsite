@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     "django_htmx",
     "django_cotton",
     "corsheaders",
-    "debug_toolbar",
     "django_extensions",
     "rest_framework",
     "storages",
