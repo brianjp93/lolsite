@@ -40,7 +40,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_htmx",
+    "django_cotton",
     "corsheaders",
+    "debug_toolbar",
     "django_extensions",
     "rest_framework",
     "storages",
@@ -63,6 +66,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_htmx.middleware.HtmxMiddleware",
 ]
 
 ROOT_URLCONF = "lolsite.urls"
@@ -71,13 +75,20 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": ["templates"],
-        "APP_DIRS": True,
+        "APP_DIRS": False,
         "OPTIONS": {
+            "loaders": [
+                "django.template.loaders.app_directories.Loader",
+                "django_cotton.cotton_loader.Loader",
+            ],
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+            ],
+            'builtins': [
+                'django_cotton.templatetags.cotton',
             ],
         },
     },
@@ -110,7 +121,7 @@ USE_L10N = True
 USE_TZ = True
 
 
-STATICFILES_DIRS = []
+STATICFILES_DIRS = ["lolsite/static"]
 
 
 CORS_ALLOW_CREDENTIALS = True

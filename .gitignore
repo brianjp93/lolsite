@@ -1,26 +1,11 @@
 __pycache__/*
 *.pyc
 
-react/node_modules
-react/start.bat
-react/build/*
-
-schema.prisma
-
-react/.yarn/*
-!react/.yarn/patches
-!react/.yarn/plugins
-!react/.yarn/releases
-!react/.yarn/sdks
-!react/.yarn/versions
-react/.pnp.*
-
 tags
 gitbuild
 
 /static/
 /media/
-.hypothesis/
 /data/db
 
 .DS_Store
@@ -40,11 +25,8 @@ vim-markdown-preview.html
 htmlcov/
 wily-report.html
 
-# Elastic Beanstalk Files
-.elasticbeanstalk/config.yml
-.elasticbeanstalk/config.yml.bak
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
-
 celerybeat-schedule
 celerybeat.pid
+
+# ignore tailwind generated file
+lolsite/static/src/output.css

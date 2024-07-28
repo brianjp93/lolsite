@@ -10,6 +10,7 @@ django-filter
 django-redis
 django-storages
 django-stubs[compatible-mypy]
+django-cotton
 mypy
 django-stubs-ext
 djangorestframework
@@ -26,3 +27,5 @@ requests
 sentry-sdk
 openai
 pytz
+pytailwindcss
+django-htmx

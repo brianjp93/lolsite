@@ -6,8 +6,6 @@ from sentry_sdk.integrations.django import DjangoIntegration
 import dj_database_url
 
 
-REACT_DEV = False
-DEV = False
 DEBUG = False
 
 
