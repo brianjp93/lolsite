@@ -1,5 +1,3 @@
-"""player/views.py"""
-
 from functools import cached_property
 import urllib.parse
 
@@ -9,6 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
 
+from lolsite.helpers import query_debugger
 from match.models import Match, set_related_match_objects
 from match.viewsapi import MatchBySummoner
 from match import tasks as mt
@@ -117,6 +116,7 @@ class SummonerPage(generic.ListView):
             for part in obj.participants.all():
                 if part.puuid == self.summoner.puuid:
                     obj.focus = part
+                    break
 
     @cached_property
     def summoner(self):

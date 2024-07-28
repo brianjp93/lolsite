@@ -17,6 +17,7 @@ from data.models import Item
 from data.models import SummonerSpell, Champion
 from data import constants
 
+from lolsite.helpers import query_debugger
 from player.models import simplify, Summoner, Comment
 
 logger = logging.getLogger(__name__)
@@ -98,7 +99,14 @@ def lp_sort(position):
 
 
 class MatchQuerySet(models.QuerySet["Match"]):
+    @property
+    def version(self):
+        if len(self) == 0:
+            return None, None
+        return self[0].major, self[0].minor
+
     def get_items(self, puuid=None):
+        major, minor = self.version
         item_ids = set()
         qs = Stats.objects.filter(participant__match__in=self)
         if puuid is not None:
@@ -108,12 +116,16 @@ class MatchQuerySet(models.QuerySet["Match"]):
                 key = f"item_{i}"
                 item_id = getattr(stat, key)
                 item_ids.add(item_id)
-        qs = Item.objects.filter(_id__in=item_ids)
-        qs = qs.order_by("_id", "-major", "-minor")
-        qs = qs.distinct("_id").select_related("image")
+        qs = Item.objects.filter(_id__in=item_ids, major=major, minor=minor).select_related('image')
+        if not len(qs):
+            # backup
+            qs = Item.objects.filter(_id__in=item_ids)
+            qs = qs.order_by("_id", "-major", "-minor")
+            qs = qs.distinct("_id").select_related("image")
         return {x._id: x for x in qs}
 
     def get_spell_images(self):
+        major, minor = self.version
         spell_ids = set()
         for match in self:
             for part in match.participants.all():
@@ -122,19 +134,29 @@ class MatchQuerySet(models.QuerySet["Match"]):
         qs = (
             CDSummonerSpell.objects.filter(
                 ext_id__in=spell_ids,
-            )
-            .order_by(
-                "ext_id",
-                "-major",
-                "-minor",
-            )
-            .distinct(
-                "ext_id",
+                major=major,
+                minor=minor
             )
         )
+        if not len(qs):
+            # backup
+            qs = (
+                CDSummonerSpell.objects.filter(
+                    ext_id__in=spell_ids,
+                )
+                .order_by(
+                    "ext_id",
+                    "-major",
+                    "-minor",
+                )
+                .distinct(
+                    "ext_id",
+                )
+            )
         return {x.ext_id: x.image_url() for x in qs}
 
     def get_spells(self):
+        major, minor = self.version
         spell_ids = set()
         for match in self:
             for part in match.participants.all():
@@ -143,65 +165,99 @@ class MatchQuerySet(models.QuerySet["Match"]):
         qs = (
             CDSummonerSpell.objects.filter(
                 ext_id__in=spell_ids,
+                major=major,
+                minor=minor,
             )
-            .order_by(
-                "ext_id",
-                "-major",
-                "-minor",
+        )
+        if not len(qs):
+            qs = (
+                CDSummonerSpell.objects.filter(
+                    ext_id__in=spell_ids,
+                )
+                .order_by(
+                    "ext_id",
+                    "-major",
+                    "-minor",
+                )
+                .distinct(
+                    "ext_id",
+                )
             )
-            .distinct(
-                "ext_id",
-            ))
-
         return {x.ext_id: x for x in qs}
 
     def get_perk_substyles(self):
+        major, minor = self.version
         substyles = set()
         for match in self:
             for part in match.participants.all():
                 substyles.add(part.stats.perk_sub_style)
-        qs = ReforgedTree.objects.filter(_id__in=substyles)
-        qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
+        qs = ReforgedTree.objects.filter(_id__in=substyles, major=major, minor=minor)
+        if not len(qs):
+            qs = ReforgedTree.objects.filter(_id__in=substyles)
+            qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
         return {x._id: x.image_url() for x in qs}
 
     def get_substyles(self):
+        major, minor = self.version
         substyles = set()
         for match in self:
             for part in match.participants.all():
                 substyles.add(part.stats.perk_sub_style)
-        qs = ReforgedTree.objects.filter(_id__in=substyles)
-        qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
+        qs = ReforgedTree.objects.filter(_id__in=substyles, major=major, minor=minor)
+        if not len(qs):
+            qs = ReforgedTree.objects.filter(_id__in=substyles)
+            qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
         return {x._id: x for x in qs}
 
     def get_runes(self):
+        major, minor = self.version
         all_runes = set()
         for match in self:
             for part in match.participants.all():
                 for _i in range(6):
                     all_runes.add(getattr(part.stats, f"perk_{_i}"))
-
         rune_data = (
             ReforgedRune.objects.filter(
                 _id__in=all_runes,
+                reforgedtree__major=major,
+                reforgedtree__minor=minor,
             )
-            .order_by("_id", "-reforgedtree__major", "reforgedtree__minor")
-            .distinct("_id")
         )
+        if not len(rune_data):
+            rune_data = (
+                ReforgedRune.objects.filter(
+                    _id__in=all_runes,
+                )
+                .order_by("_id", "-reforgedtree__major", "reforgedtree__minor")
+                .distinct("_id")
+            )
         return {x._id: x for x in rune_data}
 
     def get_champions(self):
-        all_champions = set()
-        for match in self:
-            for part in match.participants.all():
-                all_champions.add(part.champion_id)
+        if not len(self):
+            return {}
+        all_champions = {part.champion_id for match in self for part in match.participants.all()}
+        major, minor = self[0].major, self[0].minor
         qs = (
             Champion.objects.filter(
                 key__in=all_champions,
+                major=major,
+                minor=minor,
             )
             .select_related("image")
             .order_by("key", "-major", "-minor")
             .distinct()
         )
+        if not len(qs):
+            # backup query
+            qs = (
+                Champion.objects.filter(
+                    key__in=all_champions,
+                )
+                .select_related("image")
+                .order_by("key", "-major", "-minor")
+                .distinct()
+            )
         return {x.key: x for x in qs}
 
     def get_related(self):
