@@ -29,12 +29,17 @@
     {% block header_js %}
       <script type="text/javascript" src="{% static 'src/htmx.min.js' %}"></script>
       <script defer type="text/javascript" src="{% static 'src/alpine.min.js' %}"></script>
+
+      <script src="{% static 'src/popper.min.js' %}"></script>
+      <script src="{% static 'src/tippy-bundle.umd.min.js' %}"></script>
+
       <script>
         function runInitScripts() {
           {% if debug %}
             console.log('Running init script')
           {% endif %}
           replaceDt1(null)
+          initTippy()
         }
         function formatDt1(value) {
           return (new Date(Date.parse(value))).toLocaleString()
@@ -51,6 +56,19 @@
               console.log("Bad date format.")
             }
           }
+        }
+
+        function initTippy() {
+          {% if debug %}
+            console.log("Initializing tippy stuff")
+          {% endif %}
+          tippy(document.querySelectorAll('.tippy'), {
+            content: (reference) => {
+              return reference.querySelector(".tippy-content").innerHTML
+            },
+            allowHTML: true,
+            interactive: true,
+          });
         }
 
         document.addEventListener("DOMContentLoaded", runInitScripts)

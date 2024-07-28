@@ -30,8 +30,9 @@
     <div class="grid grid-cols-3 grid-rows-3 w-16 h-16">
       <div class="col-span-2 row-span-2">
         <c-tooltip>
-          <img src="{{ match.focus.champion.image.file_40.url }}"
-               alt="{{ match.focus.champion.name }}">
+          {% if match.focus.champion.image.file_40 %}
+            <img src="{{ match.focus.champion.image.file_40.url }}" alt="{{ match.focus.champion.name }}">
+          {% endif %}
           <c-slot name="content">
           <div class="flex gap-x-2">
             <h3>

@@ -1,10 +1,6 @@
-<div
-  class="relative cursor-pointer"
-  x-data="{ isOpen: false }"
-  @click="isOpen = !isOpen"
->
+<div class="cursor-pointer tippy" data-tippy-trigger="focusin click" >
   {{ slot }}
-  <div class="tooltip min-w-80" x-show="isOpen" style="display: none;">
+  <div class="tippy-content" style="display: none;">
     {{ content }}
   </div>
 </div>

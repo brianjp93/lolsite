@@ -18,7 +18,7 @@ from django.utils import timezone
 from notification.models import Notification
 
 from data import constants as dc
-from data.models import ProfileIcon
+from data.models import CDProfileIcon, ProfileIcon
 
 from player.utils import get_admin
 
@@ -105,7 +105,7 @@ class Summoner(models.Model):
         return f'Summoner(region={self.region}, riotId={self.simple_riot_id})'
 
     def get_profile_icon(self):
-        return ProfileIcon.objects.filter(_id=self.profile_icon_id).order_by('-major', '-minor').first()
+        return CDProfileIcon.objects.filter(ext_id=self.profile_icon_id).first()
 
     def save(self, *args, **kwargs):
         if self.name:
@@ -289,6 +289,20 @@ class RankPosition(models.Model):
 
         """
         return decode_int_to_rank(self.rank_integer)
+
+    def display_queue(self):
+        match self.queue_type:
+            case "RANKED_FLEX_SR":
+                return "FlexQ"
+            case "RANKED_SOLO_5x5":
+                return "SoloQ"
+        return self.queue_type
+
+    def winrate(self):
+        losses = self.losses
+        if losses == 0:
+            losses = 1
+        return round((self.wins / (self.wins + losses)) * 100, 1)
 
 
 def encode_rank_to_int(tier, division, lp):

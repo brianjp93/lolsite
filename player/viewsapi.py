@@ -55,16 +55,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_by_puuid(puuid):
+def get_by_puuid(puuid, region='na'):
     query = Summoner.objects.filter(puuid=puuid)
     if summoner := query.first():
-        if not summoner.riot_id_name or not summoner.riot_id_tagline:
-            summoner_id = pt.import_summoner(region=summoner.region, puuid=puuid)
-            summoner.refresh_from_db()
-        else:
-            pt.import_summoner.delay(region=summoner.region, puuid=puuid)
+        summoner_id = pt.import_summoner(region=summoner.region, puuid=puuid)
+        summoner.refresh_from_db()
     else:
-        summoner_id = pt.import_summoner(region='na', puuid=puuid)
+        summoner_id = pt.import_summoner(region=region, puuid=puuid)
         summoner = Summoner.objects.filter(id=summoner_id).first()
     return summoner
 

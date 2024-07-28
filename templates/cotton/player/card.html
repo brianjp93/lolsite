@@ -1,0 +1,51 @@
+<div class="flex flex-col gap-y-2">
+  <div class="flex gap-x-2">
+    <div class="flex flex-col">
+      <img class="aspect-square w-16 rounded"
+           src="{{ profile_icon.image_url }}"
+           alt="{{ summoner.simple_riot_id }}">
+      <div class="mx-auto text-xs bg-gray-200 text-black rounded px-2 font-bold mt-[-10px]">
+        {{ summoner.summoner_level }}
+      </div>
+    </div>
+    <div class="mx-auto flex underline">
+      <div>
+        {{ summoner.riot_id_name }}
+      </div>
+      <div class="text-gray-400">
+        #{{ summoner.riot_id_tagline }}
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-y-1">
+    <div class="flex gap-x-2">
+      <div class="flex flex-col gap-y-1 font-bold">
+        {% for position in positions %}
+          <div>
+            {{ position.display_queue }}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="flex flex-col gap-y-1 mx-auto">
+        {% for position in positions %}
+          <div class="text-right">
+            {{ position.tier }} {{ position.rank }} {{ position.league_points }}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="flex flex-col gap-y-1">
+        {% for position in positions %}
+          <div class="flex gap-x-2">
+            <div class="my-auto font-bold">
+              {{ position.winrate }}%
+            </div>
+            <div class="text-sm my-auto">
+              ({{ position.wins }}/{{ position.losses }})
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>

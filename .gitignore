@@ -30,3 +30,5 @@ celerybeat.pid
 
 # ignore tailwind generated file
 lolsite/static/src/output.css
+
+*Zone.Identifier
