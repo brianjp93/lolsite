@@ -3,6 +3,7 @@ import os
 from decouple import config
 import socket
 import dj_database_url
+import sys
 
 DEBUG = True
 
@@ -13,6 +14,11 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ] + MIDDLEWARE
+
+if 'test' not in sys.argv:
+    INSTALLED_APPS += [
+        "debug_toolbar",
+    ]
 
 
 # settings internal ips for docker
