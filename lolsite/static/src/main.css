@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+
+html {
+  font-family: Raleway, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans,
+    sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
+    Noto Color Emoji;
+  font-weight: normal;
+  font-style: normal;
+  @apply bg-black text-gray-300;
+}
+
+.alert {
+  &.alert-info {
+    @apply text-blue-950 border-2 rounded border-blue-900 bg-blue-200 p-2;
+  }
+}
+
+a {
+  @apply hover:underline text-sky-800 font-bold hover:cursor-pointer;
+}
+
+h1 {
+  @apply text-6xl font-bold;
+}
+h2 {
+  @apply text-4xl font-bold;
+}
+h3 {
+  @apply text-3xl font-bold;
+}
+h4 {
+  @apply text-2xl font-bold;
+}
+h5 {
+  @apply text-xl font-bold;
+}
+h6 {
+  @apply text-lg font-bold;
+}
+
+.forms input {
+  @apply w-full border-gray-900 border rounded-md px-2 py-1 bg-gray-800;
+}
+.forms select {
+  @apply w-full border-gray-900 border rounded-md px-2 py-[.345rem] bg-gray-800;
+  @apply w-full
+}
+.forms div.choices {
+  @apply w-full border-gray-400 border rounded-md !mb-0 bg-white;
+
+  .choices__inner {
+    @apply !min-h-0 !px-2 !py-1 !border-0 !rounded-none !bg-transparent;
+  }
+}
+.choices__input {
+  @apply !bg-transparent !mb-0;
+}
+.forms label {
+  @apply text-sm mt-2 block;
+}
+
+select.searchable {
+  @apply hidden;
+}
+
+label:has(+ [required]) {
+  @apply font-bold;
+
+  &:after {
+    content: "*";
+    @apply text-red-700 ml-1;
+  }
+}
+
+label > input[type="checkbox"] {
+  @apply w-fit;
+}
+
+.btn {
+  @apply px-4 py-1 shadow-md bg-gray-600 hover:bg-gray-800 text-white font-bold text-center;
+
+  &.btn-default {
+    @apply bg-gray-800 hover:bg-gray-600 text-white;
+  }
+
+  &.btn-success {
+    @apply bg-green-600 hover:bg-green-800 text-white;
+  }
+
+  &.btn-black {
+    @apply bg-black hover:bg-slate-800 hover:shadow-lg text-slate-100;
+  }
+
+  &.btn-danger {
+    @apply bg-rose-600 hover:bg-rose-800 text-white;
+  }
+
+  &.btn-warning {
+    @apply bg-orange-600 hover:bg-orange-800 text-white;
+  }
+
+  &.btn-link {
+    @apply border-0 !shadow-none hover:underline text-cyan-700 hover:cursor-pointer bg-transparent;
+  }
+
+  &:disabled {
+    @apply opacity-30 cursor-not-allowed;
+  }
+}
+
+a.btn {
+  @apply py-[0.41rem]
+}
+
+ul.errorlist li {
+  @apply text-sm text-rose-800 font-bold;
+}
+
+div.nav-item {
+  > a {
+    @apply flex font-bold gap-x-2 text-slate-100;
+  }
+
+  > a > div {
+    @apply pt-[.2rem];
+  }
+
+  > form button {
+    @apply !text-slate-100;
+  }
+}
+
+.tooltip {
+  z-index: 10;
+  @apply bg-gray-700 p-4 rounded absolute bottom-0 left-0;
+}
+
+@tailwind utilities;

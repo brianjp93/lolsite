@@ -471,7 +471,7 @@ class Champion(VersionedModel):
         unique_together = ("_id", "version", "language")
 
     def __str__(self):
-        return f'Champion(_id="{self._id}", version="{self.version}", language="{self.language}")'
+        return f'{self.name} ({self.version})'
 
     def get_newest_version(self):
         query = Champion.objects.order_by("-major", "-minor", "-patch")

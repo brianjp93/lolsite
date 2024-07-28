@@ -18,4 +18,17 @@ django_settings_module = "lolsite.settings_local"
 
 [tool.ruff]
 ignore = ["E501"]
-target-version = "py311"
+target-version = "py312"
+
+[tool.djlint]
+indent = 2
+format_js = true
+format_css = true
+line_break_after_multiline_tag = true
+max_blank_lines = 1
+
+[tool.djlint.js]
+indent_size = 2
+
+[tool.djlint.css]
+indent_size = 2

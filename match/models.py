@@ -1,9 +1,11 @@
-from typing import List, Union
+from typing import Iterable, List, Union
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import QuerySet
 from django.contrib.postgres.fields import ArrayField
+from django.urls import reverse
 from django.utils import timezone
+from functools import cached_property
 from django.utils.translation import gettext_lazy as _
 
 import zoneinfo
@@ -15,6 +17,7 @@ from data.models import Item
 from data.models import SummonerSpell, Champion
 from data import constants
 
+from lolsite.helpers import query_debugger
 from player.models import simplify, Summoner, Comment
 
 logger = logging.getLogger(__name__)
@@ -95,8 +98,15 @@ def lp_sort(position):
     return lp
 
 
-class MatchQuerySet(models.QuerySet['Match']):
+class MatchQuerySet(models.QuerySet["Match"]):
+    @property
+    def version(self):
+        if len(self) == 0:
+            return None, None
+        return self[0].major, self[0].minor
+
     def get_items(self, puuid=None):
+        major, minor = self.version
         item_ids = set()
         qs = Stats.objects.filter(participant__match__in=self)
         if puuid is not None:
@@ -106,57 +116,159 @@ class MatchQuerySet(models.QuerySet['Match']):
                 key = f"item_{i}"
                 item_id = getattr(stat, key)
                 item_ids.add(item_id)
-        qs = Item.objects.filter(_id__in=item_ids)
-        qs = qs.order_by("_id", "-major", "-minor")
-        qs = qs.distinct("_id").select_related("image")
+        qs = Item.objects.filter(_id__in=item_ids, major=major, minor=minor).select_related('image')
+        if not len(qs):
+            # backup
+            qs = Item.objects.filter(_id__in=item_ids)
+            qs = qs.order_by("_id", "-major", "-minor")
+            qs = qs.distinct("_id").select_related("image")
         return {x._id: x for x in qs}
 
     def get_spell_images(self):
+        major, minor = self.version
         spell_ids = set()
         for match in self:
             for part in match.participants.all():
                 spell_ids.add(part.summoner_1_id)
                 spell_ids.add(part.summoner_2_id)
-        qs = CDSummonerSpell.objects.filter(
-            ext_id__in=spell_ids,
-        ).order_by(
-            "ext_id", "-major", "-minor",
-        ).distinct(
-            "ext_id",
+        qs = (
+            CDSummonerSpell.objects.filter(
+                ext_id__in=spell_ids,
+                major=major,
+                minor=minor
+            )
         )
+        if not len(qs):
+            # backup
+            qs = (
+                CDSummonerSpell.objects.filter(
+                    ext_id__in=spell_ids,
+                )
+                .order_by(
+                    "ext_id",
+                    "-major",
+                    "-minor",
+                )
+                .distinct(
+                    "ext_id",
+                )
+            )
         return {x.ext_id: x.image_url() for x in qs}
 
+    def get_spells(self):
+        major, minor = self.version
+        spell_ids = set()
+        for match in self:
+            for part in match.participants.all():
+                spell_ids.add(part.summoner_1_id)
+                spell_ids.add(part.summoner_2_id)
+        qs = (
+            CDSummonerSpell.objects.filter(
+                ext_id__in=spell_ids,
+                major=major,
+                minor=minor,
+            )
+        )
+        if not len(qs):
+            qs = (
+                CDSummonerSpell.objects.filter(
+                    ext_id__in=spell_ids,
+                )
+                .order_by(
+                    "ext_id",
+                    "-major",
+                    "-minor",
+                )
+                .distinct(
+                    "ext_id",
+                )
+            )
+        return {x.ext_id: x for x in qs}
+
     def get_perk_substyles(self):
+        major, minor = self.version
         substyles = set()
         for match in self:
             for part in match.participants.all():
                 substyles.add(part.stats.perk_sub_style)
-        qs = ReforgedTree.objects.filter(_id__in=substyles)
-        qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
+        qs = ReforgedTree.objects.filter(_id__in=substyles, major=major, minor=minor)
+        if not len(qs):
+            qs = ReforgedTree.objects.filter(_id__in=substyles)
+            qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
         return {x._id: x.image_url() for x in qs}
 
+    def get_substyles(self):
+        major, minor = self.version
+        substyles = set()
+        for match in self:
+            for part in match.participants.all():
+                substyles.add(part.stats.perk_sub_style)
+        qs = ReforgedTree.objects.filter(_id__in=substyles, major=major, minor=minor)
+        if not len(qs):
+            qs = ReforgedTree.objects.filter(_id__in=substyles)
+            qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
+        return {x._id: x for x in qs}
+
     def get_runes(self):
+        major, minor = self.version
         all_runes = set()
         for match in self:
             for part in match.participants.all():
                 for _i in range(6):
                     all_runes.add(getattr(part.stats, f"perk_{_i}"))
-
         rune_data = (
             ReforgedRune.objects.filter(
                 _id__in=all_runes,
+                reforgedtree__major=major,
+                reforgedtree__minor=minor,
             )
-            .order_by("_id", "-reforgedtree__major", "reforgedtree__minor")
-            .distinct("_id")
         )
+        if not len(rune_data):
+            rune_data = (
+                ReforgedRune.objects.filter(
+                    _id__in=all_runes,
+                )
+                .order_by("_id", "-reforgedtree__major", "reforgedtree__minor")
+                .distinct("_id")
+            )
         return {x._id: x for x in rune_data}
+
+    def get_champions(self):
+        if not len(self):
+            return {}
+        all_champions = {part.champion_id for match in self for part in match.participants.all()}
+        major, minor = self[0].major, self[0].minor
+        qs = (
+            Champion.objects.filter(
+                key__in=all_champions,
+                major=major,
+                minor=minor,
+            )
+            .select_related("image")
+            .order_by("key", "-major", "-minor")
+            .distinct()
+        )
+        if not len(qs):
+            # backup query
+            qs = (
+                Champion.objects.filter(
+                    key__in=all_champions,
+                )
+                .select_related("image")
+                .order_by("key", "-major", "-minor")
+                .distinct()
+            )
+        return {x.key: x for x in qs}
 
     def get_related(self):
         return {
             "items": self.get_items(),
             "runes": self.get_runes(),
             "perk_substyles": self.get_perk_substyles(),
+            "substyles": self.get_substyles(),
             "spell_images": self.get_spell_images(),
+            "spells": self.get_spells(),
+            "champions": self.get_champions(),
         }
 
 
@@ -166,10 +278,50 @@ class MatchSummary(models.Model):
         COMPLETE = "c", _("Complete")
         FAILED = "f", _("Failed")
 
-    match = models.OneToOneField('Match', on_delete=models.CASCADE)
+    match = models.OneToOneField("Match", on_delete=models.CASCADE)
     content = models.TextField(default="")
-    status = models.CharField(choices=Status.choices, max_length=1, default=Status.RETRIEVING)
+    status = models.CharField(
+        choices=Status.choices, max_length=1, default=Status.RETRIEVING
+    )
     created_at = models.DateTimeField(default=timezone.now)
+
+
+def set_related_match_objects(object_list: Iterable['Match']):
+    qs = Match.objects.filter(id__in=[x.id for x in object_list])
+    qs = qs.prefetch_related("participants", "participants__stats")
+    related = qs.get_related()
+    for obj in object_list:
+        for part in obj.participants.all():
+            part.items = []
+            keys = [
+                "item_0",
+                "item_1",
+                "item_2",
+                "item_3",
+                "item_4",
+                "item_5",
+                "item_6",
+            ]
+            for key in keys:
+                setattr(part, key, None)
+
+            for key in keys:
+                if item_id := getattr(part.stats, key):
+                    item = related["items"].get(item_id)
+                    setattr(part, key, item)
+                    part.items.append(item)
+                else:
+                    part.items.append(None)
+            if part.items:
+                part.items.pop()
+
+            # champion
+            part.champion = related["champions"].get(part.champion_id, None)
+
+            part.spell_1 = related['spells'].get(part.summoner_1_id)
+            part.spell_2 = related['spells'].get(part.summoner_2_id)
+            part.rune = related['runes'].get(part.stats.perk_0)
+            part.substyle = related['substyles'].get(part.stats.perk_sub_style)
 
 
 class Match(VersionedModel):
@@ -191,18 +343,21 @@ class Match(VersionedModel):
 
     id: int | None
     pk: int | None
-    advancedtimeline: Union['AdvancedTimeline', None]
-    participants: QuerySet['Participant']
+    advancedtimeline: Union["AdvancedTimeline", None]
+    participants: QuerySet["Participant"]
     comments: QuerySet[Comment]
 
     matchsummary: MatchSummary | None
+
+    @property
+    def slug(self):
+        return self._id
 
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
 
     def get_absolute_url(self, pname: str | None = None):
-        """Get url of match.
-        """
+        """Get url of match."""
         if pname is None:
             pname = ""
             if part := self.participants.all().first():
@@ -220,6 +375,18 @@ class Match(VersionedModel):
             url = ""
         return url
 
+    @cached_property
+    def sorted_participants(self):
+        from match.tasks import get_sorted_participants
+
+        return get_sorted_participants(self, participants=self.participants.all())
+
+    def team100(self):
+        return [x for x in self.sorted_participants if x.team_id == 100]
+
+    def team200(self):
+        return [x for x in self.sorted_participants if x.team_id != 100]
+
     def get_creation(self):
         """Get creation as datetime"""
         utc = zoneinfo.ZoneInfo("UTC")
@@ -232,12 +399,14 @@ class Match(VersionedModel):
     def is_summoner_in_game(self, summoners: List[Summoner]):
         """Find if a summoner is in the game."""
         try:
-            return self.participants.filter(puuid__in=[x.puuid for x in summoners])[:1].get()
+            return self.participants.filter(puuid__in=[x.puuid for x in summoners])[
+                :1
+            ].get()
         except ObjectDoesNotExist:
             return None
 
     def queue_name(self):
-        return constants.QUEUE_DICT.get(self.queue_id, "")
+        return constants.QUEUE_DICT.get(self.queue_id, {}).get('description', self.queue_id)
 
 
 class Participant(models.Model):
@@ -247,14 +416,10 @@ class Participant(models.Model):
     )
     _id = models.IntegerField()  # participantID
 
-    summoner_id = models.CharField(
-        max_length=128, default="", blank=True, null=True
-    )
+    summoner_id = models.CharField(max_length=128, default="", blank=True, null=True)
     puuid = models.CharField(max_length=128, default=None, db_index=True, null=True)
     summoner_name = models.CharField(max_length=256, default="", blank=True)
-    summoner_name_simplified = models.CharField(
-        max_length=128, default="", blank=True
-    )
+    summoner_name_simplified = models.CharField(max_length=128, default="", blank=True)
 
     champion_id = models.IntegerField()
     champ_experience = models.IntegerField(default=None, null=True, blank=True)
@@ -284,10 +449,13 @@ class Participant(models.Model):
     # 0=top, 1=jg, 2=mid, 3=adc, 4=sup
     role_label = models.IntegerField(default=None, null=True)
 
-    stats: Union['Stats', None]
+    stats: Union["Stats", None]
 
     class Meta:
         unique_together = ("match", "_id")
+
+    def get_absolute_url(self):
+        return reverse("player:summoner-puuid", kwargs={"puuid": self.puuid})
 
     def save(self, *args, **kwargs):
         self.summoner_name_simplified = simplify(self.summoner_name)
@@ -297,6 +465,13 @@ class Participant(models.Model):
         return (
             f"Participant(summoner_name={self.summoner_name}, match={self.match._id})"
         )
+
+    def get_name(self):
+        if self.riot_id_name and self.riot_id_tagline:
+            name = f"{self.riot_id_name}#{self.riot_id_tagline}"
+        else:
+            name = self.summoner_name
+        return " ".join(name.split()).strip()
 
     def get_champion(self):
         return (
@@ -324,6 +499,15 @@ class Participant(models.Model):
         except SummonerSpell.DoesNotExist:
             pass
         return url
+
+    def result(self):
+        match: Match = self.match
+        if stats := getattr(self, 'stats', None):
+            if stats.win:
+                return 'win'
+            elif match.game_duration / 1000 / 60 < 5:
+                return 'remake'
+        return 'loss'
 
 
 class Stats(models.Model):
@@ -452,8 +636,8 @@ class Stats(models.Model):
 
     game_ended_in_early_surrender = models.BooleanField(default=False, blank=True)
     game_ended_in_surrender = models.BooleanField(default=False, blank=True)
-    riot_id_name = models.CharField(max_length=128, default='', blank=True)
-    riot_id_tagline = models.CharField(max_length=128, default='', blank=True)
+    riot_id_name = models.CharField(max_length=128, default="", blank=True)
+    riot_id_tagline = models.CharField(max_length=128, default="", blank=True)
 
     def __str__(self):
         return f"Stats(participant={self.participant.summoner_name})"
@@ -616,7 +800,7 @@ class Frame(models.Model):
     timestamp = models.IntegerField(null=True, blank=True)
 
     class Meta:
-        ordering = ['timestamp']
+        ordering = ["timestamp"]
 
     def __str__(self):
         return f"Frame(match={self.timeline.match._id}, timestamp={self.timestamp})"
@@ -852,4 +1036,4 @@ class Spectate(models.Model):
     region = models.CharField(max_length=32, default="", blank=True)
 
     class Meta:
-        unique_together = ("game_id", "region")
+       unique_together = ("game_id", "region")

@@ -1,38 +1,7 @@
 {% extends 'layout/base.html' %}
 {% load static %}
-
-{% block header %}
-<script id='queues' type='application/json'>
-    {{ queues|safe }}
-</script>
-<script id='user-data' type='application/json'>
-    {{ user|safe }}
-</script>
-
-<script id='favorite-data' type='application/json'>
-    {{ favorites|safe }}
-</script>
-
-<script id='static-base' type='text'>
-    {% static "" %}
-</script>
-
-<script id='user-id' type='text'>
-    {{ request.user.id }}
-</script>
-
-<script id='build-data' type='text'>
-    {{ app_version }}
-</script>
-{% endblock header %}
-
-{% block body %}
-    {% csrf_token %}
-    <div
-        data-csrf_token='{{ csrf_token }}'
-        style=''
-        class="__react_root"
-        app-name="App"
-        data-allow_access="{{ allow_access }}"
-        id='app-wrap'></div>
-{% endblock body %}
+{% block content %}
+  <div>
+    is this working or not
+  </div>
+{% endblock content %}
