@@ -1,6 +1,7 @@
 # data constants to add to DB
 
 from typing import TypedDict
+from enum import Enum
 
 
 MIN_PASSWORD_LENGTH = 7
