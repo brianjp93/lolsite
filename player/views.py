@@ -144,7 +144,7 @@ class SummonerPage(generic.ListView):
 class SummonerLookup(generic.View):
     def get(self, request, *args, **kwargs):
         search = request.GET.get("search")
-        region = "na"
+        region = request.GET.get("region", "na")
         if "#" in search:
             name, tagline = search.split("#")
         else:

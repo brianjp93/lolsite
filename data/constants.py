@@ -1,7 +1,7 @@
 # data constants to add to DB
 
 from typing import TypedDict
-from enum import Enum
+from enum import StrEnum
 
 
 MIN_PASSWORD_LENGTH = 7
@@ -723,3 +723,16 @@ ITEM_STAT_COSTS: ItemStatCosts = {
     'percent_magic_penetration': 46.15,  # value from https://leagueoflegends.fandom.com/wiki/Magic_penetration
     'flat_magic_penetration': 31.11,
 }
+
+class Region(StrEnum):
+    NA = 'na'
+    EUW = 'euw'
+    EUNE = 'eune'
+    KR = 'kr'
+    JP = 'jp'
+    LAN = 'lan'
+    LAS = 'las'
+    BR = 'br'
+    OCE  = 'oce'
+    TR = 'tr'
+    RU = 'ru'
