@@ -1,8 +1,9 @@
-from django.conf import settings
 import logging
+
+from player.forms import SummonerSearchForm
 
 logger = logging.getLogger(__name__)
 
 
-def version_processor(request):
-    return {"app_version": settings.VERSION_STRING}
+def search_form(request):
+    return {'search_form': SummonerSearchForm()}

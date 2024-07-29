@@ -132,4 +132,12 @@ div.nav-item {
   }
 }
 
+.tippy-box {
+  @apply bg-gradient-to-r from-[#433e3c] via-[#453147] to-[#0b1f22];
+}
+
+.tippy-arrow {
+  color: #453147;
+}
+
 @tailwind utilities;

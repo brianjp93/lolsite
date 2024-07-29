@@ -18,7 +18,7 @@ from django.utils import timezone
 from notification.models import Notification
 
 from data import constants as dc
-from data.models import CDProfileIcon, ProfileIcon
+from data.models import CDProfileIcon
 
 from player.utils import get_admin
 
@@ -128,6 +128,12 @@ class Summoner(models.Model):
         except:
             checkpoint = None
         return checkpoint
+
+    def positions(self):
+        checkpoint = self.get_newest_rank_checkpoint()
+        if not checkpoint:
+            return []
+        return checkpoint.positions.all()
 
     def is_connected_to(self, user_id: int):
         """Check if a summoner is connected to a user through a SummonerLink."""
