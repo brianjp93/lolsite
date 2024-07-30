@@ -1,3 +1,18 @@
 <div class="border-gray-400 border-b-2 py-2 px-4 mb-2 flex">
-  {% include "layout/search_form.html" %}
+  <div>
+    {% include "layout/search_form.html" %}
+  </div>
+  <div class="ml-auto items-center content-center flex">
+    {% if request.user.is_authenticated %}
+      <div>
+        {{ request.user.email }}
+      </div>
+      <form action="{% url 'player:logout-view' %}" method="POST">
+        {% csrf_token %}
+        <button class="btn btn-link" type="submit">Logout</button>
+      </form>
+    {% else %}
+      <a href="{% url 'player:login-view' %}">Login</a>
+    {% endif %}
+  </div>
 </div>
