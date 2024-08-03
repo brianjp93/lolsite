@@ -1,10 +1,31 @@
-<form class="forms w-72" action="{% url 'player:summoner-lookup' %}">
+<form
+  id="search-form"
+  class="forms w-72 search-form" action="{% url 'player:summoner-lookup' %}">
   <div class="flex ">
     <div>
       {{ search_form.region }}
     </div>
-    <div>
+    <div
+      class="relative"
+      x-data="{ open: false }"
+      @focusin="open = true"
+      @click.outside="open = false"
+      hx-trigger="click"
+      hx-get="{% url 'player:summoner-autocomplete' %}"
+      hx-swap="innerHTML"
+      hx-target="find .swap"
+      hx-include="#search-form"
+    >
       {{ search_form.search }}
+      <div class="absolute w-full">
+        <div class="h-full"></div>
+        <div
+          class="flex h-32 bg-slate-800 rounded w-full border-slate-400 p-2 swap"
+          style="display: none;"
+          x-show="open">
+          Type to search
+        </div>
+      </div>
     </div>
     <div>
       <button class="btn btn-default rounded h-full" type="submit">

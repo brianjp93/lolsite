@@ -12,6 +12,7 @@ from match.models import Match, set_related_match_objects
 from match.viewsapi import MatchBySummoner
 from match import tasks as mt
 from player.filters import SummonerMatchFilter
+from player.forms import SummonerSearchForm
 from player.models import EmailVerification
 from player.viewsapi import get_by_puuid
 
@@ -158,6 +159,14 @@ class SummonerLookup(generic.View):
             name=name,
             tagline=tagline,
         )
+
+class SummonerAutoComplete(generic.FormView):
+    template_name = "player/_summoner_autocomplete.html"
+    form_class = SummonerSearchForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
 
 
 class SummonerPagePuuid(generic.RedirectView):
