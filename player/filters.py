@@ -2,8 +2,9 @@
 """
 from data import constants as dc
 from data.models import Champion
+from data.constants import Region
 from match.viewsapi import MatchBySummoner
-from player.models import Summoner, SummonerLink
+from player.models import Summoner, SummonerLink, simplify
 from match.models import Stats
 
 from django.db.models import Sum, Count, F, FloatField
@@ -263,3 +264,16 @@ class SummonerMatchFilter(django_filters.FilterSet):
         if value:
             return qs.filter(queue_id=value)
         return qs
+
+
+class SummonerAutocompleteFilter(django_filters.FilterSet):
+    simple_riot_id = django_filters.CharFilter(label="Riot ID + Tagline", method='simple_riot_id_filter', min_length=3, required=True)
+    region = django_filters.ChoiceFilter(choices=[(x, x) for x in Region], initial="na", empty_label=None)
+
+    class Meta:
+        model = Summoner
+        fields = ['simple_riot_id', 'region']
+
+    def simple_riot_id_filter(self, queryset, _, value):
+        name = simplify(value)
+        return queryset.filter(simple_riot_id__icontains=name)

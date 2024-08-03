@@ -11,7 +11,7 @@ from lolsite.helpers import query_debugger
 from match.models import Match, set_related_match_objects
 from match.viewsapi import MatchBySummoner
 from match import tasks as mt
-from player.filters import SummonerMatchFilter
+from player.filters import SummonerAutocompleteFilter, SummonerMatchFilter
 from player.forms import SummonerSearchForm
 from player.models import EmailVerification
 from player.viewsapi import get_by_puuid
@@ -144,13 +144,13 @@ class SummonerPage(generic.ListView):
 
 class SummonerLookup(generic.View):
     def get(self, request, *args, **kwargs):
-        search = request.GET.get("search")
+        search = request.GET.get("simple_riot_id")
         region = request.GET.get("region", "na")
         if "#" in search:
             name, tagline = search.split("#")
         else:
             name = search
-            tagline = "na1"
+            tagline = f"{region}1"
         summoner = MatchBySummoner.get_summoner(name, tagline, region)
         name, tagline = summoner.simple_riot_id.split("#")
         return redirect(
@@ -160,13 +160,21 @@ class SummonerLookup(generic.View):
             tagline=tagline,
         )
 
-class SummonerAutoComplete(generic.FormView):
+class SummonerAutoComplete(generic.ListView):
     template_name = "player/_summoner_autocomplete.html"
-    form_class = SummonerSearchForm
+    paginate_by = 20
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['form'] = self.filterset.form
         return context
+
+    @property
+    def filterset(self):
+        return SummonerAutocompleteFilter(self.request.GET)
+
+    def get_queryset(self):
+        return self.filterset.qs.order_by("riot_id_name", "name")
 
 
 class SummonerPagePuuid(generic.RedirectView):

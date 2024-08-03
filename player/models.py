@@ -104,6 +104,11 @@ class Summoner(models.Model):
     def __str__(self):
         return f'Summoner(region={self.region}, riotId={self.simple_riot_id})'
 
+    def get_name(self):
+        if self.simple_riot_id:
+            return f"{self.riot_id_name}#{self.riot_id_tagline}"
+        return self.name
+
     def get_profile_icon(self):
         return CDProfileIcon.objects.filter(ext_id=self.profile_icon_id).first()
 
