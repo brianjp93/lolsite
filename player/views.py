@@ -174,7 +174,7 @@ class SummonerAutoComplete(generic.ListView):
         return SummonerAutocompleteFilter(self.request.GET)
 
     def get_queryset(self):
-        return self.filterset.qs.order_by("riot_id_name", "name")
+        return self.filterset.qs
 
 
 class SummonerPagePuuid(generic.RedirectView):
