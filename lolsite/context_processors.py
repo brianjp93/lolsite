@@ -1,9 +1,9 @@
 import logging
 
-from player.forms import SummonerSearchForm
+from player.filters import SummonerAutocompleteFilter
 
 logger = logging.getLogger(__name__)
 
 
 def search_form(request):
-    return {'search_form': SummonerSearchForm()}
+    return {'search_form': SummonerAutocompleteFilter()}

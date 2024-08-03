@@ -1,38 +1,41 @@
-<form
-  id="search-form"
-  class="forms w-72 search-form" action="{% url 'player:summoner-lookup' %}">
+<form id="search-form"
+      class="forms w-72 search-form"
+      action="{% url 'player:summoner-lookup' %}">
   <div class="flex ">
     <div>
-      {{ search_form.region }}
+      {{ search_form.form.region }}
     </div>
-    <div
-      class="relative"
-      x-data="{ open: false }"
-      @focusin="open = true"
-      @click.outside="open = false"
-      hx-trigger="click"
-      hx-get="{% url 'player:summoner-autocomplete' %}"
-      hx-swap="innerHTML"
-      hx-target="find .swap"
-      hx-include="#search-form"
-    >
-      {{ search_form.search }}
-      <div class="absolute w-full">
-        <div class="h-full"></div>
-        <div
-          class="flex h-32 bg-slate-800 rounded w-full border-slate-400 p-2 swap"
-          style="display: none;"
-          x-show="open">
-          Type to search
+    <div class="relative"
+         x-data="{ open: false }"
+         @focusin="open = true"
+         @click.outside="open = false">
+      <input hx-trigger="keydown changed delay:300ms"
+             hx-get="{% url 'player:summoner-autocomplete' %}"
+             hx-swap="innerHTML"
+             hx-target="next .swap"
+             hx-include="#search-form"
+             autocomplete="off"
+             type="text"
+             name="simple_riot_id">
+      <div class="absolute w-[150%]">
+        <div class="h-full">
+        </div>
+        <div class="swap flex bg-slate-800 rounded w-full border-slate-400 p-2 mt-1"
+             style="display: none"
+             x-show="open">
+          Type 3 characters for autocomplete
         </div>
       </div>
     </div>
     <div>
       <button class="btn btn-default rounded h-full" type="submit">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-          class="size-4 my-auto">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        <svg xmlns="http://www.w3.org/2000/svg"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke-width="1.5"
+             stroke="currentColor"
+             class="size-4 my-auto">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
         </svg>
       </button>
     </div>

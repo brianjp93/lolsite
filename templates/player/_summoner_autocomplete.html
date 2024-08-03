@@ -1,0 +1,32 @@
+<div class='flex flex-col gap-y-1 w-full'>
+  {% if form.errors.simple_riot_id %}
+    <div>
+      Type 3 characters for autocomplete
+    </div>
+  {% else %}
+    {% for summoner in object_list %}
+      <a id="autocomplete-select-{{ summoner.id }}"
+         href='{% url "player:summoner-page" region=summoner.region name=summoner.riot_id_name tagline=summoner.riot_id_tagline %}'
+         class='flex gap-x-2 px-2 hover:bg-slate-700 contents-center items-center rounded text-gray-300 font-normal'>
+        <div>
+          <div class="text-xs bg-white text-black rounded px-2 py-1 my-1">
+            {{ summoner.summoner_level }}
+          </div>
+        </div>
+        {% if summoner.simple_riot_id %}
+          <div class="overflow-ellipsis overflow-hidden whitespace-nowrap">
+            {{ summoner.riot_id_name }}#{{ summoner.riot_id_tagline }}
+          </div>
+        {% else %}
+          <div class="overflow-ellipsis overflow-hidden whitespace-nowrap">
+            {{ summoner.name }}
+          </div>
+        {% endif %}
+      </a>
+    {% empty %}
+      <div>
+        No Summoners found.
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
