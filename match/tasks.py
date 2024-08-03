@@ -1117,6 +1117,7 @@ def get_summary_of_match(match_id: str, focus_player_puuid: str|None=None):
         return matchsummary
     data = LlmMatchSerializer(match, many=False).data
     data_json = json.dumps(data, indent=None)
+    logger.info(data_json)
     chat = OpenAI(api_key=settings.OPENAI_KEY)
     messages: list[ChatCompletionMessageParam] = [
         {"role": "system", "content": MATCH_SUMMARY_INTRO_PROMPT},
@@ -1129,7 +1130,7 @@ def get_summary_of_match(match_id: str, focus_player_puuid: str|None=None):
         {"role": "user", "content": data_json},
     )
     r = chat.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model="gpt-4o",
         messages=messages,
         temperature=0.1,
     )
@@ -1137,4 +1138,4 @@ def get_summary_of_match(match_id: str, focus_player_puuid: str|None=None):
     matchsummary.content = content or ""
     matchsummary.status = MatchSummary.Status.COMPLETE
     matchsummary.save()
-    return matchsummary
+    return matchsummary.id

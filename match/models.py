@@ -454,6 +454,9 @@ class Participant(models.Model):
     class Meta:
         unique_together = ("match", "_id")
 
+    def simple_riot_id(self):
+        return f"{self.riot_id_name}#{self.riot_id_tagline}"
+
     def get_absolute_url(self):
         return reverse("player:summoner-puuid", kwargs={"puuid": self.puuid})
 

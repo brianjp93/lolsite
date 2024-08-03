@@ -4,7 +4,6 @@ from .models import (
     AdvancedTimeline, Frame, ParticipantFrame,
 )
 from . import models
-from match import tasks as mt
 
 from django.db.models import QuerySet
 from django.core.cache import cache
@@ -283,6 +282,7 @@ class FullMatchSerializer(serializers.ModelSerializer):
         super().__init__(instance, **kwargs)
 
     def get_participants(self, obj):
+        from match import tasks as mt
         parts = mt.get_sorted_participants(obj, participants=obj.participants.all())
         return FullParticipantSerializer(parts, many=True, extra=self.extra).data
 
@@ -761,6 +761,7 @@ class BasicMatchSerializer(serializers.ModelSerializer):
         super().__init__(instance=instance, **kwargs)
 
     def get_participants(self, obj):
+        from match import tasks as mt
         parts = mt.get_sorted_participants(obj, participants=obj.participants.all())
         return BasicParticipantSerializer(parts, many=True, extra=self.extra).data
 
@@ -800,7 +801,7 @@ class LlmParticipantSerializer(serializers.ModelSerializer):
         model = Participant
         fields = [
             "id",
-            "summoner_name",
+            "simple_riot_id",
             "lane",
             "role",
             "individual_position",
@@ -828,6 +829,7 @@ class LlmFrameSerializer(serializers.ModelSerializer):
     turretplatedestroyedevent_set = TurretPlateDestroyedEventSerializer(many=True)
     elitemonsterkillevent_set = EliteMonsterKillEventSerializer(many=True)
     buildingkillevent_set = BuildingKillEventSerializer(many=True)
+    championkillevent_set = ChampionKillEventSerializer(many=True)
 
     class Meta:
         model = Frame
@@ -837,6 +839,7 @@ class LlmFrameSerializer(serializers.ModelSerializer):
             "turretplatedestroyedevent_set",
             "elitemonsterkillevent_set",
             "buildingkillevent_set",
+            "championkillevent_set",
         ]
 
 class LlmTimelineSerializer(serializers.ModelSerializer):
