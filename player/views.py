@@ -12,9 +12,9 @@ from match.models import Match, set_related_match_objects
 from match.viewsapi import MatchBySummoner
 from match import tasks as mt
 from player.filters import SummonerAutocompleteFilter, SummonerMatchFilter
-from player.forms import SummonerSearchForm
 from player.models import EmailVerification, NameChange
 from player.viewsapi import get_by_puuid
+from player import tasks as pt
 
 
 def get_page_urls(request, query_param='page'):
@@ -100,6 +100,7 @@ class SummonerPage(generic.ListView):
                 queue,
             )
             mt.bulk_import.s(self.summoner.puuid, count=40, offset=start + limit).apply_async(countdown=2)
+            pt.import_positions(self.summoner.id)
 
         context = super().get_context_data(*args, **kwargs)
         prev_url, next_url = get_page_urls(self.request)

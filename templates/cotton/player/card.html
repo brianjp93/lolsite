@@ -6,7 +6,7 @@
         {{ summoner.summoner_level }}
       </div>
     </div>
-    <c-tooltip>
+    <c-tooltip class="mb-auto">
       <div class="mx-auto flex underline">
         <div>
           {{ summoner.riot_id_name }}
@@ -17,10 +17,15 @@
       </div>
       <c-slot name="content">
         <div class="flex flex-col gap-y-2 mx-2">
+          <h4 class="underline" title="Only names found in imported games will be listed here.">
+            Previous Names
+          </h4>
           {% for name in namechanges %}
-            <div>
-              {{ name.old_name }}
-            </div>
+          <div>
+            {{ name.old_name }}
+          </div>
+          {% empty %}
+          <div>No Names Found</div>
           {% endfor %}
         </div>
       </c-slot>
