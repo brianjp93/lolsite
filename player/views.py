@@ -13,7 +13,7 @@ from match.viewsapi import MatchBySummoner
 from match import tasks as mt
 from player.filters import SummonerAutocompleteFilter, SummonerMatchFilter
 from player.forms import SummonerSearchForm
-from player.models import EmailVerification
+from player.models import EmailVerification, NameChange
 from player.viewsapi import get_by_puuid
 
 
@@ -107,6 +107,9 @@ class SummonerPage(generic.ListView):
         context['prev_url'] = prev_url
         context["summoner"] = self.summoner
         context["filterset"] = self.filterset
+        context["namechanges"] = NameChange.objects.filter(
+            summoner=self.summoner,
+        ).order_by("-created_date")
         set_related_match_objects(context['object_list'])
         self.set_focus_participants(context["object_list"])
         return context
