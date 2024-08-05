@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.views import generic
 
 from lolsite.helpers import query_debugger
-from match.models import Match, set_related_match_objects
+from match.models import Match, set_focus_participants, set_related_match_objects
 from match.viewsapi import MatchBySummoner
 from match import tasks as mt
 from player.filters import SummonerAutocompleteFilter, SummonerMatchFilter
@@ -112,16 +112,8 @@ class SummonerPage(generic.ListView):
             summoner=self.summoner,
         ).order_by("-created_date")
         set_related_match_objects(context['object_list'])
-        self.set_focus_participants(context["object_list"])
+        set_focus_participants(context["object_list"], self.summoner.puuid)
         return context
-
-    def set_focus_participants(self, object_list: list):
-        for obj in object_list:
-            obj.focus = None
-            for part in obj.participants.all():
-                if part.puuid == self.summoner.puuid:
-                    obj.focus = part
-                    break
 
     @cached_property
     def summoner(self):

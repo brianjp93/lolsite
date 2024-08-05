@@ -1,0 +1,42 @@
+<div class="flex flex-col rounded bg-slate-800 px-2 py-1 w-24 text-sm border border-slate-500">
+  <div class="font-bold flex gap-x-0.5 mx-auto">
+    <div class="text-green-500">
+      {{ participant.stats.kills }}
+    </div>
+    <div class="text-gray-500">
+      /
+    </div>
+    <div class="text-red-500">
+      {{ participant.stats.deaths }}
+    </div>
+    <div class="text-gray-500">
+      /
+    </div>
+    <div>
+      {{ participant.stats.assists }}
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2">
+    <div>
+      KDA
+    </div>
+    <div class="ml-auto">
+      {{ participant.kda|floatformat:1 }}
+    </div>
+
+    <div>
+      DPM
+    </div>
+    <div class="ml-auto">
+      {{ participant.dpm|floatformat:"0" }}
+    </div>
+
+    <div>
+      VSPM
+    </div>
+    <div class="ml-auto">
+      {{ participant.vspm|floatformat:1 }}
+    </div>
+  </div>
+</div>

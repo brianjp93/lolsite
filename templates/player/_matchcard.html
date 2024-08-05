@@ -105,49 +105,7 @@
     </div>
 
     <c-player.item-block :items="match.focus.items" />
-
-    <div class="flex flex-col rounded bg-slate-800 px-2 py-1 w-24 text-sm border border-slate-500">
-      <div class="font-bold flex gap-x-0.5 mx-auto">
-        <div class="text-green-500">
-          {{ match.focus.stats.kills }}
-        </div>
-        <div class="text-gray-500">
-          /
-        </div>
-        <div class="text-red-500">
-          {{ match.focus.stats.deaths }}
-        </div>
-        <div class="text-gray-500">
-          /
-        </div>
-        <div>
-          {{ match.focus.stats.assists }}
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2">
-        <div>
-          KDA
-        </div>
-        <div class="ml-auto">
-          {{ match.focus.kda|floatformat:1 }}
-        </div>
-
-        <div>
-          DPM
-        </div>
-        <div class="ml-auto">
-          {{ match.focus.dpm|floatformat:"0" }}
-        </div>
-
-        <div>
-          VSPM
-        </div>
-        <div class="ml-auto">
-          {{ match.focus.vspm|floatformat:1 }}
-        </div>
-      </div>
-    </div>
+    <c-player.stat-block :participant="match.focus" />
 
     <div class="text-xs">
       <div class="flex gap-x-3">

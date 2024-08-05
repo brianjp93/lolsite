@@ -286,6 +286,15 @@ class MatchSummary(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
 
+def set_focus_participants(object_list: list, puuid: str):
+    for obj in object_list:
+        obj.focus = None
+        for part in obj.participants.all():
+            if part.puuid == puuid:
+                obj.focus = part
+                break
+
+
 def set_related_match_objects(object_list: Iterable['Match']):
     qs = Match.objects.filter(id__in=[x.id for x in object_list])
     qs = qs.prefetch_related("participants", "participants__stats")
