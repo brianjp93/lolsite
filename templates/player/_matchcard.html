@@ -1,15 +1,13 @@
-<div
-  class="
-    border rounded p-2
-    {% if match.focus.result == 'win' %}
-      bg-gradient-to-r to-black p-2 from-[#172f1e] border-green-800
-    {% elif match.focus.result == 'loss' %}
-      bg-gradient-to-r to-black p-2 from-[#2b1717] border-red-800
-    {% else %}
-      border-zinc-400 
-    {% endif %}
-  "
->
+<div class="
+  border rounded p-2
+  {% if match.focus.result == 'win' %}
+    bg-gradient-to-r to-black p-2 from-[#172f1e] border-green-800
+  {% elif match.focus.result == 'loss' %}
+    bg-gradient-to-r to-black p-2 from-[#2b1717] border-red-800
+  {% else %}
+    border-zinc-400
+  {% endif %}
+">
 
   <div class="flex gap-x-2">
     <a href="{% url 'match:match-detail' slug=match.slug %}"
@@ -31,61 +29,125 @@
       <div class="col-span-2 row-span-2">
         <c-tooltip>
           {% if match.focus.champion.image.file_40 %}
-            <img src="{{ match.focus.champion.image.file_40.url }}" alt="{{ match.focus.champion.name }}">
+            <img src="{{ match.focus.champion.image.file_40.url }}"
+                 alt="{{ match.focus.champion.name }}">
           {% endif %}
           <c-slot name="content">
-          <div class="flex gap-x-2">
-            <h3>
-              {{ match.focus.champion.name }}
-            </h3>
-            <div class="text-sm">
-              {{ match.focus.champion.title }}
+            <div class="flex gap-x-2">
+              <h3>
+                {{ match.focus.champion.name }}
+              </h3>
+              <div class="text-sm">
+                {{ match.focus.champion.title }}
+              </div>
             </div>
-          </div>
-          <div>
-            {{ match.focus.champion.lore }}
-          </div>
+            <div>
+              {{ match.focus.champion.lore }}
+            </div>
           </c-slot>
         </c-tooltip>
       </div>
       <c-tooltip>
         <img src="{{ match.focus.spell_1.image_url }}" alt="">
         <c-slot name="content">
-          <h3>{{ match.focus.spell_1.name }}</h3>
-          <div>{{ match.focus.spell_1.description }}</div>
+          <h3>
+            {{ match.focus.spell_1.name }}
+          </h3>
+          <div>
+            {{ match.focus.spell_1.description }}
+          </div>
         </c-slot>
       </c-tooltip>
       <c-tooltip>
         <img src="{{ match.focus.spell_2.image_url }}" alt="">
         <c-slot name="content">
-          <h3>{{ match.focus.spell_2.name }}</h3>
-          <div>{{ match.focus.spell_2.description }}</div>
+          <h3>
+            {{ match.focus.spell_2.name }}
+          </h3>
+          <div>
+            {{ match.focus.spell_2.description }}
+          </div>
         </c-slot>
       </c-tooltip>
       <c-tooltip>
         <img src="{{ match.focus.rune.image_url }}"
              alt="{{ match.focus.rune.name }}">
         <c-slot name="content">
-          <h3>{{ match.focus.rune.name }}</h3>
-          <div>{{ match.focus.rune.long_description|safe }}</div>
+          <h3>
+            {{ match.focus.rune.name }}
+          </h3>
+          <div>
+            {{ match.focus.rune.long_description|safe }}
+          </div>
         </c-slot>
       </c-tooltip>
       <c-tooltip>
-        <img src="{{ match.focus.substyle.image_url }}" alt="" title="{{ match.focus.substyle.name }}">
+        <img src="{{ match.focus.substyle.image_url }}"
+             alt=""
+             title="{{ match.focus.substyle.name }}">
         <c-slot name="content">
-          <h3>{{ match.focus.substyle.name }}</h3>
+          <h3>
+            {{ match.focus.substyle.name }}
+          </h3>
         </c-slot>
       </c-tooltip>
       <c-tooltip>
         <img src="{{ match.focus.item_6.image_url }}" alt="">
         <c-slot name="content">
-          <h3>{{ match.focus.item_6.name }}</h3>
-          <div>{{ match.focus.item_6.description|safe }}</div>
+          <h3>
+            {{ match.focus.item_6.name }}
+          </h3>
+          <div>
+            {{ match.focus.item_6.description|safe }}
+          </div>
         </c-slot>
       </c-tooltip>
     </div>
 
     <c-player.item-block :items="match.focus.items" />
+
+    <div class="flex flex-col rounded bg-slate-800 px-2 py-1 w-24 text-sm border border-slate-500">
+      <div class="font-bold flex gap-x-0.5 mx-auto">
+        <div class="text-green-500">
+          {{ match.focus.stats.kills }}
+        </div>
+        <div class="text-gray-500">
+          /
+        </div>
+        <div class="text-red-500">
+          {{ match.focus.stats.deaths }}
+        </div>
+        <div class="text-gray-500">
+          /
+        </div>
+        <div>
+          {{ match.focus.stats.assists }}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2">
+        <div>
+          KDA
+        </div>
+        <div class="ml-auto">
+          {{ match.focus.kda|floatformat:1 }}
+        </div>
+
+        <div>
+          DPM
+        </div>
+        <div class="ml-auto">
+          {{ match.focus.dpm|floatformat:"0" }}
+        </div>
+
+        <div>
+          VSPM
+        </div>
+        <div class="ml-auto">
+          {{ match.focus.vspm|floatformat:1 }}
+        </div>
+      </div>
+    </div>
 
     <div class="text-xs">
       <div class="flex gap-x-3">

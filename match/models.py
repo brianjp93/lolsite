@@ -375,6 +375,14 @@ class Match(VersionedModel):
             url = ""
         return url
 
+    @property
+    def seconds(self):
+        return self.game_duration / 1000
+
+    @property
+    def minutes(self):
+        return self.seconds / 60
+
     @cached_property
     def sorted_participants(self):
         from match.tasks import get_sorted_participants
@@ -511,6 +519,31 @@ class Participant(models.Model):
             elif match.game_duration / 1000 / 60 < 5:
                 return 'remake'
         return 'loss'
+
+    def get_stat(self, stat, default=0):
+        if stats := getattr(self, 'stats'):
+            return getattr(stats, stat, default)
+        return default
+
+    @property
+    def match_minutes(self):
+        return self.match.minutes or 1
+
+    @property
+    def dpm(self):
+        return self.get_stat('total_damage_dealt_to_champions') / self.match_minutes
+
+    @property
+    def vspm(self):
+        return self.get_stat('vision_score') / self.match_minutes
+
+    @property
+    def kda(self):
+        return (self.get_stat("kills") + self.get_stat("assists")) / (self.get_stat("deaths") or 1)
+
+    @property
+    def tdpm(self):
+        return self.get_stat('damage_dealt_to_turrets') / self.match_minutes
 
 
 class Stats(models.Model):
