@@ -1,12 +1,12 @@
 <div class="flex gap-x-2">
   <div class="flex flex-col gap-y-2">
     {% for participant in match.team100 %}
-      {% include "_match_detail_participant_row.html" %}
+      {% include "match/_match_detail_participant_row.html" %}
     {% endfor %}
   </div>
   <div class="flex flex-col gap-y-2">
     {% for participant in match.team200 %}
-      {% include "_match_detail_participant_row.html" %}
+      {% include "match/_match_detail_participant_row.html" %}
     {% endfor %}
   </div>
 </div>

@@ -25,8 +25,8 @@ class MatchDetailView(DetailView):
         match = context['object']
         set_related_match_objects([match])
         if part_id :=  self.request.GET.get('focus', None):
-            part = match.participant_set.filter(_id=part_id).first()
+            part = match.participants.filter(_id=part_id).first()
         if not part:
-            part = match.participant_set.order_by('_id').first()
+            part = match.participants.order_by('_id').first()
         context['focus'] = part
         return context

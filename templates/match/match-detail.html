@@ -5,10 +5,6 @@
   <div>Platform: {{ object.platform_id }}</div>
   <div>Queue: {{ object.queue_name }}</div>
 
-  <div class="flex gap-x-2">
-    <div>
-      {% include "match/_team.html" %}
-    </div>
-  </div>
+  {% include "match/_teams.html" %}
 </div>
 {% endblock content%}
