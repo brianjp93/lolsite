@@ -18,9 +18,22 @@
     <div x-dt1 class="text-xs">
       {{ match.get_creation.isoformat }}
     </div>
+    <div class="text-xs">
+      {{ match.formatted_game_duration }}
+    </div>
     <div class="text-xs font-bold">
       {{ match.queue_name }}
     </div>
+    {% if match.result == 'abort_anticheat' %}
+      <div class="text-xs font-bold text-red-400">
+        Abort Anticheat
+      </div>
+    {% endif %}
+    {% if match.result == 'abort_unexpected' %}
+      <div class="text-xs font-bold text-red-400">
+        Abort Unknown Error
+      </div>
+    {% endif %}
   </div>
 
   <div class="flex gap-x-2">

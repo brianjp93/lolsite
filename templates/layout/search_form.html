@@ -8,6 +8,7 @@
     <div class="relative"
          x-data="{ open: false }"
          @focusin="open = true"
+         @focusout="open = false"
          @click.outside="open = false">
       <input hx-trigger="keydown changed delay:300ms"
              hx-get="{% url 'player:summoner-autocomplete' %}"

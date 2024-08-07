@@ -91,15 +91,15 @@ class SummonerPage(generic.ListView):
         limit = self.paginate_by
         start = limit * (page - 1)
         end = start + limit
+        mt.import_recent_matches(
+            start,
+            end,
+            self.summoner.puuid,
+            region,
+            queue,
+        )
         if page == 1:
-            mt.import_recent_matches(
-                start,
-                end,
-                self.summoner.puuid,
-                region,
-                queue,
-            )
-            mt.bulk_import.s(self.summoner.puuid, count=40, offset=start + limit).apply_async(countdown=2)
+            mt.bulk_import.s(self.summoner.puuid, count=100, offset=start + limit).apply_async(countdown=2)
             pt.import_positions(self.summoner.id)
 
         context = super().get_context_data(*args, **kwargs)

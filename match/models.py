@@ -347,6 +347,7 @@ class Match(VersionedModel):
     build = models.IntegerField()
     is_fully_imported = models.BooleanField(default=False, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    end_of_game_result = models.CharField(max_length=32, default=None, null=True, blank=True)
 
     objects = MatchQuerySet.as_manager()
 
@@ -364,6 +365,15 @@ class Match(VersionedModel):
 
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
+
+    @property
+    def result(self):
+        match self.end_of_game_result:
+            case 'Abort_Unexpected':
+                return 'abort_unexpected'
+            case 'Abort_AntiCheatExit':
+                return 'abort_anticheat'
+        return 'normal'
 
     def get_absolute_url(self, pname: str | None = None):
         """Get url of match."""
@@ -391,6 +401,13 @@ class Match(VersionedModel):
     @property
     def minutes(self):
         return self.seconds / 60
+
+    @property
+    def formatted_game_duration(self):
+        minutes, seconds = divmod(self.seconds, 60)
+        minutes = int(minutes)
+        seconds = int(seconds)
+        return f"{minutes}:{seconds:02}"
 
     @cached_property
     def sorted_participants(self):

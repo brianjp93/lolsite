@@ -1029,6 +1029,7 @@ def import_match_from_data(data, region: str, refresh=False):
         minor=sem_ver.get(1, ''),
         patch=sem_ver.get(2, ''),
         build=sem_ver.get(3, ''),
+        end_of_game_result=info.endOfGameResult,
         is_fully_imported=True,
     )
     try:
