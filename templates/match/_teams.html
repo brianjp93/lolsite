@@ -1,10 +1,28 @@
 <div class="flex gap-x-2">
-  <div class="flex flex-col gap-y-2">
+  <div
+    class="
+      flex flex-col gap-y-2 p-2 rounded
+      {% if match.team100_win %}
+        border border-green-600 bg-green-600/10
+      {% elif match.team200_win %}
+        border border-red-600 bg-red-600/10
+      {% endif %}
+    "
+  >
     {% for participant in match.team100 %}
       {% include "match/_match_detail_participant_row.html" %}
     {% endfor %}
   </div>
-  <div class="flex flex-col gap-y-2">
+  <div
+    class="
+      flex flex-col gap-y-2 p-2 rounded
+      {% if match.team200_win %}
+        border border-green-600 bg-green-600/10
+      {% elif match.team100_win %}
+        border border-red-600 bg-red-600/10
+      {% endif %}
+    "
+  >
     {% for participant in match.team200 %}
       {% include "match/_match_detail_participant_row.html" %}
     {% endfor %}

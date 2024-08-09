@@ -1,0 +1,85 @@
+<div class="grid grid-cols-3 grid-rows-3 w-16 h-16">
+  <div class="col-span-2 row-span-2">
+    <c-tooltip>
+      <div class="relative">
+        {% if participant.champion.image.file_40 %}
+          <img src="{{ participant.champion.image.file_40.url }}"
+               alt="{{ participant.champion.name }}">
+        {% else %}
+          <div title="{{participant.champion.name}}">NA</div>
+        {% endif %}
+        <div class="absolute bottom-[-5px] left-[-5px] text-xs bg-sky-100 text-sky-950 font-bold px-1 rounded">
+          {{ participant.stats.champ_level }}
+        </div>
+      </div>
+      <c-slot name="content">
+        <div class="flex gap-x-2">
+          <h3>
+            {{ participant.champion.name }}
+          </h3>
+          <div class="text-sm">
+            {{ participant.champion.title }}
+          </div>
+        </div>
+        <div>
+          {{ participant.champion.lore }}
+        </div>
+      </c-slot>
+    </c-tooltip>
+  </div>
+  <c-tooltip>
+    <img src="{{ participant.spell_1.image_url }}" alt="">
+    <c-slot name="content">
+      <h3>
+        {{ participant.spell_1.name }}
+      </h3>
+      <div>
+        {{ participant.spell_1.description }}
+      </div>
+    </c-slot>
+  </c-tooltip>
+  <c-tooltip>
+    <img src="{{ participant.spell_2.image_url }}" alt="">
+    <c-slot name="content">
+      <h3>
+        {{ participant.spell_2.name }}
+      </h3>
+      <div>
+        {{ participant.spell_2.description }}
+      </div>
+    </c-slot>
+  </c-tooltip>
+  <c-tooltip>
+    <img src="{{ participant.rune.image_url }}"
+         alt="{{ participant.rune.name }}">
+    <c-slot name="content">
+      <h3>
+        {{ participant.rune.name }}
+      </h3>
+      <div>
+        {{ participant.rune.long_description|safe }}
+      </div>
+    </c-slot>
+  </c-tooltip>
+  <c-tooltip>
+    <img src="{{ participant.substyle.image_url }}"
+         alt=""
+         title="{{ participant.substyle.name }}">
+    <c-slot name="content">
+      <h3>
+        {{ participant.substyle.name }}
+      </h3>
+    </c-slot>
+  </c-tooltip>
+  <c-tooltip>
+    <img src="{{ participant.item_6.image_url }}" alt="">
+    <c-slot name="content">
+      <h3>
+        {{ participant.item_6.name }}
+      </h3>
+      <div>
+        {{ participant.item_6.description|safe }}
+      </div>
+    </c-slot>
+  </c-tooltip>
+</div>

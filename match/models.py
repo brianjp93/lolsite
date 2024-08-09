@@ -356,6 +356,7 @@ class Match(VersionedModel):
     advancedtimeline: Union["AdvancedTimeline", None]
     participants: QuerySet["Participant"]
     comments: QuerySet[Comment]
+    teams: QuerySet["Team"]
 
     matchsummary: MatchSummary | None
 
@@ -417,6 +418,18 @@ class Match(VersionedModel):
 
     def team100(self):
         return [x for x in self.sorted_participants if x.team_id == 100]
+
+    def team100_win(self):
+        for team in self.teams.all():
+            if team._id == 100:
+                return team.win
+        return False
+
+    def team200_win(self):
+        for team in self.teams.all():
+            if team._id == 200:
+                return team.win
+        return False
 
     def team200(self):
         return [x for x in self.sorted_participants if x.team_id != 100]
