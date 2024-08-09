@@ -1,10 +1,10 @@
 services:
   db:
-    image: postgres:13.3-alpine
+    image: postgres:16.4-alpine
     volumes:
       - ./data/db:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5435:5432"
     env_file: .docker_env
   web:
     build:
