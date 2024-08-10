@@ -1,8 +1,10 @@
 from functools import cached_property
 import urllib.parse
 
-from django.shortcuts import redirect
+from django.http import Http404
+from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
@@ -147,7 +149,10 @@ class SummonerLookup(generic.View):
         else:
             name = search
             tagline = f"{region}1"
-        summoner = MatchBySummoner.get_summoner(name, tagline, region)
+        try:
+            summoner = MatchBySummoner.get_summoner(name, tagline, region)
+        except Http404:
+            return render(request, 'player/summoner_not_found.html')
         name, tagline = summoner.simple_riot_id.split("#")
         return redirect(
             "player:summoner-page",

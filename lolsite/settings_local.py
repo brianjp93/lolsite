@@ -7,7 +7,7 @@ import sys
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 BASE_URL = "http://localhost:3000"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
@@ -15,7 +15,7 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ] + MIDDLEWARE
 
-if 'test' not in sys.argv:
+if 'test' not in sys.argv and DEBUG:
     INSTALLED_APPS += [
         "debug_toolbar",
     ]
@@ -72,7 +72,7 @@ CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://localhost:3000"]
 CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
 
 def show_toolbar(request):
-    return True
+    return DEBUG
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK" : show_toolbar,
