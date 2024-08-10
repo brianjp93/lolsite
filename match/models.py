@@ -11,6 +11,9 @@ from django.utils.translation import gettext_lazy as _
 import zoneinfo
 import logging
 
+from pydantic import BaseModel
+from pydantic.fields import computed_field
+
 from core.models import VersionedModel
 from data.models import CDSummonerSpell, ReforgedTree, ReforgedRune
 from data.models import Item
@@ -295,7 +298,7 @@ def set_focus_participants(object_list: list, puuid: str):
                 break
 
 
-def set_related_match_objects(object_list: Iterable['Match']):
+def set_related_match_objects(object_list: Iterable['Match'], timeline: 'AdvancedTimeline | None' = None):
     qs = Match.objects.filter(id__in=[x.id for x in object_list])
     qs = qs.prefetch_related("participants", "participants__stats")
     related = qs.get_related()
@@ -331,6 +334,8 @@ def set_related_match_objects(object_list: Iterable['Match']):
             part.spell_2 = related['spells'].get(part.summoner_2_id)
             part.rune = related['runes'].get(part.stats.perk_0)
             part.substyle = related['substyles'].get(part.stats.perk_sub_style)
+            if timeline:
+                part.bounty = timeline.bounties.get(part._id, None)
 
 
 class Match(VersionedModel):
@@ -856,6 +861,26 @@ class Ban(models.Model):
         return f"Ban(team={self.team._id}, match={self.team.match._id})"
 
 
+class Bounty(BaseModel):
+    monster_bounty: int = 0
+    champion_kill_bounty: int = 0
+    champion_kill_gold: int = 0
+    building_bounty: int = 0
+
+    champion_kill_bounty_given: int = 0
+    champion_kill_gold_given: int = 0  # not including bounty gold
+
+    @computed_field
+    @property
+    def total_gold_given(self) -> int:
+        return self.champion_kill_bounty_given + self.champion_kill_gold_given
+
+    @computed_field
+    @property
+    def total_bounty_received(self) -> int:
+        return self.monster_bounty + self.champion_kill_bounty + self.building_bounty
+
+
 # ADVANCED TIMELINE MODELS
 class AdvancedTimeline(models.Model):
     # interval in milliseconds
@@ -863,8 +888,50 @@ class AdvancedTimeline(models.Model):
     match = models.OneToOneField("Match", on_delete=models.CASCADE)
     frame_interval = models.IntegerField(default=60000, blank=True)
 
+    frames: QuerySet['Frame']
+
     def __str__(self):
         return f"AdvancedTimeline(match={self.match._id})"
+
+    @cached_property
+    def _bounties(self):
+        participants: QuerySet[Participant] = self.match.participants.all()
+        teams = {x._id: x.team_id for x in participants}
+        team_ids = {x for x in teams.values()}
+        team_size = int(len(teams) / len(team_ids)) or 1
+        bounties: dict[int, Bounty] = {x._id: Bounty() for x in participants}
+        for frame in self.frames.all():
+            for event in frame.elitemonsterkillevent_set.all():
+                partial_bounty = event.bounty / team_size
+                for p_id, team_id in teams.items():
+                    if team_id == event.killer_team_id:
+                        bounties[p_id].monster_bounty += partial_bounty
+
+            for event in frame.buildingkillevent_set.all():
+                partial_bounty = event.bounty / team_size
+                for p_id, team_id in teams.items():
+                    if team_id == event.team_id:
+                        bounties[p_id].building_bounty += partial_bounty
+
+            for event in frame.championkillevent_set.all():
+                bounties[event.killer_id].champion_kill_gold += event.bounty
+                bounties[event.killer_id].champion_kill_bounty += event.shutdown_bounty
+
+                bounties[event.victim_id].champion_kill_gold_given += event.bounty
+                bounties[event.victim_id].champion_kill_bounty_given += event.shutdown_bounty
+        team_bounties: dict[int, int] = {x: 0 for x in team_ids}
+        for p_id, bounty in bounties.items():
+            team_id = teams[p_id]
+            team_bounties[team_id] += bounty.total_bounty_received
+        return team_bounties, bounties
+
+    @property
+    def bounties(self):
+        return self._bounties[1]
+
+    @property
+    def team_bounties(self):
+        return self._bounties[0]
 
 
 class Frame(models.Model):
@@ -873,6 +940,10 @@ class Frame(models.Model):
         "AdvancedTimeline", on_delete=models.CASCADE, related_name="frames"
     )
     timestamp = models.IntegerField(null=True, blank=True)
+
+    elitemonsterkillevent_set: QuerySet['EliteMonsterKillEvent']
+    buildingkillevent_set: QuerySet['BuildingKillEvent']
+    championkillevent_set: QuerySet['ChampionKillEvent']
 
     class Meta:
         ordering = ["timestamp"]

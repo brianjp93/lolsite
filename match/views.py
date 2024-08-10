@@ -1,4 +1,5 @@
 from django.views.generic import DetailView
+from django.db.models.query import prefetch_related_objects
 
 from match.models import Match, set_related_match_objects
 from match import tasks as mt
@@ -10,6 +11,7 @@ class MatchDetailView(DetailView):
     queryset = Match.objects.all().prefetch_related(
         "participants",
         "participants__stats",
+        "teams",
     )
     slug_field = "_id"
 
@@ -23,10 +25,18 @@ class MatchDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         part = None
         match = context['object']
-        set_related_match_objects([match])
+        prefetch_related_objects(
+            [match],
+            "advancedtimeline__frames__elitemonsterkillevent_set",
+            "advancedtimeline__frames__buildingkillevent_set",
+            "advancedtimeline__frames__championkillevent_set",
+        )
+        set_related_match_objects([match], match.advancedtimeline)
+        options = {str(x._id): x for x in match.participants.all() if str(x._id)}
+        context['timeline'] = match.advancedtimeline
         if part_id :=  self.request.GET.get('focus', None):
-            part = match.participants.filter(_id=part_id).first()
+            part = options.get(part_id, None)
         if not part:
-            part = match.participants.order_by('_id').first()
+            part = next(iter(options.values()))
         context['focus'] = part
         return context

@@ -451,7 +451,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
             parsed = TimelineResponseModel.model_validate_json(response.content)
             logger.info(f"AdvancedTimeline parsing took: {time.perf_counter() - start}")
         except ValidationError:
-            logger.exception('AdvanceTimeline could not be parsed.')
+            logger.exception('AdvancedTimeline could not be parsed.')
             return
         logger.info('Parsed AdvancedTimeline successfully.')
         data = parsed.info

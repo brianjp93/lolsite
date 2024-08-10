@@ -12,6 +12,9 @@
     {% for participant in match.team100 %}
       {% include "match/_match_detail_participant_row.html" %}
     {% endfor %}
+    <div>
+      Bounty Received: {{ timeline.team_bounties.100|default:0|floatformat:"0" }}G
+    </div>
   </div>
   <div
     class="
@@ -26,5 +29,8 @@
     {% for participant in match.team200 %}
       {% include "match/_match_detail_participant_row.html" %}
     {% endfor %}
+    <div>
+      Bounty Received: {{ timeline.team_bounties.200|default:0|floatformat:"0" }}G
+    </div>
   </div>
 </div>
