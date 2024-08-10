@@ -38,7 +38,9 @@
 
   <div class="flex gap-x-2">
 
-    <c-player.summoner-block :participant="match.focus" />
+    <div class="my-auto">
+      <c-player.summoner-block :participant="match.focus" />
+    </div>
     <c-player.item-block :items="match.focus.items" />
     <c-player.stat-block :participant="match.focus" />
 

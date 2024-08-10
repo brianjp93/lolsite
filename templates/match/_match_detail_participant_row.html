@@ -1,6 +1,6 @@
 <div class="flex gap-x-2">
-  <div class="my-auto flex flex-col gap-y-1">
-    <div class="text-xs">
+  <div class="my-auto flex flex-col gap-y-1 w-44">
+    <div title="{{ participant.get_name }}" class="text-xs overflow-ellipsis overflow-hidden whitespace-nowrap">
       <a href="{{ participant.get_absolute_url }}">
         {{ participant.get_name }}
       </a>
