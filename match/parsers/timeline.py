@@ -311,6 +311,7 @@ class TimelineInfoModel(BaseModelWithLogger):
     frames: list[FrameModel]
     gameId: int
     participants: list[TimelineParticipantModel]
+    endOfGameResult: str | None = None
 
 
 class TimelineResponseModel(BaseModelWithLogger):
