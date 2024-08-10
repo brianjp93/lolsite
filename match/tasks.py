@@ -459,10 +459,16 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         start_writing = time.perf_counter()
         at.save()
 
+        frames_to_save = []
         for fm in data.frames:
-            frame = Frame(timeline=at, timestamp=fm.timestamp)
-            frame.save()
-            pframes = []
+            frames_to_save.append(Frame(timeline=at, timestamp=fm.timestamp))
+
+        Frame.objects.bulk_create(frames_to_save)
+
+        pframes = []
+        cke_to_save = []
+        cke_events = []
+        for frame, fm in zip(frames_to_save, data.frames):
             for pfm in fm.participantFrames.values():
                 stats = pfm.championStats
                 dmg_stats = pfm.damageStats
@@ -519,7 +525,6 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                     "true_damage_taken": dmg_stats.trueDamageTaken,
                 }
                 pframes.append(ParticipantFrame(**p_frame_data))
-            ParticipantFrame.objects.bulk_create(pframes)
 
             for evm in fm.events:
                 assert frame.id
@@ -650,7 +655,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                             winning_team=evm.winningTeam,
                         )
                     case tmparsers.ChampionKillEventModel():
-                        cke = ChampionKillEvent.objects.create(
+                        cke_to_save.append(ChampionKillEvent(
                             frame_id=frame.id,
                             timestamp=evm.timestamp,
                             bounty=evm.bounty,
@@ -660,35 +665,37 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                             victim_id=evm.victimId,
                             x=evm.position.x,
                             y=evm.position.y,
-                        )
-                        for vd in evm.victimDamageDealt or []:
-                            assert cke.id
-                            victim_damage_dealt_events.append(VictimDamageDealt(
-                                championkillevent_id=cke.id,
-                                basic=vd.basic,
-                                magic_damage=vd.magicDamage,
-                                name=vd.name,
-                                participant_id=vd.participantId,
-                                physical_damage=vd.physicalDamage,
-                                spell_name=vd.spellName,
-                                spell_slot=vd.spellSlot,
-                                true_damage=vd.trueDamage,
-                                type=vd.type,
-                            ))
-                        for vd in evm.victimDamageReceived or []:
-                            assert cke.id
-                            victim_damage_received_events.append(VictimDamageReceived(
-                                championkillevent_id=cke.id,
-                                basic=vd.basic,
-                                magic_damage=vd.magicDamage,
-                                name=vd.name,
-                                participant_id=vd.participantId,
-                                physical_damage=vd.physicalDamage,
-                                spell_name=vd.spellName,
-                                spell_slot=vd.spellSlot,
-                                true_damage=vd.trueDamage,
-                                type=vd.type,
-                            ))
+                        ))
+                        cke_events.append(evm)
+        ChampionKillEvent.objects.bulk_create(cke_to_save)
+        for cke, evm in zip(cke_to_save, cke_events):
+            for vd in evm.victimDamageDealt or []:
+                victim_damage_dealt_events.append(VictimDamageDealt(
+                    championkillevent_id=cke.id,
+                    basic=vd.basic,
+                    magic_damage=vd.magicDamage,
+                    name=vd.name,
+                    participant_id=vd.participantId,
+                    physical_damage=vd.physicalDamage,
+                    spell_name=vd.spellName,
+                    spell_slot=vd.spellSlot,
+                    true_damage=vd.trueDamage,
+                    type=vd.type,
+                ))
+            for vd in evm.victimDamageReceived or []:
+                victim_damage_received_events.append(VictimDamageReceived(
+                    championkillevent_id=cke.id,
+                    basic=vd.basic,
+                    magic_damage=vd.magicDamage,
+                    name=vd.name,
+                    participant_id=vd.participantId,
+                    physical_damage=vd.physicalDamage,
+                    spell_name=vd.spellName,
+                    spell_slot=vd.spellSlot,
+                    true_damage=vd.trueDamage,
+                    type=vd.type,
+                ))
+        ParticipantFrame.objects.bulk_create(pframes)
         WardPlacedEvent.objects.bulk_create(ward_placed_events)
         WardKillEvent.objects.bulk_create(ward_kill_events)
         ItemPurchasedEvent.objects.bulk_create(item_purchase_events)

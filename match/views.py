@@ -32,6 +32,9 @@ class MatchDetailView(DetailView):
             "advancedtimeline__frames__buildingkillevent_set",
             "advancedtimeline__frames__championkillevent_set",
             "advancedtimeline__frames__championkillevent_set__victimdamagereceived_set",
+            "participants",
+            "participants__stats",
+            "teams",
         )
         set_related_match_objects([match], match.advancedtimeline)
         options = {str(x._id): x for x in match.participants.all() if str(x._id)}
