@@ -438,8 +438,8 @@ def import_advanced_timeline(match_id: str, overwrite=False):
     elite_monster_kill_events: list[EliteMonsterKillEvent] = []
     building_kill_events: list[BuildingKillEvent] = []
     with transaction.atomic():
-        match = Match.objects.select_related('advancedtimeline').get(id=match_id)
-        if hasattr(match, 'advancedtimeline') and overwrite:
+        match = Match.objects.get(id=match_id)
+        if overwrite and hasattr(match, 'advancedtimeline_id'):
             assert match.advancedtimeline
             match.advancedtimeline.delete()
         api = get_riot_api()
@@ -459,10 +459,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         start_writing = time.perf_counter()
         at.save()
 
-        frames_to_save = []
-        for fm in data.frames:
-            frames_to_save.append(Frame(timeline=at, timestamp=fm.timestamp))
-
+        frames_to_save = tuple(Frame(timeline=at, timestamp=fm.timestamp) for fm in data.frames)
         Frame.objects.bulk_create(frames_to_save)
 
         pframes = []
@@ -667,7 +664,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                             y=evm.position.y,
                         ))
                         cke_events.append(evm)
-        ChampionKillEvent.objects.bulk_create(cke_to_save)
+        ChampionKillEvent.objects.bulk_create(cke_to_save, batch_size=50)
         for cke, evm in zip(cke_to_save, cke_events):
             for vd in evm.victimDamageDealt or []:
                 victim_damage_dealt_events.append(VictimDamageDealt(
@@ -695,7 +692,7 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                     true_damage=vd.trueDamage,
                     type=vd.type,
                 ))
-        ParticipantFrame.objects.bulk_create(pframes)
+        ParticipantFrame.objects.bulk_create(pframes, batch_size=50)
         WardPlacedEvent.objects.bulk_create(ward_placed_events)
         WardKillEvent.objects.bulk_create(ward_kill_events)
         ItemPurchasedEvent.objects.bulk_create(item_purchase_events)
@@ -708,8 +705,8 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         TurretPlateDestroyedEvent.objects.bulk_create(turret_plate_destroyed_events)
         EliteMonsterKillEvent.objects.bulk_create(elite_monster_kill_events)
         BuildingKillEvent.objects.bulk_create(building_kill_events)
-        VictimDamageDealt.objects.bulk_create(victim_damage_dealt_events)
-        VictimDamageReceived.objects.bulk_create(victim_damage_received_events)
+        VictimDamageDealt.objects.bulk_create(victim_damage_dealt_events, batch_size=50)
+        VictimDamageReceived.objects.bulk_create(victim_damage_received_events, batch_size=50)
         end_writing = time.perf_counter()
         logger.info(f"Writing Advanced Timeline took {end_writing - start_writing}.")
 
