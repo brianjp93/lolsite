@@ -914,8 +914,9 @@ class AdvancedTimeline(models.Model):
                         bounties[p_id].building_bounty += partial_bounty
 
             for event in frame.championkillevent_set.all():
-                bounties[event.killer_id].champion_kill_gold += event.bounty
-                bounties[event.killer_id].champion_kill_bounty += event.shutdown_bounty
+                if event.killer_id != 0:
+                    bounties[event.killer_id].champion_kill_gold += event.bounty
+                    bounties[event.killer_id].champion_kill_bounty += event.shutdown_bounty
 
                 bounties[event.victim_id].champion_kill_gold_given += event.bounty
                 bounties[event.victim_id].champion_kill_bounty_given += event.shutdown_bounty

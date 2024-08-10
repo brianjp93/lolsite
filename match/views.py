@@ -19,6 +19,7 @@ class MatchDetailView(DetailView):
         match = super().get_object(queryset)
         if not getattr(match, 'advancedtimeline', None):
             mt.import_advanced_timeline(match.id)
+            match.refresh_from_db()
         return match
 
     def get_context_data(self, **kwargs):

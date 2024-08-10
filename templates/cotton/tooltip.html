@@ -1,4 +1,4 @@
-<c-vars trigger="click" />
+<c-vars trigger="click" interactive="false" />
 
 <div
   tabindex="1"
@@ -9,6 +9,7 @@
     tippy {{ class }}
   "
   data-tippy-trigger="{{ trigger }}"
+  data-tippy-interactive="{{ interactive }}"
 >
   {{ slot }}
   <div class="tippy-content" style="display: none;">
