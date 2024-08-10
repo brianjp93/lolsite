@@ -1,8 +1,15 @@
 <div class="flex gap-x-2">
-  <div class="my-auto">
-    <c-player.summoner-block :participant="participant" />
+  <div class="my-auto flex flex-col gap-y-1">
+    <div class="text-xs">
+      <a href="{{ participant.get_absolute_url }}">
+        {{ participant.get_name }}
+      </a>
+    </div>
+    <div class="flex gap-x-2">
+      <c-player.summoner-block :participant="participant" />
+      <c-player.item-block :items="participant.items" />
+    </div>
   </div>
-  <c-player.item-block :items="participant.items" />
   <c-player.stat-block :participant="participant" />
   <c-player.gold-block :participant="participant" />
 </div>
