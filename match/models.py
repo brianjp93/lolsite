@@ -866,15 +866,17 @@ class Bounty(BaseModel):
     monster_bounty: int = 0
     champion_kill_bounty: int = 0
     champion_kill_gold: int = 0
+    champion_assist_gold: int = 0
     building_bounty: int = 0
 
     champion_kill_bounty_given: int = 0
     champion_kill_gold_given: int = 0  # not including bounty gold
+    champion_assist_gold_given: int = 0
 
     @computed_field
     @property
     def total_gold_given(self) -> int:
-        return self.champion_kill_bounty_given + self.champion_kill_gold_given
+        return self.champion_kill_bounty_given + self.champion_kill_gold_given + self.champion_assist_gold_given
 
     @computed_field
     @property
@@ -915,12 +917,29 @@ class AdvancedTimeline(models.Model):
                         bounties[p_id].building_bounty += partial_bounty
 
             for event in frame.championkillevent_set.all():
-                if event.killer_id != 0:
-                    bounties[event.killer_id].champion_kill_gold += event.bounty
-                    bounties[event.killer_id].champion_kill_bounty += event.shutdown_bounty
+                if event.killer_id == 0:
+                    continue
+                bounties[event.killer_id].champion_kill_gold += event.bounty
+                bounties[event.killer_id].champion_kill_bounty += event.shutdown_bounty
 
                 bounties[event.victim_id].champion_kill_gold_given += event.bounty
                 bounties[event.victim_id].champion_kill_bounty_given += event.shutdown_bounty
+
+                assisters = [
+                    x for x in event.victimdamagereceived_set.all()
+                    if x.participant_id not in (0, event.killer_id)
+                ]
+                total_assist_gold = 0
+                partial_assist_gold = 0
+                if assisters:
+                    total_assist_gold = event.bounty / 2
+                    partial_assist_gold = total_assist_gold / len(assisters)
+                    bounties[event.victim_id].champion_assist_gold_given += total_assist_gold
+                    
+                for assist in assisters:
+                    bounties[assist.participant_id].champion_assist_gold += partial_assist_gold
+
+
         team_bounties: dict[int, int] = {x: 0 for x in team_ids}
         for p_id, bounty in bounties.items():
             team_id = teams[p_id]
@@ -1146,6 +1165,9 @@ class ChampionKillEvent(Event):
     victim_id = models.PositiveSmallIntegerField()
     x = models.PositiveIntegerField()
     y = models.PositiveIntegerField()
+
+    victimdamagereceived_set: QuerySet['VictimDamageReceived']
+    victimdamagedealt_set: QuerySet['VictimDamageDealt']
 
 
 class VictimDamage(models.Model):

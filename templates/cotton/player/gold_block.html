@@ -9,11 +9,16 @@
         Kill Gold (No Shutdown)
       </c-slot>
     </c-tooltip>
+    <c-tooltip class="text-amber-400 font-bold" trigger="mouseenter focus">
+      {{ participant.bounty.champion_assist_gold|floatformat:"0" }}g
+      <c-slot name="content">
+        Assist Gold
+      </c-slot>
+    </c-tooltip>
     <c-tooltip class="text-red-500" trigger="mouseenter focus">
       - {{ participant.bounty.total_gold_given|floatformat:"0" }}g
       <c-slot name="content">
-        Kill + Shutdown Gold Given to Enemy
-        <br>(No Assist Gold)
+        Kill + Assist + Shutdown Gold Given to Enemy
       </c-slot>
     </c-tooltip>
   </div>
