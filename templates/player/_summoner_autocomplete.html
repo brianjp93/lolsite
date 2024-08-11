@@ -5,7 +5,7 @@
     </div>
   {% else %}
     {% for summoner in object_list %}
-      <a id="autocomplete-select-{{ summoner.id }}"
+      <a id="autocomplete-select-{{ summoner.id }}-{{ partialId }}"
          href='{% url "player:summoner-page" region=summoner.region name=summoner.riot_id_name tagline=summoner.riot_id_tagline %}'
          class='flex gap-x-2 px-2 hover:bg-slate-700 contents-center items-center rounded text-gray-300 font-normal'>
         <div>

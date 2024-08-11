@@ -168,6 +168,7 @@ class SummonerAutoComplete(generic.ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         context['form'] = self.filterset.form
+        context["partialId"] = self.request.GET.get('partialId')
         return context
 
     @property
