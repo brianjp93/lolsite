@@ -18,7 +18,7 @@ html {
 }
 
 a {
-  @apply hover:underline text-sky-800 font-bold hover:cursor-pointer;
+  @apply hover:underline text-sky-700 font-bold hover:cursor-pointer;
 }
 
 h1 {

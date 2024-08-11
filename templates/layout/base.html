@@ -42,7 +42,7 @@
           initTippy()
         }
         function formatDt1(value) {
-          return (new Date(Date.parse(value))).toLocaleString()
+          return (new Date(Date.parse(value))).toLocaleString(undefined, {timeStyle: 'short', dateStyle: 'short'})
         }
 
         function replaceDt1(value) {
@@ -70,7 +70,6 @@
               return reference.querySelector(".tippy-content").innerHTML
             },
             allowHTML: true,
-            interactive: true,
           });
         }
 

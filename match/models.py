@@ -11,6 +11,9 @@ from django.utils.translation import gettext_lazy as _
 import zoneinfo
 import logging
 
+from pydantic import BaseModel
+from pydantic.fields import computed_field
+
 from core.models import VersionedModel
 from data.models import CDSummonerSpell, ReforgedTree, ReforgedRune
 from data.models import Item
@@ -286,7 +289,16 @@ class MatchSummary(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
 
-def set_related_match_objects(object_list: Iterable['Match']):
+def set_focus_participants(object_list: list, puuid: str):
+    for obj in object_list:
+        obj.focus = None
+        for part in obj.participants.all():
+            if part.puuid == puuid:
+                obj.focus = part
+                break
+
+
+def set_related_match_objects(object_list: Iterable['Match'], timeline: 'AdvancedTimeline | None' = None):
     qs = Match.objects.filter(id__in=[x.id for x in object_list])
     qs = qs.prefetch_related("participants", "participants__stats")
     related = qs.get_related()
@@ -322,6 +334,8 @@ def set_related_match_objects(object_list: Iterable['Match']):
             part.spell_2 = related['spells'].get(part.summoner_2_id)
             part.rune = related['runes'].get(part.stats.perk_0)
             part.substyle = related['substyles'].get(part.stats.perk_sub_style)
+            if timeline:
+                part.bounty = timeline.bounties.get(part._id, None)
 
 
 class Match(VersionedModel):
@@ -338,6 +352,7 @@ class Match(VersionedModel):
     build = models.IntegerField()
     is_fully_imported = models.BooleanField(default=False, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    end_of_game_result = models.CharField(max_length=32, default=None, null=True, blank=True)
 
     objects = MatchQuerySet.as_manager()
 
@@ -346,6 +361,7 @@ class Match(VersionedModel):
     advancedtimeline: Union["AdvancedTimeline", None]
     participants: QuerySet["Participant"]
     comments: QuerySet[Comment]
+    teams: QuerySet["Team"]
 
     matchsummary: MatchSummary | None
 
@@ -355,6 +371,15 @@ class Match(VersionedModel):
 
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
+
+    @property
+    def result(self):
+        match self.end_of_game_result:
+            case 'Abort_Unexpected':
+                return 'abort_unexpected'
+            case 'Abort_AntiCheatExit':
+                return 'abort_anticheat'
+        return 'normal'
 
     def get_absolute_url(self, pname: str | None = None):
         """Get url of match."""
@@ -375,6 +400,21 @@ class Match(VersionedModel):
             url = ""
         return url
 
+    @property
+    def seconds(self):
+        return self.game_duration / 1000
+
+    @property
+    def minutes(self):
+        return self.seconds / 60
+
+    @property
+    def formatted_game_duration(self):
+        minutes, seconds = divmod(self.seconds, 60)
+        minutes = int(minutes)
+        seconds = int(seconds)
+        return f"{minutes}:{seconds:02}"
+
     @cached_property
     def sorted_participants(self):
         from match.tasks import get_sorted_participants
@@ -383,6 +423,18 @@ class Match(VersionedModel):
 
     def team100(self):
         return [x for x in self.sorted_participants if x.team_id == 100]
+
+    def team100_win(self):
+        for team in self.teams.all():
+            if team._id == 100:
+                return team.win
+        return False
+
+    def team200_win(self):
+        for team in self.teams.all():
+            if team._id == 200:
+                return team.win
+        return False
 
     def team200(self):
         return [x for x in self.sorted_participants if x.team_id != 100]
@@ -454,8 +506,9 @@ class Participant(models.Model):
     class Meta:
         unique_together = ("match", "_id")
 
+    @property
     def simple_riot_id(self):
-        return f"{self.riot_id_name}#{self.riot_id_tagline}"
+        return simplify(f"{self.riot_id_name}#{self.riot_id_tagline}")
 
     def get_absolute_url(self):
         return reverse("player:summoner-puuid", kwargs={"puuid": self.puuid})
@@ -511,6 +564,31 @@ class Participant(models.Model):
             elif match.game_duration / 1000 / 60 < 5:
                 return 'remake'
         return 'loss'
+
+    def get_stat(self, stat, default=0):
+        if stats := getattr(self, 'stats'):
+            return getattr(stats, stat, default)
+        return default
+
+    @property
+    def match_minutes(self):
+        return self.match.minutes or 1
+
+    @property
+    def dpm(self):
+        return self.get_stat('total_damage_dealt_to_champions') / self.match_minutes
+
+    @property
+    def vspm(self):
+        return self.get_stat('vision_score') / self.match_minutes
+
+    @property
+    def kda(self):
+        return (self.get_stat("kills") + self.get_stat("assists")) / (self.get_stat("deaths") or 1)
+
+    @property
+    def tdpm(self):
+        return self.get_stat('damage_dealt_to_turrets') / self.match_minutes
 
 
 class Stats(models.Model):
@@ -784,6 +862,28 @@ class Ban(models.Model):
         return f"Ban(team={self.team._id}, match={self.team.match._id})"
 
 
+class Bounty(BaseModel):
+    monster_bounty: int = 0
+    champion_kill_bounty: int = 0
+    champion_kill_gold: int = 0
+    champion_assist_gold: int = 0
+    building_bounty: int = 0
+
+    champion_kill_bounty_given: int = 0
+    champion_kill_gold_given: int = 0  # not including bounty gold
+    champion_assist_gold_given: int = 0
+
+    @computed_field
+    @property
+    def total_gold_given(self) -> int:
+        return self.champion_kill_bounty_given + self.champion_kill_gold_given + self.champion_assist_gold_given
+
+    @computed_field
+    @property
+    def total_bounty_received(self) -> int:
+        return self.monster_bounty + self.champion_kill_bounty + self.building_bounty
+
+
 # ADVANCED TIMELINE MODELS
 class AdvancedTimeline(models.Model):
     # interval in milliseconds
@@ -791,8 +891,68 @@ class AdvancedTimeline(models.Model):
     match = models.OneToOneField("Match", on_delete=models.CASCADE)
     frame_interval = models.IntegerField(default=60000, blank=True)
 
+    frames: QuerySet['Frame']
+
     def __str__(self):
         return f"AdvancedTimeline(match={self.match._id})"
+
+    @cached_property
+    def _bounties(self):
+        participants: QuerySet[Participant] = self.match.participants.all()
+        teams = {x._id: x.team_id for x in participants}
+        team_ids = {x for x in teams.values()}
+        team_size = int(len(teams) / len(team_ids)) or 1
+        bounties: dict[int, Bounty] = {x._id: Bounty() for x in participants}
+        for frame in self.frames.all():
+            for event in frame.elitemonsterkillevent_set.all():
+                partial_bounty = event.bounty / team_size
+                for p_id, team_id in teams.items():
+                    if team_id == event.killer_team_id:
+                        bounties[p_id].monster_bounty += partial_bounty
+
+            for event in frame.buildingkillevent_set.all():
+                partial_bounty = event.bounty / team_size
+                for p_id, team_id in teams.items():
+                    if team_id == event.team_id:
+                        bounties[p_id].building_bounty += partial_bounty
+
+            for event in frame.championkillevent_set.all():
+                if event.killer_id == 0:
+                    continue
+                bounties[event.killer_id].champion_kill_gold += event.bounty
+                bounties[event.killer_id].champion_kill_bounty += event.shutdown_bounty
+
+                bounties[event.victim_id].champion_kill_gold_given += event.bounty
+                bounties[event.victim_id].champion_kill_bounty_given += event.shutdown_bounty
+
+                assisters = [
+                    x for x in event.victimdamagereceived_set.all()
+                    if x.participant_id not in (0, event.killer_id)
+                ]
+                total_assist_gold = 0
+                partial_assist_gold = 0
+                if assisters:
+                    total_assist_gold = event.bounty / 2
+                    partial_assist_gold = total_assist_gold / len(assisters)
+                    bounties[event.victim_id].champion_assist_gold_given += total_assist_gold
+                    
+                for assist in assisters:
+                    bounties[assist.participant_id].champion_assist_gold += partial_assist_gold
+
+
+        team_bounties: dict[int, int] = {x: 0 for x in team_ids}
+        for p_id, bounty in bounties.items():
+            team_id = teams[p_id]
+            team_bounties[team_id] += bounty.total_bounty_received
+        return team_bounties, bounties
+
+    @property
+    def bounties(self):
+        return self._bounties[1]
+
+    @property
+    def team_bounties(self):
+        return self._bounties[0]
 
 
 class Frame(models.Model):
@@ -801,6 +961,10 @@ class Frame(models.Model):
         "AdvancedTimeline", on_delete=models.CASCADE, related_name="frames"
     )
     timestamp = models.IntegerField(null=True, blank=True)
+
+    elitemonsterkillevent_set: QuerySet['EliteMonsterKillEvent']
+    buildingkillevent_set: QuerySet['BuildingKillEvent']
+    championkillevent_set: QuerySet['ChampionKillEvent']
 
     class Meta:
         ordering = ["timestamp"]
@@ -1001,6 +1165,9 @@ class ChampionKillEvent(Event):
     victim_id = models.PositiveSmallIntegerField()
     x = models.PositiveIntegerField()
     y = models.PositiveIntegerField()
+
+    victimdamagereceived_set: QuerySet['VictimDamageReceived']
+    victimdamagedealt_set: QuerySet['VictimDamageDealt']
 
 
 class VictimDamage(models.Model):

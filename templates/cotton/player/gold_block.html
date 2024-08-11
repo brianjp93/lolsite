@@ -1,0 +1,57 @@
+<div class="rounded bg-sky-950 px-2 py-1 w-44 text-sm border border-slate-500 flex gap-x-3">
+  <div class="flex flex-col ml-auto">
+    <div class="underline font-bold">
+      Kill Gold
+    </div>
+    <c-tooltip class="text-amber-400 font-bold" trigger="mouseenter focus">
+      {{ participant.bounty.champion_kill_gold|floatformat:"0" }}g
+      <c-slot name="content">
+        Kill Gold (No Shutdown)
+      </c-slot>
+    </c-tooltip>
+    <c-tooltip class="text-amber-400 font-bold" trigger="mouseenter focus">
+      {{ participant.bounty.champion_assist_gold|floatformat:"0" }}g
+      <c-slot name="content">
+        Assist Gold
+      </c-slot>
+    </c-tooltip>
+    <c-tooltip class="text-red-500" trigger="mouseenter focus">
+      - {{ participant.bounty.total_gold_given|floatformat:"0" }}g
+      <c-slot name="content">
+        Kill + Assist + Shutdown Gold Given to Enemy
+      </c-slot>
+    </c-tooltip>
+  </div>
+
+  <div class="flex flex-col mr-auto">
+    <div class="underline font-bold">
+      Bounties
+    </div>
+    <c-tooltip class="text-gold-600 font-bold text-amber-400" trigger="mouseenter focus">
+      {{ participant.bounty.total_bounty_received|floatformat:"0" }}g
+      <c-slot name='content'>
+        Total Bounty Gold
+      </c-slot>
+    </c-tooltip>
+    <div class="flex flex-col leading-none">
+      <c-tooltip trigger="mouseenter focus">
+        + {{ participant.bounty.champion_kill_bounty|floatformat:"0" }}g
+        <c-slot name='content'>
+          Champion Kill Shutdown Gold
+        </c-slot>
+      </c-tooltip>
+      <c-tooltip trigger="mouseenter focus">
+        + {{ participant.bounty.monster_bounty|floatformat:"0" }}g
+        <c-slot name='content'>
+          Epic Monster Bounty Gold
+        </c-slot>
+      </c-tooltip>
+      <c-tooltip trigger="mouseenter focus">
+        + {{ participant.bounty.building_bounty|floatformat:"0" }}g
+        <c-slot name='content'>
+          Tower Kill Bounty Gold
+        </c-slot>
+      </c-tooltip>
+    </div>
+  </div>
+</div>

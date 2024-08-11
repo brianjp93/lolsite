@@ -1,12 +1,12 @@
 <div class='flex flex-col gap-y-1 w-full'>
   {% if form.errors.simple_riot_id %}
     <div>
-      Type 3 characters for autocomplete
+      Start typing for autocomplete
     </div>
   {% else %}
     {% for summoner in object_list %}
-      <a id="autocomplete-select-{{ summoner.id }}"
-         href='{% url "player:summoner-page" region=summoner.region name=summoner.riot_id_name tagline=summoner.riot_id_tagline %}'
+      <a id="autocomplete-select-{{ summoner.id }}-{{ partialId }}"
+         href='{{ summoner.get_absolute_url }}'
          class='flex gap-x-2 px-2 hover:bg-slate-700 contents-center items-center rounded text-gray-300 font-normal'>
         <div>
           <div class="text-xs bg-white text-black rounded px-2 py-1 my-1">

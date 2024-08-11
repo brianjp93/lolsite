@@ -1,4 +1,16 @@
-<div class="cursor-pointer tippy" data-tippy-trigger="focusin click" >
+<c-vars trigger="click" interactive="false" />
+
+<div
+  tabindex="1"
+  class="
+    {% if trigger == "click" %}
+      cursor-pointer
+    {% endif %}
+    tippy {{ class }}
+  "
+  data-tippy-trigger="{{ trigger }}"
+  data-tippy-interactive="{{ interactive }}"
+>
   {{ slot }}
   <div class="tippy-content" style="display: none;">
     {{ content }}

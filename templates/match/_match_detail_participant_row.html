@@ -1,0 +1,15 @@
+<div class="flex gap-x-2">
+  <div class="my-auto flex flex-col gap-y-1 w-44">
+    <div title="{{ participant.get_name }}" class="text-xs overflow-ellipsis overflow-hidden whitespace-nowrap">
+      <a href="{{ participant.get_absolute_url }}">
+        {{ participant.get_name }}
+      </a>
+    </div>
+    <div class="flex gap-x-2">
+      <c-player.summoner-block :participant="participant" />
+      <c-player.item-block :items="participant.items" />
+    </div>
+  </div>
+  <c-player.stat-block :participant="participant" />
+  <c-player.gold-block :participant="participant" />
+</div>

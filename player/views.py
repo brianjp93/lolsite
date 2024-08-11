@@ -1,20 +1,21 @@
 from functools import cached_property
 import urllib.parse
 
-from django.shortcuts import redirect
+from django.http import Http404
+from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
 
 from lolsite.helpers import query_debugger
-from match.models import Match, set_related_match_objects
+from match.models import Match, set_focus_participants, set_related_match_objects
 from match.viewsapi import MatchBySummoner
 from match import tasks as mt
 from player.filters import SummonerAutocompleteFilter, SummonerMatchFilter
-from player.forms import SummonerSearchForm
-from player.models import EmailVerification
+from player.models import EmailVerification, NameChange
 from player.viewsapi import get_by_puuid
+from player import tasks as pt
 
 
 def get_page_urls(request, query_param='page'):
@@ -91,15 +92,16 @@ class SummonerPage(generic.ListView):
         limit = self.paginate_by
         start = limit * (page - 1)
         end = start + limit
+        mt.import_recent_matches(
+            start,
+            end,
+            self.summoner.puuid,
+            region,
+            queue,
+        )
         if page == 1:
-            mt.import_recent_matches(
-                start,
-                end,
-                self.summoner.puuid,
-                region,
-                queue,
-            )
-            mt.bulk_import.s(self.summoner.puuid, count=40, offset=start + limit).apply_async(countdown=2)
+            mt.bulk_import.s(self.summoner.puuid, count=100, offset=start + limit).apply_async(countdown=2)
+            pt.import_positions(self.summoner.id)
 
         context = super().get_context_data(*args, **kwargs)
         prev_url, next_url = get_page_urls(self.request)
@@ -107,17 +109,12 @@ class SummonerPage(generic.ListView):
         context['prev_url'] = prev_url
         context["summoner"] = self.summoner
         context["filterset"] = self.filterset
+        context["namechanges"] = NameChange.objects.filter(
+            summoner=self.summoner,
+        ).order_by("-created_date")
         set_related_match_objects(context['object_list'])
-        self.set_focus_participants(context["object_list"])
+        set_focus_participants(context["object_list"], self.summoner.puuid)
         return context
-
-    def set_focus_participants(self, object_list: list):
-        for obj in object_list:
-            obj.focus = None
-            for part in obj.participants.all():
-                if part.puuid == self.summoner.puuid:
-                    obj.focus = part
-                    break
 
     @cached_property
     def summoner(self):
@@ -151,7 +148,10 @@ class SummonerLookup(generic.View):
         else:
             name = search
             tagline = f"{region}1"
-        summoner = MatchBySummoner.get_summoner(name, tagline, region)
+        try:
+            summoner = MatchBySummoner.get_summoner(name, tagline, region)
+        except Http404:
+            return render(request, 'player/summoner_not_found.html')
         name, tagline = summoner.simple_riot_id.split("#")
         return redirect(
             "player:summoner-page",
@@ -167,6 +167,7 @@ class SummonerAutoComplete(generic.ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         context['form'] = self.filterset.form
+        context["partialId"] = self.request.GET.get('partialId')
         return context
 
     @property
@@ -174,7 +175,7 @@ class SummonerAutoComplete(generic.ListView):
         return SummonerAutocompleteFilter(self.request.GET)
 
     def get_queryset(self):
-        return self.filterset.qs.order_by("riot_id_name", "name")
+        return self.filterset.qs
 
 
 class SummonerPagePuuid(generic.RedirectView):

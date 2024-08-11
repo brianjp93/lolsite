@@ -267,7 +267,7 @@ class SummonerMatchFilter(django_filters.FilterSet):
 
 
 class SummonerAutocompleteFilter(django_filters.FilterSet):
-    simple_riot_id = django_filters.CharFilter(label="Riot ID + Tagline", method='simple_riot_id_filter', min_length=3, required=True)
+    simple_riot_id = django_filters.CharFilter(label="Riot ID + Tagline", method='simple_riot_id_filter', min_length=1, required=True)
     region = django_filters.ChoiceFilter(choices=[(x, x) for x in Region], initial="na", empty_label=None)
 
     class Meta:
@@ -276,4 +276,4 @@ class SummonerAutocompleteFilter(django_filters.FilterSet):
 
     def simple_riot_id_filter(self, queryset, _, value):
         name = simplify(value)
-        return queryset.filter(simple_riot_id__icontains=name)
+        return queryset.filter(simple_riot_id__startswith=name)

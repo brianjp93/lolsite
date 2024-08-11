@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
 from notification.models import Notification
@@ -103,6 +104,9 @@ class Summoner(models.Model):
 
     def __str__(self):
         return f'Summoner(region={self.region}, riotId={self.simple_riot_id})'
+
+    def get_absolute_url(self):
+        return reverse("player:summoner-page", kwargs={"region": self.region, "name": self.riot_id_name, "tagline": self.riot_id_tagline})
 
     def get_name(self):
         if self.simple_riot_id:
