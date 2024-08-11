@@ -4,7 +4,6 @@ import urllib.parse
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
-from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
