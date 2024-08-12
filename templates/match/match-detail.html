@@ -1,9 +1,13 @@
 {% extends 'layout/base.html' %}
+{% load humanize %}
 {% load static %}
 {% block content %}
 <div class="container mx-auto">
   <div>Platform: {{ object.platform_id }}</div>
   <div>Queue: {{ object.queue_name }}</div>
+  <div>Game Time: {{ object.formatted_game_duration }}</div>
+  <div>Game Version: {{ object.game_version }}</div>
+  <div>Played At: <span x-dt1>{{ object.get_creation.isoformat }}</span> ({{ object.get_creation|naturaltime }})</div>
 
   {% include "match/_teams.html" %}
 </div>
