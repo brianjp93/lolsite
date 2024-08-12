@@ -30,6 +30,7 @@
       <script type="text/javascript" src="{% static 'src/htmx.min.js' %}"></script>
       <script defer type="text/javascript" src="{% static 'src/alpine.min.js' %}"></script>
 
+      <script defer src="{% static 'src/chart.min.js' %}"></script>
       <script src="{% static 'src/popper.min.js' %}"></script>
       <script src="{% static 'src/tippy-bundle.umd.min.js' %}"></script>
 
@@ -47,13 +48,14 @@
 
         function replaceDt1(value) {
           for (const el of document.querySelectorAll("[x-dt1]")) {
+            const og = el.textContent.trim()
             try {
-              const dtString = formatDt1(el.textContent.trim());
+              const dtString = formatDt1(og);
               el.textContent = dtString;
               el.removeAttribute("x-dt1")
             } catch (exception) {
               // whatever
-              console.log("Bad date format.")
+              console.log("Bad date format.", og)
             }
           }
         }
