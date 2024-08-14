@@ -1,0 +1,26 @@
+<c-vars id="team-gold-chart" />
+
+<canvas id="{{ id }}">
+</canvas>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const data = window.framesList;
+    new Chart(
+      document.getElementById('{{ id }}'),
+      {
+        type: 'line',
+        fill: true,
+        data: {
+          labels: data.map((x, i) => `${i+1}m`),
+          datasets: [
+            {
+              label: 'Gold Advantage',
+              data: data.map(row => row.team100_gold - row.team200_gold)
+            }
+          ]
+        }
+      }
+    );
+  })
+</script>

@@ -1,6 +1,16 @@
 {% extends 'layout/base.html' %}
 {% load humanize %}
 {% load static %}
+
+{% block header_js %}
+  {{ block.super }}
+
+  {{ frames|json_script:"frame-data" }}
+  <script>
+    window.framesList = JSON.parse(document.querySelector('#frame-data').textContent);
+  </script>
+{% endblock header_js %}
+
 {% block content %}
 <div class="container mx-auto">
   <div>Platform: {{ object.platform_id }}</div>
@@ -10,5 +20,9 @@
   <div>Played At: <span x-dt1>{{ object.get_creation.isoformat }}</span> ({{ object.get_creation|naturaltime }})</div>
 
   {% include "match/_teams.html" %}
+
+  <div class="max-w-[500px]">
+    <c-match.team-gold-chart />
+  </div>
 </div>
 {% endblock content%}

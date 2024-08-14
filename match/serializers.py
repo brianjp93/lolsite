@@ -632,13 +632,9 @@ class FrameSerializer(serializers.ModelSerializer):
             'championspecialkillevents',
             'buildingkillevents',
             'championkillevents',
+            'team100_gold',
+            'team200_gold',
         ]
-
-    def __new__(cls, instance=None, *args, **kwargs):
-        if isinstance(instance, QuerySet):
-            instance = instance.order_by('timestamp')
-        return super().__new__(cls, instance, *args, **kwargs)
-
 
 # ADVANCED TIMELINE
 class AdvancedTimelineSerializer(serializers.ModelSerializer):

@@ -965,12 +965,28 @@ class Frame(models.Model):
     elitemonsterkillevent_set: QuerySet['EliteMonsterKillEvent']
     buildingkillevent_set: QuerySet['BuildingKillEvent']
     championkillevent_set: QuerySet['ChampionKillEvent']
+    participantframes: QuerySet['ParticipantFrame']
 
     class Meta:
         ordering = ["timestamp"]
 
     def __str__(self):
         return f"Frame(match={self.timeline.match._id}, timestamp={self.timestamp})"
+
+    @cached_property
+    def team_gold(self):
+        teams = {x._id: x.team_id for x in self.timeline.match.participants.all()}
+        gold = {x: 0 for x in teams.values()}
+        for pf in self.participantframes.all():
+            if team := teams.get(pf.participant_id, None):
+                gold[team] += pf.total_gold
+        return gold
+
+    def team100_gold(self):
+        return self.team_gold.get(100, 0)
+
+    def team200_gold(self):
+        return self.team_gold.get(200, 0)
 
 
 class ParticipantFrame(models.Model):
