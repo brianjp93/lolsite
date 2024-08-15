@@ -4,14 +4,14 @@
 </canvas>
 
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
+  (function() {
     const data = window.framesList;
     new Chart(
       document.getElementById('{{ id }}'),
       {
         type: 'line',
         data: {
-          labels: data.map((x, i) => `${i+1}m`),
+          labels: data.map((x, i) => `${i + 1}m`),
           datasets: [
             {
               fill: true,
@@ -24,7 +24,7 @@
           plugins: {
             tooltip: {
               callbacks: {
-                label: function(context) {
+                label: function (context) {
                   console.log(context)
                   let y = context.parsed.y;
                   let label = ''
@@ -41,5 +41,5 @@
         }
       }
     );
-  })
+  })()
 </script>
