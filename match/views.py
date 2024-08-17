@@ -3,6 +3,7 @@ from django.db.models.query import prefetch_related_objects
 
 from match.models import Match, set_related_match_objects
 from match import tasks as mt
+from match.serializers import FrameSerializer
 
 
 class MatchDetailView(DetailView):
@@ -32,6 +33,18 @@ class MatchDetailView(DetailView):
             "advancedtimeline__frames__buildingkillevent_set",
             "advancedtimeline__frames__championkillevent_set",
             "advancedtimeline__frames__championkillevent_set__victimdamagereceived_set",
+            "advancedtimeline__frames__championkillevent_set__victimdamagedealt_set",
+            "advancedtimeline__frames__championspecialkillevent_set",
+            "advancedtimeline__frames__wardkillevent_set",
+            "advancedtimeline__frames__wardplacedevent_set",
+            "advancedtimeline__frames__levelupevent_set",
+            "advancedtimeline__frames__skilllevelupevent_set",
+            "advancedtimeline__frames__itempurchasedevent_set",
+            "advancedtimeline__frames__itemdestroyedevent_set",
+            "advancedtimeline__frames__itemundoevent_set",
+            "advancedtimeline__frames__itemsoldevent_set",
+            "advancedtimeline__frames__turretplatedestroyedevent_set",
+            "advancedtimeline__frames__participantframes",
             "participants",
             "participants__stats",
             "teams",
@@ -39,6 +52,7 @@ class MatchDetailView(DetailView):
         set_related_match_objects([match], match.advancedtimeline)
         options = {str(x._id): x for x in match.participants.all() if str(x._id)}
         context['timeline'] = match.advancedtimeline
+        context['frames'] = FrameSerializer(match.advancedtimeline.frames.all(), many=True).data
         if part_id :=  self.request.GET.get('focus', None):
             part = options.get(part_id, None)
         if not part:

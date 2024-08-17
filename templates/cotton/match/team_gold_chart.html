@@ -1,0 +1,46 @@
+<c-vars id="team-gold-chart" />
+
+<canvas id="{{ id }}">
+</canvas>
+
+<script>
+  (function() {
+    const data = window.framesList;
+    new Chart(
+      document.getElementById('{{ id }}'),
+      {
+        type: 'line',
+        data: {
+          labels: data.map((x, i) => `${i + 1}m`),
+          datasets: [
+            {
+              fill: true,
+              label: 'Gold Advantage',
+              data: data.map(row => row.team100_gold - row.team200_gold)
+            }
+          ]
+        },
+        options: {
+          aspectRatio: 1.5,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  console.log(context)
+                  let y = context.parsed.y;
+                  let label = ''
+                  if (context.parsed.y < 0) {
+                    label += `Red ${-y}g`
+                  } else {
+                    label += `Blue ${y}g`
+                  }
+                  return label;
+                }
+              }
+            }
+          }
+        }
+      }
+    );
+  })()
+</script>

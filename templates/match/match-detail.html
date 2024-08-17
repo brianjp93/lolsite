@@ -1,7 +1,14 @@
 {% extends 'layout/base.html' %}
 {% load humanize %}
 {% load static %}
+
 {% block content %}
+  <!-- this has to go in the body for hx-boost to work -->
+  {{ frames|json_script:"frame-data" }}
+  <script>
+    window.framesList = JSON.parse(document.querySelector('#frame-data').textContent);
+  </script>
+
 <div class="container mx-auto">
   <div>Platform: {{ object.platform_id }}</div>
   <div>Queue: {{ object.queue_name }}</div>
@@ -10,5 +17,15 @@
   <div>Played At: <span x-dt1>{{ object.get_creation.isoformat }}</span> ({{ object.get_creation|naturaltime }})</div>
 
   {% include "match/_teams.html" %}
+
+  <div class="flex gap-x-2 mt-2">
+    <div class="w-[500px]">
+      <c-match.team-gold-chart />
+    </div>
+
+    <div class="w-[500px]">
+      <c-match.player-stat-chart />
+    </div>
+  </div>
 </div>
 {% endblock content%}
