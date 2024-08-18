@@ -1,23 +1,113 @@
 <c-vars id="player-stat-chart" />
 
-<canvas id="{{ id }}">
-</canvas>
+<div class="flex flex-col">
+  <div id="{{ id }}-legend"></div>
 
-<div class="flex gap-x-1 gap-y-1 flex-wrap text-xs justify-center stat-select-buttons">
-  <button class="px-auto btn btn-default total_damage_done_to_champions">Champion DMG</button>
-  <button class="px-auto btn btn-default total_gold">Gold</button>
-  <button class="px-auto btn btn-default gold_diff">Gold Diff</button>
-  <button class="px-auto btn btn-default total_damage_taken">DMG Taken</button>
-  <button class="px-auto btn btn-default xp">XP</button>
-  <button class="px-auto btn btn-default xp_diff">XP Diff</button>
-  <button class="px-auto btn btn-default level">Level</button>
-  <button class="px-auto btn btn-default attack_speed">Attack Speed</button>
-  <button class="px-auto btn btn-default attack_damage">AD</button>
-  <button class="px-auto btn btn-default armor">Armor</button>
-  <button class="px-auto btn btn-default magic_resist">MR</button>
+  <canvas id="{{ id }}">
+  </canvas>
+
+  <div class="flex gap-x-1 gap-y-1 flex-wrap text-xs justify-center stat-select-buttons">
+    <button class="px-auto btn btn-default total_damage_done_to_champions">Champion DMG</button>
+    <button class="px-auto btn btn-default total_gold">Gold</button>
+    <button class="px-auto btn btn-default gold_diff">Gold Δ</button>
+    <button class="px-auto btn btn-default total_cs">CS</button>
+    <button class="px-auto btn btn-default cs_diff">CS Δ</button>
+    <button class="px-auto btn btn-default total_damage_taken">DMG Taken</button>
+    <button class="px-auto btn btn-default xp">XP</button>
+    <button class="px-auto btn btn-default xp_diff">XP Δ</button>
+    <button class="px-auto btn btn-default level">Level</button>
+    <button class="px-auto btn btn-default attack_speed">Attack Speed</button>
+    <button class="px-auto btn btn-default attack_damage">AD</button>
+    <button class="px-auto btn btn-default armor">Armor</button>
+    <button class="px-auto btn btn-default magic_resist">MR</button>
+  </div>
 </div>
+
 <script>
   (function () {
+
+    const getOrCreateLegendList = (chart, id) => {
+      const legendContainer = document.getElementById(id);
+      let listContainer = legendContainer.querySelector('ul');
+
+      if (!listContainer) {
+        listContainer = document.createElement('ul');
+        listContainer.style.display = 'grid'
+        listContainer.style.gridTemplateColumns = 'repeat(5, 1fr)';
+        listContainer.style.margin = 0;
+        listContainer.style.padding = 0;
+
+        legendContainer.appendChild(listContainer);
+      }
+
+      return listContainer;
+    };
+
+    const htmlLegendPlugin = {
+      id: 'htmlLegend',
+      afterUpdate(chart, args, options) {
+        const ul = getOrCreateLegendList(chart, options.containerID);
+
+        // Remove old legend items
+        while (ul.firstChild) {
+          ul.firstChild.remove();
+        }
+
+        // Reuse the built-in legendItems generator
+        const items = chart.options.plugins.legend.labels.generateLabels(chart);
+
+        items.forEach(item => {
+          const li = document.createElement('li');
+          li.style.alignItems = 'center';
+          li.style.cursor = 'pointer';
+          li.style.display = 'flex'
+          li.style.marginLeft = '10px';
+
+          li.onclick = () => {
+            const {type} = chart.config;
+            if (type === 'pie' || type === 'doughnut') {
+              // Pie and doughnut charts only have a single dataset and visibility is per item
+              chart.toggleDataVisibility(item.index);
+            } else {
+              chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
+            }
+            chart.update();
+          };
+
+          // Color box
+          const boxSpan = document.createElement('span');
+          boxSpan.style.background = item.hidden ? 'gray': item.fillStyle;
+          boxSpan.style.borderColor = item.strokeStyle;
+          boxSpan.style.borderWidth = (item.hidden ? '0' : item.lineWidth) + 'px';
+          boxSpan.style.display = 'inline-block';
+          boxSpan.style.flexShrink = 0;
+          boxSpan.style.height = '20px';
+          boxSpan.style.marginRight = '10px';
+          boxSpan.style.width = '20px';
+
+          // Text
+          const img = document.createElement('img');
+          const part = window.participantsList?.[parseInt(item.text)];
+          const imageUrl = part?.champion?.image_url;
+          img.setAttribute('src', imageUrl);
+          img.setAttribute('title', part?.champion?.name);
+          img.style.color = item.fontColor;
+          img.style.margin = 0;
+          img.style.padding = 0;
+          img.style.filter = item.hidden ? "grayscale(1)" : "grayscale(0)";
+          img.style.maxWidth = '30px';
+
+          const text = document.createTextNode(item.text);
+          img.appendChild(text);
+
+          li.appendChild(boxSpan);
+          li.appendChild(img);
+          ul.appendChild(li);
+        });
+      }
+    };
+
+
     const data = window.framesList.map(frame => {
       const parts = {};
       for (const p of frame.participantframes) {
@@ -28,6 +118,7 @@
         const laner = parts[lanerId];
         val.gold_diff = val.total_gold - (laner?.total_gold || 0);
         val.xp_diff = val.xp - (laner?.xp || 0);
+        val.cs_diff = val.total_cs - (laner?.total_cs || 0);
       }
       return parts
     })
@@ -35,17 +126,33 @@
     const pids = Object.keys(data?.[0] || {})
     let selected = 'total_damage_done_to_champions'
     let chart = null;
+    const colors = [
+      "#42c5f5",
+      '#207ea1',
+      '#256ac4',
+      '#253dc4',
+      '#2e26a3',
 
-    function buildChart(statKey) {
+      '#b01c48',
+      '#c21d6f',
+      '#871319',
+      '#ad4421',
+      '#d9763d',
+    ]
+
+    function setChart(statKey) {
       selected = statKey;
-      const datasets = pids.map(pid => {
+      const datasets = pids.map((pid, idx) => {
+        const color = colors[idx % (colors.length)]
         return {
-          label: window.participantsList?.[pid]?.champion?.name,
+          label: pid,
           data: data.map(x => x[pid][statKey]),
+          borderColor: color,
+          backgroundColor: color,
         }
       })
       if (chart) {
-        for (let i=0; i<datasets.length; i++) {
+        for (let i = 0; i < datasets.length; i++) {
           chart.data.datasets[i].data = datasets[i].data;
         }
         chart.update();
@@ -57,12 +164,28 @@
               aspectRatio: 1.5,
               interaction: {
                 mode: 'index',
+                intersect: false,
               },
               plugins: {
                 tooltip: {
                   itemSort: (a, b) => {
                     return b.raw - a.raw
                   },
+                  callbacks: {
+                    label: function (context) {
+                      const pid = parseInt(context.dataset.label);
+                      const part = window.participantsList?.[pid];
+                      let label = part?.champion?.name
+                      label += `: ${context.formattedValue}`
+                      return label;
+                    },
+                  },
+                },
+                htmlLegend: {
+                  containerID: '{{ id }}-legend',
+                },
+                legend: {
+                  display: false,
                 },
               },
             },
@@ -71,6 +194,7 @@
               labels: data.map((x, i) => `${i + 1}m`),
               datasets: datasets,
             },
+            plugins: [htmlLegendPlugin],
           }
         );
       }
@@ -83,7 +207,7 @@
         }
       }
     }
-    buildChart('total_damage_done_to_champions');
+    setChart('total_damage_done_to_champions');
 
     const stats = [
       'total_gold',
@@ -97,10 +221,12 @@
       'xp_diff',
       'magic_resist',
       'gold_diff',
+      'total_cs',
+      'cs_diff',
     ]
     for (const stat of stats) {
       for (const el of document.querySelectorAll(`.${stat}`)) {
-        el.addEventListener('click', () => buildChart(stat));
+        el.addEventListener('click', () => setChart(stat));
       }
     }
   })()

@@ -21,18 +21,21 @@
           ]
         },
         options: {
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
           aspectRatio: 1.5,
           plugins: {
             tooltip: {
               callbacks: {
                 label: function (context) {
-                  console.log(context)
                   let y = context.parsed.y;
                   let label = ''
                   if (context.parsed.y < 0) {
-                    label += `Red ${-y}g`
+                    label += `Red -${context.formattedValue}g`
                   } else {
-                    label += `Blue ${y}g`
+                    label += `Blue ${context.formattedValue}g`
                   }
                   return label;
                 }

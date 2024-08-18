@@ -301,6 +301,8 @@ class FullMatchSerializer(serializers.ModelSerializer):
 
 
 class ParticipantFrameSerializer(serializers.ModelSerializer):
+    total_cs = serializers.SerializerMethodField()
+
     class Meta:
         model = ParticipantFrame
         fields = [
@@ -308,6 +310,7 @@ class ParticipantFrameSerializer(serializers.ModelSerializer):
             'current_gold',
             'gold_per_second',
             'jungle_minions_killed',
+            'total_cs',
             'level',
             'minions_killed',
             'team_score',
@@ -327,7 +330,6 @@ class ParticipantFrameSerializer(serializers.ModelSerializer):
             'bonus_armor_pen_percent',
             'bonus_magic_pen_percent',
             'cc_reduction',
-            'cooldown_reduction',
             'health',
             'health_max',
             'health_regen',
@@ -356,6 +358,9 @@ class ParticipantFrameSerializer(serializers.ModelSerializer):
             'true_damage_done_to_champions',
             'true_damage_taken',
         ]
+
+    def get_total_cs(self, instance):
+        return instance.minions_killed + instance.jungle_minions_killed
 
 
 class WardKillEventSerializer(serializers.ModelSerializer):
