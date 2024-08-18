@@ -14,23 +14,37 @@
     window.participantsList = JSON.parse(document.querySelector('#participants-data').textContent);
   </script>
 
-<div class="container mx-auto">
-  <div>Platform: {{ object.platform_id }}</div>
-  <div>Queue: {{ object.queue_name }}</div>
-  <div>Game Time: {{ object.formatted_game_duration }}</div>
-  <div>Game Version: {{ object.game_version }}</div>
-  <div>Played At: <span x-dt1>{{ object.get_creation.isoformat }}</span> ({{ object.get_creation|naturaltime }})</div>
-
-  {% include "match/_teams.html" %}
-
-  <div class="flex gap-x-2 mt-2">
-    <div class="w-[500px] h-[450px]">
-      <c-match.team-gold-chart />
+  <div class="container mx-auto">
+    <div>
+      Platform: {{ object.platform_id }}
+    </div>
+    <div>
+      Queue: {{ object.queue_name }}
+    </div>
+    <div>
+      Game Time: {{ object.formatted_game_duration }}
+    </div>
+    <div>
+      Game Version: {{ object.game_version }}
+    </div>
+    <div>
+      Played At: <span x-dt1>{{ object.get_creation.isoformat }}</span> ({{ object.get_creation|naturaltime }})
     </div>
 
-    <div class="w-[500px] h-[450px]">
-      <c-match.player-stat-chart />
+    {% include "match/_teams.html" %}
+
+    <div class="flex flex-wrap gap-2 mt-2">
+      <div class="w-[500px] h-[450px]">
+        <c-match.team-gold-chart />
+      </div>
+
+      <div class="w-[500px] h-[450px]">
+        <c-match.player-stat-chart />
+      </div>
+
+      <div class="h-[450px] w-[450px]">
+        <c-match.rift-map />
+      </div>
     </div>
   </div>
-</div>
-{% endblock content%}
+{% endblock content %}
