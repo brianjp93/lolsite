@@ -2,6 +2,10 @@
 
 <div class="flex flex-col">
   <div id="{{ id }}-legend"></div>
+  <div class="grid grid-cols-2 gap-x-1">
+    <button class="btn btn-default" id="{{ id }}-select-all">Select All</button>
+    <button class="btn btn-default" id="{{ id }}-clear-all">Clear All</button>
+  </div>
 
   <canvas id="{{ id }}">
   </canvas>
@@ -209,6 +213,18 @@
     }
     setChart('total_damage_done_to_champions');
 
+    function selectAllParticipants() {
+      for (let i=0; i<chart.data.datasets.length; i++) {
+        chart.show(i);
+      }
+    }
+
+    function clearAllParticipants() {
+      for (let i=0; i<chart.data.datasets.length; i++) {
+        chart.hide(i);
+      }
+    }
+
     const stats = [
       'total_gold',
       'total_damage_done_to_champions',
@@ -229,5 +245,7 @@
         el.addEventListener('click', () => setChart(stat));
       }
     }
+    document.getElementById('{{ id }}-select-all').addEventListener('click', selectAllParticipants)
+    document.getElementById('{{ id }}-clear-all').addEventListener('click', clearAllParticipants)
   })()
 </script>
