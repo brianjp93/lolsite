@@ -23,7 +23,7 @@
       for (const p of frame.participantframes) {
         parts[parseInt(p.participant_id)] = p;
       }
-      for (let [key, val] of Object.entries(parts)) {
+      for (const [key, val] of Object.entries(parts)) {
         const lanerId = ((parseInt(key) + 4) % 10) + 1;
         const laner = parts[lanerId];
         val.gold_diff = val.total_gold - (laner?.total_gold || 0);
