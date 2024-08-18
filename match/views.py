@@ -1,7 +1,8 @@
+from typing import Iterable
 from django.views.generic import DetailView
 from django.db.models.query import prefetch_related_objects
 
-from match.models import Match, set_related_match_objects
+from match.models import Match, Participant, set_related_match_objects
 from match import tasks as mt
 from match.serializers import FrameSerializer
 
@@ -53,9 +54,25 @@ class MatchDetailView(DetailView):
         options = {str(x._id): x for x in match.participants.all() if str(x._id)}
         context['timeline'] = match.advancedtimeline
         context['frames'] = FrameSerializer(match.advancedtimeline.frames.all(), many=True).data
+        context['serialized_participants'] = self.basic_participant_serializer(match.participants.all())
         if part_id :=  self.request.GET.get('focus', None):
             part = options.get(part_id, None)
         if not part:
             part = next(iter(options.values()))
         context['focus'] = part
         return context
+
+    @staticmethod
+    def basic_participant_serializer(participants: Iterable[Participant]):
+        return {
+            x._id: {
+                '_id': x._id,
+                'champion': {
+                    'name': x.champion and x.champion.name,
+                    'key': x.champion and x.champion.key,
+                    'image_url': x.champion and x.champion.image and x.champion.image.file and x.champion.image.file.url,
+                },
+                'name': x.get_name(),
+            }
+            for x in participants
+        }

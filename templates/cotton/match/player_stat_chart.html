@@ -3,19 +3,19 @@
 <canvas id="{{ id }}">
 </canvas>
 
-<div class="flex gap-x-1 gap-y-1 flex-wrap">
-  <button class="btn btn-default total_gold">Gold</button>
-  <button class="btn btn-default total_damage_done_to_champions">Champion DMG</button>
-  <button class="btn btn-default total_damage_taken">DMG Taken</button>
-  <button class="btn btn-default xp">XP</button>
-  <button class="btn btn-default level">Level</button>
-  <button class="btn btn-default attack_speed">Attack Speed</button>
-  <button class="btn btn-default attack_damage">AD</button>
-  <button class="btn btn-default armor">Armor</button>
-  <button class="btn btn-default magic_resist">MR</button>
+<div class="flex gap-x-1 gap-y-1 flex-wrap text-xs justify-center stat-select-buttons">
+  <button class="px-auto btn btn-default total_damage_done_to_champions">Champion DMG</button>
+  <button class="px-auto btn btn-default total_gold">Gold</button>
+  <button class="px-auto btn btn-default total_damage_taken">DMG Taken</button>
+  <button class="px-auto btn btn-default xp">XP</button>
+  <button class="px-auto btn btn-default level">Level</button>
+  <button class="px-auto btn btn-default attack_speed">Attack Speed</button>
+  <button class="px-auto btn btn-default attack_damage">AD</button>
+  <button class="px-auto btn btn-default armor">Armor</button>
+  <button class="px-auto btn btn-default magic_resist">MR</button>
 </div>
 <script>
-  (function() {
+  (function () {
     const data = window.framesList.map(frame => {
       const parts = {};
       for (const p of frame.participantframes) {
@@ -24,41 +24,57 @@
       return parts
     })
     const pids = Object.keys(data?.[0] || {})
+    let selected = 'total_damage_done_to_champions'
     let chart = null;
+
     function buildChart(statKey) {
+      selected = statKey;
+      const datasets = pids.map(pid => {
+        return {
+          label: window.participantsList?.[pid]?.champion?.name,
+          data: data.map(x => x[pid][statKey]),
+        }
+      })
       if (chart) {
-        chart.destroy();
-      }
-      chart = new Chart(
-        document.getElementById('{{ id }}'),
-        {
-          options: {
-            aspectRatio: 1.5,
-            interaction: {
+        for (let i=0; i<datasets.length; i++) {
+          chart.data.datasets[i].data = datasets[i].data;
+        }
+        chart.update();
+      } else {
+        chart = new Chart(
+          document.getElementById('{{ id }}'),
+          {
+            options: {
+              aspectRatio: 1.5,
+              interaction: {
                 mode: 'index',
-            },
-            plugins: {
-              tooltip: {
-                itemSort: (a, b) => {
-                  return b.raw - a.raw
+              },
+              plugins: {
+                tooltip: {
+                  itemSort: (a, b) => {
+                    return b.raw - a.raw
+                  },
                 },
               },
             },
-          },
-          type: 'line',
-          data: {
-            labels: data.map((x, i) => `${i + 1}m`),
-            datasets: pids.map(pid => {
-              return {
-                label: `Participant ${pid}`,
-                data: data.map(x => x[pid][statKey]),
-              }
-            }),
-          },
+            type: 'line',
+            data: {
+              labels: data.map((x, i) => `${i + 1}m`),
+              datasets: datasets,
+            },
+          }
+        );
+      }
+
+      for (const button of document.querySelectorAll('.stat-select-buttons button')) {
+        if (button.classList.contains(statKey)) {
+          button.setAttribute('disabled', 'true');
+        } else {
+          button.removeAttribute('disabled');
         }
-      );
+      }
     }
-    buildChart('total_damage_done_to_champions')
+    buildChart('total_damage_done_to_champions');
 
     const stats = [
       'total_gold',
@@ -76,6 +92,5 @@
         el.addEventListener('click', () => buildChart(stat));
       }
     }
-
   })()
 </script>
