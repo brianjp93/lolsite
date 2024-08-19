@@ -16,10 +16,12 @@
 
   <script>
     let tidx = 0;
-    let onTidxChangeHandlers = [];
+    window.onTidxChangeHandlers = [];
     function setTidx(n) {
       tidx = n;
-      console.log(tidx)
+      for (const f of window.onTidxChangeHandlers) {
+        f();
+      }
     }
   </script>
 

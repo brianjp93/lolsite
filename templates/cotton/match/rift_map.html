@@ -5,11 +5,28 @@
   <div class="relative flex-grow w-full">
     <div class="absolute inset-0 w-full h-full object-contain object-center rounded">
       <img
+        id='{{ id }}-map-element'
         class="aspect-square h-full rounded"
         src="{% static "general/map.jpg" %}"
         alt="Summoner's Rift"
       >
     </div>
+    {% for part in match.participants.all %}
+      <img
+        id="{{ id }}-part-{{ part.get_id }}"
+        src="{{ part.champion.image.file_40.url }}"
+        alt=""
+        style="position: absolute;"
+        class="
+          w-8 rounded-full border-4 transition-all
+          {% if part in match.team100 %}
+            border-blue-500
+          {% else %}
+            border-red-500
+          {% endif %}
+        "
+      >
+    {% endfor %}
   </div>
   <div class="flex gap-x-1 text-xs">
     <button id="{{ id }}-prev" class="btn btn-default">L</button>
@@ -19,7 +36,36 @@
 
 <script>
   (function() {
-    document.getElementById("{{ id }}-prev").addEventListener('click', () => setTidx(tidx <= 0 ? 0 : tidx - 1))
-    document.getElementById("{{ id }}-next").addEventListener('click', () => setTidx(tidx >= window.framesList.length - 1 ? window.framesList.length - 1: tidx + 1))
+    const mapEl = document.getElementById('{{ id }}-map-element');
+    const imageWidth = mapEl.clientWidth;
+    const max_x = 15300;
+    const max_y = 15000;
+
+    function getPosition(x, y) {
+      const x_val = (x / max_x) * imageWidth;
+      const y_val = (y / max_y) * imageWidth;
+      return [x_val, y_val];
+    }
+
+    function updateTimeline() {
+      const frame = window.framesList?.[tidx];
+      for (const pf of frame.participantframes) {
+        const [x, y] = getPosition(pf.x, pf.y);
+        const pid = pf.participant_id;
+        const img = document.getElementById(`{{ id }}-part-${pid}`);
+        img.style.left = x + "px";
+        img.style.bottom = y + "px";
+      }
+    }
+    function forward() {
+      setTidx(tidx >= window.framesList.length - 1 ? window.framesList.length - 1: tidx + 1);
+    }
+    function backward() {
+      setTidx(tidx <= 0 ? 0 : tidx - 1);
+    }
+    updateTimeline()
+    window.onTidxChangeHandlers.push(updateTimeline)
+    document.getElementById("{{ id }}-prev").addEventListener('click', () => backward())
+    document.getElementById("{{ id }}-next").addEventListener('click', () => forward())
   })()
 </script>

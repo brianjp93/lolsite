@@ -506,6 +506,9 @@ class Participant(models.Model):
     class Meta:
         unique_together = ("match", "_id")
 
+    def get_id(self):
+        return self._id
+
     @property
     def simple_riot_id(self):
         return simplify(f"{self.riot_id_name}#{self.riot_id_tagline}")
