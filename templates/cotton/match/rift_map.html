@@ -1,3 +1,4 @@
+<c-vars id="rift-map" />
 {% load static %}
 
 <div class="h-full w-full flex flex-col gap-y-1">
@@ -11,7 +12,14 @@
     </div>
   </div>
   <div class="flex gap-x-1 text-xs">
-    <button class="btn btn-default">L</button>
-    <button class="btn btn-default">R</button>
+    <button id="{{ id }}-prev" class="btn btn-default">L</button>
+    <button id="{{ id }}-next" class="btn btn-default">R</button>
   </div>
 </div>
+
+<script>
+  (function() {
+    document.getElementById("{{ id }}-prev").addEventListener('click', () => setTidx(tidx <= 0 ? 0 : tidx - 1))
+    document.getElementById("{{ id }}-next").addEventListener('click', () => setTidx(tidx >= window.framesList.length - 1 ? window.framesList.length - 1: tidx + 1))
+  })()
+</script>
