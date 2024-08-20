@@ -76,10 +76,12 @@
         }
 
         document.addEventListener("DOMContentLoaded", runInitScripts)
-        htmx.on("htmx:afterSettle", () => {
-          runInitScripts()
+        document.addEventListener("htmx:afterSettle", () => {
+          runInitScripts();
         })
-
+        document.addEventListener("htmx:historyRestore", () => {
+          runInitScripts();
+        })
 
       </script>
       {% if debug %}

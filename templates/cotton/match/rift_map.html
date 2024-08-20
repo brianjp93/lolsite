@@ -4,7 +4,10 @@
 <div class="h-full w-full flex flex-col gap-y-1">
   <div class="relative flex-grow w-full">
     <div class="absolute inset-0 w-full h-full object-contain object-center rounded">
-      <img id='{{ id }}-map-element' class="aspect-square h-full rounded" src="{% static " general/map.jpg" %}" alt="Summoner's Rift">
+      <img id='{{ id }}-map-element'
+           class="aspect-square h-full rounded"
+           src="{% static 'general/map.jpg' %}"
+           alt="Summoner's Rift">
     </div>
     {% for part in match.participants.all %}
       <img id="{{ id }}-part-{{ part.get_id }}"
