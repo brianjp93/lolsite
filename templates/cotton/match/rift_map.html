@@ -31,6 +31,10 @@
   <div class="flex gap-x-1 text-xs">
     <button id="{{ id }}-prev" class="btn btn-default">L</button>
     <button id="{{ id }}-next" class="btn btn-default">R</button>
+    <div class="flex text-xs items-center">
+      <div id="{{ id }}-time">1</div>
+      <div>m</div>
+    </div>
   </div>
 </div>
 
@@ -38,16 +42,16 @@
   (function() {
     const mapEl = document.getElementById('{{ id }}-map-element');
     const imageWidth = mapEl.clientWidth;
-    const max_x = 15300;
-    const max_y = 15000;
+    const maxX = 15300;
+    const maxY = 15000;
 
     function getPosition(x, y) {
-      const x_val = (x / max_x) * imageWidth;
-      const y_val = (y / max_y) * imageWidth;
-      return [x_val, y_val];
+      const xVal = (x / maxX) * imageWidth;
+      const yVal = (y / maxY) * imageWidth;
+      return [xVal, yVal];
     }
 
-    function updateTimeline() {
+    function update() {
       const frame = window.framesList?.[tidx];
       for (const pf of frame.participantframes) {
         const [x, y] = getPosition(pf.x, pf.y);
@@ -56,6 +60,7 @@
         img.style.left = x + "px";
         img.style.bottom = y + "px";
       }
+      document.getElementById("{{ id }}-time").innerText = tidx;
     }
     function forward() {
       setTidx(tidx >= window.framesList.length - 1 ? window.framesList.length - 1: tidx + 1);
@@ -63,8 +68,8 @@
     function backward() {
       setTidx(tidx <= 0 ? 0 : tidx - 1);
     }
-    updateTimeline()
-    window.onTidxChangeHandlers.push(updateTimeline)
+    update()
+    window.onTidxChangeHandlers.push(update)
     document.getElementById("{{ id }}-prev").addEventListener('click', () => backward())
     document.getElementById("{{ id }}-next").addEventListener('click', () => forward())
   })()
