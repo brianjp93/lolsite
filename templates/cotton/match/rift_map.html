@@ -42,13 +42,86 @@
                   Champion Kill {{ kill.formatted_timestamp }}
                 </h4>
                 <div class="flex gap-x-2 justify-center">
-                  <img class='participant-kill-img w-8 h-8'
-                       data-participant="{{ kill.killer_id }}" />
+                  <div class="flex flex-col gap-y-1">
+                    <img class='participant-kill-img w-8 h-8'
+                         data-participant="{{ kill.killer_id }}" />
+                    <div class="flex flex-col gap-y-1">
+                      {% for assist in kill.assisters %}
+                        <div class="flex gap-x-1">
+                          {% if assist.participant_id == 0 %}
+                            <div>{{ assist.name }}:</div>
+                          {% else %}
+                            <img class='participant-kill-img w-4 h-4'
+                                 data-participant="{{ assist.participant_id }}" />
+                          {% endif %}
+                          <div>{{ assist.total_damage }}</div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
                   <div>
                     Killed
                   </div>
                   <img class="participant-kill-img w-8 h-8"
                        data-participant="{{ kill.victim_id }}" />
+                </div>
+              </div>
+            </c-slot>
+          </c-tooltip>
+        </div>
+      {% endfor %}
+
+      {% for event in frame.buildingkillevent_set.all %}
+        <div data-frame-idx="{{ frame.idx }}"
+             data-x="{{ event.x }}"
+             data-y="{{ event.y }}"
+             class="absolute hidden rift-event event-frame duration-500 transition-all">
+          <c-tooltip trigger="mouseenter focus">
+            <div data-victim="{{ event.victim_id }}"
+                 class="w-4 h-4 rounded-full bg-yellow-500 border-2 border-orange-500 building-kill-event">
+            </div>
+            <c-slot name="content">
+              <div class="flex flex-col gap-y-2">
+                <h4>
+                  Turret Plate {{ event.formatted_timestamp }}
+                </h4>
+                <div class="flex gap-x-2 justify-center">
+                  {% if event.killer_id != 0 %}
+                    <img class='participant-kill-img w-8 h-8'
+                         data-participant="{{ event.killer_id }}" />
+                  {% endif %}
+                  <div>
+                    Destroyed a Building
+                  </div>
+                </div>
+              </div>
+            </c-slot>
+          </c-tooltip>
+        </div>
+      {% endfor %}
+
+      {% for event in frame.turretplatedestroyedevent_set.all %}
+        <div data-frame-idx="{{ frame.idx }}"
+             data-x="{{ event.x }}"
+             data-y="{{ event.y }}"
+             class="absolute hidden rift-event event-frame duration-500 transition-all">
+          <c-tooltip trigger="mouseenter focus">
+            <div data-victim="{{ event.victim_id }}"
+                 class="w-4 h-4 rounded-full bg-yellow-500 border-2 border-orange-500 plate-event">
+            </div>
+            <c-slot name="content">
+              <div class="flex flex-col gap-y-2">
+                <h4>
+                  Turret Plate {{ event.formatted_timestamp }}
+                </h4>
+                <div class="flex gap-x-2 justify-center">
+                  {% if event.killer_id != 0 %}
+                    <img class='participant-kill-img w-8 h-8'
+                         data-participant="{{ event.killer_id }}" />
+                  {% endif %}
+                  <div>
+                    Destroyed a Turret Plate
+                  </div>
                 </div>
               </div>
             </c-slot>
@@ -87,7 +160,7 @@
                       Killed
                     </div>
                     <div>
-                      {{ event.monster_type }}: {{ event.monster_sub_type }}
+                      {{ event.monster_name }}
                     </div>
                   </div>
                 </div>
