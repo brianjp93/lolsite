@@ -3,6 +3,8 @@
 from typing import TypedDict
 from enum import StrEnum
 
+from pydantic import BaseModel
+
 
 MIN_PASSWORD_LENGTH = 7
 
@@ -736,3 +738,54 @@ class Region(StrEnum):
     OCE  = 'oce'
     TR = 'tr'
     RU = 'ru'
+
+
+class Structure(BaseModel):
+    key: str
+    name: str
+    x: int
+    y: int
+
+STRUCTURES = [
+    # blue team
+    Structure(key='bt1_top', name='Tier 1 Top', x=981, y=10441),
+    Structure(key='bt2_top', name='Tier 2 Top', x=1512, y=6699),
+    Structure(key='bt3_top', name='Tier 3 Top', x=1169, y=4287),
+
+    Structure(key='bt1_mid', name='Tier 1 Mid', x=5846, y=6396),
+    Structure(key='bt2_mid', name='Tier 2 Mid', x=5048, y=4812),
+    Structure(key='bt3_mid', name='Tier 3 Mid', x=3651, y=3696),
+
+    Structure(key='bt1_bot', name='Tier 1 Bot', x=10504, y=1029),
+    Structure(key='bt2_bot', name='Tier 2 Bot', x=6919, y=1483),
+    Structure(key='bt3_bot', name='Tier 3 Bot', x=4281, y=1253),
+
+    Structure(key='bi_top', name='Top Inhibitor', x=1169, y=3573),
+    Structure(key='bi_mid', name='Mid Inhibitor', x=3203, y=3208),
+    Structure(key='bi_bot', name='Bot Inhibitor', x=3454, y=1241),
+
+    Structure(key='bn1', name='Nexus Turret 1', x=1748, y=2270),
+    Structure(key='bn2', name='Nexus Turret 2', x=2177, y=1807),
+
+    # red team
+    Structure(key='rt1_top', name='Tier 1 Top', x=4318, y=13875),
+    Structure(key='rt2_top', name='Tier 2 Top', x=7943, y=13411),
+    Structure(key='rt3_top', name='Tier 3 Top', x=10481, y=13650),
+
+    Structure(key='rt1_mid', name='Tier 1 Mid', x=8955, y=8510),
+    Structure(key='rt2_mid', name='Tier 2 Mid', x=9767, y=10113),
+    Structure(key='rt3_mid', name='Tier 3 Mid', x=8955, y=8510),
+
+    Structure(key='rt1_bot', name='Tier 1 Bot', x=13866, y=4505),
+    Structure(key='rt2_bot', name='Tier 2 Bot', x=13327, y=8226),
+    Structure(key='rt3_bot', name='Tier 3 Bot', x=13624, y=10572),
+
+    Structure(key='ri_top', name='Top Inhibitor', x=11261, y=13659),
+    Structure(key='ri_mid', name='Mid Inhibitor', x=11603, y=11667),
+    Structure(key='ri_bot', name='Bot Inhibitor', x=13598, y=11316),
+
+    Structure(key='rn1', name='Nexus Turret 1', x=12611, y=13084),
+    Structure(key='rn2', name='Nexus Turret 2', x=13052, y=12612),
+]
+
+STRUCTURES_DICT = [x.model_dump() for x in STRUCTURES]

@@ -12,9 +12,19 @@
     {% for part in match.participants.all %}
       <img id="{{ id }}-part-{{ part.get_id }}"
            src="{{ part.champion.image.file_40.url }}"
-           alt=""
+           alt="{{ part.champion.name }}"
            style="position: absolute"
-           class=" w-8 rounded-full border-4 transition-all {% if part in match.team100 %} border-blue-500 {% else %} border-red-500 {% endif %} ">
+           class="w-8 rounded-full border-4 transition-all duration-500 {% if part in match.team100 %} border-blue-500 {% else %} border-red-500 {% endif %} ">
+    {% endfor %}
+    {% for struct in structures %}
+      <div id="{{ id }}-{{ struct.key }}"
+           data-key="{{ struct.key }}"
+           data-x="{{ struct.x }}"
+           data-y="{{ struct.y }}"
+           class="w-4 h-4 border-neutral-700 border-2 absolute rounded-full transition-all duration-500 rift-structure"
+           style="left: 0px;
+                  bottom: 0px">
+      </div>
     {% endfor %}
   </div>
   <div class="flex gap-x-1 text-xs">
@@ -41,11 +51,40 @@
     const imageWidth = mapEl.clientWidth;
     const maxX = 15300;
     const maxY = 15000;
+    const structureElements = document.querySelectorAll('.rift-structure');
+    const towerDeadColor = 'bg-red-700'
+    const towerAliveColor = 'bg-white'
+
+    function placeStructures() {
+      for (const el of structureElements) {
+        const x0 = parseInt(el.getAttribute('data-x'));
+        const y0 = parseInt(el.getAttribute('data-y'));
+        const [x, y] = getPosition(x0, y0);
+        if (typeof x === 'number' && typeof y === 'number') {
+          el.style.left = x + 'px';
+          el.style.bottom = y + 'px'
+        }
+      }
+    }
 
     function getPosition(x, y) {
       const xVal = (x / maxX) * imageWidth;
       const yVal = (y / maxY) * imageWidth;
       return [xVal, yVal];
+    }
+
+    function updateTowerState(frame) {
+      for (const el of structureElements) {
+        const key = el.getAttribute('data-key');
+        const isAlive = frame.tower_state[key];
+        if (isAlive) {
+          el.classList.remove(towerDeadColor);
+          el.classList.add(towerAliveColor);
+        } else {
+          el.classList.remove(towerAliveColor);
+          el.classList.add(towerDeadColor);
+        }
+      }
     }
 
     function update() {
@@ -57,6 +96,7 @@
         img.style.left = x + "px";
         img.style.bottom = y + "px";
       }
+      updateTowerState(frame);
       document.getElementById("{{ id }}-time").innerText = tidx;
     }
 
@@ -69,6 +109,7 @@
     }
     update();
     window.onTidxChangeHandlers.push(update);
+    placeStructures();
     document.getElementById("{{ id }}-prev").addEventListener('click', () => backward());
     document.getElementById("{{ id }}-next").addEventListener('click', () => forward());
   })()

@@ -938,7 +938,7 @@ class AdvancedTimeline(models.Model):
                     total_assist_gold = event.bounty / 2
                     partial_assist_gold = total_assist_gold / len(assisters)
                     bounties[event.victim_id].champion_assist_gold_given += total_assist_gold
-                    
+
                 for assist in assisters:
                     bounties[assist.participant_id].champion_assist_gold += partial_assist_gold
 
