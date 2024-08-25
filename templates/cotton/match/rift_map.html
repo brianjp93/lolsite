@@ -27,36 +27,75 @@
       </div>
     {% endfor %}
     {% for frame in timeline.frames.all %}
-      {% with idx=forloop.counter0 %}
-        {% for kill in frame.championkillevent_set.all %}
-          <div data-frame-idx="{{ idx }}"
-               data-x="{{ kill.x }}"
-               data-y="{{ kill.y }}"
+      {% for kill in frame.championkillevent_set.all %}
+        <div data-frame-idx="{{ frame.idx }}"
+             data-x="{{ kill.x }}"
+             data-y="{{ kill.y }}"
+             class="absolute hidden rift-event event-frame duration-500 transition-all">
+          <c-tooltip trigger="mouseenter focus">
+            <div data-victim="{{ kill.victim_id }}"
+                 class="w-6 h-6 rounded-full border-2 kill-event">
+            </div>
+            <c-slot name="content">
+              <div class="flex flex-col gap-y-2">
+                <h4>
+                  Champion Kill {{ kill.formatted_timestamp }}
+                </h4>
+                <div class="flex gap-x-2 justify-center">
+                  <img class='participant-kill-img w-8 h-8'
+                       data-participant="{{ kill.killer_id }}" />
+                  <div>
+                    Killed
+                  </div>
+                  <img class="participant-kill-img w-8 h-8"
+                       data-participant="{{ kill.victim_id }}" />
+                </div>
+              </div>
+            </c-slot>
+          </c-tooltip>
+        </div>
+      {% endfor %}
+
+      {% for event in frame.elitemonsterkillevent_set.all %}
+        {% if event.monster_type == 'HORDE' and event.killer_team_id == 300 %}
+        {% else %}
+          <div data-frame-idx="{{ frame.idx }}"
+               data-x="{{ event.x }}"
+               data-y="{{ event.y }}"
                class="absolute hidden rift-event event-frame duration-500 transition-all">
             <c-tooltip trigger="mouseenter focus">
-              <div data-victim="{{ kill.victim_id }}"
-                   class="w-6 h-6 rounded-full border-2 kill-event">
+              <div data-team="{{ event.killer_team_id }}"
+                   class="w-6 h-6 rounded-full border-2 border-yellow-600 elite-monster-event {% if event.killer_team_id == 100 %} bg-blue-600 {% elif event.killer_team_id == 200 %} bg-red-600 {% endif %} ">
               </div>
               <c-slot name="content">
                 <div class="flex flex-col gap-y-2">
                   <h4>
-                    Champion Kill {{ kill.formatted_timestamp }}
+                    Monster Kill {{ event.formatted_timestamp }}
                   </h4>
                   <div class="flex gap-x-2 justify-center">
-                    <img class='participant-kill-img w-8 h-8'
-                         data-participant="{{ kill.killer_id }}" />
+                    <div class="flex flex-col">
+                      <img class='participant-kill-img w-8 h-8'
+                           data-participant="{{ event.killer_id }}" />
+                      <div class="flex gap-x-1">
+                        {% for assister in event.assisting_participant_ids %}
+                          <img data-participant="{{ assister }}"
+                               class="participant-kill-img w-8 h-8" />
+                        {% endfor %}
+                      </div>
+                    </div>
                     <div>
                       Killed
                     </div>
-                    <img class="participant-kill-img w-8 h-8"
-                         data-participant="{{ kill.victim_id }}" />
+                    <div>
+                      {{ event.monster_type }}: {{ event.monster_sub_type }}
+                    </div>
                   </div>
                 </div>
               </c-slot>
             </c-tooltip>
           </div>
-        {% endfor %}
-      {% endwith %}
+        {% endif %}
+      {% endfor %}
     {% endfor %}
   </div>
   <div class="flex gap-x-1 text-xs">
@@ -121,7 +160,7 @@
       for (const el of [...structureElements, ...eventElements]) {
         const x0 = parseInt(el.getAttribute('data-x'));
         const y0 = parseInt(el.getAttribute('data-y'));
-        const [x, y] = getPosition(x0, y0);
+        const [x, y] = getPosition(x0, y0, el.clientWidth);
         if (typeof x === 'number' && typeof y === 'number') {
           el.style.left = x + 'px';
           el.style.bottom = y + 'px'
@@ -129,9 +168,9 @@
       }
     }
 
-    function getPosition(x, y) {
-      const xVal = (x / maxX) * imageWidth;
-      const yVal = (y / maxY) * imageWidth;
+    function getPosition(x, y, width) {
+      const xVal = ((x / maxX) * imageWidth) - (width / 2);
+      const yVal = ((y / maxY) * imageWidth) - (width / 2);
       return [xVal, yVal];
     }
 
@@ -161,9 +200,9 @@
     function update() {
       const frame = window.framesList?.[tidx];
       for (const pf of frame.participantframes) {
-        const [x, y] = getPosition(pf.x, pf.y);
         const pid = pf.participant_id;
         const img = document.getElementById(`{{ id }}-part-${pid}`);
+        const [x, y] = getPosition(pf.x, pf.y, img.clientWidth);
         img.style.left = x + "px";
         img.style.bottom = y + "px";
       }

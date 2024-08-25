@@ -54,6 +54,8 @@ class MatchDetailView(DetailView):
         set_related_match_objects([match], match.advancedtimeline)
         options = {str(x._id): x for x in match.participants.all() if str(x._id)}
         context['timeline'] = match.advancedtimeline
+        for i, frame in enumerate(match.advancedtimeline.frames.all()):
+            frame.idx = i
         context['frames'] = self.augment_timeline(match.advancedtimeline.frames.all())
         context['serialized_participants'] = self.basic_participant_serializer(match.participants.all())
         context['structures'] = STRUCTURES
