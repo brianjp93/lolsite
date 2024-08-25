@@ -26,6 +26,38 @@
                   bottom: 0px">
       </div>
     {% endfor %}
+    {% for frame in timeline.frames.all %}
+      {% with idx=forloop.counter0 %}
+        {% for kill in frame.championkillevent_set.all %}
+          <div data-frame-idx="{{ idx }}"
+               data-x="{{ kill.x }}"
+               data-y="{{ kill.y }}"
+               class="absolute hidden rift-event event-frame duration-500 transition-all">
+            <c-tooltip trigger="mouseenter focus">
+              <div data-victim="{{ kill.victim_id }}"
+                   class="w-6 h-6 rounded-full border-2 kill-event">
+              </div>
+              <c-slot name="content">
+                <div class="flex flex-col gap-y-2">
+                  <h4>
+                    Champion Kill {{ kill.formatted_timestamp }}
+                  </h4>
+                  <div class="flex gap-x-2 justify-center">
+                    <img class='participant-kill-img w-8 h-8'
+                         data-participant="{{ kill.killer_id }}" />
+                    <div>
+                      Killed
+                    </div>
+                    <img class="participant-kill-img w-8 h-8"
+                         data-participant="{{ kill.victim_id }}" />
+                  </div>
+                </div>
+              </c-slot>
+            </c-tooltip>
+          </div>
+        {% endfor %}
+      {% endwith %}
+    {% endfor %}
   </div>
   <div class="flex gap-x-1 text-xs">
     <button id="{{ id }}-prev" class="btn btn-default">
@@ -45,18 +77,48 @@
   </div>
 </div>
 
-<script>
+<script type='text/javascript'>
   (function() {
     const mapEl = document.getElementById('{{ id }}-map-element');
     const imageWidth = mapEl.clientWidth;
     const maxX = 15300;
     const maxY = 15000;
     const structureElements = document.querySelectorAll('.rift-structure');
-    const towerDeadColor = 'bg-red-700'
-    const towerAliveColor = 'bg-white'
+    const eventElements = document.querySelectorAll('.rift-event');
+    const killImages = document.querySelectorAll('.participant-kill-img');
+    const towerDeadColor = 'bg-red-700';
+    const towerAliveColor = 'bg-white';
 
-    function placeStructures() {
-      for (const el of structureElements) {
+    function applyKillImages() {
+      for (const el of killImages) {
+        const partId = parseInt(el.getAttribute('data-participant'));
+        const part = window.participantsData[partId];
+        if (part) {
+          el.setAttribute('src', part?.champion?.image_url);
+        }
+      }
+    }
+
+    function applyKillEventColors() {
+      for (const el of document.querySelectorAll('.kill-event')) {
+        const victim = window.participantsData[parseInt(el.getAttribute('data-victim'))];
+        if (victim) {
+          if (victim.team_id === 100) {
+            el.classList.add('bg-red-700');
+            el.classList.add('border-red-300');
+          } else if (victim.team_id === 200) {
+            el.classList.add('bg-blue-700');
+            el.classList.add('border-blue-300');
+          } else {
+            el.classList.add('bg-neutral-300');
+            el.classList.add('border-neutral-500');
+          }
+        }
+      }
+    }
+
+    function placeMapElements() {
+      for (const el of [...structureElements, ...eventElements]) {
         const x0 = parseInt(el.getAttribute('data-x'));
         const y0 = parseInt(el.getAttribute('data-y'));
         const [x, y] = getPosition(x0, y0);
@@ -87,6 +149,15 @@
       }
     }
 
+    function setHiddenVisibleMapEvents(idx) {
+      for (const el of document.querySelectorAll('.event-frame[data-frame-idx]')) {
+        el.classList.add('hidden');
+      }
+      for (const el of document.querySelectorAll(`.event-frame[data-frame-idx="${idx}"]`)) {
+        el.classList.remove('hidden');
+      }
+    }
+
     function update() {
       const frame = window.framesList?.[tidx];
       for (const pf of frame.participantframes) {
@@ -98,6 +169,7 @@
       }
       updateTowerState(frame);
       document.getElementById("{{ id }}-time").innerText = tidx;
+      setHiddenVisibleMapEvents(tidx);
     }
 
     function forward() {
@@ -109,7 +181,9 @@
     }
     update();
     window.onTidxChangeHandlers.push(update);
-    placeStructures();
+    placeMapElements();
+    applyKillImages();
+    applyKillEventColors();
     document.getElementById("{{ id }}-prev").addEventListener('click', () => backward());
     document.getElementById("{{ id }}-next").addEventListener('click', () => forward());
   })()

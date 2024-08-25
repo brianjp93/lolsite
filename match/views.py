@@ -74,6 +74,7 @@ class MatchDetailView(DetailView):
                     'key': x.champion and x.champion.key,
                     'image_url': x.champion and x.champion.image and x.champion.image.file and x.champion.image.file.url,
                 },
+                'team_id': x.team_id,
                 'name': x.get_name(),
             }
             for x in participants

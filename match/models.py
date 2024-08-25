@@ -1066,6 +1066,11 @@ class Event(models.Model):
     class Meta:
         abstract = True
 
+    def formatted_timestamp(self):
+        total_seconds = self.timestamp / 1000
+        minutes, seconds = divmod(total_seconds, 60)
+        return f"{int(minutes)}m {int(seconds)}s"
+
 
 class WardKillEvent(Event):
     id: int | None

@@ -11,7 +11,7 @@
 
   {{ serialized_participants|json_script:"participants-data" }}
   <script>
-    window.participantsList = JSON.parse(document.querySelector('#participants-data').textContent);
+    window.participantsData = JSON.parse(document.querySelector('#participants-data').textContent);
   </script>
 
   <script>

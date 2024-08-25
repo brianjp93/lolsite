@@ -93,7 +93,7 @@
 
           // Text
           const img = document.createElement('img');
-          const part = window.participantsList?.[parseInt(item.text)];
+          const part = window.participantsData?.[parseInt(item.text)];
           const imageUrl = part?.champion?.image_url;
           img.setAttribute('src', imageUrl);
           img.setAttribute('title', part?.champion?.name);
@@ -180,7 +180,7 @@
                   callbacks: {
                     label: function (context) {
                       const pid = parseInt(context.dataset.label);
-                      const part = window.participantsList?.[pid];
+                      const part = window.participantsData?.[pid];
                       let label = part?.champion?.name
                       label += `: ${context.formattedValue}`
                       return label;
