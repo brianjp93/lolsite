@@ -506,6 +506,9 @@ class Participant(models.Model):
     class Meta:
         unique_together = ("match", "_id")
 
+    def get_id(self):
+        return self._id
+
     @property
     def simple_riot_id(self):
         return simplify(f"{self.riot_id_name}#{self.riot_id_tagline}")
@@ -935,7 +938,7 @@ class AdvancedTimeline(models.Model):
                     total_assist_gold = event.bounty / 2
                     partial_assist_gold = total_assist_gold / len(assisters)
                     bounties[event.victim_id].champion_assist_gold_given += total_assist_gold
-                    
+
                 for assist in assisters:
                     bounties[assist.participant_id].champion_assist_gold += partial_assist_gold
 
@@ -1062,6 +1065,11 @@ class Event(models.Model):
 
     class Meta:
         abstract = True
+
+    def formatted_timestamp(self):
+        total_seconds = self.timestamp / 1000
+        minutes, seconds = divmod(total_seconds, 60)
+        return f"{int(minutes)}m {int(seconds)}s"
 
 
 class WardKillEvent(Event):

@@ -1,0 +1,229 @@
+<c-vars id="rift-map" />
+{% load static %}
+
+<div class="h-full w-full flex flex-col gap-y-1">
+  <div class="relative flex-grow w-full">
+    <div class="absolute inset-0 w-full h-full object-contain object-center rounded">
+      <img id='{{ id }}-map-element'
+           class="aspect-square h-full rounded"
+           src="{% static 'general/map.jpg' %}"
+           alt="Summoner's Rift">
+    </div>
+    {% for part in match.participants.all %}
+      <img id="{{ id }}-part-{{ part.get_id }}"
+           src="{{ part.champion.image.file_40.url }}"
+           alt="{{ part.champion.name }}"
+           style="position: absolute"
+           class="w-8 rounded-full border-4 transition-all duration-500 {% if part in match.team100 %} border-blue-500 {% else %} border-red-500 {% endif %} ">
+    {% endfor %}
+    {% for struct in structures %}
+      <div id="{{ id }}-{{ struct.key }}"
+           data-key="{{ struct.key }}"
+           data-x="{{ struct.x }}"
+           data-y="{{ struct.y }}"
+           class="w-4 h-4 border-neutral-700 border-2 absolute rounded-full transition-all duration-500 rift-structure"
+           style="left: 0px;
+                  bottom: 0px">
+      </div>
+    {% endfor %}
+    {% for frame in timeline.frames.all %}
+      {% for kill in frame.championkillevent_set.all %}
+        <div data-frame-idx="{{ frame.idx }}"
+             data-x="{{ kill.x }}"
+             data-y="{{ kill.y }}"
+             class="absolute hidden rift-event event-frame duration-500 transition-all">
+          <c-tooltip trigger="mouseenter focus">
+            <div data-victim="{{ kill.victim_id }}"
+                 class="w-6 h-6 rounded-full border-2 kill-event">
+            </div>
+            <c-slot name="content">
+              <div class="flex flex-col gap-y-2">
+                <h4>
+                  Champion Kill {{ kill.formatted_timestamp }}
+                </h4>
+                <div class="flex gap-x-2 justify-center">
+                  <img class='participant-kill-img w-8 h-8'
+                       data-participant="{{ kill.killer_id }}" />
+                  <div>
+                    Killed
+                  </div>
+                  <img class="participant-kill-img w-8 h-8"
+                       data-participant="{{ kill.victim_id }}" />
+                </div>
+              </div>
+            </c-slot>
+          </c-tooltip>
+        </div>
+      {% endfor %}
+
+      {% for event in frame.elitemonsterkillevent_set.all %}
+        {% if event.monster_type == 'HORDE' and event.killer_team_id == 300 %}
+        {% else %}
+          <div data-frame-idx="{{ frame.idx }}"
+               data-x="{{ event.x }}"
+               data-y="{{ event.y }}"
+               class="absolute hidden rift-event event-frame duration-500 transition-all">
+            <c-tooltip trigger="mouseenter focus">
+              <div data-team="{{ event.killer_team_id }}"
+                   class="w-6 h-6 rounded-full border-2 border-yellow-600 elite-monster-event {% if event.killer_team_id == 100 %} bg-blue-600 {% elif event.killer_team_id == 200 %} bg-red-600 {% endif %} ">
+              </div>
+              <c-slot name="content">
+                <div class="flex flex-col gap-y-2">
+                  <h4>
+                    Monster Kill {{ event.formatted_timestamp }}
+                  </h4>
+                  <div class="flex gap-x-2 justify-center">
+                    <div class="flex flex-col">
+                      <img class='participant-kill-img w-8 h-8'
+                           data-participant="{{ event.killer_id }}" />
+                      <div class="flex gap-x-1">
+                        {% for assister in event.assisting_participant_ids %}
+                          <img data-participant="{{ assister }}"
+                               class="participant-kill-img w-8 h-8" />
+                        {% endfor %}
+                      </div>
+                    </div>
+                    <div>
+                      Killed
+                    </div>
+                    <div>
+                      {{ event.monster_type }}: {{ event.monster_sub_type }}
+                    </div>
+                  </div>
+                </div>
+              </c-slot>
+            </c-tooltip>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+  <div class="flex gap-x-1 text-xs">
+    <button id="{{ id }}-prev" class="btn btn-default">
+      L
+    </button>
+    <button id="{{ id }}-next" class="btn btn-default">
+      R
+    </button>
+    <div class="flex text-xs items-center">
+      <div id="{{ id }}-time">
+        1
+      </div>
+      <div>
+        m
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type='text/javascript'>
+  (function() {
+    const mapEl = document.getElementById('{{ id }}-map-element');
+    const imageWidth = mapEl.clientWidth;
+    const maxX = 15300;
+    const maxY = 15000;
+    const structureElements = document.querySelectorAll('.rift-structure');
+    const eventElements = document.querySelectorAll('.rift-event');
+    const killImages = document.querySelectorAll('.participant-kill-img');
+    const towerDeadColor = 'bg-red-700';
+    const towerAliveColor = 'bg-white';
+
+    function applyKillImages() {
+      for (const el of killImages) {
+        const partId = parseInt(el.getAttribute('data-participant'));
+        const part = window.participantsData[partId];
+        if (part) {
+          el.setAttribute('src', part?.champion?.image_url);
+        }
+      }
+    }
+
+    function applyKillEventColors() {
+      for (const el of document.querySelectorAll('.kill-event')) {
+        const victim = window.participantsData[parseInt(el.getAttribute('data-victim'))];
+        if (victim) {
+          if (victim.team_id === 100) {
+            el.classList.add('bg-red-700');
+            el.classList.add('border-red-300');
+          } else if (victim.team_id === 200) {
+            el.classList.add('bg-blue-700');
+            el.classList.add('border-blue-300');
+          } else {
+            el.classList.add('bg-neutral-300');
+            el.classList.add('border-neutral-500');
+          }
+        }
+      }
+    }
+
+    function placeMapElements() {
+      for (const el of [...structureElements, ...eventElements]) {
+        const x0 = parseInt(el.getAttribute('data-x'));
+        const y0 = parseInt(el.getAttribute('data-y'));
+        const [x, y] = getPosition(x0, y0, el.clientWidth);
+        if (typeof x === 'number' && typeof y === 'number') {
+          el.style.left = x + 'px';
+          el.style.bottom = y + 'px'
+        }
+      }
+    }
+
+    function getPosition(x, y, width) {
+      const xVal = ((x / maxX) * imageWidth) - (width / 2);
+      const yVal = ((y / maxY) * imageWidth) - (width / 2);
+      return [xVal, yVal];
+    }
+
+    function updateTowerState(frame) {
+      for (const el of structureElements) {
+        const key = el.getAttribute('data-key');
+        const isAlive = frame.tower_state[key];
+        if (isAlive) {
+          el.classList.remove(towerDeadColor);
+          el.classList.add(towerAliveColor);
+        } else {
+          el.classList.remove(towerAliveColor);
+          el.classList.add(towerDeadColor);
+        }
+      }
+    }
+
+    function setHiddenVisibleMapEvents(idx) {
+      for (const el of document.querySelectorAll('.event-frame[data-frame-idx]')) {
+        el.classList.add('hidden');
+      }
+      for (const el of document.querySelectorAll(`.event-frame[data-frame-idx="${idx}"]`)) {
+        el.classList.remove('hidden');
+      }
+    }
+
+    function update() {
+      const frame = window.framesList?.[tidx];
+      for (const pf of frame.participantframes) {
+        const pid = pf.participant_id;
+        const img = document.getElementById(`{{ id }}-part-${pid}`);
+        const [x, y] = getPosition(pf.x, pf.y, img.clientWidth);
+        img.style.left = x + "px";
+        img.style.bottom = y + "px";
+      }
+      updateTowerState(frame);
+      document.getElementById("{{ id }}-time").innerText = tidx;
+      setHiddenVisibleMapEvents(tidx);
+    }
+
+    function forward() {
+      setTidx(tidx >= window.framesList.length - 1 ? window.framesList.length - 1 : tidx + 1);
+    }
+
+    function backward() {
+      setTidx(tidx <= 0 ? 0 : tidx - 1);
+    }
+    update();
+    window.onTidxChangeHandlers.push(update);
+    placeMapElements();
+    applyKillImages();
+    applyKillEventColors();
+    document.getElementById("{{ id }}-prev").addEventListener('click', () => backward());
+    document.getElementById("{{ id }}-next").addEventListener('click', () => forward());
+  })()
+</script>

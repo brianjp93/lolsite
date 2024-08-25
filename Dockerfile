@@ -1,14 +1,8 @@
 ARG PYTHON_VERSION=3.12.2
-FROM python:${PYTHON_VERSION}-slim-bullseye
+FROM python:${PYTHON_VERSION}-alpine3.19
 ENV PYTHONUNBUFFERED=1
 
-RUN apt-get update && apt-get install -y \
-    python3-pip \
-    python3-venv \
-    python3-dev \
-    python3-setuptools \
-    python3-wheel \
-    git
+RUN apk add --no-cache alpine-sdk gcc g++ python3-dev git
 
 RUN mkdir -p /app
 WORKDIR /app

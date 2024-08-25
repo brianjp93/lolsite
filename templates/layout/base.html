@@ -76,10 +76,12 @@
         }
 
         document.addEventListener("DOMContentLoaded", runInitScripts)
-        htmx.on("htmx:afterSettle", () => {
-          runInitScripts()
+        document.addEventListener("htmx:afterSettle", () => {
+          runInitScripts();
         })
-
+        document.addEventListener("htmx:historyRestore", () => {
+          runInitScripts();
+        })
 
       </script>
       {% if debug %}
@@ -120,6 +122,11 @@
     {% endblock content %}
 
     {% block footer %}
+      <div class="m-4 text-sm">
+        <i>Hardstuck.club</i> isn’t endorsed by Riot Games and doesn’t reflect the views or opinions of Riot Games or anyone officially
+        involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered
+        trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
+      </div>
     {% endblock footer %}
   </body>
 
