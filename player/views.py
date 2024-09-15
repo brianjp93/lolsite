@@ -89,11 +89,12 @@ class SummonerPage(generic.ListView):
         page = int(self.request.GET.get('page', 1))
         queue = self.request.GET.get('queue', None)
         played_with = self.request.GET.get('played_with', None)
+        champion = self.request.GET.get('champion', None)
         queue = int(queue) if queue else None
         limit = self.paginate_by
         start = limit * (page - 1)
         end = start + limit
-        do_riot_api_request = not played_with
+        do_riot_api_request = not (played_with or champion)
         if do_riot_api_request:
             mt.import_recent_matches(
                 start,
