@@ -35,7 +35,7 @@ from .models import Spectate
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
-from player.models import Summoner, simplify
+from player.models import Summoner, get_simple_riot_id, simplify
 from player import tasks as pt
 
 from lolsite.celery import app
@@ -105,6 +105,9 @@ def fetch_match_json(match_id: str,  region: str, refresh=False):
 def import_summoner_from_participant(participants: list[ParticipantModel], region):
     sums = []
     for part in participants:
+        simple_riot_id = None
+        if part.riotIdGameName and part.riotIdTagline:
+            simple_riot_id = get_simple_riot_id(part.riotIdGameName, part.riotIdGameName)
         if part.summonerId:
             summoner = Summoner(
                 _id=part.summonerId,
@@ -114,6 +117,7 @@ def import_summoner_from_participant(participants: list[ParticipantModel], regio
                 puuid=part.puuid,
                 riot_id_name=part.riotIdGameName,
                 riot_id_tagline=part.riotIdTagline,
+                simple_riot_id=simple_riot_id,
             )
             sums.append(summoner)
     Summoner.objects.bulk_create(sums, ignore_conflicts=True)

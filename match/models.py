@@ -1145,6 +1145,15 @@ class EliteMonsterKillEvent(Event):
     x = models.PositiveIntegerField()
     y = models.PositiveIntegerField()
 
+    def monster_name(self):
+        match [self.monster_type, self.monster_sub_type]:
+            case ['HORDE', _]:
+                return 'Grubs'
+        out = self.monster_type
+        if self.monster_sub_type:
+            out += ': ' + self.monster_sub_type
+        return ' '.join(out.split('_')).lower().title()
+
 
 class ChampionSpecialKillEvent(Event):
     id: int | None
@@ -1193,6 +1202,24 @@ class ChampionKillEvent(Event):
     victimdamagereceived_set: QuerySet['VictimDamageReceived']
     victimdamagedealt_set: QuerySet['VictimDamageDealt']
 
+    def assisters(self):
+        ret = {}
+        for vd in self.victimdamagereceived_set.all():
+            if vd.participant_id != 0:
+                key = vd.participant_id
+            else:
+                key = vd.get_name()
+            if key not in ret:
+                ret[key] = {
+                    'total_damage': 0,
+                    'name': vd.get_name(),
+                    'participant_id': vd.participant_id,
+                }
+            ret[key]['total_damage'] += vd.total_damage()
+        out = list(ret.values())
+        out.sort(key=lambda x: -x['total_damage'])
+        return out
+
 
 class VictimDamage(models.Model):
     id: int | None
@@ -1209,6 +1236,35 @@ class VictimDamage(models.Model):
 
     class Meta:
         abstract = True
+
+    def total_damage(self):
+        return self.magic_damage + self.physical_damage + self.true_damage
+
+    def get_name(self):
+        name = self.name.lower()
+        if 'minion' in name:
+            return "Minions"
+        elif 'turret' in name:
+            return "Tower"
+        elif 'razorbeak' in name:
+            return "Birds"
+        elif 'horde' in name:
+            return 'Grubs'
+        elif 'dragon' in name:
+            return 'Dragon'
+        elif name == 'sru_blue':
+            return 'Blue Buff'
+        elif name == 'sru_red':
+            return 'Red Buff'
+        elif 'murkwolf' in name:
+            return 'Wolves'
+        elif 'gromp' in name:
+            return 'Gromp'
+        elif 'baron' in name:
+            return 'Baron'
+        elif 'riftherald' in name:
+            return 'Rift Herald'
+        return self.name
 
 
 class VictimDamageReceived(VictimDamage):

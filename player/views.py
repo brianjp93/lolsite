@@ -88,17 +88,20 @@ class SummonerPage(generic.ListView):
         region = self.kwargs['region']
         page = int(self.request.GET.get('page', 1))
         queue = self.request.GET.get('queue', None)
+        played_with = self.request.GET.get('played_with', None)
         queue = int(queue) if queue else None
         limit = self.paginate_by
         start = limit * (page - 1)
         end = start + limit
-        mt.import_recent_matches(
-            start,
-            end,
-            self.summoner.puuid,
-            region,
-            queue,
-        )
+        do_riot_api_request = not played_with
+        if do_riot_api_request:
+            mt.import_recent_matches(
+                start,
+                end,
+                self.summoner.puuid,
+                region,
+                queue,
+            )
         if page == 1:
             mt.bulk_import.s(self.summoner.puuid, count=100, offset=start + limit).apply_async(countdown=2)
             pt.import_positions(self.summoner.id)

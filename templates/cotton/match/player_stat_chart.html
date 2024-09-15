@@ -70,13 +70,7 @@
           li.style.marginLeft = '10px';
 
           li.onclick = () => {
-            const {type} = chart.config;
-            if (type === 'pie' || type === 'doughnut') {
-              // Pie and doughnut charts only have a single dataset and visibility is per item
-              chart.toggleDataVisibility(item.index);
-            } else {
-              chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
-            }
+            chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
             chart.update();
           };
 
@@ -115,21 +109,27 @@
 
 
     const data = window.framesList.map(frame => {
-      const parts = {};
-      for (const p of frame.participantframes) {
-        parts[parseInt(p.participant_id)] = p;
+      const parts = [];
+      for (let i=0; i<frame.participantframes.length; i++) {
+        const pid = window.participantsList[i]._id;
+        parts.push(frame.participantframes.filter(x => x.participant_id.toString() === pid.toString())?.[0]);
       }
-      for (const [key, val] of Object.entries(parts)) {
-        const lanerId = ((parseInt(key) + 4) % 10) + 1;
+      for (let key=0; key<parts.length; key++) {
+        const val = parts[key];
+        const lanerId = ((parseInt(key) + 5) % 10);
         const laner = parts[lanerId];
         val.gold_diff = val.total_gold - (laner?.total_gold || 0);
         val.xp_diff = val.xp - (laner?.xp || 0);
         val.cs_diff = val.total_cs - (laner?.total_cs || 0);
       }
-      return parts
+      const x = {}
+      for (const part of parts) {
+        x[parseInt(part.participant_id)] = part;
+      }
+      return x
     })
 
-    const pids = Object.keys(data?.[0] || {})
+    const pids = window.participantsList.map(x => x._id);
     let selected = 'total_damage_done_to_champions'
     let chart = null;
     const colors = [

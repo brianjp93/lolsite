@@ -57,7 +57,7 @@ class MatchDetailView(DetailView):
         for i, frame in enumerate(match.advancedtimeline.frames.all()):
             frame.idx = i
         context['frames'] = self.augment_timeline(match.advancedtimeline.frames.all())
-        context['serialized_participants'] = self.basic_participant_serializer(match.participants.all())
+        context['serialized_participants'] = self.basic_participant_serializer(match.sorted_participants)
         context['structures'] = STRUCTURES
         if part_id :=  self.request.GET.get('focus', None):
             part = options.get(part_id, None)
@@ -68,19 +68,16 @@ class MatchDetailView(DetailView):
 
     @staticmethod
     def basic_participant_serializer(participants: Iterable[Participant]):
-        return {
-            x._id: {
-                '_id': x._id,
-                'champion': {
-                    'name': x.champion and x.champion.name,
-                    'key': x.champion and x.champion.key,
-                    'image_url': x.champion and x.champion.image and x.champion.image.file and x.champion.image.file.url,
-                },
-                'team_id': x.team_id,
-                'name': x.get_name(),
-            }
-            for x in participants
-        }
+        return [{
+            '_id': x._id,
+            'champion': {
+                'name': x.champion and x.champion.name,
+                'key': x.champion and x.champion.key,
+                'image_url': x.champion and x.champion.image and x.champion.image.file and x.champion.image.file.url,
+            },
+            'team_id': x.team_id,
+            'name': x.get_name(),
+        } for x in participants]
 
     @staticmethod
     def augment_timeline(frames: Iterable[Frame]):
