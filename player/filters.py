@@ -1,13 +1,13 @@
-"""player/filters.py
-"""
+"""player/filters.py"""
+
 from data import constants as dc
 from data.models import Champion
 from data.constants import Region
 from match.viewsapi import MatchBySummoner
 from player.models import Summoner, SummonerLink, simplify
-from match.models import Stats
+from match.models import Participant, Stats
 
-from django.db.models import Sum, Count, F, FloatField
+from django.db.models import Exists, Sum, Count, F, FloatField
 from django.db.models import ExpressionWrapper, Value, Case, When
 from django.db.models import Subquery, OuterRef
 from django.db.models import IntegerField, Q
@@ -18,7 +18,7 @@ import django_filters
 
 
 def get_summoner_champions_overview(
-    puuid: str=None,
+    puuid: str = None,
     major_version=None,
     minor_version=None,
     queue_in=None,
@@ -50,9 +50,9 @@ def get_summoner_champions_overview(
     """
     all_fields = True if not fields else False
     min_game_time = 60 * 5 * 1000
-    query = Stats.objects.select_related(
-        'participant', 'participant__match'
-    ).filter(participant__match__game_duration__gt=min_game_time)
+    query = Stats.objects.select_related("participant", "participant__match").filter(
+        participant__match__game_duration__gt=min_game_time
+    )
 
     if puuid is not None:
         query = query.filter(participant__puuid=puuid)
@@ -151,7 +151,8 @@ def get_summoner_champions_overview(
         ]
     ):
         annotation_kwargs["minutes"] = ExpressionWrapper(
-            Sum("participant__match__game_duration") / 60 / 1000, output_field=FloatField()
+            Sum("participant__match__game_duration") / 60 / 1000,
+            output_field=FloatField(),
         )
     if annotation_kwargs:
         query = query.annotate(**annotation_kwargs)
@@ -162,12 +163,21 @@ def get_summoner_champions_overview(
             ExpressionWrapper(
                 F("kills_sum") + F("assists_sum"), output_field=FloatField()
             )
-            / Case(When(deaths_sum=0.0, then=Value(1.0)), default=F("deaths_sum"), output_field=FloatField()),
+            / Case(
+                When(deaths_sum=0.0, then=Value(1.0)),
+                default=F("deaths_sum"),
+                output_field=FloatField(),
+            ),
             output_field=FloatField(),
         )
     if all_fields or "cspm" in fields:
         annotation_kwargs["cspm"] = ExpressionWrapper(
-            (Sum(F("total_minions_killed") + F("neutral_minions_killed"), output_field=FloatField()))
+            (
+                Sum(
+                    F("total_minions_killed") + F("neutral_minions_killed"),
+                    output_field=FloatField(),
+                )
+            )
             / F("minutes"),
             output_field=FloatField(),
         )
@@ -196,7 +206,11 @@ def get_summoner_champions_overview(
     if all_fields or "dtpd" in fields:
         annotation_kwargs["dtpd"] = ExpressionWrapper(
             F("total_damage_taken_sum")
-            / Case(When(deaths_sum=0, then=Value(1.0)), default=F("deaths_sum"), output_field=FloatField()),
+            / Case(
+                When(deaths_sum=0, then=Value(1.0)),
+                default=F("deaths_sum"),
+                output_field=FloatField(),
+            ),
             output_field=FloatField(),
         )
     if all_fields or "gpm" in fields:
@@ -216,7 +230,11 @@ def get_summoner_champions_overview(
 
 
 def summoner_search(
-    simple_name__icontains=None, simple_name=None, region=None, order_by=None, simple_riot_id__icontains=None,
+    simple_name__icontains=None,
+    simple_name=None,
+    region=None,
+    order_by=None,
+    simple_riot_id__icontains=None,
 ):
     query = Summoner.objects.all()
 
@@ -235,20 +253,45 @@ def summoner_search(
 
 def get_connected_accounts_query(user):
     id_list = [
-        x.summoner.id
-        for x in SummonerLink.objects.filter(user=user, verified=True)
+        x.summoner.id for x in SummonerLink.objects.filter(user=user, verified=True)
     ]
     return Summoner.objects.filter(id__in=id_list)
 
 
 class SummonerMatchFilter(django_filters.FilterSet):
-    played_with = django_filters.CharFilter(method="played_with_filter", label="Played With")
-    queue = django_filters.ChoiceFilter(choices=[(420, "soloq"), (400, "draft 5v5")], empty_label="Any", label='Queue', method='queue_filter')
+    played_with = django_filters.CharFilter(
+        method="played_with_filter", label="Played With"
+    )
+    queue = django_filters.ChoiceFilter(
+        choices=[(420, "soloq"), (400, "draft 5v5")],
+        empty_label="Any",
+        label="Queue",
+        method="queue_filter",
+    )
+    champion = django_filters.ChoiceFilter(
+        choices=[],
+        empty_label="Any",
+        label="Champion",
+        method="champion_filter",
+        help_text="This will only filter games already imported into our database. It will not contact Riot's API beforehand.",
+    )
 
     def __init__(self, *args, **kwargs):
-        self.region = kwargs.pop('region')
-        self.puuid = kwargs.pop('puuid')
+        self.region = kwargs.pop("region")
+        self.puuid = kwargs.pop("puuid")
         super().__init__(*args, **kwargs)
+        champ = (
+            Champion.objects.order_by("-major", "-minor", "-patch")
+            .values("major", "minor", "patch")
+            .first()
+        )
+        assert champ
+        self.form.fields["champion"].choices = [
+            (x.key, x.name)
+            for x in Champion.objects.filter(
+                major=champ["major"], minor=champ["minor"], patch=champ["patch"]
+            ).order_by("name")
+        ]
 
     @property
     def qs(self):
@@ -256,8 +299,19 @@ class SummonerMatchFilter(django_filters.FilterSet):
         qs = qs.filter(participants__puuid=self.puuid)
         return qs
 
+    def champion_filter(self, queryset, _, value):
+        if value:
+            queryset = queryset.filter(
+                Exists(
+                    Participant.objects.filter(
+                        puuid=self.puuid, champion_id=value, match=OuterRef("id")
+                    )
+                )
+            )
+        return queryset
+
     def played_with_filter(self, queryset, _, value):
-        names = value.split(',')
+        names = value.split(",")
         return MatchBySummoner.get_played_with(names, self.region, queryset)
 
     def queue_filter(self, qs, _, value):
@@ -267,12 +321,19 @@ class SummonerMatchFilter(django_filters.FilterSet):
 
 
 class SummonerAutocompleteFilter(django_filters.FilterSet):
-    simple_riot_id = django_filters.CharFilter(label="Riot ID + Tagline", method='simple_riot_id_filter', min_length=1, required=True)
-    region = django_filters.ChoiceFilter(choices=[(x, x) for x in Region], initial="na", empty_label=None)
+    simple_riot_id = django_filters.CharFilter(
+        label="Riot ID + Tagline",
+        method="simple_riot_id_filter",
+        min_length=1,
+        required=True,
+    )
+    region = django_filters.ChoiceFilter(
+        choices=[(x, x) for x in Region], initial="na", empty_label=None
+    )
 
     class Meta:
         model = Summoner
-        fields = ['simple_riot_id', 'region']
+        fields = ["simple_riot_id", "region"]
 
     def simple_riot_id_filter(self, queryset, _, value):
         name = simplify(value)
