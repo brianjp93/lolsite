@@ -54,6 +54,9 @@ h6 {
     @apply !min-h-0 !px-2 !py-1 !border-0 !rounded-none !bg-transparent;
   }
 }
+.forms .helptext {
+  @apply text-sm text-blue-200;
+}
 .choices__input {
   @apply !bg-transparent !mb-0;
 }

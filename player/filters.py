@@ -269,7 +269,11 @@ class SummonerMatchFilter(django_filters.FilterSet):
         method="queue_filter",
     )
     champion = django_filters.ChoiceFilter(
-        choices=[], empty_label="Any", label="Champion", method="champion_filter"
+        choices=[],
+        empty_label="Any",
+        label="Champion",
+        method="champion_filter",
+        help_text="This will only filter games already imported into our database. It will not contact Riot's API beforehand.",
     )
 
     def __init__(self, *args, **kwargs):
