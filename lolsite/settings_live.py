@@ -22,14 +22,21 @@ AWS_STORAGE_BUCKET_NAME = "lolsite-static"
 AWS_DEFAULT_ACL = "public-read"
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3-us-west-2.amazonaws.com"
 AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
-# s3 static settings
-STATICFILES_LOCATION = "static"
-STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
-STATICFILES_STORAGE = "custom_storages.StaticStorage"
 
-MEDIAFILES_LOCATION = "media"
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
-DEFAULT_FILE_STORAGE = "custom_storages.MediaStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "location": "media",
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3.S3ManifestStaticStorage",
+        "OPTIONS": {
+            "location": "static",
+        },
+    },
+}
 
 REDIS_URL = config('REDIS_URL', 'localhost')
 CELERY_BROKER_URL = REDIS_URL
