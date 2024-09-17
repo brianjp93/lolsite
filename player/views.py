@@ -8,12 +8,17 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
 
+from data.models import Champion
+from data.serializers import BasicChampionWithImageSerializer
 from lolsite.helpers import query_debugger
-from match.models import Match, set_focus_participants, set_related_match_objects
+from lolsite.tasks import get_riot_api
+from match.models import Match, set_focus_participants, set_related_match_objects, sort_positions
+from match.parsers.spectate import SpectateModel
 from match.viewsapi import MatchBySummoner
 from match import tasks as mt
 from player.filters import SummonerAutocompleteFilter, SummonerMatchFilter
-from player.models import EmailVerification, NameChange
+from player.models import EmailVerification, NameChange, Summoner
+from player.serializers import RankPositionSerializer
 from player.viewsapi import get_by_puuid
 from player import tasks as pt
 
@@ -194,3 +199,52 @@ class SummonerPagePuuid(generic.RedirectView):
                 "tagline": summoner.riot_id_tagline,
             },
         )
+
+
+class SpectateView(generic.TemplateView):
+    template_name = "player/_spectate.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = self.fetch_spectate_data(kwargs['puuid'], kwargs['region'])
+        import pprint
+        pprint.pprint(data)
+        context.update({'spectate': data})
+        return context
+
+    def fetch_spectate_data(self, puuid, region):
+        api = get_riot_api()
+        r = api.spectator.get(puuid, region)
+        if r.status_code == 404:
+            return None
+        else:
+            parsed = SpectateModel.model_validate_json(r.content)
+            mt.import_spectate_from_data(parsed, region)
+            summoners = mt.import_summoners_from_spectate(parsed, region)
+
+            for x in summoners.values():
+                pt.import_positions(x, threshold_days=3)
+
+            spectate_data = parsed.model_dump()
+            for part in spectate_data["participants"]:
+                positions = None
+                query = Summoner.objects.filter(region=region, _id=part["summonerId"])
+                if summoner := summoners.get(part["summonerId"]):
+                    checkpoint = summoner.get_newest_rank_checkpoint()
+                    if checkpoint:
+                        positions = RankPositionSerializer(
+                            checkpoint.positions.filter(queue_type="RANKED_SOLO_5x5"), many=True
+                        ).data
+                    else:
+                        positions = []
+                    positions = sort_positions(positions)
+                part["positions"] = positions
+
+                query = Champion.objects.filter(key=part["championId"]).order_by(
+                    "-version"
+                ).select_related('image')
+                if champion := query.first():
+                    part['champion'] = BasicChampionWithImageSerializer(champion).data
+            spectate_data["team100"] = [x for x in spectate_data['participants'] if x['teamId'] == 100]
+            spectate_data["team200"] = [x for x in spectate_data['participants'] if x['teamId'] != 100]
+            return spectate_data
