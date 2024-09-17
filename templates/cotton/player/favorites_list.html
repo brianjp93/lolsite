@@ -1,0 +1,18 @@
+<div class="relative" x-data="{ open: false }" @click.outside="open = false">
+  <div class="cursor-pointer" @click="open = !open">
+    {{ name }}
+  </div>
+  <div class="absolute w-full">
+    <div class="h-full">
+    </div>
+    <div x-show="open" style="display: none;" class="w-full bg-gray-800 rounded p-3 flex flex-col gap-y-2">
+      {% for summoner in favorites_list %}
+        <div class="whitespace-nowrap text-ellipsis overflow-hidden w-full text-sm">
+          <a href="{{ summoner.get_puuid_url }}" class="w-full">
+            {{ summoner.get_name }}
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
