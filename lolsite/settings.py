@@ -87,6 +87,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "lolsite.context_processors.search_form",
+                "lolsite.context_processors.favorites_list",
             ],
             'builtins': [
                 'django_cotton.templatetags.cotton',

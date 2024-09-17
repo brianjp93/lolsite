@@ -108,6 +108,9 @@ class Summoner(models.Model):
     def get_absolute_url(self):
         return reverse("player:summoner-page", kwargs={"region": self.region, "name": self.riot_id_name, "tagline": self.riot_id_tagline})
 
+    def get_puuid_url(self):
+        return reverse("player:summoner-puuid", kwargs={"puuid": self.puuid})
+
     def get_name(self):
         if self.simple_riot_id:
             return f"{self.riot_id_name}#{self.riot_id_tagline}"

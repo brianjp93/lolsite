@@ -4,9 +4,7 @@
   </div>
   <div class="ml-auto items-center content-center flex">
     {% if request.user.is_authenticated %}
-      <div>
-        {{ request.user.email }}
-      </div>
+      <c-player.favorites-list name="request.user.email" />
       <form action="{% url 'player:logout-view' %}" method="POST">
         {% csrf_token %}
         <button class="btn btn-link" type="submit">Logout</button>
