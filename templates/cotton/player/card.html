@@ -8,33 +8,42 @@
         {{ summoner.summoner_level }}
       </div>
     </div>
-    <c-tooltip class="mb-auto">
-      <div class="mx-auto flex underline">
-        <div>
-          {{ summoner.riot_id_name }}
+    <div class="flex flex-col gap-y-1 mb-auto">
+      <c-tooltip>
+        <div class="mx-auto flex underline">
+          <div>
+            {{ summoner.riot_id_name }}
+          </div>
+          <div class="text-gray-400">
+            #{{ summoner.riot_id_tagline }}
+          </div>
         </div>
-        <div class="text-gray-400">
-          #{{ summoner.riot_id_tagline }}
-        </div>
+        <c-slot name="content">
+          <div class="flex flex-col gap-y-2 mx-2">
+            <h4 class="underline"
+                title="Only names found in imported games will be listed here.">
+              Previous Names
+            </h4>
+            {% for name in namechanges %}
+              <div>
+                {{ name.old_name }}
+              </div>
+            {% empty %}
+              <div>
+                No Names Found
+              </div>
+            {% endfor %}
+          </div>
+        </c-slot>
+      </c-tooltip>
+      <div class="text-xs">
+        <button
+          hx-get="{% url 'player:spectate' region=summoner.region puuid=summoner.puuid %}"
+          hx-target=".live-game-content"
+          hx-swap="innerHTML"
+          class="btn btn-link live-game-button">Show Live Game</button>
       </div>
-      <c-slot name="content">
-        <div class="flex flex-col gap-y-2 mx-2">
-          <h4 class="underline"
-              title="Only names found in imported games will be listed here.">
-            Previous Names
-          </h4>
-          {% for name in namechanges %}
-            <div>
-              {{ name.old_name }}
-            </div>
-          {% empty %}
-            <div>
-              No Names Found
-            </div>
-          {% endfor %}
-        </div>
-      </c-slot>
-    </c-tooltip>
+    </div>
   </div>
 
   <div class="flex flex-col gap-y-1">

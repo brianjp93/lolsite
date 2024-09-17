@@ -1,0 +1,56 @@
+<div class="bg-gray-800 rounded p-4">
+  {% if spectate %}
+    <div class="grid grid-cols-2 gap-x-2">
+      <div>
+        <div class="flex flex-col gap-2">
+          {% for part in spectate.team100 %}
+            <div class="flex gap-x-2">
+              <img class="w-16 h-16"
+                   src="{{ part.champion.image.image_url }}"
+                   alt="{{ part.champion.name }}">
+              <div>
+                <a href="{% url 'player:summoner-puuid' puuid=part.puuid %}">
+                  {{ part.riotId }}
+                </a>
+                {% if part.positions %}
+                  {% for pos in part.positions %}
+                    <div>
+                      {{ pos.tier }} {{ pos.rank }} ({{ pos.wins }} / {{ pos.losses }})
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div>
+        <div class="flex flex-col gap-y-2">
+          {% for part in spectate.team200 %}
+            <div class="flex gap-x-2">
+              <img class="w-16 h-16"
+                   src="{{ part.champion.image.image_url }}"
+                   alt="{{ part.champion.name }}">
+              <div>
+                <a href="{% url 'player:summoner-puuid' puuid=part.puuid %}">
+                  {{ part.riotId }}
+                </a>
+                {% if part.positions %}
+                  {% for pos in part.positions %}
+                    <div>
+                      {{ pos.tier }} {{ pos.rank }} ({{ pos.wins }} / {{ pos.losses }})
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div>
+      Spectate data not found. Maybe they aren't in a live match?
+    </div>
+  {% endif %}
+</div>

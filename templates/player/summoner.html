@@ -2,16 +2,20 @@
 {% load static %}
 {% block content %}
 <div class="container mx-auto px-2 flex flex-col">
-  <div class="w-96 rounded bg-gray-800 p-2">
-    <c-player.card
-      :positions="summoner.positions"
-      :summoner="summoner"
-      :profile_icon="summoner.get_profile_icon" />
+  <div class="flex gap-x-2">
+    <div class="w-96 rounded bg-gray-800 p-2">
+      <c-player.card
+        :positions="summoner.positions"
+        :summoner="summoner"
+        :profile_icon="summoner.get_profile_icon" />
+    </div>
+    <div class="live-game-content flex-1">
+    </div>
   </div>
   <div>
     <form class="forms" action="" hx-boost="true">
       {{ filterset.form }}
-      <button type="submit">Search</button>
+      <button class="btn btn-link" type="submit">Search</button>
     </form>
   </div>
   <div class="flex gap-x-2 my-2">
