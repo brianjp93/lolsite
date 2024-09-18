@@ -1,5 +1,8 @@
 from typing import Any
+
+from pydantic import computed_field
 from core.parsers import BaseModelWithLogger
+from data.constants import QUEUE_DICT
 
 
 class SpectateObserver(BaseModelWithLogger):
@@ -44,3 +47,7 @@ class SpectateModel(BaseModelWithLogger):
     observers: SpectateObserver
     participants: list[SpectateParticipant]
     bannedChampions: list[SpectateBan]
+
+    @computed_field
+    def queue(self) -> Any:
+        return QUEUE_DICT.get(self.gameQueueConfigId, None)
