@@ -1,6 +1,14 @@
 <div class="bg-gray-800 rounded p-4">
   {% if spectate %}
-    <div class="grid grid-cols-2 gap-x-2">
+    <div class="flex flex-col gap-y-1">
+      <div>
+        Queue: {{ spectate.queue.description }}
+      </div>
+      <div>
+        Game Time: <span id='game-time'>NA</span>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-x-2 mt-2">
       <div>
         <div class="flex flex-col gap-2">
           {% for part in spectate.team100 %}
@@ -54,3 +62,17 @@
     </div>
   {% endif %}
 </div>
+
+<script>
+  (function() {
+    const startTime = {{ spectate.gameStartTime }};
+    setInterval(function() {
+      const currentTime = Date.now();
+      const delta = currentTime - startTime;
+      const totalSeconds = Math.floor(delta / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      document.getElementById('game-time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }, 1000)
+  })()
+</script>

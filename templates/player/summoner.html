@@ -2,14 +2,14 @@
 {% load static %}
 {% block content %}
 <div class="container mx-auto px-2 flex flex-col">
-  <div class="flex gap-x-2">
+  <div class="flex gap-2 flex-wrap">
     <div class="w-96 rounded bg-gray-800 p-2">
       <c-player.card
         :positions="summoner.positions"
         :summoner="summoner"
         :profile_icon="summoner.get_profile_icon" />
     </div>
-    <div class="live-game-content flex-1">
+    <div class="live-game-content flex-1 min-w-[600px]">
     </div>
   </div>
   <div>
