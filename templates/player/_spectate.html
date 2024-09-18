@@ -20,13 +20,11 @@
                 <a href="{% url 'player:summoner-puuid' puuid=part.puuid %}">
                   {{ part.riotId }}
                 </a>
-                {% if part.positions %}
-                  {% for pos in part.positions %}
-                    <div>
-                      {{ pos.tier }} {{ pos.rank }} ({{ pos.wins }} / {{ pos.losses }})
-                    </div>
-                  {% endfor %}
-                {% endif %}
+                {% for pos in part.positions %}
+                  <div>
+                    {{ pos.tier }} {{ pos.rank }} ({{ pos.wins }} / {{ pos.losses }})
+                  </div>
+                {% endfor %}
               </div>
             </div>
           {% endfor %}
