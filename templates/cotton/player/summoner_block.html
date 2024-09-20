@@ -1,17 +1,35 @@
+<c-vars live_dot=False />
+
 <div class="grid grid-cols-3 grid-rows-3 w-16 h-16">
   <div class="col-span-2 row-span-2">
     <c-tooltip>
-      <div class="relative">
-        {% if participant.champion.image.file_40 %}
-          <img src="{{ participant.champion.image.file_40.url }}"
-               alt="{{ participant.champion.name }}">
-        {% else %}
-          <div title="{{participant.champion.name}}">NA</div>
-        {% endif %}
-        <div class="absolute bottom-[-5px] left-[-5px] text-xs bg-sky-100 text-sky-950 font-bold px-1 rounded">
-          {{ participant.stats.champ_level }}
+      {% if live_dot %}
+        <c-player.live-dot region="match.region" puuid="participant.puuid">
+          <div class="relative">
+            {% if participant.champion.image.file_40 %}
+              <img src="{{ participant.champion.image.file_40.url }}"
+                   alt="{{ participant.champion.name }}">
+            {% else %}
+              <div title="{{participant.champion.name}}">NA</div>
+            {% endif %}
+            <div class="absolute bottom-[-5px] left-[-5px] text-xs bg-sky-100 text-sky-950 font-bold px-1 rounded">
+              {{ participant.stats.champ_level }}
+            </div>
+          </div>
+        </c-player.live-dot>
+      {% else %}
+        <div class="relative">
+          {% if participant.champion.image.file_40 %}
+            <img src="{{ participant.champion.image.file_40.url }}"
+                 alt="{{ participant.champion.name }}">
+          {% else %}
+            <div title="{{participant.champion.name}}">NA</div>
+          {% endif %}
+          <div class="absolute bottom-[-5px] left-[-5px] text-xs bg-sky-100 text-sky-950 font-bold px-1 rounded">
+            {{ participant.stats.champ_level }}
+          </div>
         </div>
-      </div>
+      {% endif %}
       <c-slot name="content">
         <div class="flex gap-x-2">
           <h3>
