@@ -1,6 +1,6 @@
 <c-vars class="h-4 w-4" offset="left-[-5px] top-[-5px]" />
 
-<div hx-trigger="load, every 60s"
+<div hx-trigger="load"
      hx-swap="innerHTML"
      hx-target="find div.live-dot"
      hx-get='{% url "match:check-for-live-game" region=region puuid=puuid %}'>
