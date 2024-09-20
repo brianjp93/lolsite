@@ -1,0 +1,20 @@
+{% if gameType %}
+  <c-tooltip class="text-amber-400 font-bold h-full w-full" trigger="mouseenter focus">
+    <div class="h-full w-full rounded-full bg-green-500 border-2 border-green-800"></div>
+    <c-slot name="content">
+      <div class="flex flex-col gap-y-2">
+        <div>Queue Type: {{ queue.description }}</div>
+        <div>Started At: <span class='game-{{ gameId }}'></span></div>
+      </div>
+    </c-slot>
+  </c-tooltip>
+
+  <script>
+    (function() {
+      const startTime = new Date({{gameStartTime}});
+      for (const el of document.querySelectorAll(".game-{{ gameId }}")) {
+        el.textContent = startTime;
+      }
+    })()
+  </script>
+{% endif %}

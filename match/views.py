@@ -1,10 +1,13 @@
 from typing import Iterable
+from django.shortcuts import render
 from django.views.generic import DetailView
 from django.db.models.query import prefetch_related_objects
 
 from data.constants import STRUCTURES
+from lolsite.tasks import get_riot_api
 from match.models import Frame, Match, Participant, set_related_match_objects
 from match import tasks as mt
+from match.parsers.spectate import SpectateModel
 from match.serializers import FrameSerializer
 
 
@@ -151,3 +154,13 @@ class MatchDetailView(DetailView):
                     tower_state[key] = False
             frame['tower_state'] = tower_state.copy()
         return serialized_frames
+
+
+def check_for_live_game(request, puuid, region):
+    api = get_riot_api()
+    r = api.spectator.get(puuid, region)
+    data = {}
+    if 200 <= r.status_code < 300:
+        spectate_model = SpectateModel.model_validate_json(r.content)
+        data = spectate_model.model_dump()
+    return render(request, 'match/_live_dot.html', data)

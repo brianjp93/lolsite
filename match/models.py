@@ -401,6 +401,13 @@ class Match(VersionedModel):
         return url
 
     @property
+    def region(self):
+        region = self.platform_id.lower()
+        if region[-1].isdigit():
+            region = region[:-1]
+        return region
+
+    @property
     def seconds(self):
         return self.game_duration / 1000
 
