@@ -64,13 +64,17 @@
 <script>
   (function() {
     const startTime = {{ spectate.gameStartTime }};
-    setInterval(function() {
+    var inter = setInterval(function() {
       const currentTime = Date.now();
       const delta = currentTime - startTime;
       const totalSeconds = Math.floor(delta / 1000);
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
-      document.getElementById('game-time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`
+      if (document.getElementById('game-time') === null) {
+        clearInterval(inter);
+      } else {
+        document.getElementById('game-time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`
+      }
     }, 1000)
   })()
 </script>
