@@ -2,7 +2,7 @@
 
 from data import constants as dc
 from data.models import Champion
-from data.constants import Region
+from data.constants import QUEUE_SELECT_OPTIONS, Region
 from match.viewsapi import MatchBySummoner
 from player.models import Summoner, SummonerLink, simplify
 from match.models import Participant, Stats
@@ -263,7 +263,7 @@ class SummonerMatchFilter(django_filters.FilterSet):
         method="played_with_filter", label="Played With"
     )
     queue = django_filters.ChoiceFilter(
-        choices=[(420, "soloq"), (400, "draft 5v5")],
+        choices=[(x["_id"], x["description"]) for x in QUEUE_SELECT_OPTIONS],
         empty_label="Any",
         label="Queue",
         method="queue_filter",

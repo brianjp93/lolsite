@@ -331,6 +331,12 @@ QUEUES = [
     {"_id": 2020, "_map": "Summoner's Rift", "description": "Tutorial Part 3"},
 ]
 QUEUE_DICT = {x['_id']: x for x in QUEUES}
+QUEUE_SELECT_OPTIONS = [QUEUE_DICT[x] for x in [
+    420,
+    400,
+    450,
+    0,
+]]
 
 MAPS = [
     {
