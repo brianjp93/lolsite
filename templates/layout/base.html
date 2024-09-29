@@ -75,9 +75,21 @@
           });
         }
 
+        let initLastRun = 0;
+        function debounceInit(withDelay) {
+          // Only runInitScripts at most once per second.
+          const elapsed = (Date.now() / 1000) - (initLastRun / 1000);
+          if (elapsed > 1) {
+            runInitScripts();
+            initLastRun = Date.now();
+          } else if (withDelay){
+            setTimeout(debounceInit, 1000);
+          }
+        }
+
         document.addEventListener("DOMContentLoaded", runInitScripts)
         document.addEventListener("htmx:afterSettle", () => {
-          runInitScripts();
+          debounceInit(true);
         })
         document.addEventListener("htmx:historyRestore", () => {
           runInitScripts();
