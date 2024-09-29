@@ -207,8 +207,6 @@ class SpectateView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         data = self.fetch_spectate_data(kwargs['puuid'], kwargs['region'])
-        import pprint
-        pprint.pprint(data)
         context.update({'spectate': data})
         return context
 

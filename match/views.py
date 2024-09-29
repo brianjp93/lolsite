@@ -2,6 +2,7 @@ from typing import Iterable
 from django.shortcuts import render
 from django.views.generic import DetailView
 from django.db.models.query import prefetch_related_objects
+from django.views.decorators.cache import cache_control
 
 from data.constants import STRUCTURES
 from lolsite.tasks import get_riot_api
@@ -156,6 +157,7 @@ class MatchDetailView(DetailView):
         return serialized_frames
 
 
+@cache_control(max_age=60)
 def check_for_live_game(request, puuid, region):
     api = get_riot_api()
     r = api.spectator.get(puuid, region)
