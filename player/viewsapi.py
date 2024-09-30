@@ -333,6 +333,9 @@ def summoner_search(request: Request, format=None):
         simple_name__icontains = request.query_params.get("simple_name__icontains", None)
         simple_name = request.query_params.get("simple_name", None)
         simple_riot_id__icontains = request.query_params.get("simple_riot_id__icontains", None)
+        simple_riot_id__startswith = request.query_params.get("simple_riot_id__startswith", None)
+        if simple_riot_id__startswith:
+            simple_riot_id__startswith = simple_riot_id__startswith.lower()
         region = request.query_params.get("region", None)
         start = int(request.query_params.get("start", 0))
         end = int(request.query_params.get("end", 10))
@@ -344,6 +347,7 @@ def summoner_search(request: Request, format=None):
         kwargs = {
             "simple_name__icontains": simple_name__icontains,
             "simple_riot_id__icontains": simple_riot_id__icontains,
+            "simple_riot_id__startswith": simple_riot_id__startswith,
             "simple_name": simple_name,
             "region": region,
             "order_by": order_by,

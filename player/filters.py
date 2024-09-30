@@ -235,6 +235,7 @@ def summoner_search(
     region=None,
     order_by=None,
     simple_riot_id__icontains=None,
+    simple_riot_id__startswith=None,
 ):
     query = Summoner.objects.all()
 
@@ -246,6 +247,8 @@ def summoner_search(
         query = query.filter(region=region)
     if simple_riot_id__icontains:
         query = query.filter(simple_riot_id__contains=simple_riot_id__icontains.lower())
+    if simple_riot_id__startswith:
+        query = query.filter(simple_riot_id__startswith=simple_riot_id__startswith.lower())
     if order_by is not None:
         query = query.order_by(order_by)
     return query
