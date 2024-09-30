@@ -105,8 +105,6 @@ def import_summoner(
         model_data['riot_id_name'] = game_name
     if tagline:
         model_data['riot_id_tagline'] = tagline
-    if game_name and tagline:
-        model_data['simple_riot_id'] = simplify(f"{game_name}#{tagline}")
     if old_summoner := Summoner.objects.filter(puuid=data['puuid']).first():
         if game_name and tagline:
             handle_name_change(old_summoner, game_name, tagline)
