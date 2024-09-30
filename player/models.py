@@ -13,6 +13,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import models
+from django.db.models.expressions import Value
+from django.db.models.functions import Lower, Concat, Replace
 from django.urls import reverse
 from django.utils import timezone
 
@@ -21,7 +23,7 @@ from notification.models import Notification
 from data import constants as dc
 from data.models import CDProfileIcon
 
-from player.utils import get_admin
+from player.utils import SIMPLE_RIOT_ID_EXPR, get_admin
 
 
 logger = logging.getLogger(__name__)
@@ -90,7 +92,12 @@ class Summoner(models.Model):
     )
     riot_id_name = models.CharField(default="", max_length=64)
     riot_id_tagline = models.CharField(default="", max_length=8)
-    simple_riot_id =  models.CharField(default="", max_length=41, db_index=True)
+    simple_riot_id = models.GeneratedField(
+        expression=SIMPLE_RIOT_ID_EXPR,
+        output_field=models.CharField(),
+        db_persist=True,
+        db_index=True,
+    )
     revision_date = models.BigIntegerField(default=0)
     summoner_level = models.IntegerField(default=0)
     pro = models.ForeignKey("Pro", null=True, on_delete=models.SET_NULL, blank=True)
@@ -122,9 +129,6 @@ class Summoner(models.Model):
     def save(self, *args, **kwargs):
         if self.name:
             self.simple_name = simplify(self.name)
-        if self.riot_id_name and self.riot_id_tagline:
-            self.simple_riot_id = simplify(f"{self.riot_id_name}#{self.riot_id_tagline}")
-
         super(Summoner, self).save(*args, **kwargs)
 
     def get_newest_rank_checkpoint(self):
