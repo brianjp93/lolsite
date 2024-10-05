@@ -322,7 +322,7 @@ class MatchModel(BaseModelWithLogger):
     platformId: str
     queueId: int
     tournamentCode: str | None
-    endOfGameResult: Literal['GameComplete', 'Abort_Unexpected', 'Abort_AntiCheatExit'] | None = None
+    endOfGameResult: Literal['GameComplete', 'Abort_Unexpected', 'Abort_AntiCheatExit', 'Abort_TooFewPlayers'] | None = None
 
     @model_validator(mode='before')
     def game_duration_is_sometimes_not_right(cls, data):

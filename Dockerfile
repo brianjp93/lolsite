@@ -9,7 +9,8 @@ WORKDIR /app
 
 COPY requirements.txt .
 COPY release.sh /release.sh
-RUN pip install -r requirements.txt
+RUN pip install uv
+RUN uv pip install -r requirements.txt --system
 
 COPY . .
 RUN tailwindcss -i ./lolsite/static/src/main.css -o ./lolsite/static/src/output.css --minify

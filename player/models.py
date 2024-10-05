@@ -105,6 +105,7 @@ class Summoner(models.Model):
     ranked_import_count = models.IntegerField(default=0, blank=True)
 
     last_summoner_page_import = models.DateTimeField(null=True)
+    huge_match_import_at = models.DateTimeField(null=True, db_index=True)
     created_date = models.DateTimeField(default=timezone.now, db_index=True)
 
     def __str__(self):

@@ -379,6 +379,8 @@ class Match(VersionedModel):
                 return 'abort_unexpected'
             case 'Abort_AntiCheatExit':
                 return 'abort_anticheat'
+            case 'Abort_TooFewPlayers':
+                return 'abort_too_few_players'
         return 'normal'
 
     def get_absolute_url(self, pname: str | None = None):
