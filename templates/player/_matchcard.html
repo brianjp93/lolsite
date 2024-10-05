@@ -29,6 +29,11 @@
         Abort Anticheat
       </div>
     {% endif %}
+    {% if match.result == 'abort_too_few_players' %}
+      <div class="text-xs font-bold text-red-400">
+        Abort Too Few Players
+      </div>
+    {% endif %}
     {% if match.result == 'abort_unexpected' %}
       <div class="text-xs font-bold text-red-400">
         Abort Unknown Error

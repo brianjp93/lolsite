@@ -7,4 +7,5 @@ COPY requirements.txt .
 RUN apk add --no-cache alpine-sdk gcc g++ python3-dev
 
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install uv
+RUN uv pip install -r requirements.txt --system
