@@ -729,8 +729,6 @@ class Stats(models.Model):
 
     game_ended_in_early_surrender = models.BooleanField(default=False, blank=True)
     game_ended_in_surrender = models.BooleanField(default=False, blank=True)
-    riot_id_name = models.CharField(max_length=128, default="", blank=True)
-    riot_id_tagline = models.CharField(max_length=128, default="", blank=True)
 
     def __str__(self):
         return f"Stats(participant={self.participant.summoner_name})"

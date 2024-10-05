@@ -991,8 +991,6 @@ def build_stats(part: ParticipantModel):
 
         game_ended_in_early_surrender=part.gameEndedInEarlySurrender,
         game_ended_in_surrender=part.gameEndedInSurrender,
-        riot_id_name=part.riotIdGameName,
-        riot_id_tagline=part.riotIdTagline,
 
         assists=part.assists,
         champ_level=part.champLevel,
