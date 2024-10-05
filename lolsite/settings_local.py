@@ -34,7 +34,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 REDIS_URL = config('REDIS_URL', 'localhost')
 CELERY_BROKER_URL = f"redis://{REDIS_URL}"
-CELERY_RESULT_BACKEND = f"redis://{REDIS_URL}"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_URL}/0"
 
 CACHES = {
     "default": {
