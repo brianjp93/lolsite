@@ -384,7 +384,7 @@ def huge_match_import_task(hours_thresh=24, exclude_hours=6, break_early=True):
     count = qs.count()
     remaining_count = count
     logger.info(f"Found {count} participants for huge_match_import_task.")
-    batch = 5
+    batch = 10
     i = -1
     while participants_query_batch := qs.all()[:100]:
         remaining_count = qs.count()
