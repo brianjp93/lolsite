@@ -309,7 +309,6 @@ def import_recent_matches(
                     break
                 except Exception:
                     time.sleep(2**retry_count)
-                    return 0
             if len(matches) > 0:
                 existing_ids = [x._id for x in Match.objects.filter(_id__in=matches)]
                 if existing_ids and break_on_match_found:
@@ -367,16 +366,17 @@ def bulk_import(puuid: str, last_import_time_hours: int = 24, count=200, offset=
 
 
 @app.task(name="match.huge_match_import_task")
-def huge_match_import_task(days=60, break_early=True):
+def huge_match_import_task(days=7, break_early=True):
     thresh = timezone.now() - timedelta(days=days)
     thresh_epoch_ms = thresh.timestamp() * 1000
     qs = Participant.objects.filter(
         match__game_creation__gt=thresh_epoch_ms,
         match__queue_id__in=[FLEX_QUEUE, SOLO_QUEUE],
+        match__platform_id="NA1",
         puuid__isnull=False,
     ).exclude(
         puuid__in=Summoner.objects.filter(
-            huge_match_import_at__gt=timezone.now() - timedelta(days=1),
+            huge_match_import_at__gt=timezone.now() - timedelta(hours=12),
         ).values('puuid')
     ).select_related("match").order_by('puuid').distinct('puuid')
     count = qs.count()
