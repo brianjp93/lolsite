@@ -632,13 +632,6 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                         ...
                     case tmparsers.DragonSoulGivenEventModel():
                         ...
-                    case tmparsers.ItemPurchasedEventModel():
-                        item_purchase_events.append(ItemPurchasedEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            item_id=evm.itemId,
-                            participant_id=evm.participantId,
-                        ))
                     case tmparsers.ItemDestroyedEventModel():
                         item_destroyed_events.append(ItemDestroyedEvent(
                             frame_id=frame.id,
@@ -648,6 +641,13 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                         ))
                     case tmparsers.ItemSoldEventModel():
                         item_sold_events.append(ItemSoldEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            item_id=evm.itemId,
+                            participant_id=evm.participantId,
+                        ))
+                    case tmparsers.ItemPurchasedEventModel():
+                        item_purchase_events.append(ItemPurchasedEvent(
                             frame_id=frame.id,
                             timestamp=evm.timestamp,
                             item_id=evm.itemId,
