@@ -407,6 +407,9 @@ class Match(VersionedModel):
         region = self.platform_id.lower()
         if region[-1].isdigit():
             region = region[:-1]
+        match region:
+            case "oc":
+                region = "oce"
         return region
 
     @property

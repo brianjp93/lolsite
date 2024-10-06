@@ -381,7 +381,6 @@ def huge_match_import_task(days=60, break_early=True):
     ).select_related("match").order_by('puuid').distinct('puuid')
     count = qs.count()
     logger.info(f"Found {count} participants for huge_match_import_task.")
-    imported = 0
     batch = 5
     for a, participants in enumerate(batched(qs.iterator(), batch)):
         jobs = []
@@ -407,13 +406,11 @@ def huge_match_import_task(days=60, break_early=True):
                 summoners.append(summoner)
             if i % 100 == 0:
                 logger.info(f"Finished importing {i} of {count} summoner's games.")
-                logger.info(f"Imported {imported} new games.")
         result  = group(jobs).apply_async()
         while not result.ready():
             time.sleep(1)
-        imported += sum(result.get())
         Summoner.objects.bulk_update(summoners, fields=["huge_match_import_at"])
-    logger.info(f"huge_match_import_task finished: Imported {imported} total new games.")
+    logger.info("huge_match_import_task finished.")
 
 
 def get_top_played_with(
