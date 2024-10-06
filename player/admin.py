@@ -23,8 +23,8 @@ class CachedCountPaginator(Paginator):
 
 
 class SummonerAdmin(admin.ModelAdmin):
-    list_display = ("simple_name", "region")
-    search_fields = ("simple_name",)
+    list_display = ("simple_riot_id", "region")
+    search_fields = ("simple_riot_id",)
     list_select_related = True
     raw_id_fields = ("user", "pro")
     show_full_result_count = False
