@@ -10,7 +10,7 @@ from .models import EliteMonsterKillEvent
 
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
-    list_display = ("_id", "creation", "queue_id", "game_version")
+    list_display = ("_id", "game_creation_dt", "queue_id", "game_version")
     list_filter = ("platform_id", "major")
     search_fields = (
         "participants__summoner_name_simplified",
@@ -20,10 +20,6 @@ class MatchAdmin(admin.ModelAdmin):
     show_full_result_count = False
     list_per_page = 30
     paginator = CachedCountPaginator
-
-    @admin.display(ordering="game_creation")
-    def creation(self, obj):
-        return obj.get_creation()
 
 
 @admin.register(Participant)

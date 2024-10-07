@@ -10,9 +10,9 @@ app.conf.beat_schedule = {
         "task": "data.tasks.import_missing",
         "schedule": crontab(minute="10"),
     },
-    "mt-huge-match-import": {
-        "task": "match.tasks.huge_match_import_task",
-        "schedule": crontab(hour="1"),
-    }
+    # "mt-huge-match-import": {
+    #     "task": "match.tasks.huge_match_import_task",
+    #     "schedule": crontab(hour="1"),
+    # }
 }
-app.conf.timezone = "America/Denver"  # type: ignore
+app.conf.timezone = "America/Los_Angeles"  # type: ignore

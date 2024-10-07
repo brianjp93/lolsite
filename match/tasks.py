@@ -1118,7 +1118,6 @@ def import_match_from_data(data, region: str, refresh=False):
         patch=sem_ver.get(2, ''),
         build=sem_ver.get(3, ''),
         end_of_game_result=info.endOfGameResult,
-        is_fully_imported=True,
     )
     try:
         match_model.save()

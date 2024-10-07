@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 class MatchBySummoner(ListAPIView):
     serializer_class = BasicMatchSerializer
-    queryset = Match.objects.filter(is_fully_imported=True)
+    queryset = Match.objects.all()
     pagination_class = CustomLimitOffsetPagination
 
     def get_queryset(self):
