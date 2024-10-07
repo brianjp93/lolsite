@@ -388,13 +388,18 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
         remaining_count = qs.count()
         logger.info(f"Query loop.  Found {remaining_count} new participants.")
         i = -1
+        elapsed_start = time.perf_counter()
         for participants in batched(qs.all().iterator(5000), batch):
             jobs = []
             summoners = []
             for participant in participants:
                 i += 1
                 if i % 100 == 0:
+                    elapsed = time.perf_counter() - elapsed_start
+                    time_per_part = elapsed / (i or 1)
+                    estimated_remaining = time_per_part * (remaining_count - i) / 60
                     logger.info(f"Finished importing {i} participants of about {remaining_count}.")
+                    logger.info(f"Estimated time remaining for query loop: {estimated_remaining} minutes")
                 start_time = thresh
                 if summoner := Summoner.objects.filter(puuid=participant.puuid).first():
                     if break_early and summoner.huge_match_import_at and summoner.huge_match_import_at > thresh:
