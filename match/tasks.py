@@ -362,6 +362,35 @@ def bulk_import(puuid: str, last_import_time_hours: int = 24, count=200, offset=
         import_recent_matches(offset, offset + count, puuid, region=summoner.region)
 
 
+def celery_task_pool(jobs, pool_size=10):
+    pool: list = [None] * pool_size
+    i = 0
+    for job in jobs:
+        job_started = False
+        while not job_started:
+            for i in range(len(pool)):
+                pool_job = pool[i]
+                if not pool_job or pool_job.ready():
+                    result = job.delay()
+                    pool[i] = result
+                    job_started = True
+                    if pool_job and pool_job.ready():
+                        i += 1
+                        yield i
+                    break
+            time.sleep(0.1)
+    pool = [job for job in pool if job is not None]
+    expected = len(pool)
+    ready_count = 0
+    while ready_count < expected:
+        for job in pool:
+            if job.ready():
+                ready_count += 1
+                i += 1
+                yield i
+        time.sleep(0.1)
+
+
 @app.task(name="match.tasks.huge_match_import_task")
 def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
     thresh = timezone.now() - timedelta(hours=hours_thresh)
@@ -383,45 +412,41 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
     count = qs.count()
     remaining_count = count
     logger.info(f"Found {count} participants for huge_match_import_task.")
-    batch = 10
     while qs.all().exists():
         remaining_count = qs.count()
         logger.info(f"Query loop.  Found {remaining_count} new participants.")
         i = -1
         elapsed_start = time.perf_counter()
-        for participants in batched(qs.all().iterator(5000), batch):
-            jobs = []
-            summoners = []
-            for participant in participants:
-                i += 1
-                if i % 100 == 0:
-                    elapsed = time.perf_counter() - elapsed_start
-                    time_per_part = elapsed / (i or 1)
-                    estimated_remaining = time_per_part * (remaining_count - i) / 60
-                    logger.info(f"Finished importing {i} participants of about {remaining_count}.")
-                    logger.info(f"Estimated time remaining for query loop: {estimated_remaining} minutes")
-                start_time = thresh
+
+        def get_jobs(qs, start_time):
+            for participant in qs:
                 if summoner := Summoner.objects.filter(puuid=participant.puuid).first():
                     if break_early and summoner.huge_match_import_at and summoner.huge_match_import_at > thresh:
                         # only go back as far as we need to for this summoner
                         start_time = summoner.huge_match_import_at
-                logger.info(f"Importing back to {start_time=}")
                 import_time = timezone.now()
-                jobs.append(import_recent_matches.s(
+                job = import_recent_matches.s(
                     0,
                     10_000,
                     participant.puuid,
                     participant.match.region,
                     startTime=start_time,
                     use_celery=False,
-                ))
+                )
+                yield job
                 if summoner:
                     summoner.huge_match_import_at = import_time
-                    summoners.append(summoner)
-            result  = group(jobs).apply_async()
-            while not result.ready():
-                time.sleep(1)
-            Summoner.objects.bulk_update(summoners, fields=["huge_match_import_at"])
+                    summoner.save(update_fields=["huge_match_import_at"])
+
+        for _ in celery_task_pool(get_jobs(qs.all().iterator(5000), thresh), 10):
+            i += 1
+            if i % 100 == 0:
+                elapsed = time.perf_counter() - elapsed_start
+                time_per_part = elapsed / (i or 1)
+                estimated_remaining = time_per_part * (remaining_count - i) / 60
+                logger.info(f"Finished importing {i} participants of about {remaining_count}.")
+                logger.info(f"Estimated time remaining for query loop: {estimated_remaining} minutes")
+
     logger.info("huge_match_import_task finished.")
 
 
