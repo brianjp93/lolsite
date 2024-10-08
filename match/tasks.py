@@ -410,51 +410,45 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
 
     count = qs.count()
     logger.info(f"Found {count} participants for huge_match_import_task.")
-    if count:
-        logger.info(f"Query loop.  Found {count} new participants.")
-        i = -1
-        elapsed_start = time.perf_counter()
+    if not count:
+        return
 
-        def get_jobs(qs, start_time):
-            for participant in qs:
-                if summoner := Summoner.objects.filter(puuid=participant.puuid).first():
-                    if break_early and summoner.huge_match_import_at and summoner.huge_match_import_at > thresh:
-                        # only go back as far as we need to for this summoner
-                        start_time = summoner.huge_match_import_at
-                if not summoner:
-                    continue
-                import_time = timezone.now()
-                job = import_recent_matches.s(
-                    0,
-                    10_000,
-                    participant.puuid,
-                    participant.match.region,
-                    startTime=start_time,
-                    use_celery=False,
-                )
-                yield job
-                if summoner:
-                    summoner.huge_match_import_at = import_time
-                    summoner.save(update_fields=["huge_match_import_at"])
+    logger.info(f"Query loop.  Found {count} new participants.")
+    i = -1
+    elapsed_start = time.perf_counter()
 
-        for _ in celery_task_pool(get_jobs(qs.all().iterator(5000), thresh), 10):
-            i += 1
-            if i % 100 == 0:
-                elapsed = time.perf_counter() - elapsed_start
-                time_per_part = elapsed / (i or 1)
-                estimated_remaining = time_per_part * (count - i) / 60
-                logger.info(f"Finished importing {i} participants of about {count}.")
-                logger.info(f"Estimated time remaining for query loop: {estimated_remaining} minutes")
+    def get_jobs(qs, start_time):
+        for participant in qs:
+            if summoner := Summoner.objects.filter(puuid=participant.puuid).first():
+                if break_early and summoner.huge_match_import_at and summoner.huge_match_import_at > thresh:
+                    # only go back as far as we need to for this summoner
+                    start_time = summoner.huge_match_import_at
+            if not summoner:
+                continue
+            import_time = timezone.now()
+            job = import_recent_matches.s(
+                0,
+                10_000,
+                participant.puuid,
+                participant.match.region,
+                startTime=start_time,
+                use_celery=False,
+            )
+            yield job
+            if summoner:
+                summoner.huge_match_import_at = import_time
+                summoner.save(update_fields=["huge_match_import_at"])
 
-        logger.info("Running huge_match_import_task again.")
-        huge_match_import_task.delay(
-            hours_thresh=hours_thresh,
-            exclude_hours=exclude_hours,
-            break_early=break_early,
-        )
-    else:
-        logger.info("Not participants found, skipping task.")
+    for _ in celery_task_pool(get_jobs(qs.all().iterator(5000), thresh), 10):
+        i += 1
+        if i % 100 == 0:
+            elapsed = time.perf_counter() - elapsed_start
+            time_per_part = elapsed / (i or 1)
+            estimated_remaining = time_per_part * (count - i) / 60
+            logger.info(f"Finished importing {i} participants of about {count}.")
+            logger.info(f"Estimated time remaining for query loop: {estimated_remaining} minutes")
 
+    logger.info(f"{i} total summoner games imported.")
     logger.info("huge_match_import_task finished.")
 
 
