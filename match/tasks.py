@@ -400,7 +400,6 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
         match__queue_id__in=[FLEX_QUEUE, SOLO_QUEUE],
         match__platform_id="NA1",
         puuid__isnull=False,
-        puuid__in=Summoner.objects.all().values('puuid')
     )
     qs = qs.exclude(
         puuid__in=Summoner.objects.filter(
@@ -422,6 +421,8 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
                     if break_early and summoner.huge_match_import_at and summoner.huge_match_import_at > thresh:
                         # only go back as far as we need to for this summoner
                         start_time = summoner.huge_match_import_at
+                if not summoner:
+                    continue
                 import_time = timezone.now()
                 job = import_recent_matches.s(
                     0,
