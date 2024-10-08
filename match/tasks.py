@@ -410,11 +410,9 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
     qs = qs.select_related("match").order_by('puuid').distinct('puuid')
 
     count = qs.count()
-    remaining_count = count
     logger.info(f"Found {count} participants for huge_match_import_task.")
-    while qs.all().exists():
-        remaining_count = qs.count()
-        logger.info(f"Query loop.  Found {remaining_count} new participants.")
+    if count:
+        logger.info(f"Query loop.  Found {count} new participants.")
         i = -1
         elapsed_start = time.perf_counter()
 
@@ -443,9 +441,18 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
             if i % 100 == 0:
                 elapsed = time.perf_counter() - elapsed_start
                 time_per_part = elapsed / (i or 1)
-                estimated_remaining = time_per_part * (remaining_count - i) / 60
-                logger.info(f"Finished importing {i} participants of about {remaining_count}.")
+                estimated_remaining = time_per_part * (count - i) / 60
+                logger.info(f"Finished importing {i} participants of about {count}.")
                 logger.info(f"Estimated time remaining for query loop: {estimated_remaining} minutes")
+
+        logger.info("Running huge_match_import_task again.")
+        huge_match_import_task.delay(
+            hours_thresh=hours_thresh,
+            exclude_hours=exclude_hours,
+            break_early=break_early,
+        )
+    else:
+        logger.info("Not participants found, skipping task.")
 
     logger.info("huge_match_import_task finished.")
 
