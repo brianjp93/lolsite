@@ -117,7 +117,7 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
         total = wins + losses
         total = total or 1
         wr = int(wins / total * 100)
-        meta['title'] = f'{summoner.name} is {wins} and {losses} in the past {wins + losses} games. {wr}% WR.'
+        meta['title'] = f'{summoner.get_name()} is {wins} and {losses} in the past {wins + losses} games. {wr}% WR.'
         champions_list = list(champions.items())
         champions_list.sort(key=lambda x: -x[1]['count'])
         champions_list = champions_list[:3]
