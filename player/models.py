@@ -118,9 +118,7 @@ class Summoner(models.Model):
         return reverse("player:summoner-puuid", kwargs={"puuid": self.puuid})
 
     def get_name(self):
-        if self.simple_riot_id:
-            return f"{self.riot_id_name}#{self.riot_id_tagline}"
-        return self.name
+        return self.simple_riot_id or self.name
 
     def get_profile_icon(self):
         return CDProfileIcon.objects.filter(ext_id=self.profile_icon_id).first()
