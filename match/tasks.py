@@ -311,8 +311,12 @@ def import_recent_matches(
             import_count += len(new_matches)
             start_time = time.perf_counter()
             jobs = [(x, region) for x in new_matches]
-            with ThreadPool(processes=10) as pool:
-                matches_data = pool.starmap(fetch_match_json, jobs)
+            if jobs:
+                if len(jobs) == 1:
+                    matches_data = [fetch_match_json(*jobs[0])]
+                else:
+                    with ThreadPool(processes=min(10, len(jobs))) as pool:
+                        matches_data = pool.starmap(fetch_match_json, jobs)
                 matches_data = [x for x in matches_data if x not in ["not found", "throttled", None]]
                 if matches_data:
                     multi_match_import(matches_data, region)
