@@ -875,6 +875,9 @@ class Team(models.Model):
     def __str__(self):
         return f"Team(match={self.match._id}, _id={self._id})"
 
+    class Meta:
+        unique_together = ("_id", "match")
+
 
 class Ban(models.Model):
     id: int | None
@@ -884,6 +887,9 @@ class Ban(models.Model):
 
     def __str__(self):
         return f"Ban(team={self.team._id}, match={self.team.match._id})"
+
+    class Meta:
+        unique_together = ("team", "pick_turn")
 
 
 class Bounty(BaseModel):

@@ -237,11 +237,21 @@ def multi_match_import(matches_json, region):
             unique_fields=["_id"],
             update_fields=["game_duration"],
         )
-        Participant.objects.bulk_create(participants)
-        Stats.objects.bulk_create(stats)
+        Participant.objects.bulk_create(
+            participants,
+            update_conflicts=True,
+            unique_fields=["_id", "match_id"],
+            update_fields=["champion_id"],
+        )
+        Stats.objects.bulk_create(stats, ignore_conflicts=True)
         Summoner.objects.bulk_create(summoners, ignore_conflicts=True)
-        Team.objects.bulk_create(teams)
-        Ban.objects.bulk_create(bans)
+        Team.objects.bulk_create(
+            teams,
+            update_conflicts=True,
+            unique_fields=["match_id", "_id"],
+            update_fields=["win"],
+        )
+        Ban.objects.bulk_create(bans, ignore_conflicts=True)
 
 
 @app.task(name="match.tasks.import_recent_matches")
