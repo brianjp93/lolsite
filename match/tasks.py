@@ -67,27 +67,18 @@ class RateLimitError(Exception):
 # @query_debugger
 @app.task(name='match.tasks.import_match')
 def import_match(match_id, region, refresh=False):
-    """Import a match by its ID.
+    match = fetch_match_json(match_id, region)
+    if not isinstance(match, dict):
+        return match
+    import_match_from_data(match, region, refresh=refresh)
 
-    Parameters
-    ----------
-    match_id : ID
-    region : str
-    refresh : bool
-        Whether or not to re-import the match if it already exists.
 
-    Returns
-    -------
-    None
-
-    """
+def fetch_match_json(match_id: str,  region: str):
     retry_count = -1
-    match = None
     while retry_count < 7:
         retry_count += 1
         r = api.match.get(match_id, region=region)
         match = r.content
-
         if r.status_code == 429:
             if retry_count == 7:
                 return "throttled"
@@ -97,27 +88,13 @@ def import_match(match_id, region, refresh=False):
         elif r.status_code == 404:
             return "not found"
         else:
-            import_match_from_data(match, region, refresh=refresh)
-            return
+            return match
 
 
-def fetch_match_json(match_id: str,  region: str, refresh=False):
-    r = api.match.get(match_id, region=region)
-    match = r.content
-    if r.status_code == 429:
-        return "throttled"
-    if r.status_code == 404:
-        return "not found"
-    return match
-
-
-def import_summoner_from_participant(participants: list[ParticipantModel], region):
+def prepare_summoners_from_participants(participants: list[ParticipantModel], region):
     sums = []
     for part in participants:
-        simple_riot_id = None
-        if part.riotIdGameName and part.riotIdTagline:
-            simple_riot_id = get_simple_riot_id(part.riotIdGameName, part.riotIdGameName)
-        if part.summonerId:
+        if (part.puuid or "").lower() != 'bot':
             summoner = Summoner(
                 _id=part.summonerId,
                 name=part.summonerName.strip(),
@@ -126,10 +103,9 @@ def import_summoner_from_participant(participants: list[ParticipantModel], regio
                 puuid=part.puuid,
                 riot_id_name=part.riotIdGameName,
                 riot_id_tagline=part.riotIdTagline,
-                simple_riot_id=simple_riot_id,
             )
             sums.append(summoner)
-    Summoner.objects.bulk_create(sums, ignore_conflicts=True)
+    return sums
 
 
 def full_import(name=None, puuid=None, region=None, **kwargs):
@@ -1158,12 +1134,14 @@ def import_match_from_data(data, region: str, refresh=False):
             logging.warning("Attempted to import game which was already imported. Ignoring.")
             return
 
-    participants_data = info.participants
-    import_summoner_from_participant(participants_data, region)
+    Summoner.objects.bulk_create(
+        prepare_summoners_from_participants(info.participants, region),
+        ignore_conflicts=True,
+    )
 
     participants: list[Participant] = []
     stats: list[Stats] = []
-    for part in participants_data:
+    for part in info.participants:
         # PARTICIPANT
         participant_model = build_participant(part, match_model)
         participants.append(participant_model)
