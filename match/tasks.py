@@ -35,7 +35,7 @@ from .models import Spectate
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
-from player.models import Summoner, simplify
+from player.models import Summoner
 from player import tasks as pt
 
 from lolsite.celery import app
