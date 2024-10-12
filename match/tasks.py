@@ -320,7 +320,7 @@ def import_recent_matches(
                 matches_data = [x for x in matches_data if x not in ["not found", "throttled", None]]
                 if matches_data:
                     multi_match_import(matches_data, region)
-            logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
+                    logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
             if len(matches) < size:
                 has_more = False
         else:
@@ -417,8 +417,6 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
             if break_early and summoner.huge_match_import_at and summoner.huge_match_import_at > thresh:
                 # only go back as far as we need to for this summoner
                 start_time = summoner.huge_match_import_at
-            if not summoner:
-                continue
             import_time = timezone.now()
             job = import_recent_matches.s(
                 0,
