@@ -833,29 +833,26 @@ def import_spectate_from_data(parsed: SpectateModel, region: str):
 
 
 def import_summoners_from_spectate(parsed: SpectateModel, region):
-    summoners = {}
+    summoner_list = []
     for part in parsed.participants:
         if part.riotId:
             name, tagline = part.riotId.split('#')
             sum_data = {
+                "puuid": part.puuid,
                 "riot_id_name": name,
                 "riot_id_tagline": tagline,
-                "simple_riot_id": simplify(part.riotId),
                 "region": region,
                 "profile_icon_id": part.profileIconId,
                 "_id": part.summonerId,
             }
-            summoner = Summoner(**sum_data)
-            try:
-                summoner.save()
-                summoners[summoner._id] = summoner
-            except IntegrityError:
-                try:
-                    summoner = Summoner.objects.get(region=region, _id=part.summonerId)
-                    summoners[summoner._id] = summoner
-                except Summoner.DoesNotExist:
-                    pass
-    return summoners
+            summoner_list.append(Summoner(**sum_data))
+    Summoner.objects.bulk_create(
+        summoner_list,
+        update_conflicts=True,
+        unique_fields=["puuid"],
+        update_fields=["_id"],
+    )
+    return {x._id: x for x in summoner_list}
 
 
 def get_player_ranks(summoner_list, threshold_days=1, sync=True):
