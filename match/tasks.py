@@ -439,7 +439,7 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
                 summoner.huge_match_import_at = import_time
                 summoner.save(update_fields=["huge_match_import_at"])
 
-    for _ in celery_task_pool(get_jobs(qs.all().iterator(5000), thresh), 10):
+    for _ in celery_task_pool(get_jobs(qs.iterator(2000), thresh), 10):
         i += 1
         if i % 100 == 0:
             elapsed = time.perf_counter() - elapsed_start
