@@ -1,7 +1,5 @@
 """match/tasks.py
 """
-from itertools import batched
-from celery import group
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.db.models import Count, Exists, Subquery, OuterRef
@@ -37,7 +35,7 @@ from .models import Spectate
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
-from player.models import Summoner, get_simple_riot_id, simplify
+from player.models import Summoner, simplify
 from player import tasks as pt
 
 from lolsite.celery import app
@@ -64,16 +62,7 @@ class RateLimitError(Exception):
     pass
 
 
-# @query_debugger
-@app.task(name='match.tasks.import_match')
-def import_match(match_id, region, refresh=False):
-    match = fetch_match_json(match_id, region)
-    if not isinstance(match, dict):
-        return match
-    import_match_from_data(match, region, refresh=refresh)
-
-
-def fetch_match_json(match_id: str,  region: str):
+def fetch_match_json(match_id: str, region: str):
     retry_count = -1
     while retry_count < 7:
         retry_count += 1
@@ -205,9 +194,54 @@ def ranked_import(name=None, puuid=None, region=None, **kwargs):
 
 def pool_match_import(match_id: str, region: str, close_connections=True):
     match_json = fetch_match_json(match_id, region)
-    import_match_from_data(match_json, region)
+    multi_match_import([match_json], region)
     if close_connections:
         connections.close_all()
+
+
+def multi_match_import(matches_json, region):
+    matches = []
+    participants = []
+    stats = []
+    summoners = []
+    teams = []
+    bans = []
+    for match_data in matches_json:
+        try:
+            parsed = MatchResponseModel.model_validate_json(match_data)
+        except ValidationError:
+            logger.exception('Match could not be parsed.')
+            continue
+        if "tutorial" in parsed.info.gameMode.lower():
+            continue
+        if parsed.info.gameDuration == 0:
+            continue
+        match = build_match(parsed)
+        matches.append(match)
+        summoners.extend(prepare_summoners_from_participants(parsed.info.participants, region))
+        for part in parsed.info.participants:
+            participant = build_participant(part, match)
+            participants.append(participant)
+            stats.append(build_stats(part, participant))
+        for tmodel in parsed.info.teams:
+            team = build_team(tmodel, match)
+            teams.append(team)
+            for bm in tmodel.bans:
+                bans.append(build_ban(bm, team))
+    with transaction.atomic():
+        # use update_conflicts so that each model gets their ID applied,
+        # even on conflict
+        Match.objects.bulk_create(
+            matches,
+            update_conflicts=True,
+            unique_fields=["_id"],
+            update_fields=["game_duration"],
+        )
+        Participant.objects.bulk_create(participants)
+        Stats.objects.bulk_create(stats)
+        Summoner.objects.bulk_create(summoners, ignore_conflicts=True)
+        Team.objects.bulk_create(teams)
+        Ban.objects.bulk_create(bans)
 
 
 @app.task(name="match.tasks.import_recent_matches")
@@ -220,26 +254,7 @@ def import_recent_matches(
     startTime: Optional[timezone.datetime] = None,
     endTime: Optional[timezone.datetime] = None,
     break_on_match_found = False,
-    use_celery = False,
 ):
-    """Import recent matches for a puuid.
-
-    Parameters
-    ----------
-    start : int
-    end : int
-    season_id : ID
-    puuid : ID
-        the encrypted account ID
-    queue : int
-    startTime : Epoch in ms
-    endTime : Epoch in ms
-
-    Returns
-    -------
-    int
-
-    """
     has_more = True
     import_count = 0
     index = start
@@ -285,22 +300,14 @@ def import_recent_matches(
             new_matches = list(set(matches) - set(existing_ids))
             import_count += len(new_matches)
             start_time = time.perf_counter()
-            if use_celery:
-                jobs = []
-                for batch in batched(new_matches, 10):
-                    for match_id in batch:
-                        jobs.append(import_match.s(match_id, region))
-                result = group(jobs).apply_async()
-                while not result.ready():
-                    time.sleep(1)
-                logger.info(f'Celery match import time: {time.perf_counter() - start_time}')
-            else:
-                jobs = [(x, region) for x in new_matches]
-                with ThreadPool(processes=10) as pool:
-                    pool.starmap(pool_match_import, jobs)
-                pool.close()
-                pool.join()
-                logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
+            jobs = [(x, region) for x in new_matches]
+            with ThreadPool(processes=10) as pool:
+                matches_data = pool.starmap(fetch_match_json, jobs)
+                matches_data = [x for x in matches_data if x not in ["not found", "throttled", None]]
+                multi_match_import(matches_data, region)
+            pool.close()
+            pool.join()
+            logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
             if len(matches) < size:
                 has_more = False
         else:
@@ -406,7 +413,6 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
                 summoner.puuid,
                 summoner.region,
                 startTime=start_time,
-                use_celery=False,
             )
             yield job
             summoner.huge_match_import_at = import_time
@@ -978,10 +984,9 @@ def build_ban(ban: BanType, team: Team):
         team=team,
     )
 
-def build_stats(part: ParticipantModel):
+def build_stats(part: ParticipantModel, participant: Participant|None = None):
     return Stats(
-        # participant=participant_model,
-
+        participant=participant,
         all_in_pings=part.allInPings,
         assist_me_pings=part.assistMePings,
         bait_pings=part.baitPings,
@@ -1093,24 +1098,11 @@ def build_stats(part: ParticipantModel):
         win=part.win,
     )
 
-@transaction.atomic()
-def import_match_from_data(data, region: str, refresh=False):
-    try:
-        parsed = MatchResponseModel.model_validate_json(data)
-    except ValidationError:
-        logger.exception('Match could not be parsed.')
-        return
-
-    if "tutorial" in parsed.info.gameMode.lower():
-        return False
-
-    if parsed.info.gameDuration == 0:
-        return False
-
-    info = parsed.info
+def build_match(match: MatchResponseModel):
+    info = match.info
     sem_ver = info.sem_ver
-    match_model = Match(
-        _id=parsed.metadata.matchId,
+    return Match(
+        _id=match.metadata.matchId,
         game_creation=info.gameCreation,
         game_duration=info.gameDuration,
         game_mode=info.gameMode,
@@ -1124,48 +1116,6 @@ def import_match_from_data(data, region: str, refresh=False):
         build=sem_ver.get(3, ''),
         end_of_game_result=info.endOfGameResult,
     )
-    try:
-        match_model.save()
-    except IntegrityError:
-        if refresh:
-            Match.objects.filter(_id=parsed.metadata.matchId).delete()
-            match_model.save()
-        else:
-            logging.warning("Attempted to import game which was already imported. Ignoring.")
-            return
-
-    Summoner.objects.bulk_create(
-        prepare_summoners_from_participants(info.participants, region),
-        ignore_conflicts=True,
-    )
-
-    participants: list[Participant] = []
-    stats: list[Stats] = []
-    for part in info.participants:
-        # PARTICIPANT
-        participant_model = build_participant(part, match_model)
-        participants.append(participant_model)
-
-        # STATS
-        stats_model = build_stats(part)
-        stats.append(stats_model)
-    participants = Participant.objects.bulk_create(participants)
-    for stat, part_model in zip(stats, participants):
-        stat.participant = part_model
-    Stats.objects.bulk_create(stats)
-
-    # TEAMS
-    teams = parsed.info.teams
-    for tmodel in teams:
-        team_model = build_team(tmodel, match_model)
-        team_model.save()
-
-        # BANS
-        bans = []
-        for bm in tmodel.bans:
-            ban = build_ban(bm, team_model)
-            bans.append(ban)
-        Ban.objects.bulk_create(bans)
 
 
 MATCH_SUMMARY_INTRO_PROMPT = ' '.join("""
