@@ -1,12 +1,10 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from django.contrib.auth.models import User
-from django.contrib.auth import login
 from django.templatetags.static import static
 
 from match.models import Match, Participant
-from data import constants
+from data.constants import QUEUE_DICT
 
 from player.models import Summoner, simplify
 
@@ -25,30 +23,6 @@ META = {
     'image': static('logo-large.png'),
     'description': 'Accept your hardstuck-ness.',
 }
-
-QUEUE_DICT = {x['_id']: x for x in constants.QUEUES}
-
-
-@api_view(["POST"])
-def demo_login(request, format=None):
-    """Login to demo user
-    """
-    data = {}
-    status_code = 200
-
-    if request.method == "POST":
-        password = request.data["password"]
-        demo_user = User.objects.get(username="demo")
-
-        is_password_correct = demo_user.check_password(password)
-        if is_password_correct:
-            login(request, demo_user)
-            data = {"message": "logged in"}
-        else:
-            data = {"message": "wrong password"}
-            status_code = 403
-
-    return Response(data, status=status_code)
 
 
 def require_login(func):
@@ -117,7 +91,7 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
         total = wins + losses
         total = total or 1
         wr = int(wins / total * 100)
-        meta['title'] = f'{summoner.name} is {wins} and {losses} in the past {wins + losses} games. {wr}% WR.'
+        meta['title'] = f'{summoner.get_name()} is {wins} and {losses} in the past {wins + losses} games. {wr}% WR.'
         champions_list = list(champions.items())
         champions_list.sort(key=lambda x: -x[1]['count'])
         champions_list = champions_list[:3]
@@ -204,7 +178,7 @@ def _get_match_meta_data(riot_id_name: str, riot_id_tagline: str, region: str, m
     ]
     stats = ' ᐃ '.join(stats_list)
 
-    meta['title'] = f'{summoner.name} ({kills} / {deaths} / {assists})[{kda:.2f} KDA] {queue}'
+    meta['title'] = f'{summoner.get_name()} ({kills} / {deaths} / {assists})[{kda:.2f} KDA] {queue}'
     meta['description'] = stats
     meta['image'] = image
     return meta

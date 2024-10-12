@@ -1,7 +1,7 @@
 from typing import Iterable, List, Union
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import QuerySet
+from django.db.models import Func, QuerySet
 from django.contrib.postgres.fields import ArrayField
 from django.urls import reverse
 from django.utils import timezone
@@ -338,9 +338,21 @@ def set_related_match_objects(object_list: Iterable['Match'], timeline: 'Advance
                 part.bounty = timeline.bounties.get(part._id, None)
 
 
+class ToTimestamp(Func):
+    function = 'to_timestamp'
+    template = "%(function)s(%(expressions)s)"
+    output_field = models.DateTimeField()
+
+
 class Match(VersionedModel):
     _id = models.CharField(unique=True, db_index=True, max_length=32)
     game_creation = models.BigIntegerField(db_index=True)
+    game_creation_dt = models.GeneratedField(
+        expression=ToTimestamp(models.F("game_creation") / 1000),
+        output_field=models.DateTimeField(),
+        db_index=True,
+        db_persist=True,
+    )
     game_duration = models.BigIntegerField()
     game_mode = models.CharField(max_length=32, default="", blank=True)
     game_type = models.CharField(max_length=32, default="", blank=True)
@@ -350,7 +362,6 @@ class Match(VersionedModel):
     season_id = models.IntegerField(null=True)
     game_version = models.CharField(max_length=32, default="", blank=True)
     build = models.IntegerField()
-    is_fully_imported = models.BooleanField(default=False, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     end_of_game_result = models.CharField(max_length=32, default=None, null=True, blank=True)
 
@@ -407,6 +418,9 @@ class Match(VersionedModel):
         region = self.platform_id.lower()
         if region[-1].isdigit():
             region = region[:-1]
+        match region:
+            case "oc":
+                region = "oce"
         return region
 
     @property

@@ -4,7 +4,7 @@ from itertools import batched
 from celery import group
 from django.conf import settings
 from django.db.utils import IntegrityError
-from django.db.models import Count, Subquery, OuterRef
+from django.db.models import Count, Exists, Subquery, OuterRef
 from django.db.models import Case, When, Sum
 from django.db.models import IntegerField, Q
 from django.utils import timezone
@@ -57,6 +57,7 @@ from openai.types.chat import ChatCompletionMessageParam
 
 ROLES = ["top", "jg", "mid", "adc", "sup"]
 logger = logging.getLogger(__name__)
+api = get_riot_api()
 
 
 class RateLimitError(Exception):
@@ -66,30 +67,18 @@ class RateLimitError(Exception):
 # @query_debugger
 @app.task(name='match.tasks.import_match')
 def import_match(match_id, region, refresh=False):
-    """Import a match by its ID.
+    match = fetch_match_json(match_id, region)
+    if not isinstance(match, dict):
+        return match
+    import_match_from_data(match, region, refresh=refresh)
 
-    Parameters
-    ----------
-    match_id : ID
-    region : str
-    refresh : bool
-        Whether or not to re-import the match if it already exists.
 
-    Returns
-    -------
-    None
-
-    """
-    api = get_riot_api()
-    if not api:
-        return
+def fetch_match_json(match_id: str,  region: str):
     retry_count = -1
-    match = None
     while retry_count < 7:
         retry_count += 1
         r = api.match.get(match_id, region=region)
         match = r.content
-
         if r.status_code == 429:
             if retry_count == 7:
                 return "throttled"
@@ -99,28 +88,13 @@ def import_match(match_id, region, refresh=False):
         elif r.status_code == 404:
             return "not found"
         else:
-            import_match_from_data(match, region, refresh=refresh)
-            return
+            return match
 
 
-def fetch_match_json(match_id: str,  region: str, refresh=False):
-    api = get_riot_api()
-    r = api.match.get(match_id, region=region)
-    match = r.content
-    if r.status_code == 429:
-        return "throttled"
-    if r.status_code == 404:
-        return "not found"
-    return match
-
-
-def import_summoner_from_participant(participants: list[ParticipantModel], region):
+def prepare_summoners_from_participants(participants: list[ParticipantModel], region):
     sums = []
     for part in participants:
-        simple_riot_id = None
-        if part.riotIdGameName and part.riotIdTagline:
-            simple_riot_id = get_simple_riot_id(part.riotIdGameName, part.riotIdGameName)
-        if part.summonerId:
+        if (part.puuid or "").lower() != 'bot':
             summoner = Summoner(
                 _id=part.summonerId,
                 name=part.summonerName.strip(),
@@ -129,10 +103,9 @@ def import_summoner_from_participant(participants: list[ParticipantModel], regio
                 puuid=part.puuid,
                 riot_id_name=part.riotIdGameName,
                 riot_id_tagline=part.riotIdTagline,
-                simple_riot_id=simple_riot_id,
             )
             sums.append(summoner)
-    Summoner.objects.bulk_create(sums, ignore_conflicts=True)
+    return sums
 
 
 def full_import(name=None, puuid=None, region=None, **kwargs):
@@ -268,74 +241,73 @@ def import_recent_matches(
 
     """
     has_more = True
-    api = get_riot_api()
     import_count = 0
-    if api:
-        index = start
-        size = 100
-        if index + size > end:
-            size = end - start
-        please_continue = True
-        while has_more and please_continue:
-            riot_match_request_time = time.time()
+    index = start
+    size = 100
+    if index + size > end:
+        size = end - start
+    please_continue = True
+    while has_more and please_continue:
+        riot_match_request_time = time.time()
 
-            logger.info(f"Getting {start=} {size=}.  {startTime=}")
-
-            apicall = partial(
-                api.match.filter,
-                puuid,
-                region=region,
-                start=index,
-                count=size,
-                startTime=startTime,
-                endTime=endTime,
-                queue=queue,
+        apicall = partial(
+            api.match.filter,
+            puuid,
+            region=region,
+            start=index,
+            count=size,
+            startTime=startTime,
+            endTime=endTime,
+            queue=queue,
+        )
+        retry_count = -1
+        matches = []
+        while retry_count < 7:
+            retry_count += 1
+            r = apicall()
+            logger.debug('response: %s' % str(r))
+            riot_match_request_time = time.time() - riot_match_request_time
+            logger.debug(
+                f"Riot API match filter request time : {riot_match_request_time}"
             )
-            retry_count = -1
-            matches = []
-            while retry_count < 7:
-                retry_count += 1
-                r = apicall()
-                logger.debug('response: %s' % str(r))
-                riot_match_request_time = time.time() - riot_match_request_time
-                logger.debug(
-                    f"Riot API match filter request time : {riot_match_request_time}"
-                )
-                try:
-                    if r.status_code == 404:
-                        matches = []
-                    else:
-                        matches = r.json()
-                    break
-                except Exception:
-                    time.sleep(2**retry_count)
-                    return 0
-            if len(matches) > 0:
-                existing_ids = [x._id for x in Match.objects.filter(_id__in=matches)]
-                if existing_ids and break_on_match_found:
-                    has_more = False
-                new_matches = list(set(matches) - set(existing_ids))
-                import_count += len(new_matches)
-                start_time = time.perf_counter()
-                if use_celery:
-                    jobs = []
-                    for batch in batched(new_matches, 10):
-                        for match_id in batch:
-                            jobs.append(import_match.s(match_id, region))
-                    result = group(jobs).apply_async()
-                    while not result.ready():
-                        time.sleep(1)
-                    logger.info(f'Celery match import time: {time.perf_counter() - start_time}')
+            try:
+                if r.status_code == 404:
+                    matches = []
                 else:
-                    jobs = [(x, region) for x in new_matches]
-                    with ThreadPool(processes=10) as pool:
-                        pool.starmap(pool_match_import, jobs)
-                        logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
-            else:
+                    matches = r.json()
+                break
+            except Exception:
+                time.sleep(2**retry_count)
+        if len(matches) > 0:
+            existing_ids = [x._id for x in Match.objects.filter(_id__in=matches)]
+            if existing_ids and break_on_match_found:
                 has_more = False
-            index += size
-            if index >= end:
-                please_continue = False
+            new_matches = list(set(matches) - set(existing_ids))
+            import_count += len(new_matches)
+            start_time = time.perf_counter()
+            if use_celery:
+                jobs = []
+                for batch in batched(new_matches, 10):
+                    for match_id in batch:
+                        jobs.append(import_match.s(match_id, region))
+                result = group(jobs).apply_async()
+                while not result.ready():
+                    time.sleep(1)
+                logger.info(f'Celery match import time: {time.perf_counter() - start_time}')
+            else:
+                jobs = [(x, region) for x in new_matches]
+                with ThreadPool(processes=10) as pool:
+                    pool.starmap(pool_match_import, jobs)
+                pool.close()
+                pool.join()
+                logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
+            if len(matches) < size:
+                has_more = False
+        else:
+            has_more = False
+        index += size
+        if index >= end:
+            please_continue = False
     return import_count
 
 
@@ -366,54 +338,91 @@ def bulk_import(puuid: str, last_import_time_hours: int = 24, count=200, offset=
         import_recent_matches(offset, offset + count, puuid, region=summoner.region)
 
 
-@app.task(name="match.huge_match_import_task")
-def huge_match_import_task(days=60, break_early=True):
-    thresh = timezone.now() - timedelta(days=days)
-    thresh_epoch_ms = thresh.timestamp() * 1000
-    qs = Participant.objects.filter(
-        match__game_creation__gt=thresh_epoch_ms,
-        match__queue_id__in=[FLEX_QUEUE, SOLO_QUEUE],
+def celery_task_pool(jobs, pool_size=10):
+    pool: list = [None] * pool_size
+    i = 0
+    for job in jobs:
+        job_started = False
+        while not job_started:
+            for i in range(len(pool)):
+                pool_job = pool[i]
+                if not pool_job or pool_job.ready():
+                    result = job.delay()
+                    pool[i] = result
+                    job_started = True
+                    if pool_job and pool_job.ready():
+                        i += 1
+                        yield i
+                    break
+            time.sleep(0.1)
+    pool = [job for job in pool if job is not None]
+    expected = len(pool)
+    ready_count = 0
+    while ready_count < expected:
+        for job in pool:
+            if job.ready():
+                ready_count += 1
+                i += 1
+                yield i
+        time.sleep(0.1)
+
+
+@app.task(name="match.tasks.huge_match_import_task")
+def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
+    thresh = timezone.now() - timedelta(hours=hours_thresh)
+
+    qs = Summoner.objects.filter(
+        Exists(Participant.objects.filter(
+            puuid=OuterRef("puuid"),
+            match__queue_id__in=[FLEX_QUEUE, SOLO_QUEUE],
+            match__game_creation_dt__gt=thresh,
+        )),
         puuid__isnull=False,
+        region="na",
     ).exclude(
-        puuid__in=Summoner.objects.filter(
-            huge_match_import_at__gt=timezone.now() - timedelta(days=1),
-        ).values('puuid')
-    ).select_related("match").order_by('puuid').distinct('puuid')
+        huge_match_import_at__gt=timezone.now() - timedelta(hours=exclude_hours)
+    )
+
     count = qs.count()
     logger.info(f"Found {count} participants for huge_match_import_task.")
-    imported = 0
-    batch = 5
-    for a, participants in enumerate(batched(qs.iterator(), batch)):
-        jobs = []
-        summoners = []
-        for b, participant in enumerate(participants):
-            i = (a * batch) + b
-            start_time = thresh
-            if summoner := Summoner.objects.filter(puuid=participant.puuid).first():
-                if break_early and summoner.huge_match_import_at and summoner.huge_match_import_at > thresh:
-                    # only go back as far as we need to for this summoner
-                    start_time = summoner.huge_match_import_at
-            logger.info(f"Importing back to {start_time=}")
-            jobs.append(import_recent_matches.s(
+    if not count:
+        return
+
+    logger.info(f"Query loop.  Found {count} new participants.")
+    i = -1
+    elapsed_start = time.perf_counter()
+
+    def get_jobs(qs, start_time):
+        for summoner in qs:
+            if break_early and summoner.huge_match_import_at and summoner.huge_match_import_at > thresh:
+                # only go back as far as we need to for this summoner
+                start_time = summoner.huge_match_import_at
+            if not summoner:
+                continue
+            import_time = timezone.now()
+            job = import_recent_matches.s(
                 0,
                 10_000,
-                participant.puuid,
-                participant.match.region,
+                summoner.puuid,
+                summoner.region,
                 startTime=start_time,
-                use_celery=True,
-            ))
-            if summoner:
-                summoner.huge_match_import_at = timezone.now()
-                summoners.append(summoner)
-            if i % 100 == 0:
-                logger.info(f"Finished importing {i} of {count} summoner's games.")
-                logger.info(f"Imported {imported} new games.")
-        result  = group(jobs).apply_async()
-        while not result.ready():
-            time.sleep(1)
-        imported += sum(result.get())
-        Summoner.objects.bulk_update(summoners, fields=["huge_match_import_at"])
-    logger.info(f"huge_match_import_task finished: Imported {imported} total new games.")
+                use_celery=False,
+            )
+            yield job
+            summoner.huge_match_import_at = import_time
+            summoner.save(update_fields=["huge_match_import_at"])
+
+    for _ in celery_task_pool(get_jobs(qs.iterator(2000), thresh), 10):
+        i += 1
+        if i % 100 == 0:
+            elapsed = time.perf_counter() - elapsed_start
+            time_per_part = elapsed / (i or 1)
+            estimated_remaining = time_per_part * (count - i) / 60
+            logger.info(f"Finished importing {i} participants of about {count}.")
+            logger.info(f"Estimated time remaining for query loop: {estimated_remaining} minutes")
+
+    logger.info(f"{i} total summoner games imported.")
+    logger.info("huge_match_import_task finished.")
 
 
 def get_top_played_with(
@@ -525,7 +534,6 @@ def import_advanced_timeline(match_id: str, overwrite=False):
         if overwrite and hasattr(match, 'advancedtimeline_id'):
             assert match.advancedtimeline
             match.advancedtimeline.delete()
-        api = get_riot_api()
         region = match.platform_id.lower()
         logger.info(f"Requesting info for match {match.id} in region {region}")
         try:
@@ -635,13 +643,6 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                         ...
                     case tmparsers.DragonSoulGivenEventModel():
                         ...
-                    case tmparsers.ItemPurchasedEventModel():
-                        item_purchase_events.append(ItemPurchasedEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            item_id=evm.itemId,
-                            participant_id=evm.participantId,
-                        ))
                     case tmparsers.ItemDestroyedEventModel():
                         item_destroyed_events.append(ItemDestroyedEvent(
                             frame_id=frame.id,
@@ -651,6 +652,13 @@ def import_advanced_timeline(match_id: str, overwrite=False):
                         ))
                     case tmparsers.ItemSoldEventModel():
                         item_sold_events.append(ItemSoldEvent(
+                            frame_id=frame.id,
+                            timestamp=evm.timestamp,
+                            item_id=evm.itemId,
+                            participant_id=evm.participantId,
+                        ))
+                    case tmparsers.ItemPurchasedEventModel():
+                        item_purchase_events.append(ItemPurchasedEvent(
                             frame_id=frame.id,
                             timestamp=evm.timestamp,
                             item_id=evm.itemId,
@@ -1115,7 +1123,6 @@ def import_match_from_data(data, region: str, refresh=False):
         patch=sem_ver.get(2, ''),
         build=sem_ver.get(3, ''),
         end_of_game_result=info.endOfGameResult,
-        is_fully_imported=True,
     )
     try:
         match_model.save()
@@ -1127,12 +1134,14 @@ def import_match_from_data(data, region: str, refresh=False):
             logging.warning("Attempted to import game which was already imported. Ignoring.")
             return
 
-    participants_data = info.participants
-    import_summoner_from_participant(participants_data, region)
+    Summoner.objects.bulk_create(
+        prepare_summoners_from_participants(info.participants, region),
+        ignore_conflicts=True,
+    )
 
     participants: list[Participant] = []
     stats: list[Stats] = []
-    for part in participants_data:
+    for part in info.participants:
         # PARTICIPANT
         participant_model = build_participant(part, match_model)
         participants.append(participant_model)

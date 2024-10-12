@@ -144,10 +144,12 @@ python-dateutil==2.9.0.post0
     #   botocore
     #   celery
     #   faker
-python-decouple==3.3
+python-decouple==3.8
 pytz==2024.1
 redis==4.6.0
-    # via django-redis
+    # via
+    #   celery
+    #   django-redis
 requests==2.31.0
     # via lolwrapper
 s3transfer==0.10.1
