@@ -12,7 +12,7 @@ app.conf.beat_schedule = {
     },
     "mt-huge-match-import": {
         "task": "match.tasks.huge_match_import_task",
-        "schedule": crontab(hour="0,12"),
+        "schedule": crontab(hour="0,12", minute="0"),
     }
 }
 app.conf.timezone = "America/Los_Angeles"  # type: ignore
