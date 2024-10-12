@@ -314,7 +314,8 @@ def import_recent_matches(
             with ThreadPool(processes=10) as pool:
                 matches_data = pool.starmap(fetch_match_json, jobs)
                 matches_data = [x for x in matches_data if x not in ["not found", "throttled", None]]
-                multi_match_import(matches_data, region)
+                if matches_data:
+                    multi_match_import(matches_data, region)
             logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
             if len(matches) < size:
                 has_more = False
