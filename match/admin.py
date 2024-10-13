@@ -8,15 +8,39 @@ from .models import AdvancedTimeline, Frame, ParticipantFrame
 from .models import EliteMonsterKillEvent
 
 
+class ParticipantInline(admin.TabularInline):
+    model = Participant
+    fields = [
+        "puuid",
+        "riot_id_name",
+        "riot_id_tagline",
+        "champion_name",
+        "champ_experience",
+        "team_id",
+        "individual_position",
+        "team_position",
+    ]
+    readonly_fields = fields
+    extra = 0
+    can_delete = False
+    show_change_link = True
+
+    def champion_name(self, obj):
+        if champ := obj.get_champion():
+            return champ.name
+        return "unknown"
+
+
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
     list_display = ("_id", "game_creation_dt", "queue_id", "game_version")
     list_filter = ("platform_id", "major")
     search_fields = (
-        "participants__summoner_name_simplified",
+        "participants__riot_id_name",
         "participants__summoner_id",
         "_id",
     )
+    inlines = [ParticipantInline]
     show_full_result_count = False
     list_per_page = 30
     paginator = CachedCountPaginator
