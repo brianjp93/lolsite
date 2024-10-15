@@ -331,21 +331,6 @@ def import_recent_matches(
     return import_count
 
 
-@app.task(name="match.tasks.import_matches_for_popular_accounts")
-def import_matches_for_popular_accounts(n=100):
-    now = timezone.now()
-    week = (now - timedelta(days=7)).date()
-    qs = Summoner.objects.all().annotate(
-        views=Sum('pageview__views', filter=Q(pageview__bucket_date__gte=week))
-    ).order_by('-views').filter(views__isnull=False, views__gt=1)
-    for i, summoner in enumerate(qs[:n]):
-        logger.info(f"Importing matches for {summoner.name} ({i}) with {summoner.views=}")  # type: ignore
-        try:
-            import_recent_matches(0, 50, summoner.puuid, summoner.region)
-        except Exception:
-            logger.exception("Error while importing matches.")
-
-
 @app.task(name="match.tasks.bulk_import")
 def bulk_import(puuid: str, last_import_time_hours: int = 24, count=200, offset=10):
     now = timezone.now()
@@ -429,7 +414,7 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
             summoner.huge_match_import_at = import_time
             summoner.save(update_fields=["huge_match_import_at"])
 
-    for _ in celery_task_pool(get_jobs(qs.iterator(2000), thresh), 10):
+    for _ in celery_task_pool(get_jobs(qs.iterator(2000), thresh), pool_size=15):
         i += 1
         if i % 100 == 0:
             elapsed = time.perf_counter() - elapsed_start
@@ -438,7 +423,7 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
             logger.info(f"Finished importing {i} participants of about {count}.")
             logger.info(f"Estimated time remaining for query loop: {estimated_remaining} minutes")
 
-    logger.info(f"{i} total summoner games imported.")
+    logger.info(f"Games for {i} summoners imported.")
     logger.info("huge_match_import_task finished.")
 
 
