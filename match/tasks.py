@@ -233,18 +233,19 @@ def multi_match_import(matches_json, region):
             for bm in tmodel.bans:
                 bans.append(build_ban(bm, team))
 
-    existing_summoner_puuids = Summoner.objects.filter(puuid__in=[x.puuid for x in summoners]).values_list('puuid', flat=True)
+    seen_puuids = set(
+        Summoner.objects.filter(
+            puuid__in=[x.puuid for x in summoners],
+        ).values_list('puuid', flat=True)
+    )
     deduped_summoners = []
-    seen_puuids = set()
     for summoner in summoners:
-        if summoner.puuid not in existing_summoner_puuids and summoner.puuid not in seen_puuids:
+        if summoner.puuid not in seen_puuids:
             seen_puuids.add(summoner.puuid)
             deduped_summoners.append(summoner)
     Summoner.objects.bulk_create(
         deduped_summoners,
-        update_conflicts=True,
-        unique_fields=["puuid"],
-        update_fields=["account_id"],
+        ignore_conflicts=True,
     )
     with transaction.atomic():
         # use update_conflicts so that each model gets their ID applied,
