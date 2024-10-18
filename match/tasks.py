@@ -203,7 +203,7 @@ def multi_match_import(matches_json, region):
     matches = []
     participants = []
     stats = []
-    summoners = []
+    summoners: list[Summoner] = []
     teams = []
     bans = []
     for match_data in matches_json:
@@ -228,6 +228,10 @@ def multi_match_import(matches_json, region):
             teams.append(team)
             for bm in tmodel.bans:
                 bans.append(build_ban(bm, team))
+
+    existing_summoner_puuids = Summoner.objects.filter(puuid__in=[x.puuid for x in summoners]).values_list('puuid', flat=True)
+    summoners = [x for x in summoners if x.puuid not in existing_summoner_puuids]
+    Summoner.objects.bulk_create(summoners, ignore_conflicts=True)
     with transaction.atomic():
         # use update_conflicts so that each model gets their ID applied,
         # even on conflict
@@ -244,7 +248,6 @@ def multi_match_import(matches_json, region):
             update_fields=["champion_id"],
         )
         Stats.objects.bulk_create(stats, ignore_conflicts=True)
-        Summoner.objects.bulk_create(summoners, ignore_conflicts=True)
         Team.objects.bulk_create(
             teams,
             update_conflicts=True,

@@ -74,14 +74,14 @@ class Summoner(models.Model):
         related_name="summoners",
     )
     _id = models.CharField(
-        max_length=128, default="", blank=True, db_index=True
+        max_length=128, default="", blank=True
     )
-    region = models.CharField(max_length=8, default="", blank=True, db_index=True)
+    region = models.CharField(max_length=8, default="", blank=True)
     account_id = models.CharField(
         max_length=128, default="", blank=True, null=True
     )
     name = models.CharField(max_length=64, default="", blank=True)
-    simple_name = models.CharField(max_length=64, default="", blank=True, db_index=True)
+    simple_name = models.CharField(max_length=64, default="", blank=True)
     profile_icon_id = models.IntegerField(default=0)
     puuid = models.CharField(
         max_length=128,
@@ -106,7 +106,7 @@ class Summoner(models.Model):
 
     last_summoner_page_import = models.DateTimeField(null=True)
     huge_match_import_at = models.DateTimeField(null=True, db_index=True)
-    created_date = models.DateTimeField(default=timezone.now, db_index=True)
+    created_date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f'Summoner(region={self.region}, riotId={self.simple_riot_id})'
