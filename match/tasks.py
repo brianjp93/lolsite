@@ -206,6 +206,7 @@ def multi_match_import(matches_json, region):
     summoners: list[Summoner] = []
     teams = []
     bans = []
+    match_ids_seen = set()
     for match_data in matches_json:
         try:
             parsed = MatchResponseModel.model_validate_json(match_data)
@@ -216,6 +217,9 @@ def multi_match_import(matches_json, region):
             continue
         if parsed.info.gameDuration == 0:
             continue
+        if parsed.metadata.matchId in match_ids_seen:
+            continue
+        match_ids_seen.add(parsed.metadata.matchId)
         match = build_match(parsed)
         matches.append(match)
         summoners.extend(prepare_summoners_from_participants(parsed.info.participants, region))
@@ -230,8 +234,18 @@ def multi_match_import(matches_json, region):
                 bans.append(build_ban(bm, team))
 
     existing_summoner_puuids = Summoner.objects.filter(puuid__in=[x.puuid for x in summoners]).values_list('puuid', flat=True)
-    summoners = [x for x in summoners if x.puuid not in existing_summoner_puuids]
-    Summoner.objects.bulk_create(summoners, ignore_conflicts=True)
+    deduped_summoners = []
+    seen_puuids = set()
+    for summoner in summoners:
+        if summoner.puuid not in existing_summoner_puuids and summoner.puuid not in seen_puuids:
+            seen_puuids.add(summoner.puuid)
+            deduped_summoners.append(summoner)
+    Summoner.objects.bulk_create(
+        deduped_summoners,
+        update_conflicts=True,
+        unique_fields=["puuid"],
+        update_fields=["account_id"],
+    )
     with transaction.atomic():
         # use update_conflicts so that each model gets their ID applied,
         # even on conflict
