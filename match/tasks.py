@@ -1,5 +1,15 @@
-"""match/tasks.py
-"""
+import logging
+import time
+import json
+from datetime import timedelta
+from multiprocessing.pool import ThreadPool
+from functools import partial
+from typing import Optional
+
+from pydantic import ValidationError
+from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam
+
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.db.models import Count, Exists, Subquery, OuterRef
@@ -7,7 +17,7 @@ from django.db.models import Case, When, Sum
 from django.db.models import IntegerField, Q
 from django.utils import timezone
 from django.db import connections, transaction
-from pydantic import ValidationError
+
 from data.constants import ARENA_QUEUE, FLEX_QUEUE, SOLO_QUEUE
 
 from match.parsers.spectate import SpectateModel
@@ -39,18 +49,6 @@ from player.models import Summoner
 from player import tasks as pt
 
 from lolsite.celery import app
-import logging
-import time
-import json
-from datetime import timedelta
-
-from functools import partial
-from typing import Optional
-
-from multiprocessing.pool import ThreadPool
-
-from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam
 
 
 ROLES = ["top", "jg", "mid", "adc", "sup"]
@@ -95,101 +93,6 @@ def prepare_summoners_from_participants(participants: list[ParticipantModel], re
             )
             sums.append(summoner)
     return sums
-
-
-def full_import(name=None, puuid=None, region=None, **kwargs):
-    """Import only unimported games for a summoner.
-
-    Looks at summoner.full_import_count to determine how many
-    matches need to be imported.
-
-    Parameters
-    ----------
-    name : str
-    region : str
-    season_id : ID
-    puuid : ID
-    queue : int
-    beginTime : Epoch in ms
-    endTime : Epoch in ms
-
-    Returns
-    -------
-    None
-
-    """
-    if region is None:
-        raise Exception("region parameter is required.")
-    if name is not None:
-        summoner_id = pt.import_summoner(region, name=name)
-        summoner = Summoner.objects.get(id=summoner_id, region=region)
-        puuid = summoner.puuid
-    elif puuid is not None:
-        summoner = Summoner.objects.get(puuid=puuid, region=region)
-    else:
-        raise Exception("name or puuid must be provided.")
-
-    old_import_count = summoner.full_import_count
-    # TODO: implement get_total_matches
-    # total = get_total_matches(puuid, region, **kwargs)
-    total = 100
-
-    new_import_count = total - old_import_count
-    if new_import_count > 0:
-        logger.info(f"Importing {new_import_count} matches for {summoner.name}.")
-        is_finished = import_recent_matches(0, new_import_count, puuid, region)
-        if is_finished:
-            summoner.full_import_count = total
-            summoner.save()
-
-
-def ranked_import(name=None, puuid=None, region=None, **kwargs):
-    """Same as full_import except it only pulls from the 3 ranked queues.
-
-    Parameters
-    ----------
-    name : str
-    puuid : ID
-    region : str
-    season_id : ID
-    puuid : ID
-        the encrypted account ID
-    queue : int
-    beginTime : Epoch in ms
-    endTime : Epoch in ms
-
-    Returns
-    -------
-    None
-
-    """
-    kwargs["queue"] = [420, 440, 470]
-
-    if region is None:
-        raise Exception("region parameter is required.")
-    if name is not None:
-        summoner_id = pt.import_summoner(region, name=name)
-        summoner = Summoner.objects.get(id=summoner_id, region=region)
-        puuid = summoner.puuid
-    elif puuid is not None:
-        summoner = Summoner.objects.get(puuid=puuid, region=region)
-    else:
-        raise Exception("name or puuid must be provided.")
-
-    old_import_count = summoner.ranked_import_count
-    # TODO
-    # total = get_total_matches(account_id, region, **kwargs)
-    total = 100
-
-    new_import_count = total - old_import_count
-    if new_import_count > 0:
-        logger.info(f"Importing {new_import_count} ranked matches for {summoner.name}.")
-        is_finished = import_recent_matches(
-            0, new_import_count, puuid, region, **kwargs
-        )
-        if is_finished:
-            summoner.ranked_import_count = total
-            summoner.save()
 
 
 def pool_match_import(match_id: str, region: str, close_connections=True):
