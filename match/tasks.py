@@ -97,7 +97,10 @@ def prepare_summoners_from_participants(participants: list[ParticipantModel], re
 
 def pool_match_import(match_id: str, region: str, close_connections=True):
     match_json = fetch_match_json(match_id, region)
-    multi_match_import([match_json], region)
+    if match_json in ['not found', 'throttled']:
+        pass
+    else:
+        multi_match_import([match_json], region)
     if close_connections:
         connections.close_all()
 
@@ -234,14 +237,11 @@ def import_recent_matches(
             jobs = [(x, region) for x in new_matches]
             if jobs:
                 if len(jobs) == 1:
-                    matches_data = [fetch_match_json(*jobs[0])]
+                    pool_match_import(*jobs[0])
                 else:
                     with ThreadPool(processes=min(10, len(jobs))) as pool:
-                        matches_data = pool.starmap(fetch_match_json, jobs)
-                matches_data = [x for x in matches_data if x not in ["not found", "throttled", None]]
-                if matches_data:
-                    multi_match_import(matches_data, region)
-                    logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
+                        pool.starmap(pool_match_import, jobs)
+                logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
             if len(matches) < size:
                 has_more = False
         else:
