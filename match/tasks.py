@@ -237,7 +237,7 @@ def import_recent_matches(
             jobs = [(x, region) for x in new_matches]
             if jobs:
                 if len(jobs) == 1:
-                    pool_match_import(*jobs[0])
+                    pool_match_import(*jobs[0], close_connections=False)
                 else:
                     with ThreadPool(processes=min(10, len(jobs))) as pool:
                         pool.starmap(pool_match_import, jobs)
