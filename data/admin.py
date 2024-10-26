@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import Rito
-from .models import Queue, Season, Map
+from .models import Queue, Map
 from .models import GameMode, GameType
 from .models import ReforgedTree, ReforgedRune
 
@@ -28,10 +28,6 @@ class RitoAdmin(admin.ModelAdmin):
 
 class QueueAdmin(admin.ModelAdmin):
     list_display = ("_map", "_id")
-
-
-class SeasonAdmin(admin.ModelAdmin):
-    list_display = ("name", "_id")
 
 
 class MapAdmin(admin.ModelAdmin):
@@ -213,7 +209,6 @@ class SummonerSpellVarAdmin(admin.ModelAdmin):
 
 admin.site.register(Rito, RitoAdmin)
 admin.site.register(Queue, QueueAdmin)
-admin.site.register(Season, SeasonAdmin)
 admin.site.register(Map, MapAdmin)
 admin.site.register(GameMode, GameModeAdmin)
 admin.site.register(GameType, GameTypeAdmin)

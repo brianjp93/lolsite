@@ -3,7 +3,7 @@ from data.parsers.profile_icons import CDProfileIconListParser
 from data.parsers.summoner_spells import CDSummonerSpellListParser
 
 from .models import CDProfileIcon, Rito
-from .models import Season, Map, Queue
+from .models import Map, Queue
 from .models import GameMode, GameType
 from .models import ReforgedTree, ReforgedRune, CDSummonerSpell
 
@@ -97,24 +97,9 @@ def import_last_versions(start, end, language="en_US", overwrite=True):
 
 @app.task(name="data.tasks.import_all")
 def import_all(version, language="en_US", overwrite=False, api_only=False):
-    """Import all constants data from constants.py and riot api.
-
-    Adds data to database
-
-    Parameters
-    ----------
-    version : str
-    language : str
-
-    Returns
-    -------
-    None
-
-    """
     # import from data.constants.py
     logger.info(f"Importing data for version {version}")
     if not api_only:
-        import_seasons()
         import_maps()
         import_queues()
         import_gamemodes()
@@ -137,17 +122,6 @@ def import_all(version, language="en_US", overwrite=False, api_only=False):
     import_cdspells(major, minor)
 
     import_reforgedrunes(version=version, language=language, overwrite=overwrite)
-
-
-def import_seasons():
-    """Import seasons from contants.py
-    """
-    for season_data in constants.SEASONS:
-        season = Season(**season_data)
-        try:
-            season.save()
-        except IntegrityError:
-            continue
 
 
 def import_maps():

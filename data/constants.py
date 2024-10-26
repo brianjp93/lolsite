@@ -2,8 +2,10 @@
 
 from typing import TypedDict
 from enum import StrEnum
-
 from pydantic import BaseModel
+from datetime import datetime
+
+from django.utils import timezone
 
 
 MIN_PASSWORD_LENGTH = 7
@@ -39,79 +41,29 @@ def get_null_bool(val):
     return out
 
 
+class Season(BaseModel):
+    start: datetime
+    end: datetime
+    patch_start: tuple
+    patch_end: tuple
+    name: str
+
+
 SEASONS = [
-    {
-        "_id": 0,
-        "name": "PRESEASON 3",
-    },
-    {
-        "_id": 1,
-        "name": "SEASON 3",
-    },
-    {
-        "_id": 2,
-        "name": "PRESEASON 2014",
-    },
-    {
-        "_id": 3,
-        "name": "SEASON 2014",
-    },
-    {
-        "_id": 4,
-        "name": "PRESEASON 2015",
-    },
-    {
-        "_id": 5,
-        "name": "SEASON 2015",
-    },
-    {
-        "_id": 6,
-        "name": "PRESEASON 2016",
-    },
-    {
-        "_id": 7,
-        "name": "SEASON 2016",
-    },
-    {
-        "_id": 8,
-        "name": "PRESEASON 2017",
-    },
-    {
-        "_id": 9,
-        "name": "SEASON 2017",
-    },
-    {
-        "_id": 10,
-        "name": "PRESEASON 2018",
-    },
-    {
-        "_id": 11,
-        "name": "SEASON 2018",
-    },
-    {
-        "_id": 12,
-        "name": "PRESEASON 2019",
-    },
-    {
-        "_id": 13,
-        "name": "SEASON 2019",
-    },
-    {
-        "_id": 14,
-        "name": "PRESEASON 2020",
-    },
-    {
-        "_id": 15,
-        "name": "SEASON 2020",
-    },
-    {
-        "_id": 16,
-        "name": "PRESEASON 2021",
-    },
-    {
-        "_id": 17,
-        "name": "SEASON 2021",
-    },
+    Season(
+        start=timezone.datetime(2020, 1, 23),
+        end=timezone.datetime(2020, 11, 10),
+        patch_start=(10, 1),
+        patch_end=(10, 22),
+        name="Season 10",
+    ),
+    # Season(
+    #     start=timezone.datetime(2020, 1, 23),
+    #     end=timezone.datetime(2020, 11, 10),
+    #     patch_start=(10, 1),
+    #     patch_end=(10, 22),
+    #     name="Season 14 Split 2",
+    # )
 ]
 
 FLEX_QUEUE = 440

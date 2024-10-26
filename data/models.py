@@ -40,14 +40,6 @@ class Queue(models.Model):
             return None
 
 
-class Season(models.Model):
-    _id = models.IntegerField(unique=True)
-    name = models.CharField(max_length=128, default="", blank=True)
-
-    def __str__(self):
-        return f'Season(_id={self._id}, name="{self.name}")'
-
-
 class Map(models.Model):
     _id = models.IntegerField(unique=True)
     name = models.CharField(max_length=256, default="", blank=True)
