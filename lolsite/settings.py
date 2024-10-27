@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'core',
     "lolsite",
     "data",
+    "stats",
     "match",
     "player",
     "fun",

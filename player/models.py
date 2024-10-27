@@ -185,6 +185,10 @@ class Summoner(models.Model):
         logger.info(f"{self.name} suspicious_account query took {end - start:.2f} seconds.")
         return {'quick_ff_count': quick_surrender_count, 'total': all_games_count}
 
+    def add_match_to_stats(self, match):
+        from stats.tasks import add_match_to_summoner_champion_stats
+        add_match_to_summoner_champion_stats(self, match)
+
 
 class Pro(models.Model):
     position_choices = (
