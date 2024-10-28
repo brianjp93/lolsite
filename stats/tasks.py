@@ -1,4 +1,5 @@
-from django.db import transaction
+from django.db.models import Value
+from django.db.models.expressions import CombinedExpression, F
 
 from player.models import Summoner
 from match.models import Match
@@ -16,67 +17,88 @@ def add_match_to_summoner_champion_stats(summoner, match):
     part = (
         match.participants.filter(puuid=summoner.puuid).select_related("stats").first()
     )
+    if match.seconds < 180:
+        return
     if not part:
         return
     stats = part.stats
     if not stats:
         return
-    with transaction.atomic():
-        sc, _ = SummonerChampion.objects.select_for_update().get_or_create(
-            summoner=summoner,
-            major=match.major,
-            minor=match.minor,
-            champion_key=part.champion_id,
-            queue=match.queue_id,
+
+    sc = SummonerChampion(
+        summoner=summoner,
+        major=match.major,
+        minor=match.minor,
+        champion_key=part.champion_id,
+        queue=match.queue_id,
+    )
+    SummonerChampion.objects.bulk_create(
+        [sc],
+        update_conflicts=True,
+        unique_fields=["summoner_id", "major", "minor", "champion_key", "queue"],
+        update_fields=["champion_key"],
+    )
+    win_add = loss_add = 0
+    if stats.win:
+        win_add = 1
+    else:
+        loss_add = 1
+    (
+        SummonerChampion.objects.filter(id=sc.pk)
+        .exclude(game_ids__contains=[match._id])
+        .update(
+            game_ids=CombinedExpression(F("game_ids"), "||", Value([match._id])),
+            kills=F("kills") + stats.kills,
+            deaths=F("deaths") + stats.deaths,
+            assists=F("assists") + stats.assists,
+            damage_to_champions=F("damage_to_champions")
+            + stats.total_damage_dealt_to_champions,
+            damage_to_turrets=F("damage_to_turrets") + stats.damage_dealt_to_turrets,
+            damage_to_objectives=F("damage_to_objectives")
+            + stats.damage_dealt_to_objectives,
+            damage_taken=F("damage_taken") + stats.total_damage_taken,
+            damage_mitigated=F("damage_mitigated") + stats.damage_self_mitigated,
+            vision_score=F("vision_score") + stats.vision_score,
+            total_seconds=F("total_seconds") + match.seconds,
+            wins=F("wins") + win_add,
+            losses=F("losses") + loss_add,
         )
-        if not sc:
-            return
-        if match._id in sc.game_ids:
-            # don't update stats if the game has already been seen
-            return
-        sc.game_ids.append(match._id)
-        sc.kills += stats.kills
-        sc.deaths += stats.deaths
-        sc.assists += stats.assists
-        sc.damage_to_champions += stats.total_damage_dealt_to_champions
-        sc.damage_to_turrets += stats.damage_dealt_to_turrets
-        sc.damage_to_objectives += stats.damage_dealt_to_objectives
-        sc.damage_taken += stats.total_damage_taken
-        sc.damage_mitigated += stats.damage_self_mitigated
-        sc.vision_score += stats.vision_score
-        sc.total_seconds += match.seconds
-        if stats.win:
-            sc.wins += 1
-        else:
-            sc.losses += 1
-        sc.save()
-    with transaction.atomic():
-        enemy = (
-            match.participants.filter(
-                team_position=part.team_position,
-            )
-            .exclude(team_id=part.team_id)
-            .first()
+    )
+
+    enemy = (
+        match.participants.filter(
+            team_position=part.team_position,
         )
-        if not enemy:
-            return
-        sca, _ = SummonerChampionAgainst.objects.select_for_update().get_or_create(
-            summoner_champion=sc,
-            champion_key=enemy.champion_id,
-        )
-        if stats.win:
-            sca.wins += 1
-        else:
-            sca.losses += 1
-        sca.save()
+        .exclude(team_id=part.team_id)
+        .first()
+    )
+    if not enemy:
+        return
+    sca = SummonerChampionAgainst(
+        summoner_champion=sc,
+        champion_key=enemy.champion_id,
+    )
+    SummonerChampionAgainst.objects.bulk_create(
+        [sca],
+        update_conflicts=True,
+        unique_fields=["summoner_champion_id", "champion_key"],
+        update_fields=["champion_key"],
+    )
+    SummonerChampionAgainst.objects.filter(id=sca.pk).exclude(
+        game_ids__contains=[match._id]
+    ).update(
+        game_ids=CombinedExpression(F("game_ids"), "||", Value([match._id])),
+        wins=F("wins") + win_add,
+        losses=F("losses") + loss_add,
+    )
 
 
 @app.task
 def add_match_to_summoner_champion_stats_all_participants(match):
+    """Add to champion stats for all participants of one match."""
     if isinstance(match, str):
         match = Match.objects.get(_id=match)
-    participants = match.participants.all()
-    puuids = [x.puuid for x in participants]
+    puuids = match.participants.all().values_list("puuid", flat=True)
     summoners = Summoner.objects.filter(puuid__in=puuids)
     for summoner in summoners:
         add_match_to_summoner_champion_stats(summoner, match)
