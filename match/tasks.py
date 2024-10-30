@@ -5,6 +5,8 @@ from datetime import timedelta
 from multiprocessing.pool import ThreadPool
 from functools import partial
 from typing import Optional
+from urllib3.exceptions import MaxRetryError
+from requests.exceptions import ConnectionError
 
 from pydantic import ValidationError
 from openai import OpenAI
@@ -64,7 +66,10 @@ def fetch_match_json(match_id: str, region: str):
     retry_count = -1
     while retry_count < 7:
         retry_count += 1
-        r = api.match.get(match_id, region=region)
+        try:
+            r = api.match.get(match_id, region=region)
+        except (MaxRetryError, ConnectionError):
+            return
         match = r.content
         if r.status_code == 429:
             if retry_count == 7:
@@ -97,7 +102,7 @@ def prepare_summoners_from_participants(participants: list[ParticipantModel], re
 
 def pool_match_import(match_id: str, region: str, close_connections=True):
     match_json = fetch_match_json(match_id, region)
-    if match_json in ['not found', 'throttled']:
+    if match_json in ['not found', 'throttled', None]:
         pass
     else:
         multi_match_import([match_json], region)
@@ -185,6 +190,7 @@ def import_recent_matches(
     puuid: str,
     region: str,
     queue: Optional[int] = None,
+    queueType: Optional[str] = None,
     startTime: Optional[timezone.datetime] = None,
     endTime: Optional[timezone.datetime] = None,
     break_on_match_found = False,
@@ -208,25 +214,30 @@ def import_recent_matches(
             startTime=startTime,
             endTime=endTime,
             queue=queue,
+            queueType=queueType,
         )
         retry_count = -1
         matches = []
         while retry_count < 7:
             retry_count += 1
-            r = apicall()
-            logger.debug('response: %s' % str(r))
-            riot_match_request_time = time.time() - riot_match_request_time
-            logger.debug(
-                f"Riot API match filter request time : {riot_match_request_time}"
-            )
             try:
-                if r.status_code == 404:
-                    matches = []
-                else:
-                    matches = r.json()
-                break
-            except Exception:
-                time.sleep(2**retry_count)
+                r = apicall()
+            except (MaxRetryError, ConnectionError):
+                matches = []
+            else:
+                logger.debug('response: %s' % str(r))
+                riot_match_request_time = time.time() - riot_match_request_time
+                logger.debug(
+                    f"Riot API match filter request time : {riot_match_request_time}"
+                )
+                try:
+                    if r.status_code == 404:
+                        matches = []
+                    else:
+                        matches = r.json()
+                    break
+                except Exception:
+                    time.sleep(2**retry_count)
         if len(matches) > 0:
             existing_ids = [x._id for x in Match.objects.filter(_id__in=matches)]
             if existing_ids and break_on_match_found:
@@ -293,8 +304,28 @@ def celery_task_pool(jobs, pool_size=10):
         time.sleep(0.1)
 
 
+@app.task
+def huge_match_single_summoner_import_job(summoner_id, puuid, region, start_time, enqueue_time):
+    enqueue_threshold = timezone.now() - timedelta(hours=12)
+    if enqueue_time < enqueue_threshold:
+        logger.info("Task older than 12 hours old, skipping.")
+        return
+    match_count = import_recent_matches(
+        0,
+        10_000,
+        puuid,
+        region,
+        startTime=start_time,
+        queueType="ranked",
+    )
+    Summoner.objects.filter(id=summoner_id).update(
+        huge_match_import_at=timezone.now(),
+    )
+    return match_count
+
+
 @app.task(name="match.tasks.huge_match_import_task")
-def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
+def huge_match_import_task(hours_thresh=72, exclude_hours=24):
     thresh = timezone.now() - timedelta(hours=hours_thresh)
 
     qs = Summoner.objects.filter(
@@ -307,7 +338,7 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
         region="na",
     ).exclude(
         huge_match_import_at__gt=timezone.now() - timedelta(hours=exclude_hours)
-    )
+    ).values("id", "puuid", "region", "huge_match_import_at")
 
     count = qs.count()
     logger.info(f"Found {count} participants for huge_match_import_task.")
@@ -315,37 +346,17 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
         return
 
     logger.info(f"Query loop.  Found {count} new participants.")
-    i = -1
-    elapsed_start = time.perf_counter()
 
-    def get_jobs(qs, start_time):
-        for summoner in qs:
-            if break_early and summoner.huge_match_import_at and summoner.huge_match_import_at > thresh:
-                # only go back as far as we need to for this summoner
-                start_time = summoner.huge_match_import_at
-            import_time = timezone.now()
-            job = import_recent_matches.s(
-                0,
-                10_000,
-                summoner.puuid,
-                summoner.region,
-                startTime=start_time,
-            )
-            yield job
-            summoner.huge_match_import_at = import_time
-            summoner.save(update_fields=["huge_match_import_at"])
+    for summoner in qs.iterator(2000):
+        huge_match_single_summoner_import_job.delay(
+            summoner["id"],
+            summoner["puuid"],
+            summoner["region"],
+            max(thresh, summoner["huge_match_import_at"] or thresh),
+            timezone.now(),
+        )
 
-    for _ in celery_task_pool(get_jobs(qs.iterator(2000), thresh), pool_size=10):
-        i += 1
-        if i % 100 == 0:
-            elapsed = time.perf_counter() - elapsed_start
-            time_per_part = elapsed / (i or 1)
-            estimated_remaining = time_per_part * (count - i) / 60
-            logger.info(f"Finished importing {i} participants of about {count}.")
-            logger.info(f"Estimated time remaining for query loop: {estimated_remaining} minutes")
-
-    logger.info(f"Games for {i} summoners imported.")
-    logger.info("huge_match_import_task finished.")
+    logger.info("enqueued all tasks for huge_match_import_task.")
 
 
 def get_top_played_with(
