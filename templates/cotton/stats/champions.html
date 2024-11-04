@@ -62,19 +62,19 @@
           <b>{{ stat.kda|floatformat:2 }}</b> KDA
         </div>
         <div>
-          <b>{{ stat.dpm|intcomma|floatformat:0 }}</b> DPM
+          <b>{{ stat.dpm|floatformat:0|intcomma }}</b> DPM
         </div>
         <div>
-          <b>{{ stat.vspm|intcomma|floatformat:1 }}</b> VSPM
+          <b>{{ stat.vspm|floatformat:1|intcomma }}</b> VSPM
         </div>
         <div>
-          <b>{{ stat.dtpm|intcomma|floatformat:0 }}</b> Damage Taken per Minute
+          <b>{{ stat.dtpm|floatformat:0|intcomma }}</b> Damage Taken per Minute
         </div>
         <div>
-          <b>{{ stat.dttpm|intcomma|floatformat:0 }}</b> Tower Damage per Minute
+          <b>{{ stat.dttpm|floatformat:0|intcomma }}</b> Tower Damage per Minute
         </div>
         <div>
-          <b>{{ stat.dtopm|intcomma|floatformat:0 }}</b> Objective Damage per Minute
+          <b>{{ stat.dtopm|floatformat:0|intcomma }}</b> Objective Damage per Minute
         </div>
       </div>
     {% endfor %}
