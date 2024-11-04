@@ -21,6 +21,7 @@ from player.models import EmailVerification, NameChange, Summoner
 from player.serializers import RankPositionSerializer
 from player.viewsapi import get_by_puuid
 from player import tasks as pt
+from stats.views import champion_stats_context
 
 
 def get_page_urls(request, query_param='page'):
@@ -113,6 +114,7 @@ class SummonerPage(generic.ListView):
             pt.import_positions(self.summoner.id)
 
         context = super().get_context_data(*args, **kwargs)
+        context.update(champion_stats_context(self.summoner.puuid))
         prev_url, next_url = get_page_urls(self.request)
         context['next_url'] = next_url
         context['prev_url'] = prev_url

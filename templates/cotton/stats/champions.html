@@ -1,0 +1,77 @@
+{% load humanize %}
+<div class="bg-slate-700 rounded px-2 champion-stats">
+  <h3>Champion Stats ({{ major }}.{{ minor|default:"x" }})</h3>
+  <div class="flex gap-x-2">
+    <div class="flex flex-col gap-y-2">
+      <button
+        {% if minor is not None %}
+          hx-get="{% url 'stats:champions-version' puuid=puuid major=major minor=minor queue=420 %}"
+        {% else %}
+          hx-get="{% url 'stats:champions-version' puuid=puuid major=major queue=420 %}"
+        {% endif %}
+        hx-target="closest .champion-stats"
+        hx-swap="outerHTML"
+        class="btn btn-default"
+      >
+        Solo Queue
+      </button>
+      <button
+        {% if minor is not None %}
+          hx-get="{% url 'stats:champions-version' puuid=puuid major=major minor=minor queue=440 %}"
+        {% else %}
+          hx-get="{% url 'stats:champions-version' puuid=puuid major=major queue=440 %}"
+        {% endif %}
+        hx-target="closest .champion-stats"
+        hx-swap="outerHTML"
+        class="btn btn-default"
+      >
+        Flex Queue
+      </button>
+    </div>
+    <div class="flex flex-col gap-y-2 gap-x-1 h-[100px] flex-wrap">
+      {% for version in versions %}
+        <button
+          {% if version.minor %}
+            hx-get="{% url 'stats:champions-version' puuid=puuid major=version.major minor=version.minor queue=queue %}"
+          {% else %}
+            hx-get="{% url 'stats:champions-version' puuid=puuid major=version.major queue=queue %}"
+          {% endif %}
+          hx-swap="outerHTML"
+          hx-target="closest .champion-stats"
+          class="btn btn-default">
+          {{ version.version }}
+        </button>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="flex gap-2 max-h-[400px] overflow-y-scroll flex-wrap">
+    {% for stat in championstats %}
+      <div class="flex flex-col p-2 border border-white rounded">
+        <div class="flex gap-x-2">
+          <img src="{{ stat.champion.image_url }}" class="w-8 h-8" />
+          <div>
+            {{ stat.champion.name }} ({{ stat.wins }} / {{ stat.losses }})
+          </div>
+        </div>
+        <div>
+          <b>{{ stat.kda|floatformat:2 }}</b> KDA
+        </div>
+        <div>
+          <b>{{ stat.dpm|intcomma|floatformat:0 }}</b> DPM
+        </div>
+        <div>
+          <b>{{ stat.vspm|intcomma|floatformat:1 }}</b> VSPM
+        </div>
+        <div>
+          <b>{{ stat.dtpm|intcomma|floatformat:0 }}</b> Damage Taken per Minute
+        </div>
+        <div>
+          <b>{{ stat.dttpm|intcomma|floatformat:0 }}</b> Tower Damage per Minute
+        </div>
+        <div>
+          <b>{{ stat.dtopm|intcomma|floatformat:0 }}</b> Objective Damage per Minute
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>

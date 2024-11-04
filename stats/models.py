@@ -1,10 +1,16 @@
 from functools import cached_property
+
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Func
 from django.db.models.functions import Cast, Greatest
 from django.contrib.postgres.fields import ArrayField
 
 from data.models import Champion
+
+
+class ArrayConstructor(Func):
+    function = 'ARRAY'
+    template = '%(function)s[%(expressions)s]'
 
 
 class SummonerChampion(models.Model):
@@ -14,6 +20,12 @@ class SummonerChampion(models.Model):
     champion_key = models.CharField(max_length=32)
     major = models.PositiveSmallIntegerField()
     minor = models.PositiveSmallIntegerField()
+    version = models.GeneratedField(
+        expression=ArrayConstructor(F('major'), F('minor')),
+        output_field=ArrayField(models.IntegerField(), size=2),
+        db_persist=True,
+        db_index=True,
+    )
     queue = models.IntegerField()
 
     game_ids = ArrayField(models.CharField(), default=list)
@@ -79,7 +91,7 @@ class SummonerChampion(models.Model):
         help_text="damage to objectives per minute",
     )
     dmpm = models.GeneratedField(
-        expression=F("damage_taken")
+        expression=F("damage_mitigated")
         / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
         * 60.0,
         output_field=models.FloatField(),

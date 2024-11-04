@@ -1,3 +1,4 @@
+import json
 import re
 from string import ascii_uppercase
 
@@ -6,6 +7,8 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.postgres import fields
 import logging
+
+from django.utils.functional import cached_property
 
 from core.models import TimestampedModel, VersionedModel, ThumbnailedModel
 from data.constants import ITEM_STAT_COSTS
@@ -18,6 +21,28 @@ class Rito(models.Model):
     token = models.CharField(max_length=256, default="", blank=True)
     versions = models.CharField(max_length=10000, default="[]", blank=True)
     last_data_import = models.DateTimeField(null=True)
+
+    @cached_property
+    def minor_version_list(self):
+        versions = json.loads(self.versions)
+        ret = []
+        seen = set()
+        for x in versions:
+            parts = x.split('.')
+            if len(parts) != 3:
+                continue
+            a, b, c = parts
+            key = f"{a}.{b}"
+            if key in seen:
+                continue
+            seen.add(key)
+            ret.append({
+                "version": f"{a}.{b}",
+                "major": a,
+                "minor": b,
+                "patch": c,
+            })
+        return ret
 
     def __str__(self):
         return f'Rito(token="{self.token}")'

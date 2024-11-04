@@ -12,6 +12,7 @@ urlpatterns = [
     path("", include("player.urls", namespace="player")),
     path("", include("match.urls")),
     path("", views.Home.as_view(), name="home"),
+    path("stats", include("stats.urls", namespace="stats")),
     path("login/go/", player_views.login_action),
     path("logout/", player_views.logout_action, name="logout"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

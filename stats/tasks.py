@@ -105,17 +105,23 @@ def add_match_to_summoner_champion_stats_all_participants(match):
 
 
 @app.task
-def add_all_matches_for_summoner_to_stats(summoner):
+def add_all_matches_for_summoner_to_stats(summoner, major=None, minor=None):
     if isinstance(summoner, int):
         summoner = Summoner.objects.get(id=summoner)
-    seen_games = sum(
-        SummonerChampion.objects.filter(summoner=summoner).values_list(
-            "game_ids", flat=True
-        ),
-        start=[],
-    )
+    elif isinstance(summoner, str):
+        summoner = Summoner.objects.get(puuid=summoner)
+    sc_qs = SummonerChampion.objects.filter(summoner=summoner)
+    if major:
+        sc_qs = sc_qs.filter(major=major)
+    if minor:
+        sc_qs = sc_qs.filter(minor=minor)
+    seen_games = sum(sc_qs.values_list("game_ids", flat=True), start=[])
     new_matches = Match.objects.filter(participants__puuid=summoner.puuid).exclude(
         _id__in=seen_games
     )
+    if major is not None:
+        new_matches = new_matches.filter(major=major)
+    if minor is not None:
+        new_matches = new_matches.filter(minor=minor)
     for match in new_matches:
         add_match_to_summoner_champion_stats(summoner, match)
