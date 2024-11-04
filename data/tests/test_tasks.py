@@ -4,23 +4,12 @@ Tests for the tasks.py file.
 
 """
 from django.test import TestCase
-from unittest import mock
 
-from data.models import Season, Map, Queue, GameMode
+from data.models import Map, Queue, GameMode
 from data.models import GameType
 
 from data import tasks
 from data import constants as DATA_CONSTANTS
-
-
-class TestImportSeasons(TestCase):
-    def setUp(self):
-        tasks.import_seasons()
-
-    def test_imported(self):
-        count = Season.objects.all().count()
-        true_count = len(DATA_CONSTANTS.SEASONS)
-        self.assertEqual(count, true_count)
 
 
 class TestImportMaps(TestCase):
