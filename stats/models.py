@@ -2,10 +2,10 @@ from functools import cached_property
 
 from django.db import models
 from django.db.models import F, Func
-from django.db.models.functions import Cast, Greatest
 from django.contrib.postgres.fields import ArrayField
 
 from data.models import Champion
+from stats.managers import SummonerChampionQuerySet
 
 
 class ArrayConstructor(Func):
@@ -42,62 +42,7 @@ class SummonerChampion(models.Model):
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
 
-    vspm = models.GeneratedField(
-        expression=F("vision_score")
-        / Greatest(
-            Cast("total_seconds", models.FloatField()),
-            1.0,
-            output_field=models.FloatField(),
-        )
-        * 60.0,
-        output_field=models.FloatField(),
-        db_persist=True,
-    )
-    dpm = models.GeneratedField(
-        expression=F("damage_to_champions")
-        / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
-        * 60.0,
-        output_field=models.FloatField(),
-        db_persist=True,
-    )
-    kda = models.GeneratedField(
-        expression=(F("kills") + F("assists"))
-        / Greatest(Cast("deaths", models.FloatField()), 1.0),
-        output_field=models.FloatField(),
-        db_persist=True,
-    )
-    dtpm = models.GeneratedField(
-        expression=F("damage_taken")
-        / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
-        * 60.0,
-        output_field=models.FloatField(),
-        db_persist=True,
-        help_text="damage taken per minute",
-    )
-    dttpm = models.GeneratedField(
-        expression=F("damage_to_turrets")
-        / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
-        * 60.0,
-        output_field=models.FloatField(),
-        db_persist=True,
-        help_text="damage to turrets per minute",
-    )
-    dtopm = models.GeneratedField(
-        expression=F("damage_to_objectives")
-        / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
-        * 60.0,
-        output_field=models.FloatField(),
-        db_persist=True,
-        help_text="damage to objectives per minute",
-    )
-    dmpm = models.GeneratedField(
-        expression=F("damage_mitigated")
-        / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
-        * 60.0,
-        output_field=models.FloatField(),
-        db_persist=True,
-        help_text="damage mitigated per minute",
-    )
+    objects = SummonerChampionQuerySet.as_manager()
 
     class Meta:
         constraints = [
