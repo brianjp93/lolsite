@@ -1,6 +1,11 @@
 {% load humanize %}
 <div class="bg-slate-700 rounded px-2 champion-stats">
   <h3>Champion Stats ({{ major }}.{{ minor|default:"x" }})</h3>
+  {% if queue == 420 %}
+    <div>Solo Queue</div>
+  {% elif queue == 440%}
+    <div>Flex Queue</div>
+  {% endif %}
   <div class="flex gap-x-2">
     <div class="flex flex-col gap-y-2">
       <button
