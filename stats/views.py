@@ -51,31 +51,7 @@ def champion_stats_context(puuid, major=None, minor=None, queue=420):
         total_seconds=Sum("total_seconds"),
         wins=Sum("wins"),
         losses=Sum("losses"),
-        vspm=F("vision_score")
-        / Greatest(
-            Cast("total_seconds", models.FloatField()),
-            1.0,
-            output_field=models.FloatField(),
-        )
-        * 60.0,
-        kda=(F("kills") + F("assists"))
-        / Greatest(Cast("deaths", models.FloatField()), 1.0),
-        dpm=F("damage_to_champions")
-        / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
-        * 60.0,
-        dtpm=F("damage_taken")
-        / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
-        * 60.0,
-        dttpm=F("damage_to_turrets")
-        / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
-        * 60.0,
-        dtopm=F("damage_to_objectives")
-        / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
-        * 60.0,
-        dmpm=F("damage_mitigated")
-        / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
-        * 60.0,
-    )
+    ).with_computed_stats()
 
     qs = qs.annotate(
         game_count=F("wins") + F("losses"),
