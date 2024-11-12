@@ -2,7 +2,12 @@
 
 {% load humanize %}
 <div class="rounded px-2 champion-stats {{ class }}">
-  <h3>Champion Stats ({{ major }}.{{ minor|default:"x" }})</h3>
+  <div class="flex">
+    <h3>
+      Champion Stats ({{ major }}.{{ minor|default:"x" }})
+    </h3>
+    <div class="loading w-12 h-12"></div>
+  </div>
   {% if queue == 420 %}
     <div>Solo Queue</div>
   {% elif queue == 440%}
@@ -18,6 +23,7 @@
         {% endif %}
         hx-target="closest .champion-stats"
         hx-swap="outerHTML"
+        hx-indicator=".loading"
         class="btn btn-default"
       >
         Solo Queue
@@ -30,6 +36,7 @@
         {% endif %}
         hx-target="closest .champion-stats"
         hx-swap="outerHTML"
+        hx-indicator=".loading"
         class="btn btn-default"
       >
         Flex Queue
@@ -45,6 +52,7 @@
           {% endif %}
           hx-swap="outerHTML"
           hx-target="closest .champion-stats"
+          hx-indicator=".loading"
           class="btn btn-default">
           {{ version.version }}
         </button>
