@@ -1,0 +1,31 @@
+{% extends "layout/base.html" %}
+
+{% block header_js %}
+{{ block.super }}
+<script src="https://www.google.com/recaptcha/enterprise.js?render={{ GOOGLE_RECAPTCHA_KEY }}"></script>
+{% endblock header_js %}
+
+{% block content %}
+<div class="container mx-auto">
+  <h1 class="mx-auto">Sign Up</h1>
+  <form id="signup" class="forms" action="" method="POST">
+    {% csrf_token %}
+    {{ form }}
+    <button
+      class="g-recaptcha btn btn-success w-full"
+      data-sitekey="{{ GOOGLE_RECAPTCHA_KEY }}"
+      data-callback='onSubmit'
+      data-action='submit'
+      type="submit"
+    >
+      Sign Up
+    </button>
+  </form>
+</div>
+
+<script>
+   function onSubmit(token) {
+     document.getElementById("signup").submit();
+   }
+</script>
+{% endblock content %}

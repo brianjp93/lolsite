@@ -1,0 +1,10 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="container mx-auto">
+  <h1 class="mx-auto">Account Created</h1>
+  <div>Please check your email and click the link to activate your account.</div>
+
+  <div>After you activate, you can <a href="{% url 'player:login' %}">Login</a></div>
+</div>
+{% endblock content %}

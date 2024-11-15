@@ -1,5 +1,6 @@
 from django.urls import path, re_path
 from django.contrib.auth.views import LoginView, LogoutView
+from django.views.generic import TemplateView
 from . import views
 
 app_name = 'player'
@@ -10,6 +11,9 @@ urlpatterns = [
     path("lookup/", views.SummonerLookup.as_view(), name="summoner-lookup"),
     path("puuid/<str:puuid>/", views.SummonerPagePuuid.as_view(), name="summoner-puuid"),
     path("player/autocomplete/", views.SummonerAutoComplete.as_view(), name="summoner-autocomplete"),
-    path("player/login/", LoginView.as_view(), name="login-view"),
+    path("player/login/", LoginView.as_view(), name="login"),
     path("player/logout/", LogoutView.as_view(), name="logout-view"),
+    path("player/signup/", views.SignupView.as_view(), name="signup"),
+    path("player/activate/", views.EmailActivationView.as_view(), name="activate"),
+    path("player/account-created/", TemplateView.as_view(template_name="registration/account_created.html"), name="account-created"),
 ]
