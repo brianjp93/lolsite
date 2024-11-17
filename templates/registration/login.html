@@ -2,11 +2,19 @@
 
 {% block content %}
   <div class="container mx-auto">
-		<h1 class="mx-auto">Login to the Hardstuck Club</h1>
-		<form class="forms" action="" method="POST">
-			{% csrf_token %}
-			{{ form }}
-			<button class="btn btn-success w-full" type="submit">Log In</button>
-		</form>
+    <h1 class="mx-auto">
+      Login to the Hardstuck Club
+    </h1>
+    <form class="forms" action="" method="POST">
+      {% csrf_token %}
+      {{ form }}
+      <button class="btn btn-success w-full" type="submit">
+        Log In
+      </button>
+    </form>
+    <div>
+      Don't have an account?
+      <a href="{% url 'player:signup' %}">Sign Up</a>
+    </div>
   </div>
 {% endblock content %}

@@ -4,10 +4,12 @@ import urllib.parse
 import logging
 
 from django.core.signing import BadSignature, SignatureExpired
+from django.middleware.csrf import CsrfViewMiddleware
+from django.views.decorators.csrf import csrf_protect
 import requests
 
 from django.http import Http404
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -26,7 +28,7 @@ from match.parsers.spectate import SpectateModel
 from match.viewsapi import MatchBySummoner
 from match import tasks as mt
 from player.filters import SummonerAutocompleteFilter, SummonerMatchFilter
-from player.models import EmailVerification, NameChange, Summoner
+from player.models import EmailVerification, Favorite, NameChange, Summoner
 from player.serializers import RankPositionSerializer
 from player.viewsapi import get_by_puuid
 from player.forms import SignupForm
@@ -153,6 +155,9 @@ class SummonerPage(generic.ListView):
         context['prev_url'] = prev_url
         context["summoner"] = self.summoner
         context["filterset"] = self.filterset
+        if self.request.user.is_authenticated:
+            context["is_favorite"] = self.request.user.favorite_set.filter(summoner=self.summoner)
+        self.request.user
         context["namechanges"] = NameChange.objects.filter(
             summoner=self.summoner,
         ).order_by("-created_date")
@@ -343,3 +348,26 @@ class EmailActivationView(generic.TemplateView):
             user.is_active = True
             user.save()
         return context
+
+
+class FavoriteView(generic.TemplateView, CsrfViewMiddleware):
+    template_name = "player/_favorite.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        summoner_id = self.request.POST.get("summoner_id")
+        context["summoner_id"] = summoner_id
+        if self.request.user.is_authenticated:
+            context["is_favorite"] = self.request.user.favorite_set.filter(summoner__id=summoner_id).exists()
+        return context
+
+
+    def post(self, request, *args, **kwargs):
+        summoner_id = request.POST.get("summoner_id")
+        is_favorite = request.POST.get("is_favorite")
+        summoner = get_object_or_404(Summoner, id=summoner_id)
+        if is_favorite:
+            Favorite.objects.update_or_create(user=self.request.user, summoner=summoner)
+        else:
+            Favorite.objects.filter(user=self.request.user, summoner=summoner).delete()
+        return render(request, self.get_template_names(), self.get_context_data())

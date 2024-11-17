@@ -12,7 +12,7 @@
     {% csrf_token %}
     {{ form }}
     <button
-      class="g-recaptcha btn btn-success w-full"
+      class="g-recaptcha btn btn-success w-full mt-4"
       data-sitekey="{{ GOOGLE_RECAPTCHA_KEY }}"
       data-callback='onSubmit'
       data-action='submit'
