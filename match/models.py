@@ -1291,6 +1291,8 @@ class VictimDamage(models.Model):
             return 'Baron'
         elif 'riftherald' in name:
             return 'Rift Herald'
+        elif 'krug' in name:
+            return 'Krugs'
         return self.name
 
 
