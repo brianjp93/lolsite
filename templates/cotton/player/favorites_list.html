@@ -1,6 +1,6 @@
 <div class="relative" x-data="{ open: false }" @click.outside="open = false">
   <div class="cursor-pointer" @click="open = !open">
-    {{ name }}
+    {{ request.user.email }}
   </div>
   <div class="absolute w-full">
     <div class="h-full">

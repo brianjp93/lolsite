@@ -4,7 +4,9 @@
   </div>
   <div class="ml-auto items-center content-center flex">
     {% if request.user.is_authenticated %}
-      <c-player.favorites-list :name="request.user.email" />
+      <div id="favorites-list">
+        <c-player.favorites-list />
+      </div>
       <form action="{% url 'player:logout-view' %}" method="POST">
         {% csrf_token %}
         <button class="btn btn-link" type="submit">Logout</button>

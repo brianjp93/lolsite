@@ -1,1 +1,7 @@
-<c-player.favorite :is_favorite="is_favorite" :summoner_id="summoner_id" />
+<c-player.favorite :is_favorite="is_favorite" :summoner_id="summoner.pk" />
+
+{% if favorites_list is not None %}
+<div id="favorites-list" hx-swap-oob="true">
+  <c-player.favorites-list :favorite_list="favorite_list" :summoner=summoner />
+</div>
+{% endif %}

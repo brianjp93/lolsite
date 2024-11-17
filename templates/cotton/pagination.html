@@ -1,0 +1,45 @@
+{% comment %}
+parameters
+----------
+  - page
+  - path
+  - partial_path
+  - target
+{% endcomment %}
+<div class="flex gap-x-2 my-2">
+  {% if page.has_previous %}
+    <a
+      hx-get="{{ partial_path }}{% querystring page=page.previous_page_number %}"
+      hx-push-url="{{ path }}{% querystring page=page.previous_page_number %}"
+      hx-target="{{ target }}"
+      hx-indicator="next .loading"
+      class="btn btn-default"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
+      </svg>
+    </a>
+  {% else %}
+    <button
+      disabled
+      class="btn btn-default">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
+      </svg>
+    </button>
+  {% endif %}
+  <a
+    hx-get="{{ partial_path }}{% querystring page=page.next_page_number %}"
+    hx-push-url="{{ path }}{% querystring page=page.next_page_number %}"
+    hx-target="{{ target }}"
+    class="btn btn-default"
+    hx-indicator="next .loading"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+    </svg>
+  </a>
+  <div class="my-auto text-sm font-bold">Page: {{ page.number }}</div>
+  <a href="{{ path }}" class="my-auto text-sm btn btn-link" title="Clears all filter parameters">reset</a>
+  <div class="loading h-8 w-8"></div>
+</div>

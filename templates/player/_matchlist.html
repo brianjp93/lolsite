@@ -1,3 +1,10 @@
-{% for match in object_list %}
-  {% include "player/_matchcard.html" %}
-{% endfor %}
+<c-player.matchlist :matches="object_list" />
+
+<div id="matchlist-pagination-1" hx-swap-oob="true">
+  <c-pagination
+    :page="page_obj"
+    path="{% url 'player:summoner-page' region=summoner.region tagline=summoner.riot_id_tagline name=summoner.riot_id_name %}"
+    partial_path="{% url 'player:matchlist' puuid=summoner.puuid %}"
+    target="#matchlist"
+  />
+</div>

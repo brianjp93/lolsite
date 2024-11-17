@@ -43,11 +43,13 @@
       </div>
 
       <div class="text-xs mx-auto">
-        <button
-          hx-get="{% url 'player:spectate' region=summoner.region puuid=summoner.puuid %}"
-          hx-target=".live-game-content"
-          hx-swap="innerHTML"
-          class="btn btn-link live-game-button">Show Live Game</button>
+        <c-player.live-dot :region="summoner.region" :puuid="summoner.puuid" offset="left-0 top-[-5px]">
+          <button
+            hx-get="{% url 'player:spectate' region=summoner.region puuid=summoner.puuid %}"
+            hx-target=".live-game-content"
+            hx-swap="innerHTML"
+            class="btn btn-link live-game-button">Show Live Game</button>
+        </c-player.live-dot>
       </div>
     </div>
   </div>

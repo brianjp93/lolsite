@@ -59,21 +59,6 @@ def send_verification_email(request, email):
     )
 
 
-def get_page_urls(request, query_param='page'):
-    page = int(request.GET.get(query_param, 1))
-    base_path = request.path
-    search = request.GET.copy()
-    next_page_params = search.copy()
-    next_page_params['page'] = str(page + 1)
-
-    prev_page_params = search.copy()
-    prev_page_params['page'] = str(page - 1)
-
-    next_url = base_path + "?" + urllib.parse.urlencode(next_page_params)
-    prev_url = base_path + "?" + urllib.parse.urlencode(prev_page_params)
-    return prev_url, next_url
-
-
 def login_action(request):
     """Login
 
@@ -150,9 +135,6 @@ class SummonerPage(generic.ListView):
 
         context = super().get_context_data(*args, **kwargs)
         context.update(champion_stats_context(self.summoner.puuid))
-        prev_url, next_url = get_page_urls(self.request)
-        context['next_url'] = next_url
-        context['prev_url'] = prev_url
         context["summoner"] = self.summoner
         context["filterset"] = self.filterset
         if self.request.user.is_authenticated:
@@ -167,6 +149,8 @@ class SummonerPage(generic.ListView):
 
     @cached_property
     def summoner(self):
+        if puuid := self.kwargs.get("puuid"):
+            return Summoner.objects.get(puuid=puuid)
         name = self.kwargs["name"]
         tagline = self.kwargs["tagline"]
         region = self.kwargs["region"]
@@ -177,7 +161,55 @@ class SummonerPage(generic.ListView):
         return SummonerMatchFilter(
             self.request.GET,
             Match.objects.all(),
-            region=self.kwargs["region"],
+            puuid=self.summoner.puuid,
+        )
+
+    def get_queryset(self):
+        qs = self.filterset.qs
+        qs = qs.prefetch_related("participants", "participants__stats")
+        qs = qs.order_by("-game_creation")
+        return qs
+
+
+class SummonerMatchList(generic.ListView):
+    paginate_by: int = 10  # type: ignore
+    template_name = "player/_matchlist.html"
+
+    def get_context_data(self, *args, **kwargs):
+        page = int(self.request.GET.get('page', 1))
+        queue = self.request.GET.get('queue', None)
+        played_with = self.request.GET.get('played_with', None)
+        champion = self.request.GET.get('champion', None)
+        queue = int(queue) if queue else None
+        limit = self.paginate_by
+        start = limit * (page - 1)
+        end = start + limit
+        do_riot_api_request = not (played_with or champion)
+        if do_riot_api_request:
+            mt.import_recent_matches(
+                start,
+                end,
+                self.summoner.puuid,
+                self.summoner.region,
+                queue,
+            )
+        context = super().get_context_data(*args, **kwargs)
+        context["summoner"] = self.summoner
+        self.request.user
+        set_related_match_objects(context['object_list'])
+        set_focus_participants(context["object_list"], self.summoner.puuid)
+        return context
+
+    @cached_property
+    def summoner(self):
+        puuid = self.kwargs["puuid"]
+        return Summoner.objects.get(puuid=puuid)
+
+    @cached_property
+    def filterset(self):
+        return SummonerMatchFilter(
+            self.request.GET,
+            Match.objects.all(),
             puuid=self.summoner.puuid,
         )
 
@@ -356,9 +388,10 @@ class FavoriteView(generic.TemplateView, CsrfViewMiddleware):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         summoner_id = self.request.POST.get("summoner_id")
-        context["summoner_id"] = summoner_id
+        context["summoner"] = Summoner.objects.get(pk=summoner_id)
         if self.request.user.is_authenticated:
             context["is_favorite"] = self.request.user.favorite_set.filter(summoner__id=summoner_id).exists()
+            context["favorites_list"] = [x.summoner for x in self.request.user.favorite_set.order_by("sort_int")]
         return context
 
 
