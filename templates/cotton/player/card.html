@@ -37,7 +37,12 @@
             </div>
           </c-slot>
         </c-tooltip>
-        <div class="ml-auto">
+        <div class="ml-auto flex gap-x-4">
+          <div
+            class="w-6"
+            hx-trigger="load" hx-swap="innerHTML" hx-get="{% url 'player:played_with_count' puuid=summoner.puuid %}">
+            <c-player.played-with-count :count=0 />
+          </div>
           <c-player.favorite :summoner_id="summoner.id" :is_favorite="is_favorite" />
         </div>
       </div>

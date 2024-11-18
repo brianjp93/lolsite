@@ -33,4 +33,5 @@ urlpatterns = [
     path("player/activate/", views.EmailActivationView.as_view(), name="activate"),
     path("player/account-created/", TemplateView.as_view(template_name="registration/account_created.html"), name="account-created"),
     path("player/favorite/", views.FavoriteView.as_view(), name="favorite"),
+    path("player/played-with-count/<str:puuid>/", views.played_with_count, name="played_with_count"),
 ]

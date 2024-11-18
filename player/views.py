@@ -29,7 +29,7 @@ from match.viewsapi import MatchBySummoner
 from match import tasks as mt
 from player.filters import SummonerAutocompleteFilter, SummonerMatchFilter
 from player.models import EmailVerification, Favorite, NameChange, Summoner
-from player.serializers import RankPositionSerializer
+from player.serializers import RankPositionSerializer, ReputationSerializer
 from player.viewsapi import get_by_puuid
 from player.forms import SignupForm
 from player import tasks as pt
@@ -404,3 +404,9 @@ class FavoriteView(generic.TemplateView, CsrfViewMiddleware):
         else:
             Favorite.objects.filter(user=self.request.user, summoner=summoner).delete()
         return render(request, self.get_template_names(), self.get_context_data())
+
+
+def played_with_count(request, puuid):
+    summoner = get_object_or_404(Summoner, puuid=puuid)
+    count = ReputationSerializer.user_has_match_overlap(request.user, summoner)
+    return render(request, "cotton/player/played_with_count.html", {'count': count})
