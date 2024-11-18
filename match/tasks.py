@@ -316,7 +316,7 @@ def huge_match_single_summoner_import_job(summoner_id, puuid, region, start_time
         puuid,
         region,
         startTime=start_time,
-        queueType="ranked",
+        queue=420,
     )
     Summoner.objects.filter(id=summoner_id).update(
         huge_match_import_at=timezone.now(),
@@ -331,7 +331,7 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24):
     qs = Summoner.objects.filter(
         Exists(Participant.objects.filter(
             puuid=OuterRef("puuid"),
-            match__queue_id__in=[FLEX_QUEUE, SOLO_QUEUE],
+            match__queue_id=SOLO_QUEUE,
             match__game_creation_dt__gt=thresh,
         )),
         puuid__isnull=False,
