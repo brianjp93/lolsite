@@ -306,9 +306,9 @@ def celery_task_pool(jobs, pool_size=10):
 
 @app.task
 def huge_match_single_summoner_import_job(summoner_id, puuid, region, start_time, enqueue_time):
-    enqueue_threshold = timezone.now() - timedelta(hours=12)
+    enqueue_threshold = timezone.now() - timedelta(hours=6)
     if enqueue_time < enqueue_threshold:
-        logger.info("Task older than 12 hours old, skipping.")
+        logger.info("Task older than 6 hours old, skipping.")
         return
     match_count = import_recent_matches(
         0,
@@ -325,7 +325,7 @@ def huge_match_single_summoner_import_job(summoner_id, puuid, region, start_time
 
 
 @app.task(name="match.tasks.huge_match_import_task")
-def huge_match_import_task(hours_thresh=72, exclude_hours=24):
+def huge_match_import_task(hours_thresh=24, exclude_hours=6):
     thresh = timezone.now() - timedelta(hours=hours_thresh)
 
     qs = Summoner.objects.filter(
