@@ -1,0 +1,74 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mx-auto px-2 flex flex-col">
+  <div class="flex flex-col gap-y-2">
+    <h1>My Account</h1>
+    <div>
+      Hello, {{ user.email }}.
+    </div>
+  </div>
+  <div class="flex flex-col gap-y-2">
+    <h3>Connected Summoner Accounts ({{ user.summonerlinks.all.count }})</h3>
+    <div class="flex flex-wrap gap-2">
+      {% for link in user.summonerlinks.all %}
+        <div class="rounded border border-slate-200 p-4">
+          <div class="flex">
+            <div class="underline">
+              {{ link.summoner.get_name }} ({{ link.summoner.region }})
+            </div>
+            <div class="ml-auto">
+              {% if link.verified %}
+                <c-pill class="text-green-700">
+                  Verified
+                </c-pill>
+              {% else %}
+                <c-pill class="text-red-700">
+                  Not Verified
+                </c-pill>
+              {% endif %}
+            </div>
+          </div>
+          <div>
+            {% if not link.verified %}
+              <div>
+                Your account is not yet verified, please set this summoner's profile icon to the icon below, and then hit confirm.
+              </div>
+              <div>
+                <img
+                  src="{{ link.profile_icon.image_url }}"
+                  alt="Profile Icon"
+                  class="m-12 h-12"
+                >
+              </div>
+            {% else %}
+              <div>
+                <img src="{{ link.summoner.get_profile_icon.image_url }}" alt="">
+              </div>
+              <div>This summoner is linked to your account.</div>
+            {% endif %}
+          </div>
+          {% if not link.verified %}
+          <form action="" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="summonerlink_id" value="{{ link.id }}">
+            <div class="flex gap-x-2">
+              <button type="submit" name="action" value="confirm" class="btn btn-success">Confirm</button>
+              <button type="submit" name="action" value="delete" class="btn btn-danger">Cancel</button>
+            </div>
+          </form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <div>
+      <a
+        href="{% url 'player:summoner-connect' %}"
+        class="btn btn-default"
+      >
+        Connect New Summoner
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock content %}

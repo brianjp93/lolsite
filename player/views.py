@@ -1,18 +1,20 @@
 from datetime import timedelta
 from functools import cached_property
-import urllib.parse
 import logging
 
 from django.core.signing import BadSignature, SignatureExpired
 from django.middleware.csrf import CsrfViewMiddleware
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 import requests
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.views import generic
 from django.conf import settings
 from django.db import transaction
@@ -31,7 +33,7 @@ from player.filters import SummonerAutocompleteFilter, SummonerMatchFilter
 from player.models import EmailVerification, Favorite, NameChange, Summoner
 from player.serializers import RankPositionSerializer, ReputationSerializer
 from player.viewsapi import get_by_puuid
-from player.forms import SignupForm
+from player.forms import SignupForm, SummonerConnectForm
 from player import tasks as pt
 from stats.views import champion_stats_context
 from lolsite.signers import ActivationSigner
@@ -410,3 +412,36 @@ def played_with_count(request, puuid):
     summoner = get_object_or_404(Summoner, puuid=puuid)
     count = ReputationSerializer.user_has_match_overlap(request.user, summoner)
     return render(request, "cotton/player/played_with_count.html", {'count': count})
+
+
+class MyAccountView(LoginRequiredMixin, generic.DetailView):
+    template_name = "player/account.html"
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    @method_decorator(csrf_protect)
+    def post(self, request, *args, **kwargs):
+        summonerlink_id = request.POST["summonerlink_id"]
+        action = request.POST["action"]
+        match action:
+            case "delete":
+                request.user.summonerlinks.filter(id=summonerlink_id).delete()
+                messages.success(request, "Cancelled summoner-connection request.")
+            case "confirm":
+                # do confirm stuff
+                summonerlink = request.user.summonerlinks.filter(id=summonerlink_id).first()
+                messages.success(request, f"Confirmed summoner-connection for {summonerlink.summoner.get_name()}")
+                pass
+            case _:
+                messages.error(request, "action can only be confirm or delete")
+        return redirect("player:account")
+
+
+class SummonerConnectFormView(LoginRequiredMixin, generic.CreateView):
+    template_name = "player/connect-summoner.html"
+    form_class = SummonerConnectForm
+    success_url = reverse_lazy("player:account")
+
+    def get_form_kwargs(self):
+        return super().get_form_kwargs() | {"user": self.request.user}

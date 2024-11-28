@@ -168,9 +168,18 @@
           {
             options: {
               maintainAspectRatio: false,
+              animation: {
+                duration: 100,
+              },
               interaction: {
                 mode: 'index',
                 intersect: false,
+              },
+              onHover: (events, elements, chart) => {
+                const idx = elements?.[0]?.index;
+                if (idx !== undefined) {
+                  setTidx(idx)
+                }
               },
               plugins: {
                 tooltip: {
@@ -200,7 +209,8 @@
               labels: data.map((x, i) => `${i}m`),
               datasets: datasets,
             },
-            plugins: [htmlLegendPlugin],
+            lineAtIndex: [0],
+            plugins: [htmlLegendPlugin, window.verticalLinePlugin],
           }
         );
       }
@@ -214,6 +224,15 @@
       }
     }
     setChart('total_damage_done_to_champions');
+
+    function updateLine(tidx) {
+      if (tidx !== undefined) {
+        chart.config._config.lineAtIndex = [tidx];
+        chart.update();
+      }
+    }
+
+    window.onTidxChangeHandlers.push(updateLine);
 
     function selectAllParticipants() {
       for (let i=0; i<chart.data.datasets.length; i++) {

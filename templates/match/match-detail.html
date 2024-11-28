@@ -24,7 +24,7 @@
     function setTidx(n) {
       tidx = n;
       for (const f of window.onTidxChangeHandlers) {
-        f();
+        f(tidx);
       }
     }
   </script>

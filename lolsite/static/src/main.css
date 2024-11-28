@@ -12,8 +12,19 @@ html {
 }
 
 .alert {
+  @apply border-2 p-2 rounded;
+
   &.alert-info {
-    @apply text-blue-950 border-2 rounded border-blue-900 bg-blue-200 p-2;
+    @apply text-blue-950 border-blue-900 bg-blue-200;
+  }
+  &.alert-success {
+    @apply text-green-950 border-green-900 bg-green-200;
+  }
+  &.alert-warning {
+    @apply text-orange-950 border-orange-900 bg-orange-200;
+  }
+  &.alert-danger {
+    @apply text-red-950 border-red-900 bg-red-200;
   }
 }
 

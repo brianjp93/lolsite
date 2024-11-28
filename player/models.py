@@ -1,8 +1,4 @@
-"""player/models.py
-
-Model definitions for the player app.
-
-"""
+import random
 import time
 from typing import TypedDict
 import uuid
@@ -19,8 +15,9 @@ from django.utils import timezone
 from notification.models import Notification
 
 from data import constants as dc
-from data.models import CDProfileIcon
+from data.models import CDProfileIcon, ProfileIcon
 
+from player.constants import VERIFY_WITH_ICON
 from player.utils import SIMPLE_RIOT_ID_EXPR, get_admin
 
 
@@ -455,9 +452,14 @@ class SummonerLink(models.Model):
         # Set new uuid if one isn't set.
         if self.uuid == "":
             self.uuid = uuid.uuid4().hex[-6:]
+        if self.profile_icon_id is None:
+            self.profile_icon_id = random.choice(VERIFY_WITH_ICON)
         # Always set modified_date on save().
         self.modified_date = timezone.now()
         super(SummonerLink, self).save(*args, **kwargs)
+
+    def profile_icon(self):
+        return ProfileIcon.objects.filter(_id=self.profile_icon_id).order_by("-major", "-minor").first()
 
 
 class Comment(models.Model):
