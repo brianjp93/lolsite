@@ -3,8 +3,6 @@ from data.parsers.profile_icons import CDProfileIconListParser
 from data.parsers.summoner_spells import CDSummonerSpellListParser
 
 from .models import CDProfileIcon, Rito
-from .models import Map, Queue
-from .models import GameMode, GameType
 from .models import ReforgedTree, ReforgedRune, CDSummonerSpell
 
 from .models import Item, ItemEffect, FromItem, IntoItem
@@ -96,14 +94,9 @@ def import_last_versions(start, end, language="en_US", overwrite=True):
 
 
 @app.task(name="data.tasks.import_all")
-def import_all(version, language="en_US", overwrite=False, api_only=False):
+def import_all(version, language="en_US", overwrite=False):
     # import from data.constants.py
     logger.info(f"Importing data for version {version}")
-    if not api_only:
-        import_maps()
-        import_queues()
-        import_gamemodes()
-        import_gametypes()
 
     # require api connection
     major, minor, *_ = version.split('.')
@@ -122,50 +115,6 @@ def import_all(version, language="en_US", overwrite=False, api_only=False):
     import_cdspells(major, minor)
 
     import_reforgedrunes(version=version, language=language, overwrite=overwrite)
-
-
-def import_maps():
-    """Import maps from constants.py
-    """
-    for map_data in constants.MAPS:
-        _map = Map(**map_data)
-        try:
-            _map.save()
-        except IntegrityError:
-            continue
-
-
-def import_queues():
-    """Import queues from constants.py
-    """
-    for q_data in constants.QUEUES:
-        q = Queue(**q_data)
-        try:
-            q.save()
-        except IntegrityError:
-            continue
-
-
-def import_gamemodes():
-    """Import gamemodes from constants.py
-    """
-    for gamemode_data in constants.GAMEMODES:
-        gamemode = GameMode(**gamemode_data)
-        try:
-            gamemode.save()
-        except IntegrityError:
-            continue
-
-
-def import_gametypes():
-    """Import gametypes from constants.py
-    """
-    for gametype_data in constants.GAMETYPES:
-        gametype = GameType(**gametype_data)
-        try:
-            gametype.save()
-        except IntegrityError:
-            continue
 
 
 @app.task(name="data.tasks.import_reforgedrunes")
@@ -689,7 +638,7 @@ def import_champion_advanced(champion_id, overwrite=False):
 
                 for i, var_data in enumerate(spell_data["vars"]):
                     coeff = var_data["coeff"]
-                    if type(coeff) == list:
+                    if isinstance(coeff, list):
                         coeff = "/".join([str(x) for x in coeff])
                     else:
                         coeff = str(coeff)
@@ -865,7 +814,7 @@ def import_summoner_spells(version="", language="en_US"):
             _vars = _spell["vars"]
             for i, var in enumerate(_vars):
                 coeffs = var["coeff"]
-                if type(coeffs) == list:
+                if isinstance(coeffs, list):
                     coeffs = "/".join([str(x) for x in coeffs])
                 else:
                     coeffs = str(coeffs)

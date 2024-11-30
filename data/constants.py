@@ -1,5 +1,3 @@
-# data constants to add to DB
-
 from typing import TypedDict
 from enum import StrEnum
 from pydantic import BaseModel
