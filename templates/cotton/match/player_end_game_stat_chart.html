@@ -1,0 +1,93 @@
+<c-vars id="end-stat-graph" />
+
+<div id="{{ id }}-chart" class="flex flex-col h-full">
+  <div class="relative flex-grow">
+    <canvas id="{{ id }}" class="absolute inset-0 w-full h-full">
+    </canvas>
+  </div>
+
+  <div class="flex gap-x-1 gap-y-1 flex-wrap text-xs justify-center stat-select-buttons">
+    {% with part=serialized_participants|first %}
+      {% for key, stat in part.stats.items %}
+        <button class="px-auto btn btn-default {{ key }}">{{ stat.label }}</button>
+      {% endfor %}
+    {% endwith %}
+  </div>
+</div>
+
+<script>
+  (function() {
+    const data = window.participantsList;
+    let selected = 'total_damage_dealt_to_champions';
+    const chart = new Chart(
+      document.getElementById('{{ id }}'),
+      {
+        type: 'bar',
+        data: {
+          // want to set image as label
+          // https://github.com/reactchartjs/react-chartjs-2/issues/856
+          labels: data.map((x, i) => `${x.name}`),
+          datasets: [
+            {
+              fill: true,
+              label: data?.[0]?.stats?.[selected]?.label || selected,
+              data: data.map(row => row.stats[selected].value),
+              backgroundColor: data.map(x => x.team_id === 100 ? "#2844bf": "#c71426"),
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            legend: {
+              display: false,
+            }
+          },
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          animation: {
+            duration: 500,
+          },
+          interaction: {
+            mode: 'dataset',
+            intersect: false,
+          },
+        },
+      }
+    );
+
+    function setButton(stat) {
+      for (const button of document.querySelectorAll('#{{ id }}-chart .stat-select-buttons button')) {
+        if (button.classList.contains(stat)) {
+          button.setAttribute('disabled', 'true');
+        } else {
+          button.removeAttribute('disabled');
+        }
+      }
+    }
+
+    function updateChart(stat) {
+      chart.data.datasets[0].data = data.map(row => row.stats[stat].value);
+      chart.data.datasets[0].label = data[0].stats[stat].label;
+      chart.update();
+      setButton(stat);
+    }
+
+    setButton(selected);
+
+    const stats = [
+    {% with part=serialized_participants|first %}
+      {% for key in part.stats %}
+        "{{ key }}",
+      {% endfor %}
+    {% endwith %}
+    ]
+
+    for (const stat of stats) {
+      for (const el of document.querySelectorAll(`#{{ id }}-chart .${stat}`)) {
+        el.addEventListener('click', () => updateChart(stat));
+      }
+    }
+  })();
+
+
+</script>

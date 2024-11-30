@@ -747,6 +747,29 @@ class Stats(models.Model):
     def __str__(self):
         return f"Stats(participant={self.participant.summoner_name})"
 
+    @property
+    def cs(self):
+        return self.neutral_minions_killed + self.total_minions_killed
+
+    @property
+    def total_pings(self):
+        return sum((
+            self.all_in_pings,
+            self.assist_me_pings,
+            self.bait_pings,
+            self.basic_pings,
+            self.command_pings,
+            self.danger_pings,
+            self.enemy_missing_pings,
+            self.enemy_vision_pings,
+            self.get_back_pings,
+            self.hold_pings,
+            self.need_vision_pings,
+            self.on_my_way_pings,
+            self.push_pings,
+            self.vision_cleared_pings,
+        ))
+
     def perk_primary_style_image_url(self):
         """Get primary perk style image URL."""
         url = ""

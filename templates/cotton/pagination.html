@@ -29,8 +29,8 @@ parameters
     </button>
   {% endif %}
   <a
-    hx-get="{{ partial_path }}{% querystring page=page.next_page_number %}"
-    hx-push-url="{{ path }}{% querystring page=page.next_page_number %}"
+    hx-get="{{ partial_path }}{% querystring page=page.number|add:1 %}"
+    hx-push-url="{{ path }}{% querystring page=page.number|add:1 %}"
     hx-target="{{ target }}"
     class="btn btn-default"
     hx-indicator="next .loading"

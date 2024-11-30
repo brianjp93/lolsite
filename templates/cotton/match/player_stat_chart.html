@@ -1,6 +1,6 @@
 <c-vars id="player-stat-chart" />
 
-<div class="flex flex-col h-full">
+<div id="{{ id }}-chart" class="flex flex-col h-full">
   <div id="{{ id }}-legend"></div>
   <div class="grid grid-cols-2 gap-x-1">
     <button class="btn btn-default" id="{{ id }}-select-all">Select All</button>
@@ -24,6 +24,7 @@
     <button class="px-auto btn btn-default level">Level</button>
     <button class="px-auto btn btn-default attack_speed">Attack Speed</button>
     <button class="px-auto btn btn-default attack_damage">AD</button>
+    <button class="px-auto btn btn-default ability_power">AP</button>
     <button class="px-auto btn btn-default armor">Armor</button>
     <button class="px-auto btn btn-default magic_resist">MR</button>
   </div>
@@ -215,7 +216,7 @@
         );
       }
 
-      for (const button of document.querySelectorAll('.stat-select-buttons button')) {
+      for (const button of document.querySelectorAll('#{{ id }}-chart .stat-select-buttons button')) {
         if (button.classList.contains(statKey)) {
           button.setAttribute('disabled', 'true');
         } else {
@@ -251,6 +252,7 @@
       'total_damage_done_to_champions',
       'attack_speed',
       'attack_damage',
+      'ability_power',
       'armor',
       'total_damage_taken',
       'level',
@@ -262,7 +264,7 @@
       'cs_diff',
     ]
     for (const stat of stats) {
-      for (const el of document.querySelectorAll(`.${stat}`)) {
+      for (const el of document.querySelectorAll(`#{{ id }}-chart .${stat}`)) {
         el.addEventListener('click', () => setChart(stat));
       }
     }

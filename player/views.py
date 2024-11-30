@@ -4,7 +4,7 @@ import logging
 
 from django.core.signing import BadSignature, SignatureExpired
 from django.middleware.csrf import CsrfViewMiddleware
-from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_protect
 import requests
 
 from django.http import Http404
