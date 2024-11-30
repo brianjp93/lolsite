@@ -641,12 +641,8 @@ class Stats(models.Model):
     item_4 = models.IntegerField(default=0, blank=True)
     item_5 = models.IntegerField(default=0, blank=True)
     item_6 = models.IntegerField(default=0, blank=True)
-    killing_sprees = models.IntegerField(default=0, blank=True)
     kills = models.IntegerField(default=0, blank=True)
-    largest_critical_strike = models.IntegerField(default=0, blank=True)
-    largest_killing_spree = models.IntegerField(default=0, blank=True)
     largest_multi_kill = models.IntegerField(default=0, blank=True)
-    longest_time_spent_living = models.IntegerField(default=0, blank=True)
     magic_damage_dealt = models.IntegerField(default=0, blank=True)
     magic_damage_dealt_to_champions = models.IntegerField(default=0, blank=True)
     magical_damage_taken = models.IntegerField(default=0, blank=True)
@@ -690,7 +686,6 @@ class Stats(models.Model):
     physical_damage_taken = models.IntegerField(default=0, blank=True)
 
     quadra_kills = models.IntegerField(default=0, blank=True)
-    sight_wards_bought_in_game = models.IntegerField(default=0, blank=True)
 
     stat_perk_0 = models.IntegerField(default=0, blank=True)
     stat_perk_1 = models.IntegerField(default=0, blank=True)
@@ -717,12 +712,9 @@ class Stats(models.Model):
     true_damage_dealt = models.IntegerField(default=0, blank=True)
     true_damage_dealt_to_champions = models.IntegerField(default=0, blank=True)
     true_damage_taken = models.IntegerField(default=0, blank=True)
-    turret_kills = models.IntegerField(default=0, blank=True)
-    unreal_kills = models.IntegerField(default=0, blank=True)
     vision_score = models.IntegerField(default=0, blank=True)
     vision_wards_bought_in_game = models.IntegerField(default=0, blank=True)
     wards_killed = models.IntegerField(default=0, blank=True)
-    detector_wards_placed = models.IntegerField(default=0, blank=True)
     wards_placed = models.IntegerField(default=0, blank=True)
     win = models.BooleanField(default=False, blank=True)
 
