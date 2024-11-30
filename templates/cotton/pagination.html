@@ -29,6 +29,10 @@ parameters
     </button>
   {% endif %}
   <a
+    {% comment %}
+      Use page.number|add instead of page.next_page_number because new results are fetched on demand.
+      Using page.next_page_number raises an error if there is no next page.
+    {% endcomment %}
     hx-get="{{ partial_path }}{% querystring page=page.number|add:1 %}"
     hx-push-url="{{ path }}{% querystring page=page.number|add:1 %}"
     hx-target="{{ target }}"
