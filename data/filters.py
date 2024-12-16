@@ -11,6 +11,7 @@ class ItemFilter(django_filters.FilterSet):
         widget=forms.CheckboxSelectMultiple,
         method="stats_filter",
     )
+    # order_by = django_filters.ChoiceFilter(choices=[])
 
     class Meta:
         model = Item

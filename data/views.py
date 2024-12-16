@@ -1,9 +1,8 @@
-from django.shortcuts import render
-from django.views import generic
+from django.db.models import Exists, OuterRef
 from django_filters.views import FilterView
 
 
-from data.models import Item
+from data.models import Item, ItemMap
 from data.filters import ItemFilter
 
 
@@ -13,12 +12,24 @@ class ItemStatsView(FilterView):
     filterset_class = ItemFilter
 
     def get_queryset(self):
-        return Item.objects.filter(
-            version=Item.objects.order_by("-major", "-minor").values("version")[:1],
-            maps__key=11,
-            language="en_US",
-            in_store=True,
-            required_champion="",
-            gold__total__gt=0,
-            gold__purchasable=True,
-        ).select_related("gold", "image").order_by("-gold__total")
+        return (
+            Item.objects.filter(
+                version=Item.objects.order_by("-major", "-minor").values("version")[:1],
+                language="en_US",
+                required_champion="",
+                gold__purchasable=True,
+            )
+            .annotate(
+                is_rift=Exists(
+                    ItemMap.objects.filter(
+                        item_id=OuterRef("id"),
+                        value=True,
+                        key=11,
+                    )
+                )
+            ).filter(
+                is_rift=True,
+            )
+            .select_related("gold", "image")
+            .order_by("-gold__total")
+        )
