@@ -30,3 +30,4 @@ openai
 pytz
 pytailwindcss
 django-htmx
+whitenoise

@@ -1,7 +1,17 @@
-"""match/tasks.py
-"""
-from itertools import batched
-from celery import group
+import logging
+import time
+import json
+from datetime import timedelta
+from multiprocessing.pool import ThreadPool
+from functools import partial
+from typing import Optional
+from urllib3.exceptions import MaxRetryError
+from requests.exceptions import ConnectionError
+
+from pydantic import ValidationError
+from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam
+
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.db.models import Count, Exists, Subquery, OuterRef
@@ -9,7 +19,7 @@ from django.db.models import Case, When, Sum
 from django.db.models import IntegerField, Q
 from django.utils import timezone
 from django.db import connections, transaction
-from pydantic import ValidationError
+
 from data.constants import ARENA_QUEUE, FLEX_QUEUE, SOLO_QUEUE
 
 from match.parsers.spectate import SpectateModel
@@ -37,22 +47,10 @@ from .models import Spectate
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
-from player.models import Summoner, get_simple_riot_id, simplify
+from player.models import Summoner
 from player import tasks as pt
 
 from lolsite.celery import app
-import logging
-import time
-import json
-from datetime import timedelta
-
-from functools import partial
-from typing import Optional
-
-from multiprocessing.pool import ThreadPool
-
-from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam
 
 
 ROLES = ["top", "jg", "mid", "adc", "sup"]
@@ -64,20 +62,14 @@ class RateLimitError(Exception):
     pass
 
 
-# @query_debugger
-@app.task(name='match.tasks.import_match')
-def import_match(match_id, region, refresh=False):
-    match = fetch_match_json(match_id, region)
-    if not isinstance(match, dict):
-        return match
-    import_match_from_data(match, region, refresh=refresh)
-
-
-def fetch_match_json(match_id: str,  region: str):
+def fetch_match_json(match_id: str, region: str):
     retry_count = -1
     while retry_count < 7:
         retry_count += 1
-        r = api.match.get(match_id, region=region)
+        try:
+            r = api.match.get(match_id, region=region)
+        except (MaxRetryError, ConnectionError):
+            return
         match = r.content
         if r.status_code == 429:
             if retry_count == 7:
@@ -108,106 +100,87 @@ def prepare_summoners_from_participants(participants: list[ParticipantModel], re
     return sums
 
 
-def full_import(name=None, puuid=None, region=None, **kwargs):
-    """Import only unimported games for a summoner.
-
-    Looks at summoner.full_import_count to determine how many
-    matches need to be imported.
-
-    Parameters
-    ----------
-    name : str
-    region : str
-    season_id : ID
-    puuid : ID
-    queue : int
-    beginTime : Epoch in ms
-    endTime : Epoch in ms
-
-    Returns
-    -------
-    None
-
-    """
-    if region is None:
-        raise Exception("region parameter is required.")
-    if name is not None:
-        summoner_id = pt.import_summoner(region, name=name)
-        summoner = Summoner.objects.get(id=summoner_id, region=region)
-        puuid = summoner.puuid
-    elif puuid is not None:
-        summoner = Summoner.objects.get(puuid=puuid, region=region)
-    else:
-        raise Exception("name or puuid must be provided.")
-
-    old_import_count = summoner.full_import_count
-    # TODO: implement get_total_matches
-    # total = get_total_matches(puuid, region, **kwargs)
-    total = 100
-
-    new_import_count = total - old_import_count
-    if new_import_count > 0:
-        logger.info(f"Importing {new_import_count} matches for {summoner.name}.")
-        is_finished = import_recent_matches(0, new_import_count, puuid, region)
-        if is_finished:
-            summoner.full_import_count = total
-            summoner.save()
-
-
-def ranked_import(name=None, puuid=None, region=None, **kwargs):
-    """Same as full_import except it only pulls from the 3 ranked queues.
-
-    Parameters
-    ----------
-    name : str
-    puuid : ID
-    region : str
-    season_id : ID
-    puuid : ID
-        the encrypted account ID
-    queue : int
-    beginTime : Epoch in ms
-    endTime : Epoch in ms
-
-    Returns
-    -------
-    None
-
-    """
-    kwargs["queue"] = [420, 440, 470]
-
-    if region is None:
-        raise Exception("region parameter is required.")
-    if name is not None:
-        summoner_id = pt.import_summoner(region, name=name)
-        summoner = Summoner.objects.get(id=summoner_id, region=region)
-        puuid = summoner.puuid
-    elif puuid is not None:
-        summoner = Summoner.objects.get(puuid=puuid, region=region)
-    else:
-        raise Exception("name or puuid must be provided.")
-
-    old_import_count = summoner.ranked_import_count
-    # TODO
-    # total = get_total_matches(account_id, region, **kwargs)
-    total = 100
-
-    new_import_count = total - old_import_count
-    if new_import_count > 0:
-        logger.info(f"Importing {new_import_count} ranked matches for {summoner.name}.")
-        is_finished = import_recent_matches(
-            0, new_import_count, puuid, region, **kwargs
-        )
-        if is_finished:
-            summoner.ranked_import_count = total
-            summoner.save()
-
-
 def pool_match_import(match_id: str, region: str, close_connections=True):
     match_json = fetch_match_json(match_id, region)
-    import_match_from_data(match_json, region)
+    if match_json in ['not found', 'throttled', None]:
+        pass
+    else:
+        multi_match_import([match_json], region)
     if close_connections:
         connections.close_all()
+
+
+def multi_match_import(matches_json, region):
+    matches = []
+    participants = []
+    stats = []
+    summoners: list[Summoner] = []
+    teams = []
+    bans = []
+    match_ids_seen = set()
+    for match_data in matches_json:
+        try:
+            parsed = MatchResponseModel.model_validate_json(match_data)
+        except ValidationError:
+            logger.exception('Match could not be parsed.')
+            continue
+        if "tutorial" in parsed.info.gameMode.lower():
+            continue
+        if parsed.info.gameDuration == 0:
+            continue
+        if parsed.metadata.matchId in match_ids_seen:
+            continue
+        match_ids_seen.add(parsed.metadata.matchId)
+        match = build_match(parsed)
+        matches.append(match)
+        summoners.extend(prepare_summoners_from_participants(parsed.info.participants, region))
+        for part in parsed.info.participants:
+            participant = build_participant(part, match)
+            participants.append(participant)
+            stats.append(build_stats(part, participant))
+        for tmodel in parsed.info.teams:
+            team = build_team(tmodel, match)
+            teams.append(team)
+            for bm in tmodel.bans:
+                bans.append(build_ban(bm, team))
+
+    seen_puuids = set(
+        Summoner.objects.filter(
+            puuid__in=[x.puuid for x in summoners],
+        ).values_list('puuid', flat=True)
+    )
+    deduped_summoners = []
+    for summoner in summoners:
+        if summoner.puuid not in seen_puuids:
+            seen_puuids.add(summoner.puuid)
+            deduped_summoners.append(summoner)
+    Summoner.objects.bulk_create(
+        deduped_summoners,
+        ignore_conflicts=True,
+    )
+    with transaction.atomic():
+        # use update_conflicts so that each model gets their ID applied,
+        # even on conflict
+        Match.objects.bulk_create(
+            matches,
+            update_conflicts=True,
+            unique_fields=["_id"],
+            update_fields=["game_duration"],
+        )
+        Participant.objects.bulk_create(
+            participants,
+            update_conflicts=True,
+            unique_fields=["_id", "match_id"],
+            update_fields=["champion_id"],
+        )
+        Stats.objects.bulk_create(stats, ignore_conflicts=True)
+        Team.objects.bulk_create(
+            teams,
+            update_conflicts=True,
+            unique_fields=["match_id", "_id"],
+            update_fields=["win"],
+        )
+        Ban.objects.bulk_create(bans, ignore_conflicts=True)
 
 
 @app.task(name="match.tasks.import_recent_matches")
@@ -217,29 +190,11 @@ def import_recent_matches(
     puuid: str,
     region: str,
     queue: Optional[int] = None,
+    queueType: Optional[str] = None,
     startTime: Optional[timezone.datetime] = None,
     endTime: Optional[timezone.datetime] = None,
     break_on_match_found = False,
-    use_celery = False,
 ):
-    """Import recent matches for a puuid.
-
-    Parameters
-    ----------
-    start : int
-    end : int
-    season_id : ID
-    puuid : ID
-        the encrypted account ID
-    queue : int
-    startTime : Epoch in ms
-    endTime : Epoch in ms
-
-    Returns
-    -------
-    int
-
-    """
     has_more = True
     import_count = 0
     index = start
@@ -259,25 +214,30 @@ def import_recent_matches(
             startTime=startTime,
             endTime=endTime,
             queue=queue,
+            queueType=queueType,
         )
         retry_count = -1
         matches = []
         while retry_count < 7:
             retry_count += 1
-            r = apicall()
-            logger.debug('response: %s' % str(r))
-            riot_match_request_time = time.time() - riot_match_request_time
-            logger.debug(
-                f"Riot API match filter request time : {riot_match_request_time}"
-            )
             try:
-                if r.status_code == 404:
-                    matches = []
-                else:
-                    matches = r.json()
-                break
-            except Exception:
-                time.sleep(2**retry_count)
+                r = apicall()
+            except (MaxRetryError, ConnectionError):
+                matches = []
+            else:
+                logger.debug('response: %s' % str(r))
+                riot_match_request_time = time.time() - riot_match_request_time
+                logger.debug(
+                    f"Riot API match filter request time : {riot_match_request_time}"
+                )
+                try:
+                    if r.status_code == 404:
+                        matches = []
+                    else:
+                        matches = r.json()
+                    break
+                except Exception:
+                    time.sleep(2**retry_count)
         if len(matches) > 0:
             existing_ids = [x._id for x in Match.objects.filter(_id__in=matches)]
             if existing_ids and break_on_match_found:
@@ -285,21 +245,13 @@ def import_recent_matches(
             new_matches = list(set(matches) - set(existing_ids))
             import_count += len(new_matches)
             start_time = time.perf_counter()
-            if use_celery:
-                jobs = []
-                for batch in batched(new_matches, 10):
-                    for match_id in batch:
-                        jobs.append(import_match.s(match_id, region))
-                result = group(jobs).apply_async()
-                while not result.ready():
-                    time.sleep(1)
-                logger.info(f'Celery match import time: {time.perf_counter() - start_time}')
-            else:
-                jobs = [(x, region) for x in new_matches]
-                with ThreadPool(processes=10) as pool:
-                    pool.starmap(pool_match_import, jobs)
-                pool.close()
-                pool.join()
+            jobs = [(x, region) for x in new_matches]
+            if jobs:
+                if len(jobs) == 1:
+                    pool_match_import(*jobs[0], close_connections=False)
+                else:
+                    with ThreadPool(processes=min(10, len(jobs))) as pool:
+                        pool.starmap(pool_match_import, jobs)
                 logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
             if len(matches) < size:
                 has_more = False
@@ -309,21 +261,6 @@ def import_recent_matches(
         if index >= end:
             please_continue = False
     return import_count
-
-
-@app.task(name="match.tasks.import_matches_for_popular_accounts")
-def import_matches_for_popular_accounts(n=100):
-    now = timezone.now()
-    week = (now - timedelta(days=7)).date()
-    qs = Summoner.objects.all().annotate(
-        views=Sum('pageview__views', filter=Q(pageview__bucket_date__gte=week))
-    ).order_by('-views').filter(views__isnull=False, views__gt=1)
-    for i, summoner in enumerate(qs[:n]):
-        logger.info(f"Importing matches for {summoner.name} ({i}) with {summoner.views=}")  # type: ignore
-        try:
-            import_recent_matches(0, 50, summoner.puuid, summoner.region)
-        except Exception:
-            logger.exception("Error while importing matches.")
 
 
 @app.task(name="match.tasks.bulk_import")
@@ -367,21 +304,41 @@ def celery_task_pool(jobs, pool_size=10):
         time.sleep(0.1)
 
 
+@app.task
+def huge_match_single_summoner_import_job(summoner_id, puuid, region, start_time, enqueue_time):
+    enqueue_threshold = timezone.now() - timedelta(hours=6)
+    if enqueue_time < enqueue_threshold:
+        logger.info("Task older than 6 hours old, skipping.")
+        return
+    match_count = import_recent_matches(
+        0,
+        10_000,
+        puuid,
+        region,
+        startTime=start_time,
+        queue=420,
+    )
+    Summoner.objects.filter(id=summoner_id).update(
+        huge_match_import_at=timezone.now(),
+    )
+    return match_count
+
+
 @app.task(name="match.tasks.huge_match_import_task")
-def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
+def huge_match_import_task(hours_thresh=24, exclude_hours=6):
     thresh = timezone.now() - timedelta(hours=hours_thresh)
 
     qs = Summoner.objects.filter(
         Exists(Participant.objects.filter(
             puuid=OuterRef("puuid"),
-            match__queue_id__in=[FLEX_QUEUE, SOLO_QUEUE],
+            match__queue_id=SOLO_QUEUE,
             match__game_creation_dt__gt=thresh,
         )),
         puuid__isnull=False,
         region="na",
     ).exclude(
         huge_match_import_at__gt=timezone.now() - timedelta(hours=exclude_hours)
-    )
+    ).values("id", "puuid", "region", "huge_match_import_at")
 
     count = qs.count()
     logger.info(f"Found {count} participants for huge_match_import_task.")
@@ -389,40 +346,17 @@ def huge_match_import_task(hours_thresh=72, exclude_hours=24, break_early=True):
         return
 
     logger.info(f"Query loop.  Found {count} new participants.")
-    i = -1
-    elapsed_start = time.perf_counter()
 
-    def get_jobs(qs, start_time):
-        for summoner in qs:
-            if break_early and summoner.huge_match_import_at and summoner.huge_match_import_at > thresh:
-                # only go back as far as we need to for this summoner
-                start_time = summoner.huge_match_import_at
-            if not summoner:
-                continue
-            import_time = timezone.now()
-            job = import_recent_matches.s(
-                0,
-                10_000,
-                summoner.puuid,
-                summoner.region,
-                startTime=start_time,
-                use_celery=False,
-            )
-            yield job
-            summoner.huge_match_import_at = import_time
-            summoner.save(update_fields=["huge_match_import_at"])
+    for summoner in qs.iterator(2000):
+        huge_match_single_summoner_import_job.delay(
+            summoner["id"],
+            summoner["puuid"],
+            summoner["region"],
+            max(thresh, summoner["huge_match_import_at"] or thresh),
+            timezone.now(),
+        )
 
-    for _ in celery_task_pool(get_jobs(qs.iterator(2000), thresh), 10):
-        i += 1
-        if i % 100 == 0:
-            elapsed = time.perf_counter() - elapsed_start
-            time_per_part = elapsed / (i or 1)
-            estimated_remaining = time_per_part * (count - i) / 60
-            logger.info(f"Finished importing {i} participants of about {count}.")
-            logger.info(f"Estimated time remaining for query loop: {estimated_remaining} minutes")
-
-    logger.info(f"{i} total summoner games imported.")
-    logger.info("huge_match_import_task finished.")
+    logger.info("enqueued all tasks for huge_match_import_task.")
 
 
 def get_top_played_with(
@@ -818,29 +752,26 @@ def import_spectate_from_data(parsed: SpectateModel, region: str):
 
 
 def import_summoners_from_spectate(parsed: SpectateModel, region):
-    summoners = {}
+    summoner_list = []
     for part in parsed.participants:
         if part.riotId:
             name, tagline = part.riotId.split('#')
             sum_data = {
+                "puuid": part.puuid,
                 "riot_id_name": name,
                 "riot_id_tagline": tagline,
-                "simple_riot_id": simplify(part.riotId),
                 "region": region,
                 "profile_icon_id": part.profileIconId,
                 "_id": part.summonerId,
             }
-            summoner = Summoner(**sum_data)
-            try:
-                summoner.save()
-                summoners[summoner._id] = summoner
-            except IntegrityError:
-                try:
-                    summoner = Summoner.objects.get(region=region, _id=part.summonerId)
-                    summoners[summoner._id] = summoner
-                except Summoner.DoesNotExist:
-                    pass
-    return summoners
+            summoner_list.append(Summoner(**sum_data))
+    Summoner.objects.bulk_create(
+        summoner_list,
+        update_conflicts=True,
+        unique_fields=["puuid"],
+        update_fields=["_id"],
+    )
+    return {x._id: x for x in summoner_list}
 
 
 def get_player_ranks(summoner_list, threshold_days=1, sync=True):
@@ -978,10 +909,9 @@ def build_ban(ban: BanType, team: Team):
         team=team,
     )
 
-def build_stats(part: ParticipantModel):
+def build_stats(part: ParticipantModel, participant: Participant|None = None):
     return Stats(
-        # participant=participant_model,
-
+        participant=participant,
         all_in_pings=part.allInPings,
         assist_me_pings=part.assistMePings,
         bait_pings=part.baitPings,
@@ -1020,12 +950,8 @@ def build_stats(part: ParticipantModel):
         item_4=part.item4,
         item_5=part.item5,
         item_6=part.item6,
-        killing_sprees=part.killingSprees,
         kills=part.kills,
-        largest_critical_strike=part.largestCriticalStrike,
-        largest_killing_spree=part.largestKillingSpree,
         largest_multi_kill=part.largestMultiKill,
-        longest_time_spent_living=part.longestTimeSpentLiving,
         magic_damage_dealt=part.magicDamageDealt,
         magic_damage_dealt_to_champions=part.magicDamageDealtToChampions,
         magical_damage_taken=part.magicDamageTaken,
@@ -1084,8 +1010,6 @@ def build_stats(part: ParticipantModel):
         true_damage_dealt=part.trueDamageDealt,
         true_damage_dealt_to_champions=part.trueDamageDealtToChampions,
         true_damage_taken=part.trueDamageTaken,
-        turret_kills=part.turretKills,
-        unreal_kills=part.unrealKills,
         vision_score=part.visionScore,
         vision_wards_bought_in_game=part.visionWardsBoughtInGame,
         wards_killed=part.wardsKilled,
@@ -1093,24 +1017,11 @@ def build_stats(part: ParticipantModel):
         win=part.win,
     )
 
-@transaction.atomic()
-def import_match_from_data(data, region: str, refresh=False):
-    try:
-        parsed = MatchResponseModel.model_validate_json(data)
-    except ValidationError:
-        logger.exception('Match could not be parsed.')
-        return
-
-    if "tutorial" in parsed.info.gameMode.lower():
-        return False
-
-    if parsed.info.gameDuration == 0:
-        return False
-
-    info = parsed.info
+def build_match(match: MatchResponseModel):
+    info = match.info
     sem_ver = info.sem_ver
-    match_model = Match(
-        _id=parsed.metadata.matchId,
+    return Match(
+        _id=match.metadata.matchId,
         game_creation=info.gameCreation,
         game_duration=info.gameDuration,
         game_mode=info.gameMode,
@@ -1124,48 +1035,6 @@ def import_match_from_data(data, region: str, refresh=False):
         build=sem_ver.get(3, ''),
         end_of_game_result=info.endOfGameResult,
     )
-    try:
-        match_model.save()
-    except IntegrityError:
-        if refresh:
-            Match.objects.filter(_id=parsed.metadata.matchId).delete()
-            match_model.save()
-        else:
-            logging.warning("Attempted to import game which was already imported. Ignoring.")
-            return
-
-    Summoner.objects.bulk_create(
-        prepare_summoners_from_participants(info.participants, region),
-        ignore_conflicts=True,
-    )
-
-    participants: list[Participant] = []
-    stats: list[Stats] = []
-    for part in info.participants:
-        # PARTICIPANT
-        participant_model = build_participant(part, match_model)
-        participants.append(participant_model)
-
-        # STATS
-        stats_model = build_stats(part)
-        stats.append(stats_model)
-    participants = Participant.objects.bulk_create(participants)
-    for stat, part_model in zip(stats, participants):
-        stat.participant = part_model
-    Stats.objects.bulk_create(stats)
-
-    # TEAMS
-    teams = parsed.info.teams
-    for tmodel in teams:
-        team_model = build_team(tmodel, match_model)
-        team_model.save()
-
-        # BANS
-        bans = []
-        for bm in tmodel.bans:
-            ban = build_ban(bm, team_model)
-            bans.append(ban)
-        Ban.objects.bulk_create(bans)
 
 
 MATCH_SUMMARY_INTRO_PROMPT = ' '.join("""

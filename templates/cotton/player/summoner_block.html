@@ -4,7 +4,7 @@
   <div class="col-span-2 row-span-2">
     <c-tooltip>
       {% if live_dot %}
-        <c-player.live-dot region="match.region" puuid="participant.puuid">
+        <c-player.live-dot :region="match.region" :puuid="participant.puuid">
           <div class="relative">
             {% if participant.champion.image.file_40 %}
               <img src="{{ participant.champion.image.file_40.url }}"

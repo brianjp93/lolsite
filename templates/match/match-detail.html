@@ -24,7 +24,7 @@
     function setTidx(n) {
       tidx = n;
       for (const f of window.onTidxChangeHandlers) {
-        f();
+        f(tidx);
       }
     }
   </script>
@@ -59,6 +59,10 @@
 
       <div class="h-[450px] w-[450px]">
         <c-match.rift-map />
+      </div>
+
+      <div class="w-[500px] h-[450px]">
+        <c-match.player-end-game-stat-chart />
       </div>
     </div>
   </div>

@@ -1,8 +1,6 @@
 from django.contrib import admin
 
 from .models import Rito
-from .models import Queue, Season, Map
-from .models import GameMode, GameType
 from .models import ReforgedTree, ReforgedRune
 
 from .models import Item, FromItem, IntoItem, ItemEffect
@@ -24,26 +22,6 @@ from .models import SummonerSpellVar
 
 class RitoAdmin(admin.ModelAdmin):
     list_display = ("token",)
-
-
-class QueueAdmin(admin.ModelAdmin):
-    list_display = ("_map", "_id")
-
-
-class SeasonAdmin(admin.ModelAdmin):
-    list_display = ("name", "_id")
-
-
-class MapAdmin(admin.ModelAdmin):
-    list_display = ("name", "_id", "minimap_url")
-
-
-class GameModeAdmin(admin.ModelAdmin):
-    list_display = ("name",)
-
-
-class GameTypeAdmin(admin.ModelAdmin):
-    list_display = ("name",)
 
 
 class ReforgedTreeAdmin(admin.ModelAdmin):
@@ -212,11 +190,6 @@ class SummonerSpellVarAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Rito, RitoAdmin)
-admin.site.register(Queue, QueueAdmin)
-admin.site.register(Season, SeasonAdmin)
-admin.site.register(Map, MapAdmin)
-admin.site.register(GameMode, GameModeAdmin)
-admin.site.register(GameType, GameTypeAdmin)
 
 admin.site.register(ReforgedTree, ReforgedTreeAdmin)
 admin.site.register(ReforgedRune, ReforgedRuneAdmin)

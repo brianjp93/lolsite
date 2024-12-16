@@ -68,7 +68,7 @@ class MatchBySummoner(ListAPIView):
         ]
         if played_with:
             sync_import = False
-            qs = self.get_played_with(played_with, region, qs)
+            qs = self.get_played_with(played_with, qs)
 
         if sync_import in constants.TRUTHY:
             mt.import_recent_matches(
@@ -101,7 +101,11 @@ class MatchBySummoner(ListAPIView):
         return summoner
 
     @staticmethod
-    def get_played_with(names: list[str], region: str, qs: QuerySet[Match]):
+    def get_played_with(names: list[str], qs: QuerySet[Match]):
+        match = qs.first()
+        if not match:
+            return qs.none()
+        region = match.region
         played_with = [
             pt.simplify(name)
             for name in names if len(name.strip()) > 0

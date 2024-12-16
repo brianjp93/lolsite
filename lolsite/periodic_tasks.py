@@ -1,5 +1,7 @@
 from celery.schedules import crontab
 from .celery import app
+import os
+
 
 app.conf.beat_schedule = {
     "pt-handle-old-notifications": {
@@ -15,4 +17,9 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour="0,12", minute="0"),
     }
 }
+
+# don't run certain jobs in local dev
+if os.getenv("DJANGO_SETTINGS_MODULE", "lolsite.settings_local") == 'lolsite.settings_local':
+    app.conf.beat_schedule.pop("mt-huge-match-import", None)
+
 app.conf.timezone = "America/Los_Angeles"  # type: ignore

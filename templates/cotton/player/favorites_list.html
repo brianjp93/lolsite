@@ -1,13 +1,16 @@
 <div class="relative" x-data="{ open: false }" @click.outside="open = false">
   <div class="cursor-pointer" @click="open = !open">
-    {{ name }}
+    {{ request.user.email }}
   </div>
   <div class="absolute w-full">
     <div class="h-full">
     </div>
     <div x-show="open" style="display: none;" class="w-full min-w-[200px] bg-gray-800 rounded p-3 flex flex-col gap-y-2">
+      <div class="mx-auto">
+        <a href="{% url 'player:account' %}">My Account</a>
+      </div>
       {% for summoner in favorites_list %}
-        <c-player.live-dot region="summoner.region" puuid="summoner.puuid" offset="left-[-10px] top-[-5px]">
+        <c-player.live-dot :region="summoner.region" :puuid="summoner.puuid" offset="left-[-10px] top-[-5px]">
           <div class="whitespace-nowrap text-ellipsis overflow-hidden w-full text-sm">
             <a href="{{ summoner.get_puuid_url }}" class="w-full">
               {{ summoner.get_name }}

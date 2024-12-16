@@ -6,7 +6,7 @@
 <script>
   (function() {
     const data = window.framesList;
-    new Chart(
+    const chart = new Chart(
       document.getElementById('{{ id }}'),
       {
         type: 'line',
@@ -20,11 +20,22 @@
             }
           ]
         },
+        lineAtIndex: [0],
+        plugins: [window.verticalLinePlugin],
         options: {
           maintainAspectRatio: false,
+          animation: {
+            duration: 0,
+          },
           interaction: {
             mode: 'index',
             intersect: false,
+          },
+          onHover: (events, elements, chart) => {
+            const idx = elements?.[0]?.index;
+            if (idx !== undefined) {
+              setTidx(idx)
+            }
           },
           plugins: {
             tooltip: {
@@ -42,8 +53,17 @@
               }
             }
           }
-        }
+        },
       }
     );
+
+    function updateLine(tidx) {
+      if (tidx !== undefined) {
+        chart.config._config.lineAtIndex = [tidx];
+        chart.update();
+      }
+    }
+
+    window.onTidxChangeHandlers.push(updateLine);
   })()
 </script>

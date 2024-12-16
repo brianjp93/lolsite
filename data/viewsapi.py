@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Exists, Count, OuterRef
+from django.db.models import Exists, OuterRef
 from django.http import Http404, HttpRequest
 from rest_framework.response import Response
 from rest_framework.decorators import api_view

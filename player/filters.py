@@ -280,7 +280,6 @@ class SummonerMatchFilter(django_filters.FilterSet):
     )
 
     def __init__(self, *args, **kwargs):
-        self.region = kwargs.pop("region")
         self.puuid = kwargs.pop("puuid")
         super().__init__(*args, **kwargs)
         champ = (
@@ -315,7 +314,7 @@ class SummonerMatchFilter(django_filters.FilterSet):
 
     def played_with_filter(self, queryset, _, value):
         names = value.split(",")
-        return MatchBySummoner.get_played_with(names, self.region, queryset)
+        return MatchBySummoner.get_played_with(names, queryset)
 
     def queue_filter(self, qs, _, value):
         if value:

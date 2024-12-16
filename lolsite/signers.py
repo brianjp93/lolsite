@@ -1,3 +1,3 @@
-from django.core.signing import Signer, TimestampSigner
+from django.core.signing import TimestampSigner
 
-ActivationSigner = TimestampSigner('email-activation-signer')
+ActivationSigner = TimestampSigner()

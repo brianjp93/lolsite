@@ -12,40 +12,27 @@
     <div class="live-game-content flex-1 min-w-[600px]">
     </div>
   </div>
+
+  <c-stats.champions :championstats="championstats" />
+
   <div>
     <form class="forms" action="" hx-boost="true">
       {{ filterset.form }}
       <button class="btn btn-link" type="submit">Search</button>
     </form>
   </div>
-  <div class="flex gap-x-2 my-2">
-    {% if page_obj.has_previous %}
-      <a
-        hx-boost="true"
-        href="{{ prev_url }}"
-        class="btn btn-default">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
-        </svg>
-      </a>
-    {% else %}
-      <button
-        disabled
-        class="btn btn-default">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
-        </svg>
-      </button>
-    {% endif %}
-    <a href="{{ next_url }}" class="btn btn-default" hx-boost="true">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
-      </svg>
-    </a>
-    <div class="my-auto text-sm font-bold">Page: {{ page_obj.number }}</div>
+
+  <div id="matchlist-pagination-1">
+    <c-pagination
+      :page="page_obj"
+      path="{{ request.path }}"
+      partial_path="{% url 'player:matchlist' puuid=summoner.puuid %}"
+      target="#matchlist"
+    />
   </div>
+
   <div id="matchlist" class="flex flex-col gap-y-2">
-    {% include "player/_matchlist.html" %}
+    <c-player.matchlist :matches="object_list" />
   </div>
 </div>
 {% endblock content %}

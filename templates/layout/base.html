@@ -31,6 +31,34 @@
       <script defer type="text/javascript" src="{% static 'src/alpine.min.js' %}"></script>
 
       <script src="{% static 'src/chart.min.js' %}"></script>
+      {% block vertical_line_plugin %}
+        <script>
+          window.verticalLinePlugin = {
+             getLinePosition: function (chart, pointIndex) {
+                 const meta = chart.getDatasetMeta(0); // first dataset is used to discover X coordinate of a point
+                 const data = meta.data;
+                 return data[pointIndex].x;
+             },
+
+             renderVerticalLine: function (chartInstance, pointIndex) {
+                 const lineLeftOffset = this.getLinePosition(chartInstance, pointIndex);
+                 const scale = chartInstance.scales.y;
+                 const context = chartInstance.ctx;
+                 // render vertical line
+                 context.beginPath();
+                 context.strokeStyle = '#ffffff';
+                 context.moveTo(lineLeftOffset, scale.top);
+                 context.lineTo(lineLeftOffset, scale.bottom);
+                 context.stroke();
+             },
+
+             beforeDatasetsDraw: function (chart, easing) {
+                 if(chart.config._config.lineAtIndex)
+                     chart.config._config.lineAtIndex.forEach(pointIndex => this.renderVerticalLine(chart, pointIndex));
+             }
+          };
+        </script>
+      {% endblock vertical_line_plugin %}
       <script src="{% static 'src/popper.min.js' %}"></script>
       <script src="{% static 'src/tippy-bundle.umd.min.js' %}"></script>
 
@@ -120,7 +148,7 @@
     {% endblock header %}
   </head>
 
-  <body>
+  <body class="min-h-screen flex flex-col">
     <script>
       document.body.addEventListener('htmx:configRequest', (event) => {
         event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
@@ -130,12 +158,16 @@
       {% include "layout/navbar.html" %}
     {% endblock navbar%}
 
+    {% block messages %}
+      {% include "layout/_messages.html" %}
+    {% endblock messages %}
+
     {% block content %}
     {% endblock content %}
 
     {% block footer %}
-      <div class="m-4 text-sm">
-        <i>Hardstuck.club</i> isn’t endorsed by Riot Games and doesn’t reflect the views or opinions of Riot Games or anyone officially
+      <div class="m-4 text-sm mt-auto">
+        <i>hardstuck.club</i> isn’t endorsed by Riot Games and doesn’t reflect the views or opinions of Riot Games or anyone officially
         involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered
         trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
       </div>

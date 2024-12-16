@@ -138,6 +138,7 @@ class ParticipantModel(BaseModelWithLogger):
     onMyWayPings: Ping = 0
     pushPings: Ping = 0
     visionClearedPings: Ping = 0
+    retreatPings: Ping = 0
     firstBloodAssist: bool
     firstBloodKill: bool
     firstTowerAssist: bool

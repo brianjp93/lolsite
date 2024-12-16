@@ -81,7 +81,69 @@ class MatchDetailView(DetailView):
             },
             'team_id': x.team_id,
             'name': x.get_name(),
-        } for x in participants]
+            'stats': {
+                'total_damage_dealt_to_champions': {
+                    'value': x.stats.total_damage_dealt_to_champions,
+                    'label': 'Total Damage to Champions',
+                },
+                'gold_earned': {
+                    'value': x.stats.gold_earned,
+                    'label': 'Total Gold'
+                },
+                'neutral_minions_killed': {
+                    'value': x.stats.neutral_minions_killed,
+                    'label': 'Neutral Minions Killed',
+                },
+                'total_minions_killed': {
+                    'value': x.stats.total_minions_killed,
+                    'label': 'Total Minions Killed',
+                },
+                'cs': {
+                    'value': x.stats.cs,
+                    'label': 'CS',
+                },
+                'spell_1_casts': {
+                    'value': x.stats.spell_1_casts,
+                    'label': 'Q Casts',
+                },
+                'spell_2_casts': {
+                    'value': x.stats.spell_2_casts,
+                    'label': 'W Casts',
+                },
+                'spell_3_casts': {
+                    'value': x.stats.spell_3_casts,
+                    'label': 'E Casts',
+                },
+                'spell_4_casts': {
+                    'value': x.stats.spell_4_casts,
+                    'label': 'R Casts',
+                },
+                'total_damage_taken': {
+                    'value': x.stats.total_damage_taken,
+                    'label': 'Damage Taken',
+                },
+                'total_heal': {
+                    'value': x.stats.total_heal,
+                    'label': 'Total Heal',
+                },
+                'total_heals_on_teammates': {
+                    'value': x.stats.total_heals_on_teammates,
+                    'label': 'Total Heal on Teammates',
+                },
+                'total_damage_shielded_on_teammates': {
+                    'value': x.stats.total_damage_shielded_on_teammates,
+                    'label': 'Shield on Teammates',
+                },
+                'vision_score': {
+                    'value': x.stats.vision_score,
+                    'label': 'Vision Score',
+                },
+                'total_pings': {
+                    'value': x.stats.total_pings,
+                    'label': 'Total Pings',
+                },
+            },
+        } for x in participants if x.stats]
 
     @staticmethod
     def augment_timeline(frames: Iterable[Frame]):

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "django_htmx",
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'core',
     "lolsite",
     "data",
+    "stats",
     "match",
     "player",
     "fun",
@@ -59,6 +61,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -150,6 +153,7 @@ CORS_ALLOW_HEADERS = (
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
 
 
 # SENDGRID CONNECTION
@@ -173,3 +177,6 @@ GOOGLE_RECAPTCHA_KEY=config('GOOGLE_RECAPTCHA_KEY', "")
 OPENAI_KEY=config("OPENAI_KEY", "")
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
+
+STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")

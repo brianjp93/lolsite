@@ -1,0 +1,25 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="container mx-auto">
+  <h1 class="mx-auto">Account Activation</h1>
+
+  {% if type == 'success' %}
+  <div>
+    You successfully activated your account.
+  </div>
+  <div>
+    Please <a href="{% url 'player:login' %}">log in</a>.
+  </div>
+  {% elif type == 'bad_signature' %}
+    <div>
+      This link was invalid. Please check your email again.
+    </div>
+  {% elif type == 'signature_expired' %}
+    <div>
+      This link has expired, please check your email for a new link.
+    </div>
+  {% endif %}
+
+</div>
+{% endblock content %}

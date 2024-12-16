@@ -1,8 +1,4 @@
-"""player/models.py
-
-Model definitions for the player app.
-
-"""
+import random
 import time
 from typing import TypedDict
 import uuid
@@ -19,8 +15,9 @@ from django.utils import timezone
 from notification.models import Notification
 
 from data import constants as dc
-from data.models import CDProfileIcon
+from data.models import CDProfileIcon, ProfileIcon
 
+from player.constants import VERIFY_WITH_ICON
 from player.utils import SIMPLE_RIOT_ID_EXPR, get_admin
 
 
@@ -74,14 +71,14 @@ class Summoner(models.Model):
         related_name="summoners",
     )
     _id = models.CharField(
-        max_length=128, default="", blank=True, db_index=True
+        max_length=128, default="", blank=True
     )
-    region = models.CharField(max_length=8, default="", blank=True, db_index=True)
+    region = models.CharField(max_length=8, default="", blank=True)
     account_id = models.CharField(
         max_length=128, default="", blank=True, null=True
     )
     name = models.CharField(max_length=64, default="", blank=True)
-    simple_name = models.CharField(max_length=64, default="", blank=True, db_index=True)
+    simple_name = models.CharField(max_length=64, default="", blank=True)
     profile_icon_id = models.IntegerField(default=0)
     puuid = models.CharField(
         max_length=128,
@@ -106,7 +103,7 @@ class Summoner(models.Model):
 
     last_summoner_page_import = models.DateTimeField(null=True)
     huge_match_import_at = models.DateTimeField(null=True, db_index=True)
-    created_date = models.DateTimeField(default=timezone.now, db_index=True)
+    created_date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f'Summoner(region={self.region}, riotId={self.simple_riot_id})'
@@ -184,6 +181,10 @@ class Summoner(models.Model):
         end = time.perf_counter()
         logger.info(f"{self.name} suspicious_account query took {end - start:.2f} seconds.")
         return {'quick_ff_count': quick_surrender_count, 'total': all_games_count}
+
+    def add_match_to_stats(self, match):
+        from stats.tasks import add_match_to_summoner_champion_stats
+        add_match_to_summoner_champion_stats(self, match)
 
 
 class Pro(models.Model):
@@ -451,9 +452,14 @@ class SummonerLink(models.Model):
         # Set new uuid if one isn't set.
         if self.uuid == "":
             self.uuid = uuid.uuid4().hex[-6:]
+        if self.profile_icon_id is None:
+            self.profile_icon_id = random.choice(VERIFY_WITH_ICON)
         # Always set modified_date on save().
         self.modified_date = timezone.now()
         super(SummonerLink, self).save(*args, **kwargs)
+
+    def profile_icon(self):
+        return ProfileIcon.objects.filter(_id=self.profile_icon_id).order_by("-major", "-minor").first()
 
 
 class Comment(models.Model):

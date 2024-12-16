@@ -1,3 +1,4 @@
+import json
 import re
 from string import ascii_uppercase
 
@@ -6,6 +7,8 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.postgres import fields
 import logging
+
+from django.utils.functional import cached_property
 
 from core.models import TimestampedModel, VersionedModel, ThumbnailedModel
 from data.constants import ITEM_STAT_COSTS
@@ -19,82 +22,30 @@ class Rito(models.Model):
     versions = models.CharField(max_length=10000, default="[]", blank=True)
     last_data_import = models.DateTimeField(null=True)
 
+    @cached_property
+    def minor_version_list(self):
+        versions = json.loads(self.versions)
+        ret = []
+        seen = set()
+        for x in versions:
+            parts = x.split('.')
+            if len(parts) != 3:
+                continue
+            a, b, c = parts
+            key = f"{a}.{b}"
+            if key in seen:
+                continue
+            seen.add(key)
+            ret.append({
+                "version": f"{a}.{b}",
+                "major": a,
+                "minor": b,
+                "patch": c,
+            })
+        return ret
+
     def __str__(self):
         return f'Rito(token="{self.token}")'
-
-
-class Queue(models.Model):
-    _id = models.IntegerField(unique=True)
-    _map = models.CharField(max_length=128, default="", blank=True)
-    description = models.CharField(max_length=256, default="", blank=True)
-
-    def __str__(self):
-        return f'Queue(_id={self._id}, _map="{self._map}")'
-
-    def get_map(self):
-        """Return the corresponding map model.
-        """
-        try:
-            return Map.objects.filter(name__iexact=self._map)[:1].get()
-        except Map.DoesNotExist:
-            return None
-
-
-class Season(models.Model):
-    _id = models.IntegerField(unique=True)
-    name = models.CharField(max_length=128, default="", blank=True)
-
-    def __str__(self):
-        return f'Season(_id={self._id}, name="{self.name}")'
-
-
-class Map(models.Model):
-    _id = models.IntegerField(unique=True)
-    name = models.CharField(max_length=256, default="", blank=True)
-    notes = models.CharField(max_length=256, default="", blank=True)
-
-    def __str__(self):
-        return f'Map(name="{self.name}")'
-
-    def minimap_url(self, version=""):
-        """Get minimap image url.
-
-        Parameters
-        ----------
-        version : str
-            if none is provided, try to get latest image
-
-        Returns
-        -------
-        str
-
-        """
-        if version:
-            pass
-        else:
-            query = Item.objects.all().order_by("-major", "-minor", "-patch")
-            try:
-                item = query[:1].get()
-                version = item.version
-            except Item.DoesNotExist:
-                version = "9.5.1"
-        return f"https://ddragon.leagueoflegends.com/cdn/{version}/img/map/map{self._id}.png"
-
-
-class GameMode(models.Model):
-    name = models.CharField(unique=True, max_length=128, default="", blank=True)
-    description = models.CharField(max_length=256, default="", blank=True)
-
-    def __str__(self):
-        return f'GameMode(name="{self.name}")'
-
-
-class GameType(models.Model):
-    name = models.CharField(unique=True, max_length=128, default="", blank=True)
-    description = models.CharField(max_length=256, default="", blank=True)
-
-    def __str__(self):
-        return f'GameType(name="{self.name}")'
 
 
 class ReforgedTree(VersionedModel):
@@ -201,30 +152,30 @@ class Item(VersionedModel):
     gold: Union['ItemGold', None]
     stats: models.QuerySet['ItemStat']
 
-    stat_list = [
-        'flat_armor',
-        'percent_crit',
-        'flat_health',
-        'percent_health_regen',
-        'flat_ability_power',
-        'flat_movement_speed',
-        'flat_mana',
-        'flat_attack_damage',
-        'flat_magic_resist',
-        'percent_attack_speed',
-        'percent_movement_speed',
-        'percent_life_steal',
-        'flat_lethality',
-        'flat_ability_haste',
-        'percent_heal_and_shield_power',
-        'percent_omnivamp',
-        'percent_armor_penetration',
-        'percent_base_mana_regen',
-        'percent_tenacity',
-        'percent_magic_penetration',
-        'percent_crit_damage',
-        'flat_magic_penetration',
-    ]
+    stat_list = {
+        'flat_armor': 'Armor',
+        'percent_crit': '% Crit',
+        'flat_health': 'HP',
+        'percent_health_regen': '% Health Regen',
+        'flat_ability_power': 'AP',
+        'flat_movement_speed': 'MS',
+        'flat_mana': 'Mana',
+        'flat_attack_damage': 'AD',
+        'flat_magic_resist': 'MR',
+        'percent_attack_speed': '% AS',
+        'percent_movement_speed': '% MS',
+        'percent_life_steal': 'Life Steal',
+        'flat_lethality': 'Lethality',
+        'flat_ability_haste': 'Haste',
+        'percent_heal_and_shield_power': '% Heal & Shield',
+        'percent_omnivamp': 'Omnivamp',
+        'percent_armor_penetration': 'Armor Pen',
+        'percent_base_mana_regen': '% Mana Regen',
+        'percent_tenacity': "Tenacity",
+        'percent_magic_penetration': 'Magic Pen',
+        'percent_crit_damage': '% Crit Damage',
+        'flat_magic_penetration': 'Magic Pen',
+    }
 
     class Meta:
         unique_together = ("_id", "version", "language")
@@ -257,14 +208,15 @@ class Item(VersionedModel):
             }
         return diff
 
+    @cached_property
     def stat_efficiency(self):
         ret = {}
-        for stat in self.stat_list:
+        for stat, label in self.stat_list.items():
             amount = getattr(self, stat, None)
             if not amount:
                 continue
             if cost := ITEM_STAT_COSTS.get(stat, None):
-                ret[stat] = cost * amount
+                ret[label] = cost * amount
         calc_gold = sum(ret.values())
         ret['calculated_cost'] = calc_gold
         assert self.gold
@@ -326,7 +278,7 @@ class Item(VersionedModel):
                 case 'critical strike damage':
                     self.percent_crit_damage = num
                 case _:
-                    logger.warn(f"Found unknown stat: {stat}")
+                    logger.warning(f"Found unknown stat: {stat}")
         if save:
             self.save()
 
