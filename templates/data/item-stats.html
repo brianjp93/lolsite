@@ -14,8 +14,11 @@
         <div class="flex">
           <div class="flex gap-x-2">
             <img src="{{ item.image_url }}" alt="" class="w-12 h-12 rounded">
-            <div class="font-lg font-bold">
-              {{ item.name }}
+            <div class="flex flex-col gap-y-1">
+              <div class="font-lg font-bold">
+                {{ item.name }}
+              </div>
+              <div class="text-sm">Version {{ item.version }}</div>
             </div>
           </div>
           <div class="text-yellow-600 ml-auto">
@@ -26,10 +29,11 @@
           <div class="font-bold">Calculated Gold Efficiency</div>
           <div
             class = "
+              font-bold
             {% if item.stat_efficiency.gold_efficiency > 100 %}
               text-green-600
             {% elif item.stat_efficiency.gold_efficiency > 0 %}
-              text-red-700
+              text-red-600
             {% endif %}
             "
           >
@@ -37,7 +41,7 @@
           </div>
           {% for stat, val in item.stat_efficiency.items %}
             {% if stat != 'calculated_cost' and stat != 'gold_efficiency' %}
-              <div class="font-sm ml-4">{{ stat }}: {{ val|floatformat:"1" }}g</div>
+              <div class="text-sm ml-4">{{ stat }}: {{ val|floatformat:"0" }}g</div>
             {% endif %}
           {% endfor %}
         </div>
