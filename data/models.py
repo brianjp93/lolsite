@@ -152,30 +152,30 @@ class Item(VersionedModel):
     gold: Union['ItemGold', None]
     stats: models.QuerySet['ItemStat']
 
-    stat_list = [
-        'flat_armor',
-        'percent_crit',
-        'flat_health',
-        'percent_health_regen',
-        'flat_ability_power',
-        'flat_movement_speed',
-        'flat_mana',
-        'flat_attack_damage',
-        'flat_magic_resist',
-        'percent_attack_speed',
-        'percent_movement_speed',
-        'percent_life_steal',
-        'flat_lethality',
-        'flat_ability_haste',
-        'percent_heal_and_shield_power',
-        'percent_omnivamp',
-        'percent_armor_penetration',
-        'percent_base_mana_regen',
-        'percent_tenacity',
-        'percent_magic_penetration',
-        'percent_crit_damage',
-        'flat_magic_penetration',
-    ]
+    stat_list = {
+        'flat_armor': 'Armor',
+        'percent_crit': '% Crit',
+        'flat_health': 'HP',
+        'percent_health_regen': '% Health Regen',
+        'flat_ability_power': 'AP',
+        'flat_movement_speed': 'MS',
+        'flat_mana': 'Mana',
+        'flat_attack_damage': 'AD',
+        'flat_magic_resist': 'MR',
+        'percent_attack_speed': '% AS',
+        'percent_movement_speed': '% MS',
+        'percent_life_steal': 'Life Steal',
+        'flat_lethality': 'Letahlity',
+        'flat_ability_haste': 'Haste',
+        'percent_heal_and_shield_power': '% Heal & Shield',
+        'percent_omnivamp': 'Omnivamp',
+        'percent_armor_penetration': 'Armor Pen',
+        'percent_base_mana_regen': '% Mana Regen',
+        'percent_tenacity': "Tenacity",
+        'percent_magic_penetration': 'Magic Pen',
+        'percent_crit_damage': '% Crit Damage',
+        'flat_magic_penetration': 'Magic Pen',
+    }
 
     class Meta:
         unique_together = ("_id", "version", "language")
@@ -208,14 +208,15 @@ class Item(VersionedModel):
             }
         return diff
 
+    @cached_property
     def stat_efficiency(self):
         ret = {}
-        for stat in self.stat_list:
+        for stat, label in self.stat_list.items():
             amount = getattr(self, stat, None)
             if not amount:
                 continue
             if cost := ITEM_STAT_COSTS.get(stat, None):
-                ret[stat] = cost * amount
+                ret[label] = cost * amount
         calc_gold = sum(ret.values())
         ret['calculated_cost'] = calc_gold
         assert self.gold
@@ -277,7 +278,7 @@ class Item(VersionedModel):
                 case 'critical strike damage':
                     self.percent_crit_damage = num
                 case _:
-                    logger.warn(f"Found unknown stat: {stat}")
+                    logger.warning(f"Found unknown stat: {stat}")
         if save:
             self.save()
 

@@ -664,16 +664,16 @@ ITEM_STAT_COSTS: ItemStatCosts = {
     'percent_health_regen': 300 / 100,
     'flat_ability_power': 400 / 20,
     'flat_movement_speed': 300 / 25,
-    'flat_mana': 350 / 250,
+    'flat_mana': 300 / 300,
     'flat_attack_damage': 350 / 10,
-    'flat_magic_resist': 450 / 25,
+    'flat_magic_resist': 400 / 20,
     'percent_attack_speed': 300 / 12,
     'percent_movement_speed': 284 / 5,  # calculated from aether wisp
     'percent_life_steal': 375 / 7,  # calculated from vampiric scepter
     'flat_lethality': 1000 / 30,
     'flat_ability_haste': 250 / 5,
     'percent_heal_and_shield_power': 550 / 8,
-    'percent_base_mana_regen': 250 / 50,
+    'percent_base_mana_regen': 200 / 50,
     'percent_omnivamp': 220.57 / 5,
     'percent_armor_penetration': 41.6666667,  # value from https://leagueoflegends.fandom.com/wiki/Armor_penetration
     'percent_tenacity': 15,  # completely arbitrary (don't know how this should be calculated)
