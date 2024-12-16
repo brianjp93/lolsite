@@ -75,6 +75,14 @@ h6 {
   @apply text-sm mt-2 block;
 }
 
+.forms fieldset > div {
+  @apply flex flex-wrap gap-x-2 gap-y-1;
+
+  > div {
+    @apply w-48;
+  }
+}
+
 select.searchable {
   @apply hidden;
 }

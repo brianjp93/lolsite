@@ -165,7 +165,7 @@ class Item(VersionedModel):
         'percent_attack_speed': '% AS',
         'percent_movement_speed': '% MS',
         'percent_life_steal': 'Life Steal',
-        'flat_lethality': 'Letahlity',
+        'flat_lethality': 'Lethality',
         'flat_ability_haste': 'Haste',
         'percent_heal_and_shield_power': '% Heal & Shield',
         'percent_omnivamp': 'Omnivamp',
