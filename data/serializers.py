@@ -108,7 +108,7 @@ class ItemSerializer(serializers.ModelSerializer):
         }
 
     def get_stat_efficiency(self, instance):
-        return instance.stat_efficiency()
+        return instance.stat_efficiency
 
     def __new__(cls, instance, *args, **kwargs):
         if isinstance(instance, QuerySet):
