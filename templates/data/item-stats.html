@@ -2,6 +2,7 @@
 {% load static %}
 {% block content %}
 <div class="container mx-auto px-2 flex flex-col">
+  <h2>Item Stats (Version {{ version }})</h2>
   <div>
     <form action="" method="get" class="forms">
       {{ filter.form.as_div }}
@@ -16,7 +17,9 @@
             <img src="{{ item.image_url }}" alt="" class="w-12 h-12 rounded">
             <div class="flex flex-col gap-y-1">
               <div class="font-lg font-bold">
-                {{ item.name }}
+                <a href="{% url 'data:item-stats-detail' item_id=item.external_id %}">
+                  {{ item.name }}
+                </a>
               </div>
               <div class="text-sm">Version {{ item.version }}</div>
             </div>

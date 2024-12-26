@@ -12,6 +12,7 @@ from django.utils.functional import cached_property
 
 from core.models import TimestampedModel, VersionedModel, ThumbnailedModel
 from data.constants import ITEM_STAT_COSTS
+from data.managers import ItemManager
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class Rito(models.Model):
         ret = []
         seen = set()
         for x in versions:
-            parts = x.split('.')
+            parts = x.split(".")
             if len(parts) != 3:
                 continue
             a, b, c = parts
@@ -36,12 +37,14 @@ class Rito(models.Model):
             if key in seen:
                 continue
             seen.add(key)
-            ret.append({
-                "version": f"{a}.{b}",
-                "major": a,
-                "minor": b,
-                "patch": c,
-            })
+            ret.append(
+                {
+                    "version": f"{a}.{b}",
+                    "major": a,
+                    "minor": b,
+                    "patch": c,
+                }
+            )
         return ret
 
     def __str__(self):
@@ -63,17 +66,16 @@ class ReforgedTree(VersionedModel):
 
     def save(self, *args, **kwargs):
         # I don't know how it happens, but sometimes we get the wrong url?
-        if '.dds' in self.icon:
-            self.icon = self.icon.replace('.dds', '.png')
-            self.icon = self.icon.replace('ASSETS/Perks', 'perk-images')
+        if ".dds" in self.icon:
+            self.icon = self.icon.replace(".dds", ".png")
+            self.icon = self.icon.replace("ASSETS/Perks", "perk-images")
         return super().save(*args, **kwargs)
 
     def __str__(self):
         return f'ReforgedTree(_id={self._id}, language="{self.language}", version="{self.version}")'
 
     def image_url(self):
-        """Return image url.
-        """
+        """Return image url."""
         return f"https://ddragon.leagueoflegends.com/cdn/img/{self.icon}"
 
 
@@ -94,12 +96,12 @@ class ReforgedRune(models.Model):
         unique_together = ("reforgedtree", "_id")
 
     def image_url(self):
-        """Return image url.
-        """
+        """Return image url."""
         return f"https://ddragon.leagueoflegends.com/cdn/img/{self.icon}"
 
 
-stat_parser = re.compile(r'(\d+)(%?)(?:</attention>)? ([^<\d]+)')
+stat_parser = re.compile(r"(\d+)(%?)(?:</attention>)? ([^<\d]+)")
+
 
 class Item(VersionedModel):
     _id = models.IntegerField(db_index=True)
@@ -148,33 +150,34 @@ class Item(VersionedModel):
 
     diff = models.JSONField(default=None, null=True)
 
-    image: Union['ItemImage', None]
-    gold: Union['ItemGold', None]
-    stats: models.QuerySet['ItemStat']
+    image: Union["ItemImage", None]
+    gold: Union["ItemGold", None]
+    stats: models.QuerySet["ItemStat"]
+    objects = ItemManager()
 
     stat_list = {
-        'flat_armor': 'Armor',
-        'percent_crit': '% Crit',
-        'flat_health': 'HP',
-        'percent_health_regen': '% Health Regen',
-        'flat_ability_power': 'AP',
-        'flat_movement_speed': 'MS',
-        'flat_mana': 'Mana',
-        'flat_attack_damage': 'AD',
-        'flat_magic_resist': 'MR',
-        'percent_attack_speed': '% AS',
-        'percent_movement_speed': '% MS',
-        'percent_life_steal': 'Life Steal',
-        'flat_lethality': 'Lethality',
-        'flat_ability_haste': 'Haste',
-        'percent_heal_and_shield_power': '% Heal & Shield',
-        'percent_omnivamp': 'Omnivamp',
-        'percent_armor_penetration': 'Armor Pen',
-        'percent_base_mana_regen': '% Mana Regen',
-        'percent_tenacity': "Tenacity",
-        'percent_magic_penetration': 'Magic Pen',
-        'percent_crit_damage': '% Crit Damage',
-        'flat_magic_penetration': 'Magic Pen',
+        "flat_armor": "Armor",
+        "percent_crit": "% Crit",
+        "flat_health": "HP",
+        "percent_health_regen": "% Health Regen",
+        "flat_ability_power": "AP",
+        "flat_movement_speed": "MS",
+        "flat_mana": "Mana",
+        "flat_attack_damage": "AD",
+        "flat_magic_resist": "MR",
+        "percent_attack_speed": "% AS",
+        "percent_movement_speed": "% MS",
+        "percent_life_steal": "Life Steal",
+        "flat_lethality": "Lethality",
+        "flat_ability_haste": "Haste",
+        "percent_heal_and_shield_power": "% Heal & Shield",
+        "percent_omnivamp": "Omnivamp",
+        "percent_armor_penetration": "Armor Pen",
+        "percent_base_mana_regen": "% Mana Regen",
+        "percent_tenacity": "Tenacity",
+        "percent_magic_penetration": "Magic Pen",
+        "percent_crit_damage": "% Crit Damage",
+        "flat_magic_penetration": "Magic Pen",
     }
 
     class Meta:
@@ -182,6 +185,10 @@ class Item(VersionedModel):
 
     def __str__(self):
         return f'Item(name="{self.name}", version="{self.version}", language="{self.language}")'
+
+    @property
+    def external_id(self):
+        return self._id
 
     def image_url(self):
         url = ""
@@ -197,14 +204,16 @@ class Item(VersionedModel):
             old_stat = getattr(other, stat)
             if new_stat != old_stat:
                 diff[stat] = {
-                    'prev': old_stat,
-                    'curr': new_stat,
+                    "prev": old_stat,
+                    "curr": new_stat,
                 }
+        if not getattr(self, "gold", None) or not getattr(other, "gold", None):
+            return diff
         assert self.gold and other.gold
         if self.gold.total != other.gold.total:
-            diff['gold_total'] = {
-                'prev': other.gold.total,
-                'curr': self.gold.total,
+            diff["gold_total"] = {
+                "prev": other.gold.total,
+                "curr": self.gold.total,
             }
         return diff
 
@@ -216,66 +225,75 @@ class Item(VersionedModel):
             if not amount:
                 continue
             if cost := ITEM_STAT_COSTS.get(stat, None):
-                ret[label] = cost * amount
-        calc_gold = sum(ret.values())
-        ret['calculated_cost'] = calc_gold
+                ret[label] = {"amount": amount, "gold_value": cost * amount}
+        calc_gold = sum(x['gold_value'] for x in ret.values())
+        ret["calculated_cost"] = calc_gold
         assert self.gold
-        ret['gold_efficiency'] = calc_gold / (self.gold.total or 1) * 100
+        ret["gold_efficiency"] = calc_gold / (self.gold.total or 1) * 100
         return ret
 
+    @cached_property
+    def base_stat_efficiency(self):
+        """Same as stat_efficiency, but don't include 'gold_efficiency' and 'calculated_cost'"""
+        return {
+            key: val
+            for key, val in self.stat_efficiency.items()
+            if key not in ["calculated_cost", "gold_efficiency"]
+        }
+
     def set_stats(self, save=True):
-        if 'stats>' in self.description:
-            desc = self.description.split('stats>')[1]
+        if "stats>" in self.description:
+            desc = self.description.split("stats>")[1]
         else:
             desc = self.description
         for num, percent, stat in stat_parser.findall(desc):
             num = int(num)
             match stat.lower():
-                case 'armor':
+                case "armor":
                     self.flat_armor = num
-                case 'health':
+                case "health":
                     self.flat_health = num
-                case 'base health regen':
+                case "base health regen":
                     self.percent_health_regen = num
-                case 'ability power':
+                case "ability power":
                     self.flat_ability_power = num
-                case 'move speed':
+                case "move speed":
                     if percent:
                         self.percent_movement_speed = num
                     else:
                         self.flat_movement_speed = num
-                case 'mana':
+                case "mana":
                     self.flat_mana = num
-                case 'attack damage':
+                case "attack damage":
                     self.flat_attack_damage = num
-                case 'magic resist':
+                case "magic resist":
                     self.flat_magic_resist = num
-                case 'attack speed':
+                case "attack speed":
                     self.percent_attack_speed = num
-                case 'life steal':
+                case "life steal":
                     self.percent_life_steal = num
-                case 'lethality':
+                case "lethality":
                     self.flat_lethality = num
-                case 'ability haste':
+                case "ability haste":
                     self.flat_ability_haste = num
-                case 'heal and shield power':
+                case "heal and shield power":
                     self.percent_heal_and_shield_power = num
-                case 'omnivamp':
+                case "omnivamp":
                     self.percent_omnivamp = num
-                case 'armor penetration':
+                case "armor penetration":
                     self.percent_armor_penetration = num
-                case 'base mana regen':
+                case "base mana regen":
                     self.percent_base_mana_regen = num
-                case 'tenacity':
+                case "tenacity":
                     self.percent_tenacity = num
-                case 'magic penetration':
+                case "magic penetration":
                     if percent:
                         self.percent_magic_penetration = num
                     else:
                         self.flat_magic_penetration = num
-                case 'critical strike chance':
+                case "critical strike chance":
                     self.percent_crit = num
-                case 'critical strike damage':
+                case "critical strike damage":
                     self.percent_crit_damage = num
                 case _:
                     logger.warning(f"Found unknown stat: {stat}")
@@ -324,8 +342,7 @@ class ItemImage(ThumbnailedModel):
     y = models.IntegerField()
 
     def image_url(self):
-        """Get item image url.
-        """
+        """Get item image url."""
         return f"https://ddragon.leagueoflegends.com/cdn/{self.item.version}/img/item/{self.full}"
 
 
@@ -415,15 +432,15 @@ class Champion(VersionedModel):
 
     created_date = models.DateTimeField(default=timezone.now)
 
-    image: Union['ChampionImage', None]
-    stats: Union['ChampionStats', None]
-    spells: models.QuerySet['ChampionSpell']
+    image: Union["ChampionImage", None]
+    stats: Union["ChampionStats", None]
+    spells: models.QuerySet["ChampionSpell"]
 
     class Meta:
         unique_together = ("_id", "version", "language")
 
     def __str__(self):
-        return f'{self.name} ({self.version})'
+        return f"{self.name} ({self.version})"
 
     def get_newest_version(self):
         query = Champion.objects.order_by("-major", "-minor", "-patch")
@@ -432,11 +449,10 @@ class Champion(VersionedModel):
         return None
 
     def image_url(self):
-        return self.image.image_url() if self.image else ''
+        return self.image.image_url() if self.image else ""
 
     def is_diff(self, other: Self):
-        """Check to see if a champion has differences with another.
-        """
+        """Check to see if a champion has differences with another."""
         spell_attrs = [
             "cooldown_burn",
             "cost_burn",
@@ -583,13 +599,13 @@ class ChampionPassive(models.Model):
     description = models.CharField(max_length=1024, default="", blank=True)
     name = models.CharField(max_length=128, default="", blank=True)
 
-    image: Union['ChampionPassiveImage', None]
+    image: Union["ChampionPassiveImage", None]
 
     def __str__(self):
         return f'ChampionPassive(champion="{self.champion._id}", name="{self.name}", version="{self.champion.version}", language="{self.champion.language}")'
 
     def image_url(self):
-        return self.image.image_url() if self.image else ''
+        return self.image.image_url() if self.image else ""
 
 
 class ChampionPassiveImage(models.Model):
@@ -656,8 +672,8 @@ class ChampionSpell(models.Model):
     resource = models.CharField(max_length=128, default="", blank=True)
     tooltip = models.CharField(max_length=2048, default="", blank=True)
 
-    effect_burn: models.QuerySet['ChampionEffectBurn']
-    image: Union['ChampionSpellImage', None]
+    effect_burn: models.QuerySet["ChampionEffectBurn"]
+    image: Union["ChampionSpellImage", None]
 
     class Meta:
         unique_together = ("champion", "_id")
@@ -666,8 +682,7 @@ class ChampionSpell(models.Model):
         return f'ChampionSpell(champion="{self.champion._id}", _id="{self._id}")'
 
     def get_effect(self):
-        """Get the effect list, in ascending order.
-        """
+        """Get the effect list, in ascending order."""
         query = self.effect_burn.all()
         out = [x for x in query]
         out.sort(key=lambda x: x.sort_int)
@@ -675,7 +690,7 @@ class ChampionSpell(models.Model):
         return out
 
     def image_url(self):
-        return self.image.image_url() if self.image else ''
+        return self.image.image_url() if self.image else ""
 
 
 class ChampionSpellImage(models.Model):
@@ -761,7 +776,7 @@ class SummonerSpell(VersionedModel):
     summoner_level = models.IntegerField()
     tooltip = models.TextField(max_length=2048, default="", blank=True)
 
-    image: Union['SummonerSpellImage', None]
+    image: Union["SummonerSpellImage", None]
 
     class Meta:
         unique_together = ("key", "version", "language")
@@ -770,15 +785,15 @@ class SummonerSpell(VersionedModel):
         return f'SummonerSpell(_id="{self._id}", version="{self.version}", language="{self.language}")'
 
     def image_url(self):
-        return self.image.image_url() if self.image else ''
+        return self.image.image_url() if self.image else ""
 
     def cd_image_url(self):
         out = [self._id[0].lower()]
         for ch in self._id[1:]:
             if ch in ascii_uppercase:
-                out.append('_')
+                out.append("_")
             out.append(ch.lower())
-        name = ''.join(out)
+        name = "".join(out)
         return f"https://raw.communitydragon.org/{self.major}.{self.minor}/plugins/rcp-be-lol-game-data/global/default/data/spells/icons2d/{name}.png"
 
 

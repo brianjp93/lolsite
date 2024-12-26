@@ -23,7 +23,6 @@ from .models import SummonerSpellVar
 from django.db.utils import IntegrityError
 from django.utils import timezone
 
-from . import constants
 from lolsite.celery import app
 from lolsite.tasks import get_riot_api
 import json
