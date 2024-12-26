@@ -3,6 +3,10 @@
 {% block title %}Item History | {{ item.name }}{% endblock title %}
 {% block content %}
 <div class="container mx-auto px-2 flex flex-col">
+  <a href="{% url 'data:item-stats' %}" class="flex gap-x-2 my-2">
+    <c-icons.chevron-left />
+    All Items
+  </a>
   <h2>{{ item.name }} | Item History</h2>
   <div class="flex flex-col gap-y-2 mt-4">
     {% for item in object_list %}
