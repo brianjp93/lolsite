@@ -196,5 +196,9 @@ div.nav-item {
     opacity:1;
 }
 
+.logo {
+  filter: drop-shadow(1px 1px 3px #fff);
+}
+
 
 @tailwind utilities;

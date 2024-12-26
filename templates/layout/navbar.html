@@ -1,4 +1,8 @@
+{% load static %}
 <div class="border-gray-400 border-b-2 py-2 px-4 mb-2 flex">
+  <a href="{% url 'home' %}" class="mr-2">
+    <img src="{% static 'logo-clean.png' %}" alt="hardstuck.club logo" class="w-8 h-8 logo">
+  </a>
   <div>
     <c-search-form />
   </div>
