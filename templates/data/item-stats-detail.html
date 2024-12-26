@@ -1,0 +1,84 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block title %}Item History | {{ item.name }}{% endblock title %}
+{% block content %}
+<div class="container mx-auto px-2 flex flex-col">
+  <h2>{{ item.name }} | Item History</h2>
+  <div class="flex flex-col gap-y-2 mt-4">
+    {% for item in object_list %}
+      {% if not forloop.first %}
+        <div class='mx-auto'>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75 12 3m0 0 3.75 3.75M12 3v18" />
+          </svg>
+        </div>
+      {% endif %}
+      <div class="w-full p-2 border border-gray-200 rounded-md">
+        <div class="flex gap-x-2">
+          <div>
+            Version {{ item.version }}
+          </div>
+          <div class="text-yellow-700 font-bold">
+            {{ item.gold.total }}g
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-col gap-y-1 max-w-fit p-2 rounded border border-gray-100">
+            <h3>Stat Changes</h3>
+            <div class="grid grid-cols-2 max-w-fit">
+              {% if item.diff.gold_total %}
+                {% include "data/_stat_diff.html" with key="Gold" val=item.diff.gold_total %}
+              {% endif %}
+              {% for key, val in item.diff.items %}
+                {% if key != 'gold_total' %}
+                  {% include "data/_stat_diff.html" %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          <div class="flex flex-col gap-y-0 max-w-fit p-2 rounded border border-gray-100">
+            <h3>Stat Gold Efficiency</h3>
+            <div class="grid grid-cols-2 min-w-fit gap-x-2 gap-y-0 text-blue-600">
+              {% for stat, val in item.base_stat_efficiency.items %}
+                <div>
+                  <span class="font-bold">{{ val.amount }}</span> {{ stat }}
+                </div>
+                <div
+                  class="
+                    text-yellow-700
+                    {% if forloop.last %}
+                      border-b border-yellow-700
+                    {% endif %}
+                  ">{{ val.gold_value|floatformat:"0" }}g</div>
+              {% endfor %}
+              <div></div>
+              <div class="flex gap-x-2 font-bold">
+                <div class="text-yellow-700">
+                  {{ item.stat_efficiency.calculated_cost|floatformat:"0" }}g
+                </div>
+                <div
+                  title="Gold Efficiency"
+                  class="
+                  {% if item.stat_efficiency.gold_efficiency > 100 %}
+                    text-green-700
+                  {% else %}
+                    text-red-700
+                  {% endif %}
+                  ">
+                  ({{ item.stat_efficiency.gold_efficiency|floatformat:"0" }}% Efficiency)
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-y-1 max-w-fit p-2 rounded border border-gray-100">
+            <h3>Description</h3>
+            <div>
+              {{ item.description|safe }}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock content %}
