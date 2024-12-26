@@ -14,12 +14,22 @@ class ItemStatsView(FilterView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
+        context["object_list"] = self.order_object_list(context["object_list"])
         if objs := context["object_list"]:
             context["version"] = list(objs)[0].version
         return context
 
+    def order_object_list(self, object_list):
+        order_by = self.request.GET.get("order_by", "-gold__total")
+        if order_by.endswith("gold_efficiency_percent"):
+            object_list = sorted(object_list, key=lambda item: item.stat_efficiency['gold_efficiency'])
+            if order_by[0] == '-':
+                object_list.reverse()
+        return object_list
+
+
     def get_queryset(self):
-        return (
+        qs = (
             Item.objects.filter(
                 version=Item.objects.order_by("-major", "-minor").values("version")[:1],
                 language="en_US",
@@ -39,8 +49,11 @@ class ItemStatsView(FilterView):
                 is_rift=True,
             )
             .select_related("gold", "image")
-            .order_by("-gold__total")
         )
+        order_by = self.request.GET.get("order_by", "-gold__total")
+        if order_by.endswith("gold__total"):
+            qs = qs.order_by(order_by)
+        return qs
 
 
 class ItemStatsDetailView(generic.ListView):
