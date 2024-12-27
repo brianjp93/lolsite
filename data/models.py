@@ -248,17 +248,19 @@ class Item(VersionedModel):
                 ):
                     ap_percent = match.groups()[0]
                     ap = self.flat_ability_power
+                    ap_decimal = int(ap_percent) / 100
                     return {
                         "AP": {
                             "range": [ap, 1500],
                             "initial": ap,
                             "type": "percentage",
-                            "multiplier": int(ap_percent) / 100,
+                            "multiplier": ap_decimal,
                             "affected_stat": "AP",
                             "affected_stat_value": ITEM_STAT_COSTS["flat_ability_power"],
+                            "notes": f"This item has immediate bonus value as you get {ap} x {ap_percent}% = {int(ap_decimal * ap)} additional AP."
                         },
                     }
-            #
+            # Overlord's Bloodmail
             case 2501:
                 if match := re.search(r"gain (\d+)% of your.*bonus health.*as.*attack damage", self.description, re.IGNORECASE):
                     percent = match.groups()[0]
@@ -270,6 +272,7 @@ class Item(VersionedModel):
                             "multiplier": int(percent) / 100,
                             "affected_stat": "AD",
                             "affected_stat_value": ITEM_STAT_COSTS["flat_attack_damage"],
+                            "notes": "Bonus HP = Total HP - Base HP. Generally, this is HP from items.",
                         }
                     }
             # sterak's gage
@@ -286,7 +289,7 @@ class Item(VersionedModel):
                             "notes": "Base HP differs per champion but generally ranges between 60 at level 1 to 120 at level 18",
                         }
                     }
-            #
+            # Riftmaker
             case 4633:
                 if match := re.search(r"gain (\d+)% of your.*bonus health.*as.*ability power", self.description, re.IGNORECASE):
                     percent = match.groups()[0]
@@ -298,6 +301,7 @@ class Item(VersionedModel):
                             "multiplier": int(percent) / 100,
                             "affected_stat": "AP",
                             "affected_stat_value": ITEM_STAT_COSTS["flat_ability_power"],
+                            "notes": "Bonus HP = Total HP - Base HP. Generally, this is HP from items.",
                         }
                     }
             # archangel's staff

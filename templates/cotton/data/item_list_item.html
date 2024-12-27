@@ -63,6 +63,9 @@
               >
               <div class="w-1/6" id="slider-{{item.external_id}}-{{stat_name}}-value">{{ val.range.0 }}</div>
             </div>
+            {% if val.notes %}
+              <div class="text-xs">{{ val.notes }}</div>
+            {% endif %}
             <div>
               <span class="font-bold text-blue-600" id="additional-stat-{{item.external_id}}-{{stat_name}}"></span>
               more
