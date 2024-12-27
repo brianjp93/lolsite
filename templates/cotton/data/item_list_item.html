@@ -1,0 +1,113 @@
+<div id="list-item-{{ item.external_id }}" class="flex flex-col gap-y-2 ">
+  <div class="flex">
+    <div class="flex gap-x-2">
+      <img src="{{ item.image_url }}" alt="" class="w-12 h-12 rounded">
+      <div class="flex flex-col gap-y-1">
+        <div class="font-lg font-bold">
+          <a href="{% url 'data:item-stats-detail' item_id=item.external_id %}">
+            {{ item.name }}
+          </a>
+        </div>
+        <div class="text-sm">
+          Version {{ item.version }}
+          <span title="Last Changed">
+            ({{ item.last_changed }})
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="text-yellow-600 ml-auto">
+      ({{ item.gold.total }}g)
+    </div>
+  </div>
+  <div class="flex flex-col border border-slate-300 rounded px-1">
+    <div class="font-bold">Stat Gold Efficiency</div>
+      <div
+        class = "
+          font-bold
+        {% if item.stat_efficiency.gold_efficiency > 100 %}
+          text-green-600
+        {% elif item.stat_efficiency.gold_efficiency > 0 %}
+          text-red-600
+        {% endif %}
+        "
+      >
+        {{ item.stat_efficiency.calculated_cost|floatformat:"0" }}g ({{ item.stat_efficiency.gold_efficiency|floatformat:"1" }}%)
+      </div>
+    <div class="grid grid-cols-2 text-sm ml-4">
+      {% for stat, val in item.stat_efficiency.items %}
+        {% if stat != 'calculated_cost' and stat != 'gold_efficiency' %}
+          <div><span class="text-blue-600 font-bold">{{ val.amount }}</span> {{ stat }}:</div>
+          <div class="text-yellow-600">{{ val.gold_value|floatformat:"0" }}g</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% if item.sliders %}
+      <h5>Stat Sliders</h5>
+      <div class="flex flex-col gap-y-2">
+        {% for stat_name, val in item.sliders.items %}
+          <div class="text-sm">
+            <div>{{ stat_name }}</div>
+            <div class="w-full flex gap-x-2">
+              <input
+                id="slider-{{item.external_id}}-{{stat_name}}"
+                data-stat="{{stat_name}}"
+                data-affected-stat="{{val.affected_stat}}"
+                data-affected-stat-value="{{ val.affected_stat_value }}"
+                data-multiplier="{{val.multiplier}}"
+                class="my-1 w-full"
+                type="range"
+                min="{{ val.range.0 }}"
+                max="{{ val.range.1 }}"
+                value="{{ val.initial }}"
+              >
+              <div class="w-1/6" id="slider-{{item.external_id}}-{{stat_name}}-value">{{ val.range.0 }}</div>
+            </div>
+            <div>
+              <span class="font-bold text-blue-600" id="additional-stat-{{item.external_id}}-{{stat_name}}"></span>
+              more
+              <span class="font-bold text-blue-600" id="affected-stat-{{item.external_id}}-{{stat_name}}">{{ val.affected_stat }}</span>
+              Value:
+              <span class="font-bold text-yellow-600" id="additional-value-{{item.external_id}}-{{stat_name}}"></span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  <div>
+    {{ item.description|safe }}
+  </div>
+
+  {% if item.sliders %}
+    {{ item.base_stat_efficiency|json_script }}
+    <script>
+      (function() {
+        const GOLD = {{ item.gold.total }};
+        const ITEM_ID = "{{ item.external_id }}";
+        const el = document.getElementById("list-item-{{ item.external_id }}");
+        const STATS = JSON.parse(el.querySelector("script").textContent);
+
+        function handleSliderChange(slider) {
+          const statName = slider.getAttribute("data-stat");
+          const affectedStat = slider.getAttribute("data-affected-stat");
+          const affectedStatValue = parseFloat(slider.getAttribute("data-affected-stat-value"));
+          const newValue = slider.value;
+          const statValueElement = el.querySelector(`#slider-${ITEM_ID}-${statName}-value`);
+          const multiplier = parseFloat(slider.getAttribute("data-multiplier"))|| 0;
+          statValueElement.textContent = newValue;
+
+          const additionalStat = newValue * multiplier;
+          const additionalValue = additionalStat * affectedStatValue;
+          el.querySelector(`#additional-stat-${ITEM_ID}-${statName}`).textContent = parseInt(additionalStat);
+          el.querySelector(`#additional-value-${ITEM_ID}-${statName}`).textContent = `${parseInt(additionalValue)}g`;
+        }
+
+        for (slider of el.querySelectorAll("input[type='range']")) {
+          slider.addEventListener('input', (event) => handleSliderChange(event.currentTarget));
+          handleSliderChange(slider);
+        };
+      }())
+    </script>
+  {% endif %}
+</div>

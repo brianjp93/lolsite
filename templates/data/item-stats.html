@@ -9,56 +9,10 @@
       <button type="submit" class="btn btn-default my-2">Search</button>
     </form>
   </div>
-  <div class="flex flex-wrap gap-2">
+  <div class="flex flex-wrap gap-2 justify-center">
     {% for item in object_list %}
-      <div class="w-[350px] flex flex-col gap-y-2 bg-slate-800 rounded p-2 max-h-64 overflow-y-auto">
-        <div class="flex">
-          <div class="flex gap-x-2">
-            <img src="{{ item.image_url }}" alt="" class="w-12 h-12 rounded">
-            <div class="flex flex-col gap-y-1">
-              <div class="font-lg font-bold">
-                <a href="{% url 'data:item-stats-detail' item_id=item.external_id %}">
-                  {{ item.name }}
-                </a>
-              </div>
-              <div class="text-sm">
-                Version {{ item.version }}
-                <span title="Last Changed">
-                  ({{ item.last_changed }})
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="text-yellow-600 ml-auto">
-            ({{ item.gold.total }}g)
-          </div>
-        </div>
-        <div class="flex flex-col border border-slate-300 rounded px-1">
-          <div class="font-bold">Calculated Gold Efficiency</div>
-            <div
-              class = "
-                font-bold
-              {% if item.stat_efficiency.gold_efficiency > 100 %}
-                text-green-600
-              {% elif item.stat_efficiency.gold_efficiency > 0 %}
-                text-red-600
-              {% endif %}
-              "
-            >
-              {{ item.stat_efficiency.calculated_cost|floatformat:"0" }}g ({{ item.stat_efficiency.gold_efficiency|floatformat:"1" }}%)
-            </div>
-          <div class="grid grid-cols-2 text-sm ml-4">
-            {% for stat, val in item.stat_efficiency.items %}
-              {% if stat != 'calculated_cost' and stat != 'gold_efficiency' %}
-                <div><span class="text-blue-600 font-bold">{{ val.amount }}</span> {{ stat }}:</div>
-                <div class="text-yellow-600">{{ val.gold_value|floatformat:"0" }}g</div>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </div>
-        <div>
-          {{ item.description|safe }}
-        </div>
+      <div class="w-[350px] bg-slate-800 rounded p-2 max-h-80 overflow-y-auto">
+        <c-data.item-list-item :item="item" />
       </div>
     {% endfor %}
   </div>
