@@ -2,10 +2,14 @@
   {% for item in items %}
     <div class="rounded border border-gray-400 w-8 h-8">
       {% if item %}
-        <c-tooltip :item="item">
+        <c-tooltip interactive="true">
           <img class="rounded" src="{{ item.image_url }}" alt="{{item.name}}">
           <c-slot name="content">
-            <h3>{{ item.name }}</h3>
+            <h3>
+              <a href="{% url 'data:item-stats-detail' item_id=item.external_id %}">
+                {{ item.name }}
+              </a>
+            </h3>
             <div>
               {{ item.description|safe }}
             </div>
