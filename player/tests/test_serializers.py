@@ -14,7 +14,7 @@ class ReputationSerializerTest(TestCase):
     def setUp(self):
         self.client = Client(enforce_csrf_checks=False)
         self.user = factories.UserFactory()
-        slinks = factories.SummonerLinkFactory.create_batch(10, user=self.user)
+        slinks = factories.SummonerLinkFactory.create_batch(10, user=self.user, verified=True)
         self.summoners = [x.summoner for x in slinks]
         self.client.force_login(self.user)
         self.matches = MatchFactory.create_batch(10, participants=10)
