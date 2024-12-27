@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q, F
 from rest_framework import serializers
 
 from data.models import CDProfileIcon
@@ -51,16 +51,18 @@ class ReputationSerializer(serializers.ModelSerializer):
         """
         if not user.is_authenticated:
             return 0
-        user_summoners = list(Summoner.objects.filter(
-            summonerlinks__user=user,
-        ).values_list('puuid', flat=True))
+        user_summoners = list(
+            user.summonerlinks.filter(verified=True).annotate(
+                puuid=F("summoner__puuid"),
+            ).values_list("puuid", flat=True)
+        )
 
         # The summoner we are checking cannot belong to the user.
         if summoner.puuid in user_summoners:
             return 0
 
         if not user_summoners:
-            raise serializers.ValidationError({'user': ['This user has no linked summoner accounts.']})
+            return 0
         q = Q()
         for puuid in user_summoners:
             q |= Q(puuid=summoner.puuid, match__participants__puuid=puuid)
