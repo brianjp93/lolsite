@@ -225,12 +225,96 @@ class Item(VersionedModel):
             if not amount:
                 continue
             if cost := ITEM_STAT_COSTS.get(stat, None):
-                ret[label] = {"amount": amount, "gold_value": cost * amount}
-        calc_gold = sum(x['gold_value'] for x in ret.values())
+                ret[label] = {
+                    "amount": amount,
+                    "gold_value": cost * amount,
+                    "unit_value": cost,
+                }
+        calc_gold = sum(x["gold_value"] for x in ret.values())
         ret["calculated_cost"] = calc_gold
         assert self.gold
         ret["gold_efficiency"] = calc_gold / (self.gold.total or 1) * 100
         return ret
+
+    @cached_property
+    def sliders(self):
+        match self._id:
+            # deathcap
+            case 3089:
+                if match := re.search(
+                    r"increases your total.*ability power by (\d+)%",
+                    self.description,
+                    flags=re.IGNORECASE,
+                ):
+                    ap_percent = match.groups()[0]
+                    ap = self.flat_ability_power
+                    return {
+                        "AP": {
+                            "range": [ap, 1500],
+                            "initial": ap,
+                            "type": "percentage",
+                            "multiplier": int(ap_percent) / 100,
+                            "affected_stat": "AP",
+                            "affected_stat_value": ITEM_STAT_COSTS["flat_ability_power"],
+                        },
+                    }
+            #
+            case 2501:
+                if match := re.search(r"gain (\d+)% of your.*bonus health.*as.*attack damage", self.description, re.IGNORECASE):
+                    percent = match.groups()[0]
+                    return {
+                        "Bonus-HP": {
+                            "range": [self.flat_health, 10000],
+                            "initial": self.flat_health,
+                            "type": "percentage",
+                            "multiplier": int(percent) / 100,
+                            "affected_stat": "AD",
+                            "affected_stat_value": ITEM_STAT_COSTS["flat_attack_damage"],
+                        }
+                    }
+            # sterak's gage
+            case 3053:
+                if match := re.search(r"gain.*bonus attack damage", self.description, re.IGNORECASE):
+                    return {
+                        "Base-AD": {
+                            "range": [60, 120],
+                            "initial": 90,
+                            "type": "percentage",
+                            "multiplier": .45,
+                            "affected_stat": "AD",
+                            "affected_stat_value": ITEM_STAT_COSTS["flat_attack_damage"],
+                            "notes": "Base HP differs per champion but generally ranges between 60 at level 1 to 120 at level 18",
+                        }
+                    }
+            #
+            case 4633:
+                if match := re.search(r"gain (\d+)% of your.*bonus health.*as.*ability power", self.description, re.IGNORECASE):
+                    percent = match.groups()[0]
+                    return {
+                        "Bonus-HP": {
+                            "range": [self.flat_health, 10000],
+                            "initial": 80,
+                            "type": "percentage",
+                            "multiplier": int(percent) / 100,
+                            "affected_stat": "AP",
+                            "affected_stat_value": ITEM_STAT_COSTS["flat_ability_power"],
+                        }
+                    }
+            # archangel's staff
+            case 3003:
+                if match := re.search(r"gain ability power equal to.*(\d+)% bonus mana", self.description, re.IGNORECASE):
+                    percent = match.groups()[0]
+                    return {
+                        "Bonus-Mana": {
+                            "range": [self.flat_mana, 4000],
+                            "initial": self.flat_mana,
+                            "type": "percentage",
+                            "multiplier": int(percent) / 100,
+                            "affected_stat": "AP",
+                            "affected_stat_value": ITEM_STAT_COSTS["flat_ability_power"],
+                        }
+                    }
+        return {}
 
     @cached_property
     def base_stat_efficiency(self):
