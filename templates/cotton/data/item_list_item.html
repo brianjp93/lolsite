@@ -22,23 +22,33 @@
   </div>
   <div class="flex flex-col border border-slate-300 rounded px-1">
     <div class="font-bold">Stat Gold Efficiency</div>
-      <div
-        class = "
-          font-bold
-        {% if item.stat_efficiency.gold_efficiency > 100 %}
-          text-green-600
-        {% elif item.stat_efficiency.gold_efficiency > 0 %}
-          text-red-600
-        {% endif %}
-        "
-      >
-        {{ item.stat_efficiency.calculated_cost|floatformat:"0" }}g ({{ item.stat_efficiency.gold_efficiency|floatformat:"1" }}%)
+      <div class="flex">
+        <div
+          class = "
+            font-bold
+          {% if item.stat_efficiency.gold_efficiency > 100 %}
+            text-green-600
+          {% elif item.stat_efficiency.gold_efficiency > 0 %}
+            text-red-600
+          {% endif %}
+          "
+        >
+          {{ item.stat_efficiency.calculated_cost|floatformat:"0" }}g ({{ item.stat_efficiency.gold_efficiency|floatformat:"1" }}%)
+        </div>
+        <div class="additional-total-efficiency text-pink-400 font-bold"></div>
       </div>
     <div class="grid grid-cols-2 text-sm ml-4">
       {% for stat, val in item.stat_efficiency.items %}
         {% if stat != 'calculated_cost' and stat != 'gold_efficiency' %}
-          <div><span class="text-blue-600 font-bold">{{ val.amount }}</span> {{ stat }}:</div>
-          <div class="text-yellow-600">{{ val.gold_value|floatformat:"0" }}g</div>
+          <div>
+            <span class="text-blue-600 font-bold">{{ val.amount }}</span>
+            <span class="additional-stat-{{ stat }} text-pink-400 font-bold"></span>
+            {{ stat }}:
+          </div>
+          <div class="flex gap-x-2">
+            <div class="text-yellow-600">{{ val.gold_value|floatformat:"0" }}g</div>
+            <span class="additional-stat-gold-{{ stat }} text-pink-400 font-bold"></span>
+          </div>
         {% endif %}
       {% endfor %}
     </div>
@@ -67,9 +77,9 @@
               <div class="text-xs">{{ val.notes }}</div>
             {% endif %}
             <div>
-              <span class="font-bold text-blue-600" id="additional-stat-{{item.external_id}}-{{stat_name}}"></span>
+              <span class="font-bold text-pink-400" id="additional-stat-{{item.external_id}}-{{stat_name}}"></span>
               more
-              <span class="font-bold text-blue-600" id="affected-stat-{{item.external_id}}-{{stat_name}}">{{ val.affected_stat }}</span>
+              <span class="font-bold text-pink-400" id="affected-stat-{{item.external_id}}-{{stat_name}}">{{ val.affected_stat }}</span>
               Value:
               <span class="font-bold text-yellow-600" id="additional-value-{{item.external_id}}-{{stat_name}}"></span>
             </div>
@@ -87,9 +97,17 @@
     <script>
       (function() {
         const GOLD = {{ item.gold.total }};
+        const CALCULATED_GOLD = {{ item.stat_efficiency.calculated_cost|default:"0" }};
         const ITEM_ID = "{{ item.external_id }}";
         const el = document.getElementById("list-item-{{ item.external_id }}");
         const STATS = JSON.parse(el.querySelector("script").textContent);
+        const statAdditions = {};
+
+        function handleAdditionalTotalEfficiency() {
+          const value = CALCULATED_GOLD + Object.values(statAdditions).reduce((a, b) => a + b.value, 0)
+          const percentage = parseInt(value / GOLD * 1000) / 10
+          el.querySelector(".additional-total-efficiency").textContent = ` -> ${parseInt(value)}g (${percentage}%)`
+        }
 
         function handleSliderChange(slider) {
           const statName = slider.getAttribute("data-stat");
@@ -102,11 +120,23 @@
 
           const additionalStat = newValue * multiplier;
           const additionalValue = additionalStat * affectedStatValue;
+
+          statAdditions[statName] = {amount: additionalStat, value: additionalValue};
           el.querySelector(`#additional-stat-${ITEM_ID}-${statName}`).textContent = parseInt(additionalStat);
           el.querySelector(`#additional-value-${ITEM_ID}-${statName}`).textContent = `${parseInt(additionalValue)}g`;
+          const addStatLine = el.querySelector(`.additional-stat-${statName}`);
+          const addStatGold = el.querySelector(`.additional-stat-gold-${statName}`);
+          if (addStatLine) {
+            addStatLine.textContent = `(+${parseInt(additionalStat)})`
+          }
+          if (addStatGold) {
+            addStatGold.textContent = `(+${parseInt(additionalValue)}g)`
+          }
+
+          handleAdditionalTotalEfficiency();
         }
 
-        for (slider of el.querySelectorAll("input[type='range']")) {
+        for (const slider of el.querySelectorAll("input[type='range']")) {
           slider.addEventListener('input', (event) => handleSliderChange(event.currentTarget));
           handleSliderChange(slider);
         };
