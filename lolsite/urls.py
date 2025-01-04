@@ -12,6 +12,7 @@ urlpatterns = [
     path("", include("player.urls", namespace="player")),
     path("", include("match.urls")),
     path("", views.Home.as_view(), name="home"),
+    path("feed/", views.FeedView.as_view(), name="feed"),
     path("stats", include("stats.urls", namespace="stats")),
     path("data/", include("data.urls", namespace="data")),
     path("login/go/", player_views.login_action),
