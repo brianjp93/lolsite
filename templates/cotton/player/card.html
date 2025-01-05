@@ -43,8 +43,10 @@
             hx-trigger="load" hx-swap="innerHTML" hx-get="{% url 'player:played_with_count' puuid=summoner.puuid %}">
             <c-player.played-with-count :count=0 />
           </div>
-          <c-player.favorite :summoner_id="summoner.id" :is_favorite="is_favorite" />
-          <c-player.follow :summoner_id="summoner.id" :is_follow="is_follow" />
+          <div class="flex gap-x-1">
+            <c-player.favorite :summoner_id="summoner.id" :is_favorite="is_favorite" />
+            <c-player.follow :summoner_id="summoner.id" :is_follow="is_follow" />
+          </div>
         </div>
       </div>
 

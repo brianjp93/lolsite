@@ -1,9 +1,17 @@
+import time
+import logging
+
 from django.db.models import Exists, OuterRef
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.decorators.vary import vary_on_headers
 
 from match.models import Match, Participant, set_related_match_objects
+from match.tasks import RefreshFeed
 from player.models import Summoner
+
+
+logger = logging.getLogger(__name__)
 
 
 class Home(generic.TemplateView):
@@ -12,9 +20,26 @@ class Home(generic.TemplateView):
 
 class FeedView(LoginRequiredMixin, generic.ListView):
     template_name = "player/feed.html"
-    paginate_by = 20
+    hx_template_name = "player/_feed.html"
+    paginate_by = 50
+
+    @vary_on_headers("hx-request")
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return [self.hx_template_name]
+        return super().get_template_names()
 
     def get_context_data(self, object_list=None, **kwargs):
+        if self.request.htmx:
+            user = self.request.user
+            rf = RefreshFeed()
+            logger.info(f"Refreshing feed for {user=}")
+            rf.refresh(user)
+            while not rf.is_refresh_feed_done(user):
+                time.sleep(0.5)
         context = super().get_context_data(object_list=object_list, **kwargs)
         context["following"] = self.following
         context["following_puuids"] = [x.puuid for x in self.following]
