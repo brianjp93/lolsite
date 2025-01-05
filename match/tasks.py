@@ -18,7 +18,7 @@ from django.db.models import Count, Exists, Subquery, OuterRef
 from django.db.models import Case, When, Sum
 from django.db.models import IntegerField, Q
 from django.utils import timezone
-from django.db import connections, transaction
+from django.db import connections, transaction, connection
 
 from data.constants import ARENA_QUEUE, FLEX_QUEUE, SOLO_QUEUE
 
@@ -181,6 +181,35 @@ def multi_match_import(matches_json, region):
             update_fields=["win"],
         )
         Ban.objects.bulk_create(bans, ignore_conflicts=True)
+
+
+class RefreshFeed:
+    REFRESH_FEED_LOCK_ID = 237894
+
+    def __init__(self):
+        self.cursor = connection.cursor()
+
+    def lock(self, user):
+        self.cursor.execute(r"SELECT pg_try_advisory_lock(%s, %s);", [self.REFRESH_FEED_LOCK_ID, user.id])
+        return self.cursor.fetchone()
+
+    def unlock(self, user):
+        self.cursor.execute(r"SELECT pg_advisory_unlock(%s, %s);", [self.REFRESH_FEED_LOCK_ID, user.id])
+
+    def is_refresh_feed_done(self, user):
+        self.cursor.execute(r"SELECT * from pg_locks where classid=%s and objid=%s;", [self.REFRESH_FEED_LOCK_ID, user.id])
+        row = self.cursor.fetchone()
+        return not row
+
+    def refresh(self, user):
+        summoners = [x.summoner for x in user.follow_set.all()]
+        got_lock, = self.lock(user)
+        if not got_lock:
+            logger.warning(f"Could not get refresh_feed lock for {user=}")
+            return
+        for summoner in summoners:
+            import_recent_matches(0, 100, summoner.puuid, summoner.region)
+        self.unlock(user)
 
 
 @app.task(name="match.tasks.import_recent_matches")
