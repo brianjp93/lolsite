@@ -44,11 +44,13 @@
 
   <div class="flex gap-x-2">
 
-    <div class="my-auto">
-      <c-player.summoner-block :participant="match.focus" />
-    </div>
-    <c-player.item-block :items="match.focus.items" />
-    <c-player.stat-block :participant="match.focus" />
+    {% if match.focus %}
+      <div class="my-auto">
+        <c-player.summoner-block :participant="match.focus" />
+      </div>
+      <c-player.item-block :items="match.focus.items" />
+      <c-player.stat-block :participant="match.focus" />
+    {% endif %}
 
     <div class="text-xs">
       <div class="flex gap-x-3">
