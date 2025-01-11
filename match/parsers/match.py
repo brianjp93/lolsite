@@ -291,6 +291,7 @@ class TeamObjectives(BaseModelWithLogger):
     inhibitor: TeamObjectiveModel
     riftHerald: TeamObjectiveModel
     tower: TeamObjectiveModel
+    atakhan: TeamObjectiveModel | None = None
     horde: Horde | None = None
 
 
