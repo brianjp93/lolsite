@@ -21,7 +21,7 @@ class Home(generic.TemplateView):
 class FeedView(LoginRequiredMixin, generic.ListView):
     template_name = "player/feed.html"
     hx_template_name = "player/_feed.html"
-    paginate_by = 50
+    paginate_by = 20
 
     @vary_on_headers("hx-request")
     def get(self, request, *args, **kwargs):
