@@ -27,7 +27,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/local/Dockerfile
-    command: python manage.py celery
+    command: celery -A lolsite worker -l info
     volumes:
       - .:/code
     links:
