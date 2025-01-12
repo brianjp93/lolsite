@@ -171,6 +171,11 @@ QUEUES = [
     },
     {"_id": 460, "_map": "Twisted Treeline", "description": "3v3 Blind Pick games"},
     {"_id": 470, "_map": "Twisted Treeline", "description": "3v3 Ranked Flex games"},
+    {
+        "_id": 480,
+        "_map": "Summoner's Rift",
+        "description": "5v5 Swift Play games",
+    },
     {"_id": 490, "_map": "Summoner's Rift", "description": "Normal (Quickplay)"},
     {"_id": 600, "_map": "Summoner's Rift", "description": "Blood Hunt Assassin games"},
     {"_id": 610, "_map": "Cosmic Ruins", "description": "Dark Star: Singularity games"},
