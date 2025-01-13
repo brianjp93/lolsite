@@ -1,7 +1,9 @@
 import time
 import logging
 
+from django.contrib import messages
 from django.db.models import Exists, OuterRef
+from django.shortcuts import redirect
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.vary import vary_on_headers
@@ -62,3 +64,23 @@ class FeedView(LoginRequiredMixin, generic.ListView):
             .prefetch_related("participants", "participants__stats")
             .order_by("-game_creation")
         )
+
+
+class FollowingListView(LoginRequiredMixin, generic.ListView):
+    template_name = "player/following.html"
+
+    def get_queryset(self):
+        return Summoner.objects.filter(
+            id__in=self.request.user.follow_set.all().values("summoner_id")
+        )
+
+    def get_context_data(self, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context["count"] = self.get_queryset().count()
+        return context
+
+    def post(self, *args, **kwargs):
+        summoner_id = self.request.POST["summoner_id"]
+        count, _ = self.request.user.follow_set.filter(summoner_id=summoner_id).delete()
+        messages.info(self.request, f"Successfully removed {count} summoners from your follow list.")
+        return redirect("following")
