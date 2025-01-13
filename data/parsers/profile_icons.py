@@ -17,6 +17,7 @@ class CDProfileIconParser(BaseModelWithLogger):
     descriptions: Any
     rarities: Any
     disabledRegions: Any
+    contentId: str | None = None
     esportsTeam: str | None = None
     esportsRegion: str | None = None
     esportsEvent: str | None = None
