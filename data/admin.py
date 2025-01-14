@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from data.constants import MAPS
+
 from .models import Rito
 from .models import ReforgedTree, ReforgedRune
 
@@ -36,10 +38,56 @@ class ReforgedRuneAdmin(admin.ModelAdmin):
     raw_id_fields = ("reforgedtree",)
 
 
+class FromItemInline(admin.TabularInline):
+    model = FromItem
+    readonly_fields = ["from_item_name"]
+    extra = 0
+
+    def from_item_name(self, obj):
+        if item := Item.objects.filter(version=obj.item.version, _id=obj._id).first():
+            return item.name
+        return obj._id
+
+class IntoItemInline(admin.TabularInline):
+    model = IntoItem
+    readonly_fields = ["from_item_name"]
+    extra = 0
+
+    def from_item_name(self, obj):
+        if item := Item.objects.filter(version=obj.version, _id=obj._id).first():
+            return item.name
+        return obj._id
+
+
+class ItemMapInline(admin.TabularInline):
+    model = ItemMap
+    readonly_fields = ["map_name"]
+    extra = 0
+
+    def map_name(self, obj):
+        map_dict = {x["_id"]: x for x in MAPS}
+        data = map_dict.get(obj.key, None)
+        if data:
+            return data["name"]
+        return obj.key
+
+
+class ItemGoldInline(admin.TabularInline):
+    model = ItemGold
+    extra = 0
+
+
+class ItemEffectInline(admin.TabularInline):
+    model = ItemEffect
+    extra = 0
+    readonly_fields = ["key", "value"]
+
+
 class ItemAdmin(admin.ModelAdmin):
     list_display = ("name", 'major', 'minor', 'patch', "last_changed", "language")
     list_filter = ("version", "language")
     search_fields = ('name', )
+    inlines = [FromItemInline, IntoItemInline, ItemMapInline, ItemGoldInline, ItemEffectInline]
 
 
 class FromItemAdmin(admin.ModelAdmin):

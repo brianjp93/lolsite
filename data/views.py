@@ -14,10 +14,21 @@ class ItemStatsView(FilterView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
+        context["object_list"] = self.filter_identical_objects(context["object_list"])
         context["object_list"] = self.order_object_list(context["object_list"])
         if objs := context["object_list"]:
             context["version"] = list(objs)[0].version
         return context
+
+    def filter_identical_objects(self, object_list):
+        items = {}
+        for obj in object_list:
+            if obj.name in items:
+                if str(obj._id) in str(items[obj.name]._id):
+                    items[obj.name] = obj
+            else:
+                items[obj.name] = obj
+        return list(items.values())
 
     def order_object_list(self, object_list):
         order_by = self.request.GET.get("order_by", "-gold__total")
