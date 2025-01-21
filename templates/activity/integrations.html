@@ -1,0 +1,29 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<div class="container mx-auto">
+  <h1>Integrations</h1>
+  <div class="flex flex-wrap">
+    <div class="rounded border border-gray p-2">
+      <h3>{{ OURA.code.label }}</h3>
+      {% if OURA %}
+        <div>
+          <div>
+            Oura is connected. Expires at 
+            <span x-dt1="{{OURA.expires_at.isoformat}}">{{ OURA.expires_at.isoformat }}</span>
+          </div>
+        </div>
+      {% else %}
+        <div>
+          <div>
+            Oura is not connected
+          </div>
+          <div>
+            <a href="{{ applications.OURA.authorize_url }}">Authorize</a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

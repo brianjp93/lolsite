@@ -12,6 +12,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 
+from ext.activity import ACTIVITY
 from notification.models import Notification
 
 from data import constants as dc
@@ -58,6 +59,15 @@ def validate_password(password):
         is_valid = False
 
     return (password, is_valid, validation)
+
+
+def get_activity_api(user):
+    """Just default to oura until we add more integrations."""
+    api = ACTIVITY["OURA"]()
+    api.activate(user)
+    if api.access_token:
+        return api
+    return None
 
 
 class Summoner(models.Model):
