@@ -18,6 +18,7 @@ urlpatterns = [
     path("data/", include("data.urls", namespace="data")),
     path("login/go/", player_views.login_action),
     path("logout/", player_views.logout_action, name="logout"),
+    path("activity/", include("activity.urls", namespace="activity")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

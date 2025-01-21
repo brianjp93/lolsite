@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "storages",
     'core',
+    "activity",
     "lolsite",
     "data",
     "stats",
@@ -177,6 +178,7 @@ GOOGLE_RECAPTCHA_KEY=config('GOOGLE_RECAPTCHA_KEY', "")
 OPENAI_KEY=config("OPENAI_KEY", "")
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
+LOGIN_URL = "player:login"
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")

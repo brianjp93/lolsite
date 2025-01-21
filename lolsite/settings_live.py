@@ -11,6 +11,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = ["app.hardstuck.club"]
 BASE_URL = "https://hardstuck.club"
+BACKEND_URL = "https://app.hardstuck.club"
 
 DATABASES = {'default': dj_database_url.config()}
 
