@@ -7,26 +7,29 @@
   (function() {
     const data = window.framesList;
     const hrData = window.hrList;
+    const datasets = [
+      {
+        fill: true,
+        label: 'Gold Advantage',
+        data: data.map(row => row.team100_gold - row.team200_gold),
+        yAxisID: 'y'
+      },
+    ]
+    if (hrData.length > 0) {
+      datasets.push({
+        fill: false,
+        label: 'HR',
+        data: hrData.map(x => x.y),
+        yAxisID: 'y1'
+      });
+    }
     const chart = new Chart(
       document.getElementById('{{ id }}'),
       {
         type: 'line',
         data: {
           labels: data.map((x, i) => `${i + 1}m`),
-          datasets: [
-            {
-              fill: true,
-              label: 'Gold Advantage',
-              data: data.map(row => row.team100_gold - row.team200_gold),
-              yAxisID: 'y'
-            },
-            {
-              fill: false,
-              label: 'HR',
-              data: hrData.map(x => x.y),
-              yAxisID: 'y1'
-            }
-          ]
+          datasets: datasets,
         },
         lineAtIndex: [0],
         plugins: [window.verticalLinePlugin],
