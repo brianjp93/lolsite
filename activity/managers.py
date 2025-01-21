@@ -24,25 +24,25 @@ class HeartrateManager(Manager):
         start = match.game_creation_dt
         end = start + timedelta(seconds=match.seconds)
         hr = api.update_or_create_heartrate(start, end, user)
-        return self.get_queryset().filter(id__in=[x.pk for x in hr])
+        return self.get_queryset().filter(id__in=[x.pk for x in hr]).order_by("dt")
 
     def format_for_match(self, match: Match, user):
         qs = self.get_hr_for_match(match, user).order_by("dt")
         hr_list = list(qs)
-        items = []
-        i = frame_idx = 0
         if not hr_list:
             return []
+        items = []
         hr = hr_list[0]
-        while True:
-            if i < len(hr_list):
-                hr = hr_list[i]
-            seconds = (hr.dt - match.game_creation_dt).total_seconds()
-            minute = seconds / 60
+        hr_minute_map = {
+            (hr.dt - match.game_creation_dt).total_seconds() // 60: hr
+            for hr in hr_list
+        }
+        seconds = (hr.dt - match.game_creation_dt).total_seconds()
+        frame_count = int(match.minutes) + 1
+        for frame_idx in range(frame_count):
+            hr_maybe = hr_minute_map.get(frame_idx, None)
+            if hr_maybe:
+                hr = hr_maybe
+                seconds = (hr.dt - match.game_creation_dt).total_seconds()
             items.append({"x": frame_idx, "y": hr.bpm, "seconds": seconds})
-            if frame_idx > minute:
-                i += 1
-            if frame_idx > match.minutes:
-                break
-            frame_idx += 1
         return items
