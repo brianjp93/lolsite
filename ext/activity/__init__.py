@@ -1,5 +1,5 @@
 from typing import Type, TypedDict
-from oura import OuraAPI
+from .oura import OuraAPI
 
 
 class ACTIVITY_TYPE(TypedDict):

@@ -9,6 +9,11 @@
     window.framesList = JSON.parse(document.querySelector('#frame-data').textContent);
   </script>
 
+  {{ heartrate|json_script:"hr-data" }}
+  <script>
+    window.hrList = JSON.parse(document.querySelector('#hr-data').textContent);
+  </script>
+
   {{ serialized_participants|json_script:"participants-data" }}
   <script>
     window.participantsList = JSON.parse(document.querySelector('#participants-data').textContent);

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from activity.managers import HeartrateManager
 from ext.activity import ACTIVITY
 from ext.activity.api import ActivityAPIBase
 
@@ -21,12 +22,14 @@ class Application(models.Model):
     client_id = models.CharField(max_length=32, default="")
     client_secret = models.CharField(max_length=32, default="")
 
+    def __str__(self) -> str:
+        return self.code
+
     @cached_property
     def api(self):
-        api = ACTIVITY[self.code.value]()
+        api = ACTIVITY[self.code]()
         assert isinstance(api, ActivityAPIBase)
         return api
-
 
     def get_client_id(self):
         if self.client_id:
@@ -49,11 +52,29 @@ class ApplicationToken(models.Model):
     access_token = models.CharField(max_length=64)
     expires_at = models.DateTimeField()
     refresh_token = models.CharField(max_length=64)
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
     modified_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.access_token[:7] + "..."
 
     def refresh(self):
         application = self.application
         assert isinstance(application, Application)
-        application.api.refresh(self.refresh_token)
-        # TODO: finish refresh logic
+        application.api.refresh(self.refresh_token, self.user)
+
+
+
+class Heartrate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    bpm = models.IntegerField()
+    dt = models.DateTimeField()
+
+    objects = HeartrateManager()
+
+    class Meta:
+        unique_together = [('user', 'dt')]
+
+
+    def __str__(self) -> str:
+        return f"{self.user} - {self.bpm}"

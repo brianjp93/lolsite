@@ -4,6 +4,7 @@ from django.views.generic import DetailView
 from django.db.models.query import prefetch_related_objects
 from django.views.decorators.cache import cache_control
 
+from activity.models import Heartrate
 from data.constants import STRUCTURES
 from lolsite.tasks import get_riot_api
 from match.models import Frame, Match, Participant, set_related_match_objects
@@ -56,6 +57,11 @@ class MatchDetailView(DetailView):
             "teams",
         )
         set_related_match_objects([match], match.advancedtimeline)
+        hr = Heartrate.objects.get_hr_for_match(match, self.request.user)
+        if not hr:
+            hr = Heartrate.objects.import_hr_for_match(match, self.request.user)
+        context['heartrate'] = Heartrate.objects.format_for_match(match, self.request.user)
+
         options = {str(x._id): x for x in match.participants.all() if str(x._id)}
         context['timeline'] = match.advancedtimeline
         for i, frame in enumerate(match.advancedtimeline.frames.all()):

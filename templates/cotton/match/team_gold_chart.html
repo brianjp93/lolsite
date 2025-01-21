@@ -6,6 +6,7 @@
 <script>
   (function() {
     const data = window.framesList;
+    const hrData = window.hrList;
     const chart = new Chart(
       document.getElementById('{{ id }}'),
       {
@@ -16,13 +17,37 @@
             {
               fill: true,
               label: 'Gold Advantage',
-              data: data.map(row => row.team100_gold - row.team200_gold)
+              data: data.map(row => row.team100_gold - row.team200_gold),
+              yAxisID: 'y'
+            },
+            {
+              fill: false,
+              label: 'HR',
+              data: hrData.map(x => x.y),
+              yAxisID: 'y1'
             }
           ]
         },
         lineAtIndex: [0],
         plugins: [window.verticalLinePlugin],
         options: {
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+
+              // grid line settings
+              grid: {
+                drawOnChartArea: false, // only want the grid lines for one axis to show up
+              },
+            },
+          },
           maintainAspectRatio: false,
           animation: {
             duration: 0,
@@ -41,8 +66,14 @@
             tooltip: {
               callbacks: {
                 label: function (context) {
-                  let y = context.parsed.y;
                   let label = ''
+                  if (context.dataset.yAxisID === 'y1') {
+                    label += `${context.formattedValue} BPM`
+                    return label
+                  }
+                  let y = context.parsed.y;
+                  console.log(context)
+                  console.log(context.parsed)
                   if (context.parsed.y < 0) {
                     label += `Red -${context.formattedValue}g`
                   } else {
