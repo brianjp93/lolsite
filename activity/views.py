@@ -1,9 +1,14 @@
 from django.contrib import messages
+from django.core.exceptions import BadRequest
 from django.urls import reverse
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from rest_framework.generics import get_object_or_404
+from django_htmx.http import HttpResponseClientRefresh
 
-from activity.models import Application, ApplicationToken
+from activity.models import Application, ApplicationToken, Heartrate
+from match.models import Match
 
 
 class IntegrationsListView(LoginRequiredMixin, generic.TemplateView):
@@ -48,3 +53,12 @@ class IntegrationCallbackView(LoginRequiredMixin, generic.RedirectView):
         application = Application.objects.get(code=code.upper())
         api = application.api
         token = api.handle_authorize_request(request)
+
+
+@login_required
+def update_heartrate(request, match_id):
+    if not request.method == 'POST':
+        raise BadRequest("Invalid method.")
+    match = get_object_or_404(Match, _id=match_id)
+    Heartrate.objects.import_hr_for_match(match, request.user)
+    return HttpResponseClientRefresh()

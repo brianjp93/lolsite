@@ -1,7 +1,20 @@
 <c-vars id="team-gold-chart" />
 
-<canvas id="{{ id }}">
-</canvas>
+<div id="{{ id }}-chart" class="flex flex-col h-full">
+
+  <div class="relative flex-grow">
+    <canvas id="{{ id }}" class="absolute inset-0 w-full h-full">
+    </canvas>
+  </div>
+  {% if heartrate %}
+    <form hx-post="{% url 'activity:update-heartrate' match_id=object.external_id %}">
+      {% csrf_token %}
+      <button class="btn btn-default" type="submit">refresh HR</button>
+    </form>
+  {% endif %}
+
+</div>
+
 
 <script>
   (function() {

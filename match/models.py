@@ -384,6 +384,10 @@ class Match(VersionedModel):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
 
     @property
+    def external_id(self):
+        return self._id
+
+    @property
     def result(self):
         match self.end_of_game_result:
             case 'Abort_Unexpected':
