@@ -33,10 +33,13 @@ class HeartrateManager(Manager):
             return []
         items = []
         hr = hr_list[0]
-        hr_minute_map = {
-            (hr.dt - match.game_creation_dt).total_seconds() // 60: hr
-            for hr in hr_list
-        }
+        hr_minute_map = {}
+        for hr in hr_list:
+            key = (hr.dt - match.game_creation_dt).total_seconds() // 60
+            if key not in hr_minute_map:
+                hr_minute_map[key] = hr
+            elif hr.bpm > hr_minute_map[key].bpm:
+                hr_minute_map[key] = hr
         seconds = (hr.dt - match.game_creation_dt).total_seconds()
         frame_count = int(match.minutes) + 1
         for frame_idx in range(frame_count):
