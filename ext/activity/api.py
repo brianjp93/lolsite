@@ -204,7 +204,6 @@ class ActivityAPIBase(ABC):
             )
         return Heartrate.objects.bulk_create(
             to_create,
-            update_conflicts=True,
+            ignore_conflicts=True,
             unique_fields=['user', 'dt'],
-            update_fields=["bpm"],
         )
