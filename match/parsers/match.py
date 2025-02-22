@@ -238,18 +238,18 @@ class ParticipantModel(BaseModelWithLogger):
     playerAugment6: int = 0
     playerSubteamId: int = 0
     subteamPlacement: int = 0
-    playerScore0: int|None = 0
-    playerScore1: int|None = 0
-    playerScore2: int|None = 0
-    playerScore3: int|None = 0
-    playerScore4: int|None = 0
-    playerScore5: int|None = 0
-    playerScore6: int|None = 0
-    playerScore7: int|None = 0
-    playerScore8: int|None = 0
-    playerScore9: int|None = 0
-    playerScore10: int|None = 0
-    playerScore11: int|None = 0
+    PlayerScore0: int|None = 0
+    PlayerScore1: int|None = 0
+    PlayerScore2: int|None = 0
+    PlayerScore3: int|None = 0
+    PlayerScore4: int|None = 0
+    PlayerScore5: int|None = 0
+    PlayerScore6: int|None = 0
+    PlayerScore7: int|None = 0
+    PlayerScore8: int|None = 0
+    PlayerScore9: int|None = 0
+    PlayerScore10: int|None = 0
+    PlayerScore11: int|None = 0
     missions: MissionsModel|None = None
 
     @property
@@ -295,11 +295,22 @@ class TeamObjectives(BaseModelWithLogger):
     horde: Horde | None = None
 
 
+class FeatModel(BaseModelWithLogger):
+    featState: int
+
+
+class FeatsObjectModel(BaseModelWithLogger):
+    EPIC_MONSTER_KILL: FeatModel
+    FIRST_BLOOD: FeatModel
+    FIRST_TURRET: FeatModel
+
+
 class TeamModel(BaseModelWithLogger):
     bans: list[BanType]
     objectives: TeamObjectives
     teamId: int
     win: bool = False
+    feats: FeatsObjectModel | None = None
 
 
 class MatchMetaDataModel(BaseModelWithLogger):
