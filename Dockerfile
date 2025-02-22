@@ -5,6 +5,7 @@ ENV RIOT_API_TOKEN=""
 ENV DJANGO_SETTINGS_MODULE=lolsite.settings_live
 ENV AWS_KEY=""
 ENV AWS_SECRET=""
+ENV TAILWINDCSS_VERSION=v3.4.17
 
 RUN apk add --no-cache alpine-sdk gcc g++ python3-dev git
 
