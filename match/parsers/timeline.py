@@ -27,6 +27,14 @@ class PauseEndEventModel(BaseModelWithLogger):
     timestamp: int
 
 
+class FeatUpdateEventModel(BaseModelWithLogger):
+    type: Literal["FEAT_UPDATE"]
+    featType: int | None = None
+    teamId: int | None = None
+    featValue: int
+    timestamp: int
+
+
 class PauseStartEventModel(BaseModelWithLogger):
     type: Literal["PAUSE_START"]
     realTimestamp: int
@@ -212,6 +220,7 @@ class DragonSoulGivenEventModel(BaseModelWithLogger):
 
 EventType = Annotated[
     Union[
+        FeatUpdateEventModel,
         PauseEndEventModel,
         PauseStartEventModel,
         ItemPurchasedEventModel,
