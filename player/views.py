@@ -271,7 +271,7 @@ class SummonerPagePuuid(generic.RedirectView):
             kwargs={
                 "region": summoner.region,
                 "name": summoner.riot_id_name,
-                "tagline": summoner.riot_id_tagline,
+                "tagline": "".join(summoner.riot_id_tagline.split()),
             },
         )
 
