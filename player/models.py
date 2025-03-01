@@ -150,6 +150,7 @@ class Summoner(models.Model):
             checkpoint = None
         return checkpoint
 
+    @cached_property
     def positions(self):
         checkpoint = self.get_newest_rank_checkpoint()
         if not checkpoint:
