@@ -36,5 +36,6 @@ urlpatterns = [
     path("player/follow/", views.FollowView.as_view(), name="follow"),
     path("player/account/", views.MyAccountView.as_view(), name="account"),
     path("player/summoner-connect/", views.SummonerConnectFormView.as_view(), name="summoner-connect"),
+    path("player/summoner/<int:pk>/", views.SummonerProfileCard.as_view(), name="summoner-profile-card"),
     path("player/played-with-count/<str:puuid>/", views.played_with_count, name="played_with_count"),
 ]

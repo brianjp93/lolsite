@@ -108,32 +108,29 @@ def logout_action(request):
     return redirect("home")
 
 
+class SummonerProfileCard(generic.DetailView):
+    template_name = "cotton/player/card.html"
+    queryset = Summoner.objects.all()
+
+    def get_context_data(self, **kwargs):
+        pt.import_positions(self.object.id)
+        context = super().get_context_data(**kwargs)
+        context["summoner"] = self.object
+        return context
+
+
 class SummonerPage(generic.ListView):
     paginate_by: int = 10  # type: ignore
     template_name = "player/summoner.html"
 
     def get_context_data(self, *args, **kwargs):
-        region = self.kwargs['region']
         page = int(self.request.GET.get('page', 1))
         queue = self.request.GET.get('queue', None)
-        played_with = self.request.GET.get('played_with', None)
-        champion = self.request.GET.get('champion', None)
         queue = int(queue) if queue else None
         limit = self.paginate_by
         start = limit * (page - 1)
-        end = start + limit
-        do_riot_api_request = not (played_with or champion)
-        if do_riot_api_request:
-            mt.import_recent_matches(
-                start,
-                end,
-                self.summoner.puuid,
-                region,
-                queue,
-            )
         if page == 1:
-            mt.bulk_import.s(self.summoner.puuid, count=100, offset=start + limit).apply_async(countdown=2)
-            pt.import_positions(self.summoner.id)
+            mt.bulk_import.s(self.summoner.puuid, count=100, offset=start + limit).apply_async()
 
         context = super().get_context_data(*args, **kwargs)
         context.update(champion_stats_context(self.summoner.puuid))

@@ -11,6 +11,7 @@ from django.core.mail import send_mail
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 from ext.activity import ACTIVITY
 from notification.models import Notification
@@ -191,6 +192,10 @@ class Summoner(models.Model):
         end = time.perf_counter()
         logger.info(f"{self.name} suspicious_account query took {end - start:.2f} seconds.")
         return {'quick_ff_count': quick_surrender_count, 'total': all_games_count}
+
+    @cached_property
+    def get_namechanges(self):
+        return NameChange.objects.filter(summoner=self).order_by("-created_date")
 
     def add_match_to_stats(self, match):
         from stats.tasks import add_match_to_summoner_champion_stats

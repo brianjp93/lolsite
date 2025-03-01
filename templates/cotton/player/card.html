@@ -2,7 +2,7 @@
   <div class="flex gap-x-2">
     <div class="flex flex-col">
       <img class="aspect-square w-16 rounded"
-           src="{{ profile_icon.image_url }}"
+           src="{{ summoner.get_profile_icon.image_url }}"
            alt="{{ summoner.simple_riot_id }}">
       <div class="mx-auto text-xs bg-gray-200 text-black rounded px-2 font-bold mt-[-10px]">
         {{ summoner.summoner_level }}
@@ -25,7 +25,7 @@
                   title="Only names found in imported games will be listed here.">
                 Previous Names
               </h4>
-              {% for name in namechanges %}
+              {% for name in summoner.get_namechanges %}
                 <div>
                   {{ name.old_name }}
                 </div>
@@ -65,21 +65,21 @@
   <div class="flex flex-col gap-y-1">
     <div class="flex gap-x-2">
       <div class="flex flex-col gap-y-1 font-bold">
-        {% for position in positions %}
+        {% for position in summoner.positions %}
           <div>
             {{ position.display_queue }}
           </div>
         {% endfor %}
       </div>
       <div class="flex flex-col gap-y-1 mx-auto">
-        {% for position in positions %}
+        {% for position in summoner.positions %}
           <div class="text-right">
             {{ position.tier }} {{ position.rank }} {{ position.league_points }}LP
           </div>
         {% endfor %}
       </div>
       <div class="flex flex-col gap-y-1">
-        {% for position in positions %}
+        {% for position in summoner.positions %}
           <div class="flex gap-x-2">
             <div class="my-auto font-bold">
               {{ position.winrate }}%
