@@ -4,10 +4,9 @@
 <div class="container mx-auto px-2 flex flex-col">
   <div class="flex gap-2 flex-wrap">
     <div class="w-96 rounded bg-gray-800 p-2">
-      <c-player.card
-        :positions="summoner.positions"
-        :summoner="summoner"
-        :profile_icon="summoner.get_profile_icon" />
+      <div hx-get="{% url 'player:summoner-profile-card' pk=summoner.id %}" hx-trigger="load" hx-swap="outerHTML">
+        <c-player.card :summoner="summoner" />
+      </div>
     </div>
     <div class="live-game-content flex-1 min-w-[600px]">
     </div>
@@ -32,7 +31,15 @@
   </div>
 
   <div id="matchlist" class="flex flex-col gap-y-2">
-    <c-player.matchlist :matches="object_list" />
+    <div
+      class="flex flex-col gap-y-2"
+      hx-get="{% url 'player:matchlist' puuid=summoner.puuid %}?{% querystring %}"
+      hx-swap="outerHTML"
+      hx-trigger='load'
+    >
+      <div>Fetching new matches...</div>
+      <c-player.matchlist :matches="object_list" />
+    </div>
   </div>
 </div>
 {% endblock content %}
