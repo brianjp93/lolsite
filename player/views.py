@@ -116,6 +116,9 @@ class SummonerProfileCard(generic.DetailView):
         pt.import_positions(self.object.id)
         context = super().get_context_data(**kwargs)
         context["summoner"] = self.object
+        if self.request.user.is_authenticated:
+            context["is_favorite"] = self.request.user.favorite_set.filter(summoner_id=self.object.id).exists()
+            context["is_follow"] = self.request.user.follow_set.filter(summoner_id=self.object.id).exists()
         return context
 
 
