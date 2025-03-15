@@ -76,31 +76,31 @@ Ping = Annotated[int, BeforeValidator(ping_validator)]
 
 
 class MissionsModel(BaseModelWithLogger):
-    PlayerScore0: int|None = 0
-    PlayerScore1: int|None = 0
-    PlayerScore2: int|None = 0
-    PlayerScore3: int|None = 0
-    PlayerScore4: int|None = 0
-    PlayerScore5: int|None = 0
-    PlayerScore6: int|None = 0
-    PlayerScore7: int|None = 0
-    PlayerScore8: int|None = 0
-    PlayerScore9: int|None = 0
-    PlayerScore10: int|None = 0
-    PlayerScore11: int|None = 0
+    PlayerScore0: float|None = 0
+    PlayerScore1: float|None = 0
+    PlayerScore2: float|None = 0
+    PlayerScore3: float|None = 0
+    PlayerScore4: float|None = 0
+    PlayerScore5: float|None = 0
+    PlayerScore6: float|None = 0
+    PlayerScore7: float|None = 0
+    PlayerScore8: float|None = 0
+    PlayerScore9: float|None = 0
+    PlayerScore10: float|None = 0
+    PlayerScore11: float|None = 0
 
-    playerScore0: int|None = 0
-    playerScore1: int|None = 0
-    playerScore2: int|None = 0
-    playerScore3: int|None = 0
-    playerScore4: int|None = 0
-    playerScore5: int|None = 0
-    playerScore6: int|None = 0
-    playerScore7: int|None = 0
-    playerScore8: int|None = 0
-    playerScore9: int|None = 0
-    playerScore10: int|None = 0
-    playerScore11: int|None = 0
+    playerScore0: float|None = 0
+    playerScore1: float|None = 0
+    playerScore2: float|None = 0
+    playerScore3: float|None = 0
+    playerScore4: float|None = 0
+    playerScore5: float|None = 0
+    playerScore6: float|None = 0
+    playerScore7: float|None = 0
+    playerScore8: float|None = 0
+    playerScore9: float|None = 0
+    playerScore10: float|None = 0
+    playerScore11: float|None = 0
 
 
 class ParticipantModel(BaseModelWithLogger):
@@ -238,18 +238,18 @@ class ParticipantModel(BaseModelWithLogger):
     playerAugment6: int = 0
     playerSubteamId: int = 0
     subteamPlacement: int = 0
-    PlayerScore0: int|None = 0
-    PlayerScore1: int|None = 0
-    PlayerScore2: int|None = 0
-    PlayerScore3: int|None = 0
-    PlayerScore4: int|None = 0
-    PlayerScore5: int|None = 0
-    PlayerScore6: int|None = 0
-    PlayerScore7: int|None = 0
-    PlayerScore8: int|None = 0
-    PlayerScore9: int|None = 0
-    PlayerScore10: int|None = 0
-    PlayerScore11: int|None = 0
+    PlayerScore0: float|None = 0
+    PlayerScore1: float|None = 0
+    PlayerScore2: float|None = 0
+    PlayerScore3: float|None = 0
+    PlayerScore4: float|None = 0
+    PlayerScore5: float|None = 0
+    PlayerScore6: float|None = 0
+    PlayerScore7: float|None = 0
+    PlayerScore8: float|None = 0
+    PlayerScore9: float|None = 0
+    PlayerScore10: float|None = 0
+    PlayerScore11: float|None = 0
     missions: MissionsModel|None = None
 
     @property

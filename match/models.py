@@ -1157,7 +1157,7 @@ class ItemDestroyedEvent(Event):
 
 class ItemSoldEvent(Event):
     id: int | None
-    item_id = models.PositiveSmallIntegerField()
+    item_id = models.PositiveIntegerField()
     participant_id = models.PositiveSmallIntegerField()
 
 
