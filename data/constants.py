@@ -269,7 +269,7 @@ QUEUES = [
     {
         "_id": 1700,
         "_map": "Rings of Wrath",
-        "description": "2v2v2v2",
+        "description": "Arena",
     },
     {
         "_id": 1820,
@@ -290,6 +290,7 @@ QUEUE_SELECT_OPTIONS = [QUEUE_DICT[x] for x in [
     420,
     400,
     450,
+    1700,
     0,
 ]]
 
