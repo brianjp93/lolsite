@@ -376,18 +376,18 @@ class Match(VersionedModel):
 
     matchsummary: MatchSummary | None
 
-    @property
+    @cached_property
     def slug(self):
         return self._id
 
     def __str__(self):
         return f"Match(_id={self._id}, queue_id={self.queue_id}, game_version={self.game_version})"
 
-    @property
+    @cached_property
     def external_id(self):
         return self._id
 
-    @property
+    @cached_property
     def result(self):
         match self.end_of_game_result:
             case 'Abort_Unexpected':
@@ -417,7 +417,7 @@ class Match(VersionedModel):
             url = ""
         return url
 
-    @property
+    @cached_property
     def region(self):
         region = self.platform_id.lower()
         if region[-1].isdigit():
@@ -427,15 +427,15 @@ class Match(VersionedModel):
                 region = "oce"
         return region
 
-    @property
+    @cached_property
     def seconds(self):
         return self.game_duration / 1000
 
-    @property
+    @cached_property
     def minutes(self):
         return self.seconds / 60
 
-    @property
+    @cached_property
     def formatted_game_duration(self):
         minutes, seconds = divmod(self.seconds, 60)
         minutes = int(minutes)
@@ -536,7 +536,7 @@ class Participant(models.Model):
     def get_id(self):
         return self._id
 
-    @property
+    @cached_property
     def simple_riot_id(self):
         return simplify(f"{self.riot_id_name}#{self.riot_id_tagline}")
 
@@ -600,25 +600,53 @@ class Participant(models.Model):
             return getattr(stats, stat, default)
         return default
 
-    @property
+    @cached_property
     def match_minutes(self):
         return self.match.minutes or 1
 
-    @property
+    @cached_property
     def dpm(self):
         return self.get_stat('total_damage_dealt_to_champions') / self.match_minutes
 
-    @property
+    @cached_property
     def vspm(self):
         return self.get_stat('vision_score') / self.match_minutes
 
-    @property
+    @cached_property
     def kda(self):
         return (self.get_stat("kills") + self.get_stat("assists")) / (self.get_stat("deaths") or 1)
 
-    @property
+    @cached_property
     def tdpm(self):
         return self.get_stat('damage_dealt_to_turrets') / self.match_minutes
+
+    @cached_property
+    def damage_share(self):
+        """Get the participant's damage share percentage"""
+        team_participants = self.match.team100() if self.team_id == 100 else self.match.team200()
+        team_damage = sum(p.get_stat('total_damage_dealt_to_champions') for p in team_participants)
+        if team_damage > 0:
+            return (self.get_stat('total_damage_dealt_to_champions') / team_damage) * 100
+        return 0
+
+    @cached_property
+    def normalized_damage_share(self):
+        """Get normalized damage share where highest damage dealer is 100%"""
+        team_participants = self.match.team100() if self.team_id == 100 else self.match.team200()
+        # Find max damage in team
+        max_damage = max(p.get_stat('total_damage_dealt_to_champions') for p in team_participants)
+        if max_damage > 0:
+            return (self.get_stat('total_damage_dealt_to_champions') / max_damage) * 100
+        return 0
+
+    @cached_property
+    def kill_participation(self):
+        """Get the participant's kill participation percentage"""
+        team_participants = self.match.team100() if self.team_id == 100 else self.match.team200()
+        team_kills = sum(p.get_stat('kills') for p in team_participants)
+        if team_kills > 0:
+            return ((self.get_stat('kills') + self.get_stat('assists')) / team_kills) * 100
+        return 0
 
 
 class Stats(models.Model):
@@ -743,11 +771,11 @@ class Stats(models.Model):
     def __str__(self):
         return f"Stats(participant={self.participant.summoner_name})"
 
-    @property
+    @cached_property
     def cs(self):
         return self.neutral_minions_killed + self.total_minions_killed
 
-    @property
+    @cached_property
     def total_pings(self):
         return sum((
             self.all_in_pings,
@@ -995,11 +1023,11 @@ class AdvancedTimeline(models.Model):
             team_bounties[team_id] += bounty.total_bounty_received
         return team_bounties, bounties
 
-    @property
+    @cached_property
     def bounties(self):
         return self._bounties[1]
 
-    @property
+    @cached_property
     def team_bounties(self):
         return self._bounties[0]
 
