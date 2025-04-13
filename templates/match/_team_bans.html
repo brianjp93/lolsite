@@ -1,0 +1,16 @@
+<div class="flex flex-wrap mt-2 gap-1">
+  {% for ban in team.bans.all %}
+    {% if ban.champion %}
+      <div class="relative w-8 h-8" data-tippy-content="{{ ban.champion.name }}">
+        <img
+          src="{{ ban.champion.image.file.url }}"
+          alt="{{ ban.champion.name }}"
+          class="w-full h-full rounded-sm opacity-70"
+        >
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="w-8 h-0.5 bg-red-600 rotate-45"></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>

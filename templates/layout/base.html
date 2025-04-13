@@ -2,176 +2,177 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=.8" />
-    <meta name="description"
-          content="{% block metadescription %}{% endblock metadescription %}" />
-    <title>
-      {% block title %}
-        HardStuck
-      {% endblock title %}
-    </title>
-    {% if meta %}
-      <meta property="og:type" content="{{ meta.type }}">
-      <meta property="og:url" content="{{ meta.url }}">
-      <meta property="og:title" content="{{ meta.title }}">
-      <meta property="og:description" content="{{ meta.description }}">
-      <meta property="og:image" content="{{ meta.image }}">
-    {% endif %}
-    <link rel="shortcut icon"
-          type="image/png"
-          href="{% static 'logo-clean.png' %}" />
-    {% block header_css %}
-      <link rel="stylesheet" href="{% static 'src/output.css' %}">
-    {% endblock header_css %}
-    {% block header_js %}
-      <script type="text/javascript" src="{% static 'src/htmx.min.js' %}"></script>
-      <script defer type="text/javascript" src="{% static 'src/alpine.min.js' %}"></script>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=.8" />
+  <meta name="description" content="{% block metadescription %}{% endblock metadescription %}" />
+  <title>
+    {% block title %}
+    HardStuck
+    {% endblock title %}
+  </title>
+  {% if meta %}
+  <meta property="og:type" content="{{ meta.type }}">
+  <meta property="og:url" content="{{ meta.url }}">
+  <meta property="og:title" content="{{ meta.title }}">
+  <meta property="og:description" content="{{ meta.description }}">
+  <meta property="og:image" content="{{ meta.image }}">
+  {% endif %}
+  <link rel="shortcut icon" type="image/png" href="{% static 'logo-clean.png' %}" />
+  {% block header_css %}
+  <link rel="stylesheet" href="{% static 'src/output.css' %}">
+  {% endblock header_css %}
+  {% block header_js %}
+  <script type="text/javascript" src="{% static 'src/htmx.min.js' %}"></script>
+  <script defer type="text/javascript" src="{% static 'src/alpine.min.js' %}"></script>
 
-      <script src="{% static 'src/chart.min.js' %}"></script>
-      {% block vertical_line_plugin %}
-        <script>
-          window.verticalLinePlugin = {
-             getLinePosition: function (chart, pointIndex) {
-                 const meta = chart.getDatasetMeta(0); // first dataset is used to discover X coordinate of a point
-                 const data = meta.data;
-                 return data[pointIndex].x;
-             },
+  <script src="{% static 'src/chart.min.js' %}"></script>
+  {% block vertical_line_plugin %}
+  <script>
+    window.verticalLinePlugin = {
+      getLinePosition: function (chart, pointIndex) {
+        const meta = chart.getDatasetMeta(0); // first dataset is used to discover X coordinate of a point
+        const data = meta.data;
+        return data[pointIndex].x;
+      },
 
-             renderVerticalLine: function (chartInstance, pointIndex) {
-                 const lineLeftOffset = this.getLinePosition(chartInstance, pointIndex);
-                 const scale = chartInstance.scales.y;
-                 const context = chartInstance.ctx;
-                 // render vertical line
-                 context.beginPath();
-                 context.strokeStyle = '#ffffff';
-                 context.moveTo(lineLeftOffset, scale.top);
-                 context.lineTo(lineLeftOffset, scale.bottom);
-                 context.stroke();
-             },
+      renderVerticalLine: function (chartInstance, pointIndex) {
+        const lineLeftOffset = this.getLinePosition(chartInstance, pointIndex);
+        const scale = chartInstance.scales.y;
+        const context = chartInstance.ctx;
+        // render vertical line
+        context.beginPath();
+        context.strokeStyle = '#ffffff';
+        context.moveTo(lineLeftOffset, scale.top);
+        context.lineTo(lineLeftOffset, scale.bottom);
+        context.stroke();
+      },
 
-             beforeDatasetsDraw: function (chart, easing) {
-                 if(chart.config._config.lineAtIndex)
-                     chart.config._config.lineAtIndex.forEach(pointIndex => this.renderVerticalLine(chart, pointIndex));
-             }
-          };
-        </script>
-      {% endblock vertical_line_plugin %}
-      <script src="{% static 'src/popper.min.js' %}"></script>
-      <script src="{% static 'src/tippy-bundle.umd.min.js' %}"></script>
+      beforeDatasetsDraw: function (chart, easing) {
+        if (chart.config._config.lineAtIndex)
+          chart.config._config.lineAtIndex.forEach(pointIndex => this.renderVerticalLine(chart, pointIndex));
+      }
+    };
+  </script>
+  {% endblock vertical_line_plugin %}
+  <script src="{% static 'src/popper.min.js' %}"></script>
+  <script src="{% static 'src/tippy-bundle.umd.min.js' %}"></script>
 
-      <script>
-        function runInitScripts() {
-          {% if debug %}
-            console.log('Running init script')
-          {% endif %}
-          replaceDt1(null)
-          initTippy()
-        }
-        function formatDt1(value) {
-          return (new Date(Date.parse(value))).toLocaleString(undefined, {timeStyle: 'short', dateStyle: 'short'})
-        }
-
-        function replaceDt1(value) {
-          for (const el of document.querySelectorAll("[x-dt1]")) {
-            const og = el.textContent.trim()
-            try {
-              const dtString = formatDt1(og);
-              el.textContent = dtString;
-              el.removeAttribute("x-dt1")
-            } catch (exception) {
-              // whatever
-              console.log("Bad date format.", og)
-            }
-          }
-        }
-
-        function initTippy() {
-          {% comment %}
-            https://github.com/atomiks/tippyjs
-          {% endcomment %}
-          {% if debug %}
-            console.log("Initializing tippy stuff")
-          {% endif %}
-          tippy(document.querySelectorAll('.tippy'), {
-            content: (reference) => {
-              return reference.querySelector(".tippy-content").innerHTML
-            },
-            allowHTML: true,
-          });
-        }
-
-        let initLastRun = 0;
-        function debounceInit(withDelay) {
-          // Only runInitScripts at most once per second.
-          const elapsed = (Date.now() / 1000) - (initLastRun / 1000);
-          if (elapsed > 1) {
-            runInitScripts();
-            initLastRun = Date.now();
-          } else if (withDelay){
-            setTimeout(debounceInit, 1000);
-          }
-        }
-
-        document.addEventListener("DOMContentLoaded", runInitScripts)
-        document.addEventListener("htmx:afterSettle", () => {
-          debounceInit(true);
-        })
-        document.addEventListener("htmx:historyRestore", () => {
-          runInitScripts();
-        })
-
-      </script>
+  <script>
+    function runInitScripts() {
       {% if debug %}
-        <script>
-          htmx.logger = function(elt, event, data) {
-            console.log(event, elt, data);
-          }
-        </script>
-        <script>
-          if (typeof window.htmx !== "undefined") {
-            htmx.on("htmx:afterSettle", function(detail) {
-              if (
-                typeof window.djdt !== "undefined" &&
-                detail.target instanceof HTMLBodyElement
-              ) {
-                djdt.show_toolbar();
-              }
-            });
-          }
-        </script>
+      console.log('Running init script')
       {% endif %}
-    {% endblock header_js %}
-    {% block header %}
-    {% endblock header %}
-  </head>
+      replaceDt1(null)
+      initTippy()
+    }
+    function formatDt1(value) {
+      return (new Date(Date.parse(value))).toLocaleString(undefined, {timeStyle: 'short', dateStyle: 'short'})
+    }
 
-  <body class="min-h-screen flex flex-col">
-    <script>
-      document.body.addEventListener('htmx:configRequest', (event) => {
-        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
-      })
-    </script>
-    {% block navbar %}
-      {% include "layout/navbar.html" %}
-    {% endblock navbar%}
+    function replaceDt1(value) {
+      for (const el of document.querySelectorAll("[x-dt1]")) {
+        const og = el.textContent.trim()
+        try {
+          const dtString = formatDt1(og);
+          el.textContent = dtString;
+          el.removeAttribute("x-dt1")
+        } catch (exception) {
+          // whatever
+          console.log("Bad date format.", og)
+        }
+      }
+    }
 
-    {% block messages %}
-      {% include "layout/_messages.html" %}
-    {% endblock messages %}
+    function initTippy() {
+      {% comment %}
+      https://github.com/atomiks/tippyjs
+      {% endcomment %}
+      {% if debug %}
+      console.log("Initializing tippy stuff")
+      {% endif %}
+      tippy(document.querySelectorAll('.tippy'), {
+        content: (reference) => {
+          return reference.querySelector(".tippy-content").innerHTML
+        },
+        allowHTML: true,
+      });
 
-    {% block content %}
-    {% endblock content %}
+      // Initialize tooltips for elements with data-tippy-content attribute
+      tippy('[data-tippy-content]');
+    }
 
-    {% block footer %}
-      <div class="m-4 text-sm mt-auto">
-        <i>hardstuck.club</i> isn’t endorsed by Riot Games and doesn’t reflect the views or opinions of Riot Games or anyone officially
-        involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered
-        trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
-      </div>
-    {% endblock footer %}
-  </body>
+    let initLastRun = 0;
+    function debounceInit(withDelay) {
+      // Only runInitScripts at most once per second.
+      const elapsed = (Date.now() / 1000) - (initLastRun / 1000);
+      if (elapsed > 1) {
+        runInitScripts();
+        initLastRun = Date.now();
+      } else if (withDelay) {
+        setTimeout(debounceInit, 1000);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", runInitScripts)
+    document.addEventListener("htmx:afterSettle", () => {
+      debounceInit(true);
+    })
+    document.addEventListener("htmx:historyRestore", () => {
+      runInitScripts();
+    })
+
+  </script>
+  {% if debug %}
+  <script>
+    htmx.logger = function (elt, event, data) {
+      console.log(event, elt, data);
+    }
+  </script>
+  <script>
+    if (typeof window.htmx !== "undefined") {
+      htmx.on("htmx:afterSettle", function (detail) {
+        if (
+          typeof window.djdt !== "undefined" &&
+          detail.target instanceof HTMLBodyElement
+        ) {
+          djdt.show_toolbar();
+        }
+      });
+    }
+  </script>
+  {% endif %}
+  {% endblock header_js %}
+  {% block header %}
+  {% endblock header %}
+</head>
+
+<body class="min-h-screen flex flex-col">
+  <script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+      event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    })
+  </script>
+  {% block navbar %}
+  {% include "layout/navbar.html" %}
+  {% endblock navbar%}
+
+  {% block messages %}
+  {% include "layout/_messages.html" %}
+  {% endblock messages %}
+
+  {% block content %}
+  {% endblock content %}
+
+  {% block footer %}
+  <div class="m-4 text-sm mt-auto">
+    <i>hardstuck.club</i> isn’t endorsed by Riot Games and doesn’t reflect the views or opinions of Riot Games or anyone
+    officially
+    involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered
+    trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
+  </div>
+  {% endblock footer %}
+</body>
 
 </html>

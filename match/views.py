@@ -55,7 +55,7 @@ class MatchDetailView(DetailView):
             "advancedtimeline__frames__participantframes",
             "participants",
             "participants__stats",
-            "teams",
+            "teams__bans",
         )
         set_related_match_objects([match], match.advancedtimeline)
         context["heartrate"] = self.get_hr_data(match)

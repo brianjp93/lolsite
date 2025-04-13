@@ -240,6 +240,11 @@ class MatchQuerySet(models.QuerySet["Match"]):
         if not len(self):
             return {}
         all_champions = {part.champion_id for match in self for part in match.participants.all()}
+
+        for match in self:
+            for team in match.teams.all():
+                for ban in team.bans.all():
+                    all_champions.add(ban.champion_id)
         major, minor = self[0].major, self[0].minor
         qs = (
             Champion.objects.filter(
@@ -303,6 +308,9 @@ def set_related_match_objects(object_list: Iterable['Match'], timeline: 'Advance
     qs = qs.prefetch_related("participants", "participants__stats")
     related = qs.get_related()
     for obj in object_list:
+        for team in obj.teams.all():
+            for ban in team.bans.all():
+                ban.champion = related['champions'].get(ban.champion_id, None)
         for part in obj.participants.all():
             part.items = []
             keys = [
@@ -902,6 +910,7 @@ class Team(models.Model):
     id: int | None
     match = models.ForeignKey("Match", on_delete=models.CASCADE, related_name="teams")
     _id = models.IntegerField()
+    bans: QuerySet['Ban']
 
     baron_kills = models.IntegerField(default=0, blank=True)
     dominion_victory_score = models.IntegerField(default=0, blank=True)
@@ -924,6 +933,10 @@ class Team(models.Model):
 
     class Meta:
         unique_together = ("_id", "match")
+
+    @property
+    def external_id(self):
+        return self._id
 
 
 class Ban(models.Model):
