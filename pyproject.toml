@@ -18,7 +18,7 @@ django_settings_module = "lolsite.settings_local"
 
 [tool.ruff]
 ignore = ["E501"]
-target-version = "py312"
+target-version = "py313"
 
 [tool.djlint]
 indent = 2
