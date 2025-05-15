@@ -108,7 +108,7 @@ class ParticipantModel(BaseModelWithLogger):
     perks: PerksModel
     assists: int
     baronKills: int
-    bountyLevel: int
+    bountyLevel: int | None = None
     champExperience: int
     champLevel: int
     championId: int
