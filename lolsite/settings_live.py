@@ -69,7 +69,7 @@ LOGGING = {
 }
 
 
-CORS_ALLOWED_ORIGINS = ['https://hardstuck.club', 'https://dev.hardstuck.club']
+CORS_ALLOWED_ORIGINS = ['https://hardstuck.club', 'https://dev.hardstuck.club', 'https://fe.hardstuck.club']
 CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_DOMAIN = '.hardstuck.club'
 CSRF_COOKIE_SECURE = True
