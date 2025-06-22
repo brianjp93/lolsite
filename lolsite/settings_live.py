@@ -9,9 +9,9 @@ import dj_database_url
 DEBUG = False
 
 
-ALLOWED_HOSTS = ["app.hardstuck.club"]
-BASE_URL = "https://hardstuck.club"
-BACKEND_URL = "https://app.hardstuck.club"
+ALLOWED_HOSTS = ["app.hardstuck.club", "dokku.hardstuck.club"]
+BASE_URL = "https://fe.hardstuck.club"
+BACKEND_URL = "https://doku.hardstuck.club"
 
 DATABASES = {'default': dj_database_url.config()}
 
@@ -61,14 +61,9 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'default',
         },
-        'logfile': {
-            'class': 'logging.FileHandler',
-            'formatter': 'default',
-            'filename': '/var/log/my.log',
-        },
     },
     'root': {
-        'handlers': ['console', 'logfile'],
+        'handlers': ['console'],
         'level': 'INFO',
     },
 }
@@ -79,7 +74,13 @@ CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_DOMAIN = '.hardstuck.club'
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_DOMAIN = 'hardstuck.club'
-CSRF_TRUSTED_ORIGINS = ["https://hardstuck.club", "https://app.hardstuck.club", "https://dev.hardstuck.club"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://hardstuck.club",
+    "https://app.hardstuck.club",
+    "https://dev.hardstuck.club",
+    "https://dokku.hardstuck.club",
+    "https://fe.hardstuck.club",
+]
 
 
 def before_breadcrumb(crumb, hint):
