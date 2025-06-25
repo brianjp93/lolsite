@@ -121,7 +121,6 @@ class FavoriteSerializer(DynamicSerializer):
     name = serializers.CharField()
     region = serializers.CharField()
     puuid = serializers.CharField(source="summoner.puuid")
-    summoner_id = serializers.CharField(source="summoner._id")
     riot_id_name = serializers.CharField(source="summoner.riot_id_name")
     riot_id_tagline = serializers.CharField(source="summoner.riot_id_tagline")
 

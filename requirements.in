@@ -18,7 +18,7 @@ factory_boy
 gunicorn
 hypothesis
 ipython
-lolwrapper @ git+https://github.com/brianjp93/lolapi.git@a1d711ea453d27cc65a94a4c48287af976e94457
+lolwrapper @ git+https://github.com/brianjp93/lolapi.git@c84841786484f7e0b844fa203c06f8bdea54647f
 Pillow>=9.0.0
 psycopg[binary]
 python-decouple

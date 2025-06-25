@@ -277,8 +277,8 @@ def get_spectate(request, format=None):
         spectate_data = parsed.model_dump()
         for part in spectate_data["participants"]:
             positions = None
-            query = Summoner.objects.filter(region=region, _id=part["summonerId"])
-            if summoner := summoners.get(part["summonerId"]):
+            query = Summoner.objects.filter(region=region, puuid=part["puuid"])
+            if summoner := summoners.get(part["puuid"]):
                 checkpoint = summoner.get_newest_rank_checkpoint()
                 if checkpoint:
                     positions = RankPositionSerializer(

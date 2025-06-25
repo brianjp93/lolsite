@@ -48,9 +48,7 @@ def import_pros(overwrite=False):
 @app.task(name="player.tasks.import_summoner")
 def import_summoner(
     region=None,
-    account_id=None,
     name=None,
-    summoner_id=None,
     puuid=None,
     riot_id_name=None,
     riot_id_tagline=None,
@@ -69,12 +67,8 @@ def import_summoner(
         tagline = acc.tagLine
         r = api.summoner.get(encrypted_puuid=acc.puuid, region=region)
     elif region:
-        if account_id is not None:
-            kwargs["encrypted_account_id"] = account_id
-        elif name is not None:
+        if name is not None:
             kwargs["name"] = name
-        elif summoner_id is not None:
-            kwargs["encrypted_summoner_id"] = summoner_id
         elif puuid is not None:
             kwargs["encrypted_puuid"] = puuid
             r = api.account.by_puuid(puuid, region=region)
@@ -92,13 +86,11 @@ def import_summoner(
     data = r.json()
     name = data.get('name', '')
     model_data = {
-        "account_id": data["accountId"],
         "name": data.get('name', '').strip(),
         "simple_name": simplify(name),
         "profile_icon_id": data["profileIconId"],
         "revision_date": data["revisionDate"],
         "summoner_level": data["summonerLevel"],
-        "_id": data["id"],
         'region': region.lower(),
     }
     if game_name:
@@ -152,7 +144,7 @@ def import_positions(summoner: Summoner|int, threshold_days=None):
 
     api = get_riot_api()
     region = summoner.region
-    r = api.league.entries(summoner._id, region)
+    r = api.league.entries_by_puuid(summoner.puuid, region)
     logger.info(f'api.league.entries response: {r}')
     if r.status_code >= 200 and r.status_code < 300:
         positions = r.json()

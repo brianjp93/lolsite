@@ -88,7 +88,6 @@ def prepare_summoners_from_participants(participants: list[ParticipantModel], re
     for part in participants:
         if (part.puuid or "").lower() != 'bot':
             summoner = Summoner(
-                _id=part.summonerId,
                 name=part.summonerName.strip(),
                 simple_name=part.simple_name,
                 region=region.lower(),
@@ -791,16 +790,14 @@ def import_summoners_from_spectate(parsed: SpectateModel, region):
                 "riot_id_tagline": tagline,
                 "region": region,
                 "profile_icon_id": part.profileIconId,
-                "_id": part.summonerId,
             }
             summoner_list.append(Summoner(**sum_data))
     Summoner.objects.bulk_create(
         summoner_list,
         update_conflicts=True,
         unique_fields=["puuid"],
-        update_fields=["_id"],
     )
-    return {x._id: x for x in summoner_list}
+    return {x.puuid: x for x in summoner_list}
 
 
 def get_player_ranks(summoner_list, threshold_days=1, sync=True):
@@ -892,7 +889,6 @@ def build_participant(part: ParticipantModel, match: Match):
     return Participant(
         match=match,
         _id=part.participantId,
-        summoner_id=part.summonerId,
         puuid=part.puuid,
         summoner_name=part.summonerName,
         summoner_name_simplified=part.simple_name,

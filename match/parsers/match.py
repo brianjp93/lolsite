@@ -251,6 +251,7 @@ class ParticipantModel(BaseModelWithLogger):
     PlayerScore10: float|None = 0
     PlayerScore11: float|None = 0
     missions: MissionsModel|None = None
+    championSkinId: int | None = None
 
     @property
     def simple_name(self):

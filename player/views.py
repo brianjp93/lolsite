@@ -117,8 +117,8 @@ class SummonerProfileCard(generic.DetailView):
         context = super().get_context_data(**kwargs)
         context["summoner"] = self.object
         if self.request.user.is_authenticated:
-            context["is_favorite"] = self.request.user.favorite_set.filter(summoner_id=self.object.id).exists()
-            context["is_follow"] = self.request.user.follow_set.filter(summoner_id=self.object.id).exists()
+            context["is_favorite"] = self.request.user.favorite_set.filter(summoner=self.object).exists()
+            context["is_follow"] = self.request.user.follow_set.filter(summoner=self.object).exists()
         return context
 
 
@@ -301,8 +301,8 @@ class SpectateView(generic.TemplateView):
             spectate_data = parsed.model_dump()
             for part in spectate_data["participants"]:
                 positions = None
-                query = Summoner.objects.filter(region=region, _id=part["summonerId"])
-                if summoner := summoners.get(part["summonerId"]):
+                query = Summoner.objects.filter(region=region, puuid=part["puuid"])
+                if summoner := summoners.get(part["puuid"]):
                     checkpoint = summoner.get_newest_rank_checkpoint()
                     if checkpoint:
                         positions = RankPositionSerializer(

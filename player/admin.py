@@ -56,7 +56,6 @@ class RankPositionAdmin(admin.ModelAdmin):
     search_fields = (
         "checkpoint__summoner__name",
         "checkpoint__summoner__simple_name",
-        "checkpoint__summoner__account_id",
     )
     raw_id_fields = ("checkpoint",)
 
