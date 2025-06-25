@@ -28,7 +28,6 @@ class SpectateParticipant(BaseModelWithLogger):
     championId: int
     profileIconId: int
     bot: bool
-    summonerId: str
     gameCustomizationObjects: list[Any]
     perks: SpectatePerk
     puuid: str

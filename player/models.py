@@ -81,13 +81,7 @@ class Summoner(models.Model):
         blank=True,
         related_name="summoners",
     )
-    _id = models.CharField(
-        max_length=128, default="", blank=True
-    )
     region = models.CharField(max_length=8, default="", blank=True)
-    account_id = models.CharField(
-        max_length=128, default="", blank=True, null=True
-    )
     name = models.CharField(max_length=64, default="", blank=True)
     simple_name = models.CharField(max_length=64, default="", blank=True)
     profile_icon_id = models.IntegerField(default=0)
@@ -564,8 +558,8 @@ class Comment(models.Model):
 
         """
         participants = self.match.participants.all()
-        summoner_ids = [x.summoner_id for x in participants]
-        summoners = Summoner.objects.filter(_id__in=summoner_ids)
+        puuids = [x.puuid for x in participants]
+        summoners = Summoner.objects.filter(puuid__in=puuids)
         op_summoner_ids = set(x.id for x in self.get_op_summoners())
         # iterate through summoners in the game
         for summoner in summoners:
@@ -583,10 +577,10 @@ class Comment(models.Model):
         """
         if self.reply_to is not None:
             participants = self.match.participants.all()
-            summoner_ids = [x.summoner_id for x in participants]
+            summoner_ids = [x.puuid for x in participants]
 
             users = User.objects.filter(
-                summonerlinks__summoner___id__in=summoner_ids,
+                summonerlinks__summoner__puuid__in=summoner_ids,
                 summonerlinks__verified=True,
             )
             reply_to_users = User.objects.filter(

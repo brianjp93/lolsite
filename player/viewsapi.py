@@ -131,7 +131,7 @@ class SummonerByRiotId(RetrieveAPIView):
 
 @api_view(["POST"])
 def get_summoners(request, format=None):
-    """Get data for summoners for a list of account_ids.
+    """Get data for summoners for a list of puuids.
 
     Parameters
     ----------
@@ -177,7 +177,7 @@ def get_positions(request, format=None):
     region = request.data["region"]
     summoner = Summoner.objects.get(_id=summoner_id, region=region)
     if request.data.get("update", True) is True:
-        pt.import_positions(summoner.id)
+        pt.import_positions(summoner.pk)
 
     summoner.refresh_from_db()
     rankcheckpoint = summoner.get_newest_rank_checkpoint()
@@ -616,89 +616,6 @@ def unlink_account(request, format=None):
 
 
 @api_view(["POST"])
-def connect_account(request, format=None):
-    """Attempt to connect a User to a LoL Summoner
-
-    POST Parameters
-    ---------------
-    summoner_name : str
-    region : str
-
-    Returns
-    -------
-    success or fail message
-
-    """
-    data = {}
-    status_code = 200
-
-    if request.method == "POST":
-        name = request.data["summoner_name"]
-        region = request.data["region"]
-        api = get_riot_api()
-
-        try:
-            _id = pt.import_summoner(region, name=name)
-        except:
-            # COULDN'T IMPORT SUMMONER
-            data = {
-                "success": False,
-                "message": "Could not find a summoner with the name given.",
-            }
-        else:
-            # SUMMONER FOUND AND IMPORTED
-            query = Summoner.objects.filter(id=_id)
-            if summoner := query.first():
-                r = api.thirdpartycode.get(summoner._id, region=summoner.region)
-
-                client_code = r.text.strip('"')
-
-                query = SummonerLink.objects.filter(
-                    user=request.user, summoner=summoner, verified=True
-                )
-                if query.exists():
-                    # ALREADY CONNECTED
-                    data = {
-                        "success": False,
-                        "message": "This summoner is already linked to this user.",
-                    }
-                else:
-                    # NOT YET CONNECTED
-                    query = SummonerLink.objects.filter(
-                        user=request.user, verified=False
-                    )
-                    if summonerlink := query.first():
-                        if client_code == summonerlink.uuid:
-                            summonerlink.verified = True
-                            summonerlink.summoner = summoner
-                            summonerlink.save()
-                            data = {
-                                "success": True,
-                                "message": "Successfully connected summoner account.",
-                            }
-                        else:
-                            data = {
-                                "success": False,
-                                "message": "Codes did not match.  Make sure you pasted the code into the client correctly.",
-                            }
-                    else:
-                        # no summonerlink exists
-                        data = {
-                            "success": False,
-                            "message": "Could not find SummonerLink for this user.",
-                        }
-            else:
-                data = {
-                    "success": False,
-                    "message": "Could not find a Summoner with the given name.",
-                }
-    else:
-        data = {"message": "Only POST requests allowed."}
-        status_code = 400
-    return Response(data, status=status_code)
-
-
-@api_view(["POST"])
 def connect_account_with_profile_icon(request, format=None):
     """Attempt to connect a User to a LoL Summoner.
 
@@ -843,9 +760,7 @@ def get_top_played_with(request, format=None):
 
     Parameters
     ----------
-    summoner_id : internal ID for Summoner
     puuid : RIOT PUUID
-        If `id` is not provided
     group_by : ['summoner_name', 'puuid']
     season_id : int
     queue_id : int
@@ -864,7 +779,6 @@ def get_top_played_with(request, format=None):
     cache_seconds = 60 * 60 * 12
 
     if request.method == "POST":
-        _id = request.data.get("summoner_id", None)
         puuid = request.data.get("puuid", None)
         group_by = request.data.get("group_by", None)
         season_id = request.data.get("season_id", None)
@@ -877,24 +791,15 @@ def get_top_played_with(request, format=None):
         if end - start > 100:
             end = start + 100
 
-        summoner_id = None
-        if _id is not None:
-            summoner_id = _id
-        elif puuid is not None:
-            summoner_id = Summoner.objects.get(puuid=puuid).id
-        else:
-            data = {"message": "Must provide id or puuid."}
-            status_code = 400
-
-        if summoner_id:
-            cache_key = f"{summoner_id}/{group_by}/{season_id}/{queue_id}/{recent}/{start}/{end}/{recent_days}"
+        if puuid:
+            cache_key = f"{puuid}/{group_by}/{season_id}/{queue_id}/{recent}/{start}/{end}/{recent_days}"
             cached = cache.get(cache_key)
 
             if cached:
                 data = cached
             else:
                 query = mt.get_top_played_with(
-                    summoner_id,
+                    puuid,
                     season_id=season_id,
                     queue_id=queue_id,
                     recent=recent,

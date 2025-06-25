@@ -32,7 +32,6 @@ urlpatterns = [
     path("favorites/", player_views.favorites),
     path("following/", player_views.following),
     path("generate-code/", player_views.generate_code),
-    path("connect-account/", player_views.connect_account),
     path("unlink-account/", player_views.unlink_account),
     path(
         "connect-account-with-profile-icon/",
