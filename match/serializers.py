@@ -698,7 +698,6 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
             "riot_id_name",
             "riot_id_tagline",
             "puuid",
-            "summoner_id",
             "lane",
             "role",
             "team_id",
