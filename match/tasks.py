@@ -794,7 +794,7 @@ def import_summoners_from_spectate(parsed: SpectateModel, region):
             summoner_list.append(Summoner(**sum_data))
     Summoner.objects.bulk_create(
         summoner_list,
-        update_conflicts=True,
+        ignore_conflicts=True,
         unique_fields=["puuid"],
     )
     return {x.puuid: x for x in summoner_list}
@@ -829,7 +829,7 @@ def apply_player_ranks(match, threshold_days=1):
         parts = match.participants.all()
         q = Q()
         for part in parts:
-            q |= Q(_id=part.summoner_id, puuid=part.puuid)
+            q |= Q(puuid=part.puuid)
         summoner_qs = Summoner.objects.filter(q)
         summoner_list = [x for x in summoner_qs]
         summoners = {x.puuid: x for x in summoner_qs}
