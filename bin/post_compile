@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+echo "-----> Running Tailwind CSS compilation"
+tailwindcss -i ./lolsite/static/src/main.css -o ./lolsite/static/src/output.css --minify
+
+echo "-----> Running collectstatic"
+export PYTHONPATH=$BUILD_DIR:$PYTHONPATH
+cd $BUILD_DIR
+python manage.py collectstatic --noinput

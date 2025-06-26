@@ -61,14 +61,9 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'default',
         },
-        'logfile': {
-            'class': 'logging.FileHandler',
-            'formatter': 'default',
-            'filename': '/var/log/my.log',
-        },
     },
     'root': {
-        'handlers': ['console', 'logfile'],
+        'handlers': ['console'],
         'level': 'INFO',
     },
 }
@@ -79,7 +74,11 @@ CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_DOMAIN = '.hardstuck.club'
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_DOMAIN = 'hardstuck.club'
-CSRF_TRUSTED_ORIGINS = ["https://hardstuck.club", "https://app.hardstuck.club", "https://dev.hardstuck.club"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://hardstuck.club",
+    "https://app.hardstuck.club",
+    "https://dev.hardstuck.club",
+]
 
 
 def before_breadcrumb(crumb, hint):
