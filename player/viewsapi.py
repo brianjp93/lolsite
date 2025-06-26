@@ -161,7 +161,7 @@ def get_positions(request, format=None):
 
     Parameters
     ----------
-    summoner_id : str
+    puuid : str
     region : str
     update : bool [true by default]
         Whether or not to try to create a new RankCheckpoint
@@ -173,9 +173,9 @@ def get_positions(request, format=None):
     """
     data = {}
     status_code = 200
-    summoner_id = request.data["summoner_id"]
+    puuid = request.data["puuid"]
     region = request.data["region"]
-    summoner = Summoner.objects.get(_id=summoner_id, region=region)
+    summoner = Summoner.objects.get(puuid=puuid, region=region)
     if request.data.get("update", True) is True:
         pt.import_positions(summoner.pk)
 
