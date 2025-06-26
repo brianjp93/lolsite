@@ -39,7 +39,6 @@ class SummonerFactory(DjangoModelFactory):
     class Meta:
         model = Summoner
 
-    _id = factory.Faker('uuid4')
     puuid = factory.Sequence(lambda n: f'puuid{n}')
     region = 'na'
     name = factory.Faker('name')
