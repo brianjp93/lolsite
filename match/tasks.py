@@ -794,7 +794,6 @@ def import_summoners_from_spectate(parsed: SpectateModel, region):
             summoner_list.append(Summoner(**sum_data))
     Summoner.objects.bulk_create(
         summoner_list,
-        ignore_conflicts=True,
         update_conflicts=True,
         update_fields=["profile_icon_id"],
         unique_fields=["puuid"],
