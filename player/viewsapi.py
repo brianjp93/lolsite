@@ -473,7 +473,7 @@ def favorites(request, format=None):
     data = {}
     status_code = 200
     user = request.user
-    favorite = user.favorite_set.all()
+    favorite = user.favorite_set.all().select_related("summoner")
 
     if request.method == "GET":
         favorite = favorite.order_by("sort_int")
