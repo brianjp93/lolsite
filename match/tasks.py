@@ -20,7 +20,7 @@ from django.db.models import IntegerField, Q
 from django.utils import timezone
 from django.db import connections, transaction, connection
 
-from data.constants import ARENA_QUEUE, FLEX_QUEUE, SOLO_QUEUE
+from data.constants import ARENA_QUEUE, SOLO_QUEUE
 
 from match.parsers.spectate import SpectateModel
 from match.serializers import LlmMatchSerializer
