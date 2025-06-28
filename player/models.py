@@ -111,7 +111,7 @@ class Summoner(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f'Summoner(region={self.region}, riotId={self.simple_riot_id})'
+        return f'Summoner(region={self.region}, riot_id_name={self.riot_id_name}, riot_id_tagline={self.riot_id_tagline})'
 
     def get_absolute_url(self):
         return reverse("player:summoner-page", kwargs={"region": self.region, "name": self.riot_id_name, "tagline": self.riot_id_tagline})
