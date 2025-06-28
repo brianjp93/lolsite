@@ -169,7 +169,7 @@ class SummonerPage(generic.ListView):
 
     def get_queryset(self):
         qs = self.filterset.qs
-        qs = qs.prefetch_related("participants", "participants__stats")
+        qs = qs.prefetch_related("participants", "participants__stats", "teams__bans")
         qs = qs.order_by("-game_creation")
         return qs
 

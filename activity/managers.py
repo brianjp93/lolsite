@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.db.models import Manager
 
+from ext.activity.api import NoApplication
 from match.models import Match
 from player.models import get_activity_api
 
@@ -18,7 +19,10 @@ class HeartrateManager(Manager):
         return qs
 
     def import_hr_for_match(self, match: Match, user):
-        api = get_activity_api(user)
+        try:
+            api = get_activity_api(user)
+        except NoApplication:
+            return self.none()
         if not api:
             return self.none()
         start = match.game_creation_dt

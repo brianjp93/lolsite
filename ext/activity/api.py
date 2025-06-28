@@ -43,6 +43,10 @@ class NoTokenFound(Exception):
     pass
 
 
+class NoApplication(Exception):
+    pass
+
+
 class ActivityAPIBase(ABC):
     id: Literal["OURA"]
     authorize_url: str
@@ -79,7 +83,7 @@ class ActivityAPIBase(ABC):
 
         application = Application.objects.filter(code=self.id).first()
         if not application:
-            raise Exception("No application configured")
+            raise NoApplication("No application configured")
         return application
 
     @cached_property
