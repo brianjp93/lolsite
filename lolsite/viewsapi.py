@@ -121,7 +121,11 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
 @api_view(['GET'])
 def get_summoner_meta_data(request, region: str, name: str, format=None):
     if '-' in name:
-        riot_id_name, riot_id_tagline = name.split('-')
+        try:
+            riot_id_name, riot_id_tagline = name.split('-')
+        except ValueError:
+            # unexpected number of items
+            return Response(get_meta())
     else:
         return Response(get_meta())
     meta = _get_summoner_meta_data(riot_id_name, riot_id_tagline, region)
