@@ -1,9 +1,11 @@
+from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.templatetags.static import static
 
-from match.models import Match, Participant
+from match.models import Match
 from data.constants import QUEUE_DICT
 
 from player.models import Summoner, simplify
@@ -141,20 +143,11 @@ def _get_match_meta_data(riot_id_name: str, riot_id_tagline: str, region: str, m
     try:
         summoner = Summoner.objects.get(region=region, simple_riot_id=full_id)
     except Summoner.DoesNotExist:
-        logger.exception('Could not find summoner.')
-        return
+        raise
     except Summoner.MultipleObjectsReturned:
         summoner = handle_multiple_summoners(region, simple_riot_id=full_id)
-    try:
-        match = Match.objects.get(_id=match_id)
-    except Match.DoesNotExist:
-        logger.exception('Could not find match.')
-        return
-    try:
-        part = match.participants.get(puuid=summoner.puuid)
-    except Participant.DoesNotExist:
-        logger.exception('Could not find participant in match.')
-        return
+    match = Match.objects.get(_id=match_id)
+    part = match.participants.get(puuid=summoner.puuid)
     assert part.stats
     kills = part.stats.kills
     deaths = part.stats.deaths
@@ -195,5 +188,8 @@ def get_match_meta_data(request, region, name, match_id, format=None):
         riot_id_name, riot_id_tagline = name.split('-')
     else:
         return Response(get_meta())
-    meta = _get_match_meta_data(riot_id_name, riot_id_tagline, region, match_id)
+    try:
+        meta = _get_match_meta_data(riot_id_name, riot_id_tagline, region, match_id)
+    except ObjectDoesNotExist:
+        raise Http404("Could not find object.")
     return Response(meta)
