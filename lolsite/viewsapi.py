@@ -185,7 +185,10 @@ def _get_match_meta_data(riot_id_name: str, riot_id_tagline: str, region: str, m
 @api_view(['GET'])
 def get_match_meta_data(request, region, name, match_id, format=None):
     if '-' in name:
-        riot_id_name, riot_id_tagline = name.split('-')
+        try:
+            riot_id_name, riot_id_tagline = name.split('-')
+        except ValueError:
+            raise Http404('Could not find object.')
     else:
         return Response(get_meta())
     try:
