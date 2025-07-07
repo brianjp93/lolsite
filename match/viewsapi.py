@@ -1,6 +1,6 @@
 """match/viewsapi.py
 """
-from django.db.models import Q, Exists, OuterRef
+from django.db.models import Exists, OuterRef
 from django.contrib.auth.models import User
 from django.http import Http404
 from rest_framework.response import Response
@@ -275,10 +275,33 @@ def get_spectate(request, format=None):
             pt.import_positions(x, threshold_days=3)
 
         spectate_data = parsed.model_dump()
+
+        # Collect all participant puuids and champion keys
+        participant_puuids = [part["puuid"] for part in spectate_data["participants"]]
+        champion_keys = [part["championId"] for part in spectate_data["participants"]]
+
+        # Prefetch all summoners with their rank checkpoints and positions
+        summoners_with_positions = Summoner.objects.filter(
+            region=region,
+            puuid__in=participant_puuids
+        ).prefetch_related(
+            'rankcheckpoints__positions'
+        )
+
+        # Create a mapping of puuid to summoner
+        summoner_map = {s.puuid: s for s in summoners_with_positions}
+
+        champions = Champion.objects.filter(
+            key__in=champion_keys,
+            version=Champion.objects.order_by('-version').values_list('version', flat=True)[:1],
+        ).select_related('image')
+
+        champion_map = {champion.key: champion for champion in champions}
+
+        # Process participants with prefetched data
         for part in spectate_data["participants"]:
             positions = None
-            query = Summoner.objects.filter(region=region, puuid=part["puuid"])
-            if summoner := summoners.get(part["puuid"]):
+            if summoner := summoner_map.get(part["puuid"]):
                 checkpoint = summoner.get_newest_rank_checkpoint()
                 if checkpoint:
                     positions = RankPositionSerializer(
@@ -289,10 +312,7 @@ def get_spectate(request, format=None):
                 positions = sort_positions(positions)
             part["positions"] = positions
 
-            query = Champion.objects.filter(key=part["championId"]).order_by(
-                "-version"
-            ).select_related('image')
-            if champion := query.first():
+            if champion := champion_map.get(part["championId"]):
                 part['champion'] = BasicChampionWithImageSerializer(champion).data
 
         data = spectate_data
