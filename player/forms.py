@@ -14,14 +14,13 @@ class SummonerSearchForm(forms.Form):
 
 
 class SignupForm(forms.ModelForm):
-    password_confirmation = forms.CharField()
+    password_confirmation = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
         model = User
         fields = ["email", "password", "password_confirmation"]
         widgets = {
             "password": forms.PasswordInput(),
-            "password_confirmation": forms.PasswordInput(),
         }
 
     def clean_password_confirmation(self):
