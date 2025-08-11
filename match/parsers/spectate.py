@@ -29,7 +29,7 @@ class SpectateParticipant(BaseModelWithLogger):
     profileIconId: int
     bot: bool
     gameCustomizationObjects: list[Any]
-    perks: SpectatePerk
+    perks: SpectatePerk | None = None
     puuid: str
     riotId: str
 
