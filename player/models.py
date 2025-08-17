@@ -73,7 +73,7 @@ def get_activity_api(user):
 
 class Summoner(models.Model):
     id: int | None
-    user = models.ForeignKey(
+    user = models.ForeignKey[User](
         User,
         default=None,
         null=True,
@@ -109,6 +109,8 @@ class Summoner(models.Model):
     last_summoner_page_import = models.DateTimeField(null=True)
     huge_match_import_at = models.DateTimeField(null=True, db_index=True)
     created_date = models.DateTimeField(default=timezone.now)
+    rankcheckpoints: models.QuerySet['RankCheckpoint']
+    pageview_set: models.QuerySet['PageView']
 
     def __str__(self):
         return f'Summoner(region={self.region}, riot_id_name={self.riot_id_name}, riot_id_tagline={self.riot_id_tagline})'
@@ -140,7 +142,7 @@ class Summoner(models.Model):
         """
         try:
             checkpoint = self.rankcheckpoints.all().order_by("-created_date")[0]
-        except:
+        except Exception:
             checkpoint = None
         return checkpoint
 
@@ -161,7 +163,7 @@ class Summoner(models.Model):
     def add_view(self):
         today = timezone.now().date()
         if pageview := self.pageview_set.filter(bucket_date=today).first():
-            PageView.objects.filter(id=pageview.id).update(views=models.F('views') + 1)
+            PageView.objects.filter(id=pageview.pk).update(views=models.F('views') + 1)
         else:
             PageView.objects.create(summoner=self, bucket_date=today, views=1)
 
@@ -272,6 +274,7 @@ class RankCheckpoint(models.Model):
         "Summoner", on_delete=models.CASCADE, related_name="rankcheckpoints"
     )
     created_date = models.DateTimeField(default=timezone.now, db_index=True)
+    positions: models.QuerySet['RankPosition']
 
 
 class RankPosition(models.Model):
