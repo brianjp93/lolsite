@@ -193,6 +193,7 @@ class MatchQuerySet(models.QuerySet["Match"]):
         substyles = set()
         for match in self:
             for part in match.participants.all():
+                assert part.stats
                 substyles.add(part.stats.perk_sub_style)
         qs = ReforgedTree.objects.filter(_id__in=substyles, major=major, minor=minor)
         if not len(qs):
@@ -205,6 +206,7 @@ class MatchQuerySet(models.QuerySet["Match"]):
         substyles = set()
         for match in self:
             for part in match.participants.all():
+                assert part.stats
                 substyles.add(part.stats.perk_sub_style)
         qs = ReforgedTree.objects.filter(_id__in=substyles, major=major, minor=minor)
         if not len(qs):
@@ -498,7 +500,7 @@ class Match(VersionedModel):
 
 class Participant(models.Model):
     id: int | None
-    match = models.ForeignKey(
+    match = models.ForeignKey["Match"](
         "Match", on_delete=models.CASCADE, related_name="participants"
     )
     _id = models.IntegerField()  # participantID
@@ -594,11 +596,10 @@ class Participant(models.Model):
         return url
 
     def result(self):
-        match: Match = self.match
         if stats := getattr(self, 'stats', None):
             if stats.win:
                 return 'win'
-            elif match.game_duration / 1000 / 60 < 5:
+            elif self.match.game_duration / 1000 / 60 < 5:
                 return 'remake'
         return 'loss'
 
@@ -907,7 +908,7 @@ class Stats(models.Model):
 
 class Team(models.Model):
     id: int | None
-    match = models.ForeignKey("Match", on_delete=models.CASCADE, related_name="teams")
+    match = models.ForeignKey['Match']("Match", on_delete=models.CASCADE, related_name="teams")
     _id = models.IntegerField()
     bans: QuerySet['Ban']
 
@@ -1080,7 +1081,7 @@ class Frame(models.Model):
 
 class ParticipantFrame(models.Model):
     id: int | None
-    frame = models.ForeignKey(
+    frame = models.ForeignKey['Frame'](
         "Frame", on_delete=models.CASCADE, related_name="participantframes"
     )
     participant_id = models.IntegerField(default=0, blank=True)
@@ -1146,7 +1147,7 @@ class ParticipantFrame(models.Model):
 
 class Event(models.Model):
     id: int | None
-    frame = models.ForeignKey("Frame", on_delete=models.CASCADE)
+    frame = models.ForeignKey['Frame']("Frame", on_delete=models.CASCADE)
     timestamp = models.IntegerField(default=0, blank=True)
 
     class Meta:
