@@ -5,7 +5,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 urlpatterns = [
     path("item/", data_views.get_item),
     path("item/diff/<int:item_id>/", data_views.get_item_diff),
-    path("item/<int:_id>/<int:major>/<int:minor>/", data_views.SimpleItemRetrieveView.as_view()),
+    path("item/<int:major>/<int:minor>/<int:_id>/", data_views.SimpleItemRetrieveView.as_view()),
     path("items/<int:major>/<int:minor>/", data_views.SimpleItemListView.as_view()),
     path("items/", data_views.all_items),
     path("item-history/<slug:_id>/", data_views.get_item_history),

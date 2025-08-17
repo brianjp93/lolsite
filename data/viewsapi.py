@@ -1,6 +1,8 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Exists, OuterRef
 from django.http import Http404, HttpRequest
+from django.views.decorators.cache import cache_control
+from django.utils.decorators import method_decorator
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import exceptions
@@ -88,6 +90,10 @@ def get_item(request, format=None):
 class SimpleItemRetrieveView(RetrieveAPIView):
     queryset = Item.objects.all().select_related('image', 'gold')
     serializer_class = SimpleItemSerializer
+
+    @method_decorator(cache_control(max_age=3600))
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     def get_object(self):
         qs = self.get_queryset()

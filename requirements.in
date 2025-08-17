@@ -10,6 +10,7 @@ django-filter
 django-redis
 django-storages
 django-stubs[compatible-mypy]
+djangorestframework-stubs[compatible-mypy]
 django-cotton>=1.0.3
 mypy
 django-stubs-ext

@@ -19,17 +19,14 @@ asttokens==2.4.1
 attrs==24.2.0
     # via hypothesis
 beautifulsoup4==4.12.3
-    # via -r requirements.in
 billiard==4.2.1
     # via celery
 boto3==1.35.39
-    # via -r requirements.in
 botocore==1.35.39
     # via
     #   boto3
     #   s3transfer
 celery==5.4.0
-    # via -r requirements.in
 certifi==2024.8.30
     # via
     #   httpcore
@@ -55,10 +52,8 @@ decorator==5.1.1
 distro==1.9.0
     # via openai
 dj-database-url==2.2.0
-    # via -r requirements.in
 django==5.1.2
     # via
-    #   -r requirements.in
     #   dj-database-url
     #   django-cors-headers
     #   django-cotton
@@ -72,37 +67,25 @@ django==5.1.2
     #   django-stubs-ext
     #   djangorestframework
 django-cors-headers==4.5.0
-    # via -r requirements.in
 django-cotton==1.2.0
-    # via -r requirements.in
 django-debug-toolbar==4.4.6
-    # via -r requirements.in
 django-extensions==3.2.3
-    # via -r requirements.in
 django-filter==24.3
-    # via -r requirements.in
 django-htmx==1.19.0
-    # via -r requirements.in
 django-redis==5.4.0
-    # via -r requirements.in
 django-storages==1.14.4
-    # via -r requirements.in
 django-stubs==5.1.1
-    # via -r requirements.in
+    # via djangorestframework-stubs
 django-stubs-ext==5.1.1
-    # via
-    #   -r requirements.in
-    #   django-stubs
+    # via django-stubs
 djangorestframework==3.15.2
-    # via -r requirements.in
+djangorestframework-stubs==3.15.2
 executing==2.1.0
     # via stack-data
 factory-boy==3.3.1
-    # via -r requirements.in
 faker==30.3.0
     # via factory-boy
 gunicorn==23.0.0
-    # via -r requirements.in
 h11==0.14.0
     # via httpcore
 httpcore==1.0.6
@@ -110,14 +93,12 @@ httpcore==1.0.6
 httpx==0.27.2
     # via openai
 hypothesis==6.115.0
-    # via -r requirements.in
 idna==3.10
     # via
     #   anyio
     #   httpx
     #   requests
 ipython==8.28.0
-    # via -r requirements.in
 jedi==0.19.1
     # via ipython
 jiter==0.6.1
@@ -129,17 +110,15 @@ jmespath==1.0.1
 kombu==5.4.2
     # via celery
 lolwrapper @ git+https://github.com/brianjp93/lolapi.git@c84841786484f7e0b844fa203c06f8bdea54647f
-    # via -r requirements.in
 matplotlib-inline==0.1.7
     # via ipython
 mypy==1.13.0
     # via
-    #   -r requirements.in
     #   django-stubs
+    #   djangorestframework-stubs
 mypy-extensions==1.0.0
     # via mypy
 openai==1.51.2
-    # via -r requirements.in
 packaging==24.1
     # via gunicorn
 parso==0.8.4
@@ -147,13 +126,11 @@ parso==0.8.4
 pexpect==4.9.0
     # via ipython
 pillow==10.4.0
-    # via -r requirements.in
 prompt-toolkit==3.0.48
     # via
     #   click-repl
     #   ipython
 psycopg==3.2.3
-    # via -r requirements.in
 psycopg-binary==3.2.3
     # via psycopg
 ptyprocess==0.7.0
@@ -161,37 +138,30 @@ ptyprocess==0.7.0
 pure-eval==0.2.3
     # via stack-data
 pydantic==2.9.2
-    # via
-    #   -r requirements.in
-    #   openai
+    # via openai
 pydantic-core==2.23.4
     # via pydantic
 pygments==2.18.0
     # via ipython
 pytailwindcss==0.2.0
-    # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
     #   botocore
     #   celery
     #   faker
 python-decouple==3.8
-    # via -r requirements.in
 pytz==2024.2
-    # via -r requirements.in
 redis==4.6.0
     # via
-    #   -r requirements.in
     #   celery
     #   django-redis
 requests==2.32.3
     # via
-    #   -r requirements.in
+    #   djangorestframework-stubs
     #   lolwrapper
 s3transfer==0.10.3
     # via boto3
 sentry-sdk==2.16.0
-    # via -r requirements.in
 six==1.16.0
     # via
     #   asttokens
@@ -218,12 +188,17 @@ traitlets==5.14.3
     #   ipython
     #   matplotlib-inline
 types-pyyaml==6.0.12.20240917
-    # via django-stubs
+    # via
+    #   django-stubs
+    #   djangorestframework-stubs
+types-requests==2.32.4.20250809
+    # via djangorestframework-stubs
 typing-extensions==4.12.2
     # via
     #   dj-database-url
     #   django-stubs
     #   django-stubs-ext
+    #   djangorestframework-stubs
     #   faker
     #   mypy
     #   openai
@@ -238,6 +213,7 @@ urllib3==2.2.3
     #   botocore
     #   requests
     #   sentry-sdk
+    #   types-requests
 vine==5.1.0
     # via
     #   amqp
@@ -246,4 +222,3 @@ vine==5.1.0
 wcwidth==0.2.13
     # via prompt-toolkit
 whitenoise==6.8.2
-    # via -r requirements.in
