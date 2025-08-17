@@ -17,7 +17,7 @@ CACHE_TIME = 60 * 60 * 48
 class MatchSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Match
         fields = [
             'id',
@@ -49,7 +49,7 @@ class MatchSerializer(serializers.ModelSerializer):
 class ParticipantSerializer(serializers.ModelSerializer):
     perk_sub_style_image_url = serializers.CharField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Participant
         fields = "__all__"
 
@@ -58,7 +58,7 @@ class StatsSerializer(serializers.ModelSerializer):
     perk_0_image_url = serializers.SerializerMethodField()
     perk_sub_style_image_url = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Stats
         fields = [
             'perk_0_image_url',
@@ -184,7 +184,7 @@ class StatsSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Team
         fields = [
             '_id',
@@ -195,7 +195,7 @@ class TeamSerializer(serializers.ModelSerializer):
 class BanSerializer(serializers.ModelSerializer):
     team = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Ban
         fields = [
             'pick_turn',
@@ -212,7 +212,7 @@ class FullParticipantSerializer(serializers.ModelSerializer):
     summoner_1_image = serializers.SerializerMethodField()
     summoner_2_image = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Participant
         fields = "__all__"
 
@@ -245,7 +245,7 @@ class FullParticipantSerializer(serializers.ModelSerializer):
 class FullTeamSerializer(serializers.ModelSerializer):
     bans = BanSerializer(many=True, read_only=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Team
         fields = [
             "_id",
@@ -258,7 +258,7 @@ class FullMatchSerializer(serializers.ModelSerializer):
     participants = serializers.SerializerMethodField()
     teams = FullTeamSerializer(many=True, read_only=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Match
         fields = "__all__"
 
@@ -266,11 +266,12 @@ class FullMatchSerializer(serializers.ModelSerializer):
         self.extra = {}
         match_qs = None
         if hasattr(instance, 'major'):
-            match_qs = Match.objects.filter(id=instance.id)
+            assert instance
+            match_qs = Match.objects.filter(id=instance.pk)
         if match_qs:
             self.extra = match_qs.get_related()
         elif isinstance(instance, models.QuerySet):
-            self.extra = instance.get_related()
+            self.extra = instance.get_related()  # type: ignore
         super().__init__(instance, **kwargs)
 
     def get_participants(self, obj):
@@ -295,7 +296,7 @@ class FullMatchSerializer(serializers.ModelSerializer):
 class ParticipantFrameSerializer(serializers.ModelSerializer):
     total_cs = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ParticipantFrame
         fields = [
             'participant_id',
@@ -358,7 +359,7 @@ class ParticipantFrameSerializer(serializers.ModelSerializer):
 class WardKillEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='WARD_KILL')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.WardKillEvent
         fields = [
             'timestamp',
@@ -371,7 +372,7 @@ class WardKillEventSerializer(serializers.ModelSerializer):
 class WardPlacedEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='WARD_PLACED')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.WardPlacedEvent
         fields = [
             'timestamp',
@@ -384,7 +385,7 @@ class WardPlacedEventSerializer(serializers.ModelSerializer):
 class LevelUpEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='LEVEL_UP')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.LevelUpEvent
         fields = [
             'timestamp',
@@ -397,7 +398,7 @@ class LevelUpEventSerializer(serializers.ModelSerializer):
 class SkillLevelUpEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='SKILL_LEVEL_UP')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.SkillLevelUpEvent
         fields = [
             'timestamp',
@@ -411,7 +412,7 @@ class SkillLevelUpEventSerializer(serializers.ModelSerializer):
 class ItemPurchasedEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='ITEM_PURCHASED')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.ItemPurchasedEvent
         fields = [
             'timestamp',
@@ -424,7 +425,7 @@ class ItemPurchasedEventSerializer(serializers.ModelSerializer):
 class ItemDestroyedEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='ITEM_DESTROYED')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.ItemDestroyedEvent
         fields = [
             'timestamp',
@@ -437,7 +438,7 @@ class ItemDestroyedEventSerializer(serializers.ModelSerializer):
 class ItemSoldEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='ITEM_SOLD')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.ItemSoldEvent
         fields = [
             'timestamp',
@@ -450,7 +451,7 @@ class ItemSoldEventSerializer(serializers.ModelSerializer):
 class ItemUndoEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='ITEM_UNDO')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.ItemUndoEvent
         fields = [
             'timestamp',
@@ -465,7 +466,7 @@ class ItemUndoEventSerializer(serializers.ModelSerializer):
 class TurretPlateDestroyedEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='TURRET_PLATE_DESTROYED')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.TurretPlateDestroyedEvent
         fields = [
             'timestamp',
@@ -481,7 +482,7 @@ class TurretPlateDestroyedEventSerializer(serializers.ModelSerializer):
 class EliteMonsterKillEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='ELITE_MONSTER_KILL')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.EliteMonsterKillEvent
         fields = [
             'bounty',
@@ -500,7 +501,7 @@ class EliteMonsterKillEventSerializer(serializers.ModelSerializer):
 class ChampionSpecialKillEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='CHAMPION_SPECIAL_KILL')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.ChampionSpecialKillEvent
         fields = [
             'timestamp',
@@ -517,7 +518,7 @@ class ChampionSpecialKillEventSerializer(serializers.ModelSerializer):
 class BuildingKillEventSerializer(serializers.ModelSerializer):
     _type = serializers.ReadOnlyField(default='BUILDING_KILL')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.BuildingKillEvent
         fields = [
             'timestamp',
@@ -535,7 +536,7 @@ class BuildingKillEventSerializer(serializers.ModelSerializer):
 
 
 class VictimDamageDealtSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.VictimDamageDealt
         fields = [
             'basic',
@@ -551,7 +552,7 @@ class VictimDamageDealtSerializer(serializers.ModelSerializer):
 
 
 class VictimDamageReceivedSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.VictimDamageReceived
         fields = [
             'basic',
@@ -571,7 +572,7 @@ class ChampionKillEventSerializer(serializers.ModelSerializer):
     victimdamagedealt_set = VictimDamageDealtSerializer(many=True)
     victimdamagereceived_set = VictimDamageReceivedSerializer(many=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = models.ChampionKillEvent
         fields = [
             'timestamp',
@@ -611,7 +612,7 @@ class FrameSerializer(serializers.ModelSerializer):
     buildingkillevents = BuildingKillEventSerializer(many=True, source='buildingkillevent_set')
     championkillevents = ChampionKillEventSerializer(many=True, source='championkillevent_set')
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Frame
         fields = [
             'timestamp',
@@ -637,7 +638,7 @@ class FrameSerializer(serializers.ModelSerializer):
 class AdvancedTimelineSerializer(serializers.ModelSerializer):
     frames = FrameSerializer(many=True, read_only=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = AdvancedTimeline
         fields = [
             'frame_interval',
@@ -657,7 +658,7 @@ class BasicStatsSerializer(serializers.ModelSerializer):
     perk_0_image_url = serializers.SerializerMethodField()
     perk_sub_style_image_url = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Stats
         fields = [
             "kills", "deaths", "assists",
@@ -690,7 +691,7 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
     summoner_1_image = serializers.SerializerMethodField()
     summoner_2_image = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Participant
         fields = [
             "_id",
@@ -731,7 +732,7 @@ class BasicMatchSerializer(serializers.ModelSerializer):
     participants = serializers.SerializerMethodField()
     teams = TeamSerializer(many=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Match
         fields = [
             "id", "_id", "game_duration",
@@ -749,7 +750,7 @@ class BasicMatchSerializer(serializers.ModelSerializer):
     def __init__(self, instance=None, **kwargs):
         self.extra = None
         if isinstance(instance, QuerySet):
-            self.extra = instance.get_related()
+            self.extra = instance.get_related()  # type: ignore
         super().__init__(instance=instance, **kwargs)
 
     def get_participants(self, obj):
@@ -767,7 +768,7 @@ class BasicMatchSerializer(serializers.ModelSerializer):
 
 
 class LlmStatsSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Stats
         fields = [
             "assists",
@@ -789,7 +790,7 @@ class LlmStatsSerializer(serializers.ModelSerializer):
 class LlmParticipantSerializer(serializers.ModelSerializer):
     stats = LlmStatsSerializer(many=False)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Participant
         fields = [
             "id",
@@ -803,7 +804,7 @@ class LlmParticipantSerializer(serializers.ModelSerializer):
         ]
 
 class LlmParticipantFrames(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ParticipantFrame
         fields = [
             "participant_id",
@@ -823,7 +824,7 @@ class LlmFrameSerializer(serializers.ModelSerializer):
     buildingkillevent_set = BuildingKillEventSerializer(many=True)
     championkillevent_set = ChampionKillEventSerializer(many=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Frame
         fields = [
             "timestamp",
@@ -837,7 +838,7 @@ class LlmFrameSerializer(serializers.ModelSerializer):
 class LlmTimelineSerializer(serializers.ModelSerializer):
     frames = LlmFrameSerializer(many=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = AdvancedTimeline
         fields = [
             "frames"
@@ -848,7 +849,7 @@ class LlmMatchSerializer(serializers.ModelSerializer):
     teams = TeamSerializer(many=True)
     advancedtimeline = LlmTimelineSerializer(many=False)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Match
         fields = [
             "game_duration",
@@ -863,7 +864,7 @@ class LlmMatchSerializer(serializers.ModelSerializer):
 
 
 class MatchSummarySerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = MatchSummary
         fields = [
             "content",

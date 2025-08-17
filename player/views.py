@@ -9,7 +9,8 @@ import requests
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
@@ -23,7 +24,7 @@ from django.core.mail import send_mail
 
 from data.models import Champion
 from data.serializers import BasicChampionWithImageSerializer
-from lolsite.helpers import query_debugger
+from lolsite.helpers import HtmxMixin, UserType, query_debugger
 from lolsite.tasks import get_riot_api
 from match.models import Match, set_focus_participants, set_related_match_objects, sort_positions
 from match.parsers.spectate import SpectateModel
@@ -40,8 +41,6 @@ from lolsite.signers import ActivationSigner
 
 
 logger = logging.getLogger(__name__)
-User = get_user_model()
-
 
 
 def send_verification_email(request, email):
@@ -77,14 +76,14 @@ def login_action(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
-        user = authenticate(request, username=email, password=password)
+        user: UserType | None = authenticate(request, username=email, password=password)  # type: ignore
         if user is not None:
             if user.custom.is_email_verified:
                 login(request, user)
                 view_name = "home"
             else:
                 view_name = "/login?error=verification"
-                thresh = timezone.now() - timezone.timedelta(minutes=10)
+                thresh = timezone.now() - timedelta(minutes=10)
                 query = user.emailverification_set.filter(created_date__gt=thresh)
                 if query.exists():
                     # recent emailverification models exist
@@ -108,7 +107,7 @@ def logout_action(request):
     return redirect("home")
 
 
-class SummonerProfileCard(generic.DetailView):
+class SummonerProfileCard(HtmxMixin, generic.DetailView):  # type: ignore
     template_name = "cotton/player/card.html"
     queryset = Summoner.objects.all()
 
@@ -117,12 +116,13 @@ class SummonerProfileCard(generic.DetailView):
         context = super().get_context_data(**kwargs)
         context["summoner"] = self.object
         if self.request.user.is_authenticated:
-            context["is_favorite"] = self.request.user.favorite_set.filter(summoner=self.object).exists()
-            context["is_follow"] = self.request.user.follow_set.filter(summoner=self.object).exists()
+            user: UserType = self.request.user  # type: ignore
+            context["is_favorite"] = user.favorite_set.filter(summoner=self.object).exists()
+            context["is_follow"] = user.follow_set.filter(summoner=self.object).exists()
         return context
 
 
-class SummonerPage(generic.ListView):
+class SummonerPage(HtmxMixin, generic.ListView):  # type: ignore
     paginate_by: int = 10  # type: ignore
     template_name = "player/summoner.html"
 
@@ -133,16 +133,20 @@ class SummonerPage(generic.ListView):
         limit = self.paginate_by
         start = limit * (page - 1)
         if page == 1:
-            mt.bulk_import.s(self.summoner.puuid, count=100, offset=start + limit).apply_async()
+            mt.bulk_import.s(  # type: ignore
+                self.summoner.puuid,
+                count=100,
+                offset=start + limit
+            ).apply_async()
 
         context = super().get_context_data(*args, **kwargs)
         context.update(champion_stats_context(self.summoner.puuid))
         context["summoner"] = self.summoner
         context["filterset"] = self.filterset
         if self.request.user.is_authenticated:
-            context["is_favorite"] = self.request.user.favorite_set.filter(summoner=self.summoner)
-            context["is_follow"] = self.request.user.follow_set.filter(summoner=self.summoner)
-        self.request.user
+            user: UserType = self.request.user  # type: ignore
+            context["is_favorite"] = user.favorite_set.filter(summoner=self.summoner)
+            context["is_follow"] = user.follow_set.filter(summoner=self.summoner)
         context["namechanges"] = NameChange.objects.filter(
             summoner=self.summoner,
         ).order_by("-created_date")
@@ -266,6 +270,8 @@ class SummonerPagePuuid(generic.RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         puuid = self.kwargs["puuid"]
         summoner = get_by_puuid(puuid)
+        if not summoner:
+            raise Http404('Summoner not found.')
         return reverse(
             "player:summoner-page",
             kwargs={
@@ -379,7 +385,7 @@ class EmailActivationView(generic.TemplateView):
             context["type"] = "bad_signature"
         else:
             context["type"] = "success"
-            user = User.objects.filter(id=user_id).first()
+            user = get_object_or_404(User, id=user_id)
             user.is_active = True
             user.save()
         return context
@@ -393,8 +399,9 @@ class FavoriteView(generic.TemplateView, CsrfViewMiddleware):
         summoner_id = self.request.POST.get("summoner_id")
         context["summoner"] = Summoner.objects.get(pk=summoner_id)
         if self.request.user.is_authenticated:
-            context["is_favorite"] = self.request.user.favorite_set.filter(summoner__id=summoner_id).exists()
-            context["favorites_list"] = [x.summoner for x in self.request.user.favorite_set.order_by("sort_int")]
+            user: UserType = self.request.user  # type: ignore
+            context["is_favorite"] = user.favorite_set.filter(summoner__id=summoner_id).exists()
+            context["favorites_list"] = [x.summoner for x in user.favorite_set.order_by("sort_int")]
         return context
 
 
@@ -417,7 +424,8 @@ class FollowView(generic.TemplateView, CsrfViewMiddleware):
         summoner_id = self.request.POST.get("summoner_id")
         context["summoner"] = Summoner.objects.get(pk=summoner_id)
         if self.request.user.is_authenticated:
-            context["is_follow"] = self.request.user.follow_set.filter(summoner_id=summoner_id).exists()
+            user: UserType = self.request.user  # type: ignore
+            context["is_follow"] = user.follow_set.filter(summoner_id=summoner_id).exists()
         return context
 
     def post(self, request, *args, **kwargs):

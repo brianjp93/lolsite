@@ -29,25 +29,25 @@ class DynamicSerializer(serializers.ModelSerializer):
 class ProfileIconSerializer(serializers.ModelSerializer):
     image_url = serializers.CharField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ProfileIcon
         fields = "__all__"
 
 
 class ItemGoldSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ItemGold
         fields = "__all__"
 
 
 class ItemMapSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ItemMap
         fields = ['key', 'value']
 
 
 class ItemImageSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ItemImage
         fields = [
             'file',
@@ -58,7 +58,7 @@ class ItemImageSerializer(serializers.ModelSerializer):
 
 
 class ItemStatSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ItemStat
         fields = ['key', 'value']
 
@@ -70,7 +70,7 @@ class ItemSerializer(serializers.ModelSerializer):
     maps = serializers.SerializerMethodField()
     stat_efficiency = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Item
         fields = [
             'id',
@@ -121,7 +121,7 @@ class SimpleItemSerializer(serializers.ModelSerializer):
     gold = ItemGoldSerializer()
     image = ItemImageSerializer()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Item
         fields = (
             'id',
@@ -136,19 +136,19 @@ class SimpleItemSerializer(serializers.ModelSerializer):
 class ReforgedRuneSerializer(serializers.ModelSerializer):
     image_url = serializers.CharField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ReforgedRune
         fields = "__all__"
 
 
 class ChampionStatsSerializer(DynamicSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ChampionStats
         fields = "__all__"
 
 
 class ChampionSpellVarSerializer(DynamicSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ChampionSpellVar
         fields = "__all__"
 
@@ -158,14 +158,14 @@ class ChampionSpellSerializer(DynamicSerializer):
     get_effect = serializers.ListField()
     vars = ChampionSpellVarSerializer(many=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ChampionSpell
         fields = "__all__"
 
 
 class ChampionImageSerializer(serializers.ModelSerializer):
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = ChampionImage
         fields = [
             'image_url',
@@ -181,7 +181,7 @@ class ChampionSerializer(DynamicSerializer):
     stats = ChampionStatsSerializer()
     spells = ChampionSpellSerializer(many=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Champion
         fields = "__all__"
 
@@ -198,7 +198,7 @@ class ChampionSerializer(DynamicSerializer):
 class BasicChampionWithImageSerializer(serializers.ModelSerializer):
     image = ChampionImageSerializer()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Champion
         fields = ['_id', 'name', 'image', 'key']
 
@@ -210,6 +210,6 @@ class BasicChampionWithImageSerializer(serializers.ModelSerializer):
 
 class SummonerSpellImageSerializer(serializers.ModelSerializer):
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = SummonerSpellImage
         fields = ['image_url']

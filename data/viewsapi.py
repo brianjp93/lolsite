@@ -1,6 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Exists, OuterRef
 from django.http import Http404, HttpRequest
+from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
 from rest_framework.response import Response
@@ -56,6 +57,8 @@ def get_item(request, format=None):
 
     if None in [major, minor]:
         item = Item.objects.all().order_by("-major", "-minor", "-patch").first()
+        if not item:
+            raise exceptions.NotFound('Item not found.')
         version = item.version
     else:
         version = f"{major}.{minor}.1"
@@ -79,6 +82,8 @@ def get_item(request, format=None):
 
         if not query.exists():
             item = Item.objects.all().order_by("-major", "-minor", "-patch").first()
+            if not item:
+                raise exceptions.NotFound('Item not found.')
             query = Item.objects.filter(_id__in=item_list, version=item.version)
 
         serialized_items = ItemSerializer(query, many=True).data
@@ -166,6 +171,8 @@ def all_items(request, format=None):
         version = patch
     elif None in [major, minor]:
         item = Item.objects.all().order_by("-major", "-minor").first()
+        if not item:
+            raise exceptions.NotFound('Item not found.')
         major = item.major
         minor = item.minor
         version = f"{major}.{minor}.1"
@@ -224,6 +231,8 @@ def get_reforged_runes(request, format=None):
                     .order_by("-major", "-minor", "-patch")
                     .first()
                 )
+                if not tree:
+                    raise exceptions.NotFound()
                 version = tree.version
                 runes = ReforgedRune.objects.filter(reforgedtree__version=version)
             else:
@@ -236,6 +245,8 @@ def get_reforged_runes(request, format=None):
                         .order_by("-major", "-minor", "-patch")
                         .first()
                     )
+                    if not tree:
+                        raise exceptions.NotFound()
                     version = tree.version
                     runes = ReforgedRune.objects.filter(reforgedtree__version=version)
             runes_data = ReforgedRuneSerializer(runes, many=True)
@@ -267,6 +278,8 @@ def get_current_season(request, format=None):
 
     if request.method == "POST":
         match = Match.objects.all().order_by("-major", "-minor").first()
+        if not match:
+            raise exceptions.NotFound()
         version_data = {
             "game_version": match.game_version,
             "major": match.major,
@@ -310,6 +323,8 @@ def get_champions(request, format=None):
         version = request.data.get("version", None)
         if not version:
             top = Champion.objects.all().order_by("-major", "-minor", "-patch").first()
+            if not top:
+                raise exceptions.NotFound()
             version = top.version
 
         cache_key = None

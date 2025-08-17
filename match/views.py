@@ -6,6 +6,7 @@ from django.views.decorators.cache import cache_control
 
 from activity.models import Heartrate
 from data.constants import STRUCTURES
+from lolsite.helpers import HtmxMixin, UserType
 from lolsite.tasks import get_riot_api
 from match.models import Frame, Match, Participant, set_related_match_objects
 from match import tasks as mt
@@ -14,7 +15,7 @@ from match.serializers import FrameSerializer
 from player.models import Summoner
 
 
-class MatchDetailView(DetailView):
+class MatchDetailView(HtmxMixin, DetailView):  # type: ignore
     template_name = "match/match-detail.html"
     model = Match
     queryset = Match.objects.all().prefetch_related(
@@ -78,9 +79,9 @@ class MatchDetailView(DetailView):
 
     def get_hr_data(self, match):
         """Only get hr data if the user has a linked summoner in the match."""
-        user = self.request.user
-        if not user.is_authenticated:
+        if not self.request.user.is_authenticated:
             return []
+        user: UserType = self.request.user  # type: ignore
         match_puuids = {p.puuid for p in match.participants.all()}
         user_puuids = set(
             Summoner.objects.filter(
@@ -100,12 +101,12 @@ class MatchDetailView(DetailView):
             {
                 "_id": x._id,
                 "champion": {
-                    "name": x.champion and x.champion.name,
-                    "key": x.champion and x.champion.key,
-                    "image_url": x.champion
-                    and x.champion.image
-                    and x.champion.image.file
-                    and x.champion.image.file.url,
+                    "name": x.champion and x.champion.name,  # type: ignore
+                    "key": x.champion and x.champion.key,  # type: ignore
+                    "image_url": x.champion  # type: ignore
+                    and x.champion.image  # type: ignore
+                    and x.champion.image.file  # type: ignore
+                    and x.champion.image.file.url,  # type: ignore
                 },
                 "team_id": x.team_id,
                 "name": x.get_name(),

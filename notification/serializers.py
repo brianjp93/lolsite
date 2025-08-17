@@ -11,6 +11,6 @@ class NotificationSerializer(DynamicSerializer):
     external_id = serializers.CharField()
     comment = CommentSerializer()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Notification
         fields = '__all__'

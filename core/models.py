@@ -43,8 +43,8 @@ def save_files(model_id, app, model_name, force=False):
     model = apps.get_model(app, model_name=model_name)
     obj: 'ThumbnailedModel' = model.objects.get(id=model_id)
     if not obj.file or force:
-        r = urllib.request.urlretrieve(obj.image_url())
-        obj.file.save(obj.full, File(open(r[0], 'rb')))
+        r = urllib.request.urlretrieve(obj.image_url())  # type: ignore
+        obj.file.save(obj.full, File(open(r[0], 'rb')))  # type: ignore
     obj.refresh_from_db()
     image = Image.open(obj.file)
     for size in obj.SIZES:
@@ -53,7 +53,7 @@ def save_files(model_id, app, model_name, force=False):
             output = BytesIO()
             temp = image.resize((size, size))
             temp.save(output, format='JPEG', quality=80)
-            name = f'{size}-{obj.full.lower().strip(".png")}.jpg'
+            name = f'{size}-{obj.full.lower().strip(".png")}.jpg'  # type: ignore
             new_image = File(output, name=name)
             field = getattr(obj, attr)
             field.save(name, new_image)

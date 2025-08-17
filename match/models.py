@@ -1,27 +1,29 @@
-from typing import Iterable, List, Union
+from datetime import datetime
+import zoneinfo
+import logging
+from typing import Iterable, List, TypedDict, Union
+from functools import cached_property
+
+from pydantic import BaseModel
+from pydantic.fields import computed_field
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Func, QuerySet
 from django.contrib.postgres.fields import ArrayField
 from django.urls import reverse
 from django.utils import timezone
-from functools import cached_property
 from django.utils.translation import gettext_lazy as _
 
-import zoneinfo
-import logging
-
-from pydantic import BaseModel
-from pydantic.fields import computed_field
-
+from lolsite.helpers import query_debugger
 from core.models import VersionedModel
-from data.models import CDSummonerSpell, ReforgedTree, ReforgedRune
+from data.models import ReforgedTree, ReforgedRune
 from data.models import Item
 from data.models import SummonerSpell, Champion
 from data import constants
-
-from lolsite.helpers import query_debugger
+from match.managers import MatchManager
 from player.models import simplify, Summoner, Comment
+
 
 logger = logging.getLogger(__name__)
 
@@ -101,194 +103,13 @@ def lp_sort(position):
     return lp
 
 
-class MatchQuerySet(models.QuerySet["Match"]):
-    @property
-    def version(self):
-        if len(self) == 0:
-            return None, None
-        return self[0].major, self[0].minor
-
-    def get_items(self, puuid=None):
-        major, minor = self.version
-        item_ids = set()
-        qs = Stats.objects.filter(participant__match__in=self)
-        if puuid is not None:
-            qs = qs.filter(participant__puuid=puuid)
-        for stat in qs:
-            for i in range(7):
-                key = f"item_{i}"
-                item_id = getattr(stat, key)
-                item_ids.add(item_id)
-        qs = Item.objects.filter(_id__in=item_ids, major=major, minor=minor).select_related('image')
-        if not len(qs):
-            # backup
-            qs = Item.objects.filter(_id__in=item_ids)
-            qs = qs.order_by("_id", "-major", "-minor")
-            qs = qs.distinct("_id").select_related("image")
-        return {x._id: x for x in qs}
-
-    def get_spell_images(self):
-        major, minor = self.version
-        spell_ids = set()
-        for match in self:
-            for part in match.participants.all():
-                spell_ids.add(part.summoner_1_id)
-                spell_ids.add(part.summoner_2_id)
-        qs = (
-            CDSummonerSpell.objects.filter(
-                ext_id__in=spell_ids,
-                major=major,
-                minor=minor
-            )
-        )
-        if not len(qs):
-            # backup
-            qs = (
-                CDSummonerSpell.objects.filter(
-                    ext_id__in=spell_ids,
-                )
-                .order_by(
-                    "ext_id",
-                    "-major",
-                    "-minor",
-                )
-                .distinct(
-                    "ext_id",
-                )
-            )
-        return {x.ext_id: x.image_url() for x in qs}
-
-    def get_spells(self):
-        major, minor = self.version
-        spell_ids = set()
-        for match in self:
-            for part in match.participants.all():
-                spell_ids.add(part.summoner_1_id)
-                spell_ids.add(part.summoner_2_id)
-        qs = (
-            CDSummonerSpell.objects.filter(
-                ext_id__in=spell_ids,
-                major=major,
-                minor=minor,
-            )
-        )
-        if not len(qs):
-            qs = (
-                CDSummonerSpell.objects.filter(
-                    ext_id__in=spell_ids,
-                )
-                .order_by(
-                    "ext_id",
-                    "-major",
-                    "-minor",
-                )
-                .distinct(
-                    "ext_id",
-                )
-            )
-        return {x.ext_id: x for x in qs}
-
-    def get_perk_substyles(self):
-        major, minor = self.version
-        substyles = set()
-        for match in self:
-            for part in match.participants.all():
-                assert part.stats
-                substyles.add(part.stats.perk_sub_style)
-        qs = ReforgedTree.objects.filter(_id__in=substyles, major=major, minor=minor)
-        if not len(qs):
-            qs = ReforgedTree.objects.filter(_id__in=substyles)
-            qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
-        return {x._id: x.image_url() for x in qs}
-
-    def get_substyles(self):
-        major, minor = self.version
-        substyles = set()
-        for match in self:
-            for part in match.participants.all():
-                assert part.stats
-                substyles.add(part.stats.perk_sub_style)
-        qs = ReforgedTree.objects.filter(_id__in=substyles, major=major, minor=minor)
-        if not len(qs):
-            qs = ReforgedTree.objects.filter(_id__in=substyles)
-            qs = qs.order_by("_id", "-major", "-minor").distinct("_id")
-        return {x._id: x for x in qs}
-
-    def get_runes(self):
-        major, minor = self.version
-        all_runes = set()
-        for match in self:
-            for part in match.participants.all():
-                for _i in range(6):
-                    all_runes.add(getattr(part.stats, f"perk_{_i}"))
-        rune_data = (
-            ReforgedRune.objects.filter(
-                _id__in=all_runes,
-                reforgedtree__major=major,
-                reforgedtree__minor=minor,
-            )
-        )
-        if not len(rune_data):
-            rune_data = (
-                ReforgedRune.objects.filter(
-                    _id__in=all_runes,
-                )
-                .order_by("_id", "-reforgedtree__major", "reforgedtree__minor")
-                .distinct("_id")
-            )
-        return {x._id: x for x in rune_data}
-
-    def get_champions(self):
-        if not len(self):
-            return {}
-        all_champions = {part.champion_id for match in self for part in match.participants.all()}
-
-        for match in self:
-            for team in match.teams.all():
-                for ban in team.bans.all():
-                    all_champions.add(ban.champion_id)
-        major, minor = self[0].major, self[0].minor
-        qs = (
-            Champion.objects.filter(
-                key__in=all_champions,
-                major=major,
-                minor=minor,
-            )
-            .select_related("image")
-            .order_by("key", "-major", "-minor")
-            .distinct()
-        )
-        if not len(qs):
-            # backup query
-            qs = (
-                Champion.objects.filter(
-                    key__in=all_champions,
-                )
-                .select_related("image")
-                .order_by("key", "-major", "-minor")
-                .distinct()
-            )
-        return {x.key: x for x in qs}
-
-    def get_related(self):
-        return {
-            "items": self.get_items(),
-            "runes": self.get_runes(),
-            "perk_substyles": self.get_perk_substyles(),
-            "substyles": self.get_substyles(),
-            "spell_images": self.get_spell_images(),
-            "spells": self.get_spells(),
-            "champions": self.get_champions(),
-        }
-
-
 class MatchSummary(models.Model):
     class Status(models.TextChoices):
         RETRIEVING = "r", _("Retrieving")
         COMPLETE = "c", _("Complete")
         FAILED = "f", _("Failed")
 
-    match = models.OneToOneField("Match", on_delete=models.CASCADE)
+    match = models.OneToOneField['Match']("Match", on_delete=models.CASCADE)
     content = models.TextField(default="")
     status = models.CharField(
         choices=Status.choices, max_length=1, default=Status.RETRIEVING
@@ -305,6 +126,10 @@ def set_focus_participants(object_list: list, puuid: str):
                 break
 
 
+class BanWithChampion(TypedDict):
+    champion: Champion | None
+
+
 def set_related_match_objects(object_list: Iterable['Match'], timeline: 'AdvancedTimeline | None' = None):
     qs = Match.objects.filter(id__in=[x.id for x in object_list])
     qs = qs.prefetch_related("participants", "participants__stats")
@@ -312,9 +137,9 @@ def set_related_match_objects(object_list: Iterable['Match'], timeline: 'Advance
     for obj in object_list:
         for team in obj.teams.all():
             for ban in team.bans.all():
-                ban.champion = related['champions'].get(ban.champion_id, None)
+                ban.champion = related['champions'].get(ban.champion_id, None)  # type: ignore
         for part in obj.participants.all():
-            part.items = []
+            part.items = []  # type: ignore
             keys = [
                 "item_0",
                 "item_1",
@@ -331,27 +156,27 @@ def set_related_match_objects(object_list: Iterable['Match'], timeline: 'Advance
                 if item_id := getattr(part.stats, key):
                     item = related["items"].get(item_id)
                     setattr(part, key, item)
-                    part.items.append(item)
+                    part.items.append(item)  # type: ignore
                 else:
-                    part.items.append(None)
-            if part.items:
-                part.items.pop()
+                    part.items.append(None)  # type: ignore
+            if part.items:  # type: ignore
+                part.items.pop()  # type: ignore
 
             # champion
-            part.champion = related["champions"].get(part.champion_id, None)
+            part.champion = related["champions"].get(part.champion_id, None)  # type: ignore
 
-            part.spell_1 = related['spells'].get(part.summoner_1_id)
-            part.spell_2 = related['spells'].get(part.summoner_2_id)
-            part.rune = related['runes'].get(part.stats.perk_0)
-            part.substyle = related['substyles'].get(part.stats.perk_sub_style)
+            part.spell_1 = related['spells'].get(part.summoner_1_id)  # type: ignore
+            part.spell_2 = related['spells'].get(part.summoner_2_id)  # type: ignore
+            part.rune = related['runes'].get(part.stats.perk_0)  # type: ignore
+            part.substyle = related['substyles'].get(part.stats.perk_sub_style)  # type: ignore
             if timeline:
-                part.bounty = timeline.bounties.get(part._id, None)
+                part.bounty = timeline.bounties.get(part._id, None)  # type: ignore
 
 
 class ToTimestamp(Func):
     function = 'to_timestamp'
     template = "%(function)s(%(expressions)s)"
-    output_field = models.DateTimeField()
+    output_field = models.DateTimeField()  # type: ignore
 
 
 class Match(VersionedModel):
@@ -375,7 +200,7 @@ class Match(VersionedModel):
     created_at = models.DateTimeField(auto_now_add=True)
     end_of_game_result = models.CharField(max_length=32, default=None, null=True, blank=True)
 
-    objects = MatchQuerySet.as_manager()
+    objects: MatchManager = MatchManager()  # type: ignore
 
     id: int | None
     pk: int | None
@@ -479,7 +304,7 @@ class Match(VersionedModel):
     def get_creation(self):
         """Get creation as datetime"""
         utc = zoneinfo.ZoneInfo("UTC")
-        dt = timezone.datetime.fromtimestamp(self.game_creation // 1000, tz=utc)
+        dt = datetime.fromtimestamp(self.game_creation // 1000, tz=utc)
         return dt
 
     def get_comment_count(self):

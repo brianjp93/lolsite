@@ -70,7 +70,7 @@ class Heartrate(models.Model):
     bpm = models.IntegerField()
     dt = models.DateTimeField()
 
-    objects = HeartrateManager()
+    objects: HeartrateManager = HeartrateManager()  # type: ignore
 
     class Meta:
         unique_together = [('user', 'dt')]

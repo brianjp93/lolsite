@@ -34,3 +34,6 @@ indent_size = 2
 
 [tool.djlint.css]
 indent_size = 2
+
+[tool.pyright]
+exclude = ["**/migrations/**", ".venv/**"]

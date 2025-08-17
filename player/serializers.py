@@ -18,7 +18,7 @@ class ReputationSerializer(serializers.ModelSerializer):
         required=True,
     )
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Reputation
         fields = [
             'id',
@@ -73,7 +73,7 @@ class SummonerSerializer(DynamicSerializer):
     has_match_overlap = serializers.SerializerMethodField()
     profile_icon = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Summoner
         fields = (
             'id',
@@ -105,13 +105,13 @@ class SummonerSerializer(DynamicSerializer):
 
 
 class RankPositionSerializer(DynamicSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = RankPosition
         fields = "__all__"
 
 
 class CustomSerializer(DynamicSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Custom
         fields = "__all__"
 
@@ -123,7 +123,7 @@ class FavoriteSerializer(DynamicSerializer):
     riot_id_name = serializers.CharField(source="summoner.riot_id_name")
     riot_id_tagline = serializers.CharField(source="summoner.riot_id_tagline")
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Favorite
         fields = (
             'name',
@@ -136,7 +136,7 @@ class FavoriteSerializer(DynamicSerializer):
         )
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = User
         fields = [
             'email',
@@ -147,7 +147,7 @@ class CommentSerializer(DynamicSerializer):
     summoner = SummonerSerializer()
     markdown = serializers.SerializerMethodField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Comment
         fields = [
             "created_date",
@@ -171,7 +171,7 @@ class CommentSerializer(DynamicSerializer):
 class CommentCreateSerializer(serializers.ModelSerializer):
     summoner = serializers.SlugRelatedField('puuid', queryset=Summoner.objects.all())
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Comment
         fields = [
             'markdown',
@@ -202,7 +202,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 class CommentUpdateSerializer(serializers.ModelSerializer):
     markdown = serializers.CharField(write_only=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Comment
         fields = [
             'markdown',
@@ -222,7 +222,7 @@ class CommentUpdateSerializer(serializers.ModelSerializer):
 
 
 class NameChangeSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = NameChange
         fields = (
             'old_name',

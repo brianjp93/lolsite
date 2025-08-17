@@ -1,12 +1,14 @@
 # pylint: disable=W0613, W0622, W0212, bare-except, broad-except
 import requests
+from datetime import timedelta
 from rest_framework import permissions
 from rest_framework.decorators import api_view
 from rest_framework.generics import (
     RetrieveAPIView, CreateAPIView, UpdateAPIView,
     ListAPIView, RetrieveUpdateDestroyAPIView,
 )
-from rest_framework.request import Request, exceptions
+from rest_framework.request import Request
+from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework import filters
 
@@ -21,7 +23,6 @@ from django.db.models import Max, Min
 from django.shortcuts import get_object_or_404
 
 from lolsite.viewsapi import require_login
-from lolsite.tasks import get_riot_api
 from lolsite.helpers import CustomCursorPagination, query_debugger
 
 from player import tasks as pt
@@ -84,7 +85,7 @@ def get_summoner(request, format=None):
                     summoner_id = pt.import_summoner(region=summoner.region, puuid=puuid)
                     summoner.refresh_from_db()
                 else:
-                    pt.import_summoner.delay(region=summoner.region, puuid=puuid)
+                    pt.import_summoner.delay(region=summoner.region, puuid=puuid)  # type: ignore
             else:
                 summoner_id = pt.import_summoner(region=region, puuid=puuid)
                 query = Summoner.objects.filter(id=summoner_id)
@@ -125,7 +126,7 @@ class SummonerByRiotId(RetrieveAPIView):
             return get_object_or_404(Summoner, id=summoner_id)
         except Summoner.MultipleObjectsReturned:
             return pt.handle_multiple_summoners(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
-        pt.import_summoner.delay(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
+        pt.import_summoner.delay(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)  # type: ignore
         return summoner
 
 
@@ -423,8 +424,8 @@ def get_rank_history(request, format=None):
 
             query = query.annotate(start_date=Min("checkpoint__created_date"))
             for elt in query:
-                elt["peak_rank"] = decode_int_to_rank(elt["peak_rank_integer"])
-                elt["trough_rank"] = decode_int_to_rank(elt["trough_rank_integer"])
+                elt["peak_rank"] = decode_int_to_rank(elt["peak_rank_integer"])  # type: ignore
+                elt["trough_rank"] = decode_int_to_rank(elt["trough_rank_integer"])  # type: ignore
             data["data"] = query
         else:
             pass
@@ -549,7 +550,7 @@ def generate_code(request, format=None):
                 query = SummonerLink.objects.filter(user=request.user, verified=False)
                 if link := query.first():
                     now = timezone.now()
-                    if now > (link.created_date + timezone.timedelta(hours=2)):
+                    if now > (link.created_date + timedelta(hours=2)):
                         link.delete()
                         data = {"message": "Old link.  Please create a new link."}
                         status_code = 400

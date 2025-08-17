@@ -61,7 +61,7 @@ class ReforgedTree(VersionedModel):
     key = models.CharField(max_length=128, default="", blank=True)
     name = models.CharField(max_length=128, default="", blank=True)
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         unique_together = ("_id", "language", "version")
 
     def save(self, *args, **kwargs):
@@ -92,7 +92,7 @@ class ReforgedRune(models.Model):
     row = models.IntegerField()
     sort_int = models.IntegerField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         unique_together = ("reforgedtree", "_id")
 
     def image_url(self):
@@ -180,7 +180,7 @@ class Item(VersionedModel):
         "flat_magic_penetration": "Magic Pen",
     }
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         unique_together = ("_id", "version", "language")
 
     def __str__(self):
@@ -483,7 +483,7 @@ class ProfileIcon(VersionedModel):
     x = models.IntegerField()
     y = models.IntegerField()
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         unique_together = ("_id", "version", "language")
 
     def __str__(self):
@@ -493,7 +493,7 @@ class ProfileIcon(VersionedModel):
         return f"https://ddragon.leagueoflegends.com/cdn/{self.version}/img/profileicon/{self.full}"
 
 
-class CDProfileIcon(VersionedModel, TimestampedModel):
+class CDProfileIcon(VersionedModel, TimestampedModel):  # type: ignore[override]
     ext_id = models.CharField(max_length=64, unique=True)
     title = models.CharField(max_length=64)
     year_released = models.IntegerField()
@@ -524,7 +524,7 @@ class Champion(VersionedModel):
     stats: Union["ChampionStats", None]
     spells: models.QuerySet["ChampionSpell"]
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         unique_together = ("_id", "version", "language")
 
     def __str__(self):
@@ -843,7 +843,7 @@ class CDSummonerSpell(VersionedModel):
         og_name = self.icon_path.split("/")[-1].lower()
         return f"https://raw.communitydragon.org/{self.major}.{self.minor}/plugins/rcp-be-lol-game-data/global/default/data/spells/icons2d/{og_name}"
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         unique_together = ("ext_id", "major", "minor")
 
 
@@ -866,7 +866,7 @@ class SummonerSpell(VersionedModel):
 
     image: Union["SummonerSpellImage", None]
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         unique_together = ("key", "version", "language")
 
     def __str__(self):

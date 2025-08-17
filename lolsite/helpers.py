@@ -2,10 +2,17 @@
 https://gist.github.com/goutomroy/d61fc8a8445954c71b5585af042e5cf4
 
 """
-from django.db import connection, reset_queries
-import time
 import functools
+import time
+
+from django_htmx.middleware import HtmxDetails
 from rest_framework.pagination import CursorPagination, PageNumberPagination, LimitOffsetPagination
+
+from django.db import connection, reset_queries, models
+from django.http import HttpRequest
+from django.contrib.auth.models import AnonymousUser, User
+
+from player.models import Custom, EmailVerification, Favorite, Follow, SummonerLink
 
 
 def query_debugger(func):
@@ -29,23 +36,6 @@ def query_debugger(func):
     return inner_func
 
 
-class MultipleFieldLookupMixin:
-    """
-    Apply this mixin to any view or viewset to get multiple field filtering
-    based on a `lookup_fields` attribute, instead of the default single field filtering.
-    """
-    def get_object(self):
-        queryset = self.get_queryset()             # Get the base queryset
-        queryset = self.filter_queryset(queryset)  # Apply any filter backends
-        filter = {}
-        for field in self.lookup_fields:
-            if self.kwargs[field]: # Ignore empty fields.
-                filter[field] = self.kwargs[field]
-        obj = get_object_or_404(queryset, **filter)  # Lookup the object
-        self.check_object_permissions(self.request, obj)
-        return obj
-
-
 class LargeResultsSetPagination(PageNumberPagination):
     page_size = 1000
     max_page_size = 1000
@@ -63,7 +53,7 @@ class CustomLimitOffsetPagination(LimitOffsetPagination):
     default_limit = 10
     max_limit = 100
 
-    def paginate_queryset(self, queryset, request, view=None):
+    def paginate_queryset(self, queryset, request, view=None):  # type: ignore
         """Override to return a queryset."""
         self.limit = self.get_limit(request)
         if self.limit is None:
@@ -82,3 +72,28 @@ class CustomLimitOffsetPagination(LimitOffsetPagination):
 
 class CustomCursorPagination(CursorPagination):
     page_size = 20
+
+
+class UserType(User):
+    follow_set: models.QuerySet[Follow]
+    favorite_set: models.QuerySet[Favorite]
+    emailverification_set: models.QuerySet[EmailVerification]
+    custom: Custom
+    summonerlinks: models.QuerySet[SummonerLink]
+
+    class Meta:
+        abstract = True
+
+
+class HtmxHttpRequest(HttpRequest):
+    htmx: HtmxDetails
+    user: UserType | AnonymousUser  # type: ignore
+
+
+class AuthenticatedHtmxHttpRequest(HttpRequest):
+    htmx: HtmxDetails
+    user: UserType  # type: ignore
+
+
+class HtmxMixin:
+    request: HtmxHttpRequest

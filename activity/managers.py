@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from django.db.models import Manager
 
@@ -7,7 +8,11 @@ from match.models import Match
 from player.models import get_activity_api
 
 
-class HeartrateManager(Manager):
+if TYPE_CHECKING:
+    from activity.models import Heartrate
+
+
+class HeartrateManager(Manager['Heartrate']):
     def get_hr_for_match(self, match: Match, user):
         start = match.game_creation_dt
         end = start + timedelta(seconds=match.seconds)

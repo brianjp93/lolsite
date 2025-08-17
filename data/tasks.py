@@ -1,16 +1,20 @@
+import json
+import logging
+from datetime import timedelta
+
 import requests
+
+from django.db.utils import IntegrityError
+from django.utils import timezone
+
 from data.parsers.profile_icons import CDProfileIconListParser
 from data.parsers.summoner_spells import CDSummonerSpellListParser
-
 from .models import CDProfileIcon, Rito
 from .models import ReforgedTree, ReforgedRune, CDSummonerSpell
-
 from .models import Item, ItemEffect, FromItem, IntoItem
 from .models import ItemGold, ItemImage, ItemMap, ItemStat
 from .models import ItemTag, ItemRune
-
 from .models import ProfileIcon
-
 from .models import Champion, ChampionImage, ChampionInfo
 from .models import ChampionStats, ChampionTag
 from .models import ChampionPassive, ChampionPassiveImage
@@ -19,14 +23,8 @@ from .models import ChampionEffectBurn, ChampionSpellVar
 from .models import SummonerSpell, SummonerSpellImage
 from .models import SummonerSpellMode, SummonerSpellEffectBurn
 from .models import SummonerSpellVar
-
-from django.db.utils import IntegrityError
-from django.utils import timezone
-
 from lolsite.celery import app
 from lolsite.tasks import get_riot_api
-import json
-import logging
 
 
 """
@@ -64,7 +62,7 @@ def import_missing(
     if not rito:
         logger.warning("Rito object not found.")
         return
-    thresh = timezone.now() - timezone.timedelta(hours=last_import_hours)
+    thresh = timezone.now() - timedelta(hours=last_import_hours)
     if rito.last_data_import is None or rito.last_data_import < thresh:
         rito.last_data_import = timezone.now()
         rito.save()
@@ -230,8 +228,8 @@ def import_items(version="", language="en_US", overwrite=False):
                     query = Item.objects.filter(
                         version=version, language=language, _id=int(item_id)
                     )
-                    if query.exists():
-                        query.first().delete()
+                    if obj := query.first():
+                        obj.delete()
                         item_model.set_stats(save=True)
                     else:
                         raise Exception("Could not find queried item.")
@@ -322,8 +320,8 @@ def import_items(version="", language="en_US", overwrite=False):
             tags = _item.get("tags", [])
             for tag in tags:
                 query = ItemTag.objects.filter(name=tag)
-                if query.exists():
-                    item_tag_model = query.first()
+                if item_tag_model := query.first():
+                    pass
                 else:
                     item_tag_model = ItemTag(name=tag)
                     item_tag_model.save()
@@ -359,7 +357,7 @@ def import_profile_icons(version="", language="en_US", overwrite=False):
     if api:
         r = api.lolstaticdata.profile_icons(version=version, language=language)
         data = r.json()
-        for _id, profile_data in data["data"].items():
+        for profile_data in data["data"].values():
             image_data = profile_data["image"]
             icon_model_data = {
                 "_id": profile_data["id"],
@@ -676,7 +674,7 @@ def import_all_champion_advanced(version, language="en_US", overwrite=False):
         if champion.lore:
             has_lore = True
         if not has_lore or overwrite:
-            import_champion_advanced(champion.id, overwrite)
+            import_champion_advanced(champion.pk, overwrite)
 
 
 def import_cdspells(major: int, minor: int):
@@ -750,7 +748,7 @@ def import_summoner_spells(version="", language="en_US"):
     if api:
         r = api.lolstaticdata.summoner_spells(version=version, language=language)
         data = r.json()["data"]
-        for _id, _spell in data.items():
+        for _spell in data.values():
             spell_model_data = {
                 "_id": _spell["id"],
                 "key": _spell["key"],
@@ -833,6 +831,8 @@ def import_versions():
     r = api.lolstaticdata.versions()
     if r.status_code == 200:
         rito = Rito.objects.first()
+        if not rito:
+            return
         rito.versions = r.text
         rito.save()
 
@@ -841,6 +841,8 @@ def compute_champion_last_change(index=None, start_patch=None, language="en_US")
     """Compute and save the last time a champion was changed.
     """
     rito = Rito.objects.first()
+    if not rito:
+        raise Exception('Expected Rito object')
     versions = json.loads(rito.versions)
     if index is None:
         index = versions.index(start_patch)
@@ -867,6 +869,8 @@ def compute_item_last_change(index=None, start_patch=None, language="en_US"):
     """Compute and save the last time a champion was changed.
     """
     rito = Rito.objects.first()
+    if not rito:
+        raise Exception('Expected Rito object')
     versions = json.loads(rito.versions)
     if index is None:
         index = versions.index(start_patch)
@@ -907,11 +911,13 @@ def compute_changes(index, language="en_US"):
 
     """
     item = Item.objects.all().order_by("-major", "-minor").first()
-    qs = Item.objects.filter(major=item.major, minor=item.minor, last_changed__isnull=False)
-    if not qs.exists():
-        compute_item_last_change(index=index, language=language)
+    if item:
+        qs = Item.objects.filter(major=item.major, minor=item.minor, last_changed__isnull=False)
+        if not qs.exists():
+            compute_item_last_change(index=index, language=language)
 
     champion = Champion.objects.all().order_by("-major", "-minor").first()
-    qs = Champion.objects.filter(major=champion.major, minor=champion.minor, last_changed__isnull=False)
-    if not qs.exists():
-        compute_champion_last_change(index=index, language=language)
+    if champion:
+        qs = Champion.objects.filter(major=champion.major, minor=champion.minor, last_changed__isnull=False)
+        if not qs.exists():
+            compute_champion_last_change(index=index, language=language)

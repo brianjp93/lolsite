@@ -8,7 +8,7 @@ User = get_user_model()
 
 
 class UserFactory(DjangoModelFactory):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = User
         django_get_or_create = ('email',)
 
@@ -28,7 +28,7 @@ class UserFactory(DjangoModelFactory):
 
 
 class CustomFactory(DjangoModelFactory):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Custom
         django_get_or_create = ('user',)
 
@@ -36,7 +36,7 @@ class CustomFactory(DjangoModelFactory):
 
 
 class SummonerFactory(DjangoModelFactory):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Summoner
 
     puuid = factory.Sequence(lambda n: f'puuid{n}')
@@ -45,13 +45,13 @@ class SummonerFactory(DjangoModelFactory):
 
 
 class ReputationFactory(DjangoModelFactory):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Reputation
         django_get_or_create = ('user', 'summoner')
 
 
 class SummonerLinkFactory(DjangoModelFactory):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = SummonerLink
         django_get_or_create = ('user', 'summoner')
 
@@ -60,7 +60,7 @@ class SummonerLinkFactory(DjangoModelFactory):
 
 
 class RankCheckpointFactory(DjangoModelFactory):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = RankCheckpoint
 
     summoner = factory.SubFactory(SummonerFactory)

@@ -9,7 +9,7 @@ User = get_user_model()
 
 
 class ParticipantFactory(DjangoModelFactory):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Participant
 
     _id = factory.Sequence(lambda n: n)
@@ -22,7 +22,7 @@ class ParticipantFactory(DjangoModelFactory):
 
 
 class MatchFactory(DjangoModelFactory):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = Match
 
     _id = factory.Faker('text', max_nb_chars=16)

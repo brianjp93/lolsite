@@ -8,6 +8,7 @@ from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.vary import vary_on_headers
 
+from lolsite.helpers import HtmxMixin
 from match.models import Match, Participant, set_related_match_objects
 from match.tasks import RefreshFeed
 from player.models import Summoner
@@ -20,7 +21,7 @@ class Home(generic.TemplateView):
     template_name = "layout/home.html"
 
 
-class FeedView(LoginRequiredMixin, generic.ListView):
+class FeedView(LoginRequiredMixin, HtmxMixin, generic.ListView):  # type: ignore
     template_name = "player/feed.html"
     hx_template_name = "player/_feed.html"
     paginate_by = 20
@@ -50,7 +51,7 @@ class FeedView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         self.following = Summoner.objects.filter(
-            id__in=self.request.user.follow_set.all().values("summoner_id")
+            id__in=self.request.user.follow_set.all().values("summoner_id")  # type: ignore
         )
         return (
             Match.objects.filter(
@@ -71,7 +72,7 @@ class FollowingListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         return Summoner.objects.filter(
-            id__in=self.request.user.follow_set.all().values("summoner_id")
+            id__in=self.request.user.follow_set.all().values("summoner_id")  # type: ignore
         )
 
     def get_context_data(self, object_list=None, **kwargs):
@@ -81,6 +82,6 @@ class FollowingListView(LoginRequiredMixin, generic.ListView):
 
     def post(self, *args, **kwargs):
         summoner_id = self.request.POST["summoner_id"]
-        count, _ = self.request.user.follow_set.filter(summoner_id=summoner_id).delete()
+        count, _ = self.request.user.follow_set.filter(summoner_id=summoner_id).delete()  # type: ignore
         messages.info(self.request, f"Successfully removed {count} summoners from your follow list.")
         return redirect("following")
