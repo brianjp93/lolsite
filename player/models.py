@@ -111,6 +111,7 @@ class Summoner(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     rankcheckpoints: models.QuerySet['RankCheckpoint']
     pageview_set: models.QuerySet['PageView']
+    summonerlinks: models.QuerySet['SummonerLink']
 
     def __str__(self):
         return f'Summoner(region={self.region}, riot_id_name={self.riot_id_name}, riot_id_tagline={self.riot_id_tagline})'

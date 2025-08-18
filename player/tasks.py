@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from lolsite.celery import app
 
 from django.utils import timezone
@@ -137,7 +139,7 @@ def import_positions(summoner: Summoner|int, threshold_days=None):
 
     rankcheckpoint = summoner.get_newest_rank_checkpoint()
     if rankcheckpoint and threshold_days:
-        threshold = timezone.now() - timezone.timedelta(days=threshold_days)
+        threshold = timezone.now() - timedelta(days=threshold_days)
         if rankcheckpoint.created_date > threshold:
             # don't run update
             return
@@ -261,7 +263,7 @@ def verify_user_email(code, age_hours=1):
 
     """
     verified = False
-    thresh = timezone.now() - timezone.timedelta(hours=age_hours)
+    thresh = timezone.now() - timedelta(hours=age_hours)
     query = EmailVerification.objects.filter(code=code, created_date__gte=thresh)
     if query.exists():
         email_verification = query[:1].get()
@@ -286,7 +288,7 @@ def remove_old_email_verification(age_hours=1):
     None
 
     """
-    thresh = timezone.now() - timezone.timedelta(hours=age_hours)
+    thresh = timezone.now() - timedelta(hours=age_hours)
     query = EmailVerification.objects.filter(created_date__lt=thresh)
     query.delete()
 

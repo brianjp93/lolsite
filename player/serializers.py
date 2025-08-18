@@ -1,9 +1,10 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import Q, F
 from rest_framework import serializers
 
 from data.models import CDProfileIcon
 from data.serializers import DynamicSerializer
+from lolsite.helpers import HtmxHttpRequest, UserType
 from .models import Summoner, Reputation
 from .models import RankPosition, Custom
 from .models import Favorite, Comment, NameChange
@@ -43,13 +44,13 @@ class ReputationSerializer(serializers.ModelSerializer):
         raise serializers.ValidationError('User must match the user making the request.')
 
     @staticmethod
-    def user_has_match_overlap(user: User, summoner: Summoner):
+    def user_has_match_overlap(user: UserType | AnonymousUser, summoner: Summoner):
         """Check if a User's linked Summoner accounts have any overlap with the given summoner.
 
         - Users should only be able to rate a player's Reputation if they have played a game together.
 
         """
-        if not user.is_authenticated:
+        if isinstance(user, AnonymousUser):
             return 0
         user_summoners = list(
             user.summonerlinks.filter(verified=True).annotate(
@@ -90,7 +91,7 @@ class SummonerSerializer(DynamicSerializer):
         )
 
     def get_has_match_overlap(self, obj):
-        request = self.context.get('request')
+        request: HtmxHttpRequest | None = self.context.get('request')
         if request:
             try:
                 return ReputationSerializer.user_has_match_overlap(request.user, obj)
@@ -183,7 +184,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         request = self.context['request']
-        self.fields['summoner'].queryset = Summoner.objects.filter(
+        self.fields['summoner'].queryset = Summoner.objects.filter(  # type: ignore
             id__in=request.user.summonerlinks.all().values_list('summoner_id', flat=True)
         )
 
@@ -211,8 +212,8 @@ class CommentUpdateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         request = self.context['request']
         user = request.user
-        assert self.instance
-        if self.instance.is_deleted:
+        assert isinstance(self.instance, Comment)
+        if self.instance.is_deleted:  # type: ignore
             raise serializers.ValidationError('Comment is deleted, cannot update.', code='comment_already_deleted')
         if not user.is_authenticated:
             raise serializers.ValidationError('Comment not owned by user.', code='invalid_comment_update')

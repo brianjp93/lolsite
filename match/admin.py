@@ -10,7 +10,7 @@ from .models import EliteMonsterKillEvent
 
 class ParticipantInline(admin.TabularInline):
     model = Participant
-    fields = [
+    fields = (
         "puuid",
         "riot_id_name",
         "riot_id_tagline",
@@ -19,7 +19,7 @@ class ParticipantInline(admin.TabularInline):
         "team_id",
         "individual_position",
         "team_position",
-    ]
+    )
     readonly_fields = fields
     extra = 0
     can_delete = False

@@ -36,4 +36,4 @@ indent_size = 2
 indent_size = 2
 
 [tool.pyright]
-exclude = ["**/migrations/**", ".venv/**"]
+exclude = ["**/migrations/**", ".venv/**", "**/tests/**"]

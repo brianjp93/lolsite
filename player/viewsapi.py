@@ -23,7 +23,7 @@ from django.db.models import Max, Min
 from django.shortcuts import get_object_or_404
 
 from lolsite.viewsapi import require_login
-from lolsite.helpers import CustomCursorPagination, query_debugger
+from lolsite.helpers import CustomCursorPagination, UserType, query_debugger
 
 from player import tasks as pt
 from player import constants as player_constants
@@ -866,7 +866,7 @@ class CommentRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
             return CommentSerializer
         elif self.request.method in ('PUT', 'PATCH', 'DELETE'):
             return CommentUpdateSerializer
-        raise exceptions.MethodNotAllowed(self.request.method)
+        raise exceptions.MethodNotAllowed(self.request.method or '')
 
     def perform_destroy(self, instance):
         user = self.request.user
@@ -939,15 +939,14 @@ class NameChangeListView(ListAPIView):
 def login_action(request, format=None):
     email = request.data.get("email")
     password = request.data.get("password")
-    user = authenticate(request, username=email, password=password)
+    user: UserType | None = authenticate(request, username=email, password=password)  # type: ignore
     if user:
         if user.custom.is_email_verified:
             logger.info(f'Logging in user: {user}')
             login(request, user)
             return Response({'message': 'logged in.'})
         else:
-            view_name = "/login?error=verification"
-            thresh = timezone.now() - timezone.timedelta(minutes=10)
+            thresh = timezone.now() - timedelta(minutes=10)
             query = user.emailverification_set.filter(created_date__gt=thresh)
             if not query.exists():
                 # Create new email verification model.

@@ -42,12 +42,12 @@ def notification(request, format=None):
     """
     if request.method == "GET":
         match_id_list = request.GET.getlist("match_id_list[]")
-        is_grouped = dc.get_null_bool(request.GET.get("is_grouped"))
+        is_grouped = dc.get_null_bool(request.GET.get("is_grouped")) or False
         is_read = dc.get_null_bool(request.GET.get("is_read"))
         start = int(request.GET.get("start", 0))
         end = int(request.GET.get("end", 10))
         order_by = request.GET.get("order_by", "-created_date")
-        count_only = dc.get_null_bool(request.GET.get("count_only", False))
+        count_only = dc.get_null_bool(request.GET.get("count_only", False)) or False
         data, status_code = get_notifications(
             request.user,
             match_id_list=match_id_list,

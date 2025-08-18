@@ -1,7 +1,7 @@
 import logging
 import time
 import json
-from datetime import timedelta
+from datetime import timedelta, datetime
 from multiprocessing.pool import ThreadPool
 from functools import partial
 from typing import Optional
@@ -219,8 +219,8 @@ def import_recent_matches(
     region: str,
     queue: Optional[int] = None,
     queueType: Optional[str] = None,
-    startTime: Optional[timezone.datetime] = None,
-    endTime: Optional[timezone.datetime] = None,
+    startTime: Optional[datetime] = None,
+    endTime: Optional[datetime] = None,
     break_on_match_found = False,
 ):
     has_more = True
@@ -376,7 +376,7 @@ def huge_match_import_task(hours_thresh=24, exclude_hours=6):
     logger.info(f"Query loop.  Found {count} new participants.")
 
     for summoner in qs.iterator(2000):
-        huge_match_single_summoner_import_job.delay(
+        huge_match_single_summoner_import_job.delay(  # type: ignore
             summoner["id"],
             summoner["puuid"],
             summoner["region"],
@@ -476,7 +476,7 @@ def get_top_played_with(
 
 
 @app.task(name="match.tasks.import_advanced_timeline")
-def import_advanced_timeline(match_id: str, overwrite=False):
+def import_advanced_timeline(match_id: str | int, overwrite=False):
     victim_damage_received_events: list[VictimDamageReceived] = []
     victim_damage_dealt_events: list[VictimDamageDealt] = []
     ward_placed_events: list[WardPlacedEvent] = []
@@ -803,7 +803,7 @@ def import_summoners_from_spectate(parsed: SpectateModel, region):
 
 def get_player_ranks(summoner_list, threshold_days=1, sync=True):
     logger.info('Applying player ranks.')
-    jobs = [pt.import_positions.s(x.id, threshold_days=threshold_days) for x in summoner_list]
+    jobs = [pt.import_positions.s(x.id, threshold_days=threshold_days) for x in summoner_list]  # type: ignore
     jobs = [(x.id, threshold_days) for x in summoner_list]
     if jobs:
         if sync:
@@ -1128,4 +1128,4 @@ def get_summary_of_match(match_id: str, focus_player_puuid: str|None=None):
     matchsummary.content = content or ""
     matchsummary.status = MatchSummary.Status.COMPLETE
     matchsummary.save()
-    return matchsummary.id
+    return matchsummary.pk

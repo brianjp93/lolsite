@@ -1,7 +1,5 @@
-from django.db.models.functions import Cast, Greatest
 from django.shortcuts import render
 from django.db.models import F, Sum
-from django.db import models
 
 from stats.models import SummonerChampion
 from stats.tasks import add_all_matches_for_summoner_to_stats
@@ -12,7 +10,10 @@ from data.models import Rito, Champion
 def champion_stats_context(puuid, major=None, minor=None, queue=420):
     versions = []
     last_major = None
-    for version in Rito.objects.first().minor_version_list:
+    rito = Rito.objects.first()
+    if not rito:
+        return {}
+    for version in rito.minor_version_list:
         if version["major"] != last_major:
             last_major = version["major"]
             versions.append(
@@ -51,7 +52,7 @@ def champion_stats_context(puuid, major=None, minor=None, queue=420):
         total_seconds=Sum("total_seconds"),
         wins=Sum("wins"),
         losses=Sum("losses"),
-    ).with_computed_stats()
+    ).with_computed_stats()  # type: ignore
 
     qs = qs.annotate(
         game_count=F("wins") + F("losses"),

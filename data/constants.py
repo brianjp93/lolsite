@@ -3,8 +3,6 @@ from enum import StrEnum
 from pydantic import BaseModel
 from datetime import datetime
 
-from django.utils import timezone
-
 
 MIN_PASSWORD_LENGTH = 7
 
@@ -49,8 +47,8 @@ class Season(BaseModel):
 
 SEASONS = [
     Season(
-        start=timezone.datetime(2020, 1, 23),
-        end=timezone.datetime(2020, 11, 10),
+        start=datetime(2020, 1, 23),
+        end=datetime(2020, 11, 10),
         patch_start=(10, 1),
         patch_end=(10, 22),
         name="Season 10",

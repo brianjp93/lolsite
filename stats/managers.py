@@ -1,6 +1,10 @@
-from django.db.models import QuerySet, F
+from typing import TYPE_CHECKING
+from django.db.models import Manager, QuerySet, F
 from django.db.models.functions import Greatest, Cast
 from django.db import models
+
+if TYPE_CHECKING:
+    from stats.models import SummonerChampion
 
 
 class SummonerChampionQuerySet(QuerySet):
@@ -37,3 +41,14 @@ class SummonerChampionQuerySet(QuerySet):
             / Greatest(Cast("total_seconds", models.FloatField()), 1.0)
             * 60.0,
         )
+
+
+class SummonerChampionManager(Manager['SummonerChampion']):
+    def get_queryset(self) -> SummonerChampionQuerySet:
+        return SummonerChampionQuerySet(self.model, using=self._db)
+
+    def filter(self, *args, **kwargs) -> SummonerChampionQuerySet:
+        return super().filter(*args, **kwargs)  # type: ignore
+
+    def all(self) -> SummonerChampionQuerySet:
+        return super().all()  # type: ignore

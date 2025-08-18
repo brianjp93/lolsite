@@ -1,14 +1,14 @@
-"""match/viewsapi.py
-"""
 from django.db.models import Exists, OuterRef
-from django.contrib.auth.models import User
+from django.db import models
+from django.contrib.auth.models import AnonymousUser
 from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.generics import ListAPIView, QuerySet, RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.exceptions import NotFound
 
 from lolsite.tasks import get_riot_api
-from lolsite.helpers import query_debugger
+from lolsite.helpers import HtmxMixin, UserType, query_debugger
 from data import constants
 from match import tasks as mt
 from match.parsers.spectate import SpectateModel
@@ -49,8 +49,10 @@ class MatchBySummoner(ListAPIView):
             queue = int(queue)
         played_with: list[str] = self.request.query_params.get('playedWith', '').split(',')
         sync_import = self.request.query_params.get('sync_import', False)
-        start: int = self.paginator.get_offset(self.request)
-        limit: int = self.paginator.get_limit(self.request)
+        assert self.paginator
+        paginator: CustomLimitOffsetPagination = self.paginator  # type: ignore
+        start: int = paginator.get_offset(self.request)
+        limit: int = paginator.get_limit(self.request)  # type: ignore
 
         summoner = self.get_summoner(riot_id_name, riot_id_tagline, region)
 
@@ -72,9 +74,13 @@ class MatchBySummoner(ListAPIView):
 
         if sync_import in constants.TRUTHY:
             mt.import_recent_matches(
-                start, start + limit, summoner.puuid, region, queue=queue,
+                start,
+                start + limit,
+                summoner.puuid,
+                region,
+                queue=queue,  # type: ignore
             )
-            mt.bulk_import.s(summoner.puuid, count=40, offset=start + limit).apply_async(countdown=5)
+            mt.bulk_import.s(summoner.puuid, count=40, offset=start + limit).apply_async(countdown=5)  # type: ignore
         qs = qs.order_by('-game_creation')
         return qs
 
@@ -96,12 +102,12 @@ class MatchBySummoner(ListAPIView):
             summoner = get_object_or_404(Summoner, region=region, simple_riot_id=full_id)
         else:
             # update in the background if we already have the user imported
-            pt.import_summoner.s(riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline, region=region).apply_async(countdown=1)
+            pt.import_summoner.s(riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline, region=region).apply_async(countdown=1)  # type: ignore
             summoner = summoner_query[0]
         return summoner
 
     @staticmethod
-    def get_played_with(names: list[str], qs: QuerySet[Match]):
+    def get_played_with(names: list[str], qs: models.QuerySet[Match]):
         match = qs.first()
         if not match:
             return qs.none()
@@ -129,12 +135,12 @@ class MatchBySummoner(ListAPIView):
             qs = qs.filter(Exists(Participant.objects.filter(puuid=x.puuid, match_id=OuterRef('id'))))
         return qs
 
-def user_can_create_match_summary(user: User):
+def user_can_create_match_summary(user: UserType | AnonymousUser):
     if user.is_superuser:
         return True
     return False
 
-class MatchSummaryView(RetrieveAPIView):
+class MatchSummaryView(HtmxMixin, RetrieveAPIView):  # type: ignore
     serializer_class = MatchSummarySerializer
     lookup_field = 'match_id'
 
@@ -145,7 +151,7 @@ class MatchSummaryView(RetrieveAPIView):
             return matchsummary
         else:
             if user_can_create_match_summary(self.request.user):
-                mt.get_summary_of_match.delay(match._id)
+                mt.get_summary_of_match.delay(match._id)  # type: ignore
                 obj = get_object_or_404(MatchSummary, match=match)
                 return obj
         raise Http404("Game not found.")
@@ -158,8 +164,9 @@ class AdvancedTimelineView(RetrieveAPIView):
     def get_object(self):
         _id = self.kwargs[self.lookup_field]
         match = get_object_or_404(Match.objects.all(), _id=_id)
+        assert match.pk
         if not getattr(match, 'advancedtimeline', None):
-            mt.import_advanced_timeline(match.id)
+            mt.import_advanced_timeline(match.pk)
 
         qs = AdvancedTimeline.objects.filter(match___id=_id).prefetch_related(
             'frames',
@@ -200,7 +207,7 @@ class MatchBanListView(ListAPIView):
 
 class MatchView(RetrieveAPIView):
     serializer_class = MatchSerializer
-    queryset = Match
+    queryset = Match.objects.all()
     lookup_field = '_id'
 
     def get_serializer(self, *args, **kwargs):
@@ -229,9 +236,9 @@ class ParticipantsView(ListAPIView):
     `apply_ranks`: bool\n
 
     """
-    def get_queryset(self):
-        if hasattr(self, 'qs'):
-            return self.qs
+    def get_queryset(self):  # type: ignore
+        if qs := getattr(self, 'qs', None):
+            return qs
         match_id = self.request.query_params.get("match_id")
         match__id = self.request.query_params.get("match__id")
         self.language = self.request.query_params.get("language", "en_US")
@@ -383,6 +390,8 @@ def get_latest_unlabeled_match(request, format=None):
         .order_by("-match__game_creation")
         .first()
     )
+    if not p:
+        raise NotFound('Participant not found.')
     match = p.match
     serializer = MatchSerializer(match)
     data = {"data": serializer.data}

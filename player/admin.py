@@ -11,8 +11,8 @@ from .models import Custom, EmailVerification, SummonerLink
 
 class CachedCountPaginator(Paginator):
     @property
-    def count(self):
-        explain_string = self.object_list.explain()
+    def count(self):  # type: ignore
+        explain_string = self.object_list.explain()  # type: ignore
         bytes_string = bytes(explain_string, "utf8")
         hex_hash = hashlib.md5(bytes_string).hexdigest()
         data = cache.get(hex_hash, None)

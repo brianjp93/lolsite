@@ -1,5 +1,4 @@
-"""notification/tasks.py
-"""
+from datetime import timedelta
 from notification.models import Notification
 from django.utils import timezone
 
@@ -19,6 +18,6 @@ def delete_old_notifications(days=60):
     None
 
     """
-    thresh = timezone.now() - timezone.timedelta(days=days)
+    thresh = timezone.now() - timedelta(days=days)
     query = Notification.objects.filter(created_date__lt=thresh)
     query.delete()

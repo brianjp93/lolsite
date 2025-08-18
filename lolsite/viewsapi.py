@@ -69,6 +69,7 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
         ).order_by('-game_creation')[:20]
         for match in matches:
             part = match.participants.get(puuid=summoner.puuid)
+            assert part.stats
             is_win = part.stats.win
             kills += part.stats.kills
             deaths += part.stats.deaths

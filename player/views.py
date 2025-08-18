@@ -24,7 +24,7 @@ from django.core.mail import send_mail
 
 from data.models import Champion
 from data.serializers import BasicChampionWithImageSerializer
-from lolsite.helpers import HtmxMixin, UserType, query_debugger
+from lolsite.helpers import HtmxHttpRequest, HtmxMixin, UserType, query_debugger
 from lolsite.tasks import get_riot_api
 from match.models import Match, set_focus_participants, set_related_match_objects, sort_positions
 from match.parsers.spectate import SpectateModel
@@ -439,7 +439,7 @@ class FollowView(generic.TemplateView, CsrfViewMiddleware):
         return render(request, self.get_template_names(), self.get_context_data())
 
 
-def played_with_count(request, puuid):
+def played_with_count(request: HtmxHttpRequest, puuid):
     summoner = get_object_or_404(Summoner, puuid=puuid)
     count = ReputationSerializer.user_has_match_overlap(request.user, summoner)
     return render(request, "cotton/player/played_with_count.html", {'count': count})

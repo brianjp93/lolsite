@@ -223,6 +223,7 @@ class FullParticipantSerializer(serializers.ModelSerializer):
             if isinstance(instance, QuerySet):
                 match_qs = Match.objects.filter(participants__in=instance)
             elif hasattr(instance, 'match'):
+                assert instance
                 match_qs = Match.objects.filter(id=instance.match.id)
             if match_qs:
                 self.extra = match_qs.get_related()

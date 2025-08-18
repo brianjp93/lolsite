@@ -18,7 +18,7 @@ import django_filters
 
 
 def get_summoner_champions_overview(
-    puuid: str = None,
+    puuid: str | None = None,
     major_version=None,
     minor_version=None,
     queue_in=None,
@@ -68,10 +68,12 @@ def get_summoner_champions_overview(
         query = query.filter(participant__match__queue_id__in=queue_in)
     if start_datetime is not None:
         start_dt = parse_datetime(start_datetime)
+        assert start_dt
         start_timestamp = start_dt.timestamp() * 1000
         query = query.filter(participant__match__game_creation__gt=start_timestamp)
     if end_datetime is not None:
         end_dt = parse_datetime(end_datetime)
+        assert end_dt
         end_timestamp = end_dt.timestamp() * 1000
         query = query.filter(participant__match__game_creation__gt=end_timestamp)
     if season is not None:

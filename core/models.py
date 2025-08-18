@@ -82,7 +82,7 @@ class ThumbnailedModel(models.Model):
             if sync:
                 save_files(*args, **kwargs)
             else:
-                save_files.delay(*args, **kwargs)
+                save_files.delay(*args, **kwargs)  # type: ignore
 
     def image_url(self):
         raise NotImplementedError()

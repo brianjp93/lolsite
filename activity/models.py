@@ -21,6 +21,7 @@ class Application(models.Model):
     code = models.CharField(choices=ApplicationType.choices, max_length=32, unique=True)
     client_id = models.CharField(max_length=32, default="")
     client_secret = models.CharField(max_length=32, default="")
+    applicationtoken_set: models.QuerySet['ApplicationToken']
 
     def __str__(self) -> str:
         return self.code

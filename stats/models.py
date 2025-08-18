@@ -5,7 +5,7 @@ from django.db.models import F, Func
 from django.contrib.postgres.fields import ArrayField
 
 from data.models import Champion
-from stats.managers import SummonerChampionQuerySet
+from stats.managers import SummonerChampionManager, SummonerChampionQuerySet
 
 
 class ArrayConstructor(Func):
@@ -42,7 +42,7 @@ class SummonerChampion(models.Model):
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
 
-    objects = SummonerChampionQuerySet.as_manager()
+    objects: SummonerChampionManager = SummonerChampionManager()  # type: ignore
 
     class Meta:
         constraints = [

@@ -153,7 +153,7 @@ class Item(VersionedModel):
     image: Union["ItemImage", None]
     gold: Union["ItemGold", None]
     stats: models.QuerySet["ItemStat"]
-    objects = ItemManager()
+    objects: ItemManager = ItemManager()  # type: ignore
 
     stat_list = {
         "flat_armor": "Armor",

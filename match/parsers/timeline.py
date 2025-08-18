@@ -49,11 +49,11 @@ class ItemPurchasedEventModel(BaseModelWithLogger):
 
 
 class ItemDestroyedEventModel(ItemPurchasedEventModel):
-    type: Literal["ITEM_DESTROYED"]
+    type: Literal["ITEM_DESTROYED"]  # type: ignore
 
 
 class ItemSoldEventModel(ItemPurchasedEventModel):
-    type: Literal["ITEM_SOLD"]
+    type: Literal["ITEM_SOLD"]  # type: ignore
 
 
 class ItemUndoEventModel(BaseModelWithLogger):
