@@ -300,7 +300,8 @@ def get_spectate(request, format=None):
 
         champions = Champion.objects.filter(
             key__in=champion_keys,
-            version=Champion.objects.order_by('-version').values_list('version', flat=True)[:1],
+            major=Champion.objects.order_by('-major', '-minor').values_list('major', flat=True)[:1],
+            minor=Champion.objects.order_by('-major', '-minor').values_list('minor', flat=True)[:1],
         ).select_related('image')
 
         champion_map = {champion.key: champion for champion in champions}
@@ -321,6 +322,8 @@ def get_spectate(request, format=None):
 
             if champion := champion_map.get(part["championId"]):
                 part['champion'] = BasicChampionWithImageSerializer(champion).data
+            else:
+                logger.info(f"Champion not found for: {part['championId']}")
 
         data = spectate_data
 
