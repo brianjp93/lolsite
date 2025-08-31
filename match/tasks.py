@@ -86,7 +86,7 @@ def fetch_match_json(match_id: str, region: str):
 def prepare_summoners_from_participants(participants: list[ParticipantModel], region):
     sums = []
     for part in participants:
-        if (part.puuid or "").lower() != 'bot':
+        if (part.puuid or "").lower() != "bot":
             summoner = Summoner(
                 name=part.summonerName.strip(),
                 simple_name=part.simple_name,
@@ -101,7 +101,7 @@ def prepare_summoners_from_participants(participants: list[ParticipantModel], re
 
 def pool_match_import(match_id: str, region: str, close_connections=True):
     match_json = fetch_match_json(match_id, region)
-    if match_json in ['not found', 'throttled', None]:
+    if match_json in ["not found", "throttled", None]:
         pass
     else:
         multi_match_import([match_json], region)
@@ -121,7 +121,7 @@ def multi_match_import(matches_json, region):
         try:
             parsed = MatchResponseModel.model_validate_json(match_data)
         except ValidationError:
-            logger.exception('Match could not be parsed.')
+            logger.exception("Match could not be parsed.")
             continue
         if "tutorial" in parsed.info.gameMode.lower():
             continue
@@ -132,7 +132,9 @@ def multi_match_import(matches_json, region):
         match_ids_seen.add(parsed.metadata.matchId)
         match = build_match(parsed)
         matches.append(match)
-        summoners.extend(prepare_summoners_from_participants(parsed.info.participants, region))
+        summoners.extend(
+            prepare_summoners_from_participants(parsed.info.participants, region)
+        )
         for part in parsed.info.participants:
             participant = build_participant(part, match)
             participants.append(participant)
@@ -146,7 +148,7 @@ def multi_match_import(matches_json, region):
     seen_puuids = set(
         Summoner.objects.filter(
             puuid__in=[x.puuid for x in summoners],
-        ).values_list('puuid', flat=True)
+        ).values_list("puuid", flat=True)
     )
     deduped_summoners = []
     for summoner in summoners:
@@ -189,20 +191,28 @@ class RefreshFeed:
         self.cursor = connection.cursor()
 
     def lock(self, user):
-        self.cursor.execute(r"SELECT pg_try_advisory_lock(%s, %s);", [self.REFRESH_FEED_LOCK_ID, user.id])
+        self.cursor.execute(
+            r"SELECT pg_try_advisory_lock(%s, %s);",
+            [self.REFRESH_FEED_LOCK_ID, user.id],
+        )
         return self.cursor.fetchone()
 
     def unlock(self, user):
-        self.cursor.execute(r"SELECT pg_advisory_unlock(%s, %s);", [self.REFRESH_FEED_LOCK_ID, user.id])
+        self.cursor.execute(
+            r"SELECT pg_advisory_unlock(%s, %s);", [self.REFRESH_FEED_LOCK_ID, user.id]
+        )
 
     def is_refresh_feed_done(self, user):
-        self.cursor.execute(r"SELECT * from pg_locks where classid=%s and objid=%s;", [self.REFRESH_FEED_LOCK_ID, user.id])
+        self.cursor.execute(
+            r"SELECT * from pg_locks where classid=%s and objid=%s;",
+            [self.REFRESH_FEED_LOCK_ID, user.id],
+        )
         row = self.cursor.fetchone()
         return not row
 
     def refresh(self, user):
         summoners = [x.summoner for x in user.follow_set.all()]
-        got_lock, = self.lock(user)
+        (got_lock,) = self.lock(user)
         if not got_lock:
             logger.warning(f"Could not get refresh_feed lock for {user=}")
             return
@@ -221,7 +231,7 @@ def import_recent_matches(
     queueType: Optional[str] = None,
     startTime: Optional[datetime] = None,
     endTime: Optional[datetime] = None,
-    break_on_match_found = False,
+    break_on_match_found=False,
 ):
     has_more = True
     import_count = 0
@@ -253,7 +263,7 @@ def import_recent_matches(
             except (MaxRetryError, ConnectionError):
                 matches = []
             else:
-                logger.debug('response: %s' % str(r))
+                logger.debug("response: %s" % str(r))
                 riot_match_request_time = time.time() - riot_match_request_time
                 logger.debug(
                     f"Riot API match filter request time : {riot_match_request_time}"
@@ -280,7 +290,9 @@ def import_recent_matches(
                 else:
                     with ThreadPool(processes=min(10, len(jobs))) as pool:
                         pool.starmap(pool_match_import, jobs)
-                logger.info(f'ThreadPool match import: {time.perf_counter() - start_time}')
+                logger.info(
+                    f"ThreadPool match import: {time.perf_counter() - start_time}"
+                )
             if len(matches) < size:
                 has_more = False
         else:
@@ -296,7 +308,10 @@ def bulk_import(puuid: str, last_import_time_hours: int = 24, count=200, offset=
     now = timezone.now()
     thresh = now - timedelta(hours=last_import_time_hours)
     summoner: Summoner = Summoner.objects.get(puuid=puuid)
-    if summoner.last_summoner_page_import is None or summoner.last_summoner_page_import < thresh:
+    if (
+        summoner.last_summoner_page_import is None
+        or summoner.last_summoner_page_import < thresh
+    ):
         logger.info(f"Doing summoner page import for {summoner} of {count} games.")
         summoner.last_summoner_page_import = now
         summoner.save()
@@ -333,7 +348,9 @@ def celery_task_pool(jobs, pool_size=10):
 
 
 @app.task
-def huge_match_single_summoner_import_job(summoner_id, puuid, region, start_time, enqueue_time):
+def huge_match_single_summoner_import_job(
+    summoner_id, puuid, region, start_time, enqueue_time
+):
     enqueue_threshold = timezone.now() - timedelta(hours=6)
     if enqueue_time < enqueue_threshold:
         logger.info("Task older than 6 hours old, skipping.")
@@ -356,17 +373,23 @@ def huge_match_single_summoner_import_job(summoner_id, puuid, region, start_time
 def huge_match_import_task(hours_thresh=24, exclude_hours=6):
     thresh = timezone.now() - timedelta(hours=hours_thresh)
 
-    qs = Summoner.objects.filter(
-        Exists(Participant.objects.filter(
-            puuid=OuterRef("puuid"),
-            match__queue_id=SOLO_QUEUE,
-            match__game_creation_dt__gt=thresh,
-        )),
-        puuid__isnull=False,
-        region="na",
-    ).exclude(
-        huge_match_import_at__gt=timezone.now() - timedelta(hours=exclude_hours)
-    ).values("id", "puuid", "region", "huge_match_import_at")
+    qs = (
+        Summoner.objects.filter(
+            Exists(
+                Participant.objects.filter(
+                    puuid=OuterRef("puuid"),
+                    match__queue_id=SOLO_QUEUE,
+                    match__game_creation_dt__gt=thresh,
+                )
+            ),
+            puuid__isnull=False,
+            region="na",
+        )
+        .exclude(
+            huge_match_import_at__gt=timezone.now() - timedelta(hours=exclude_hours)
+        )
+        .values("id", "puuid", "region", "huge_match_import_at")
+    )
 
     count = qs.count()
     logger.info(f"Found {count} participants for huge_match_import_task.")
@@ -493,7 +516,7 @@ def import_advanced_timeline(match_id: str | int, overwrite=False):
     building_kill_events: list[BuildingKillEvent] = []
     with transaction.atomic():
         match = Match.objects.get(id=match_id)
-        if overwrite and hasattr(match, 'advancedtimeline_id'):
+        if overwrite and hasattr(match, "advancedtimeline_id"):
             assert match.advancedtimeline
             match.advancedtimeline.delete()
         region = match.platform_id.lower()
@@ -504,15 +527,17 @@ def import_advanced_timeline(match_id: str | int, overwrite=False):
             parsed = TimelineResponseModel.model_validate_json(response.content)
             logger.info(f"AdvancedTimeline parsing took: {time.perf_counter() - start}")
         except ValidationError:
-            logger.exception('AdvancedTimeline could not be parsed.')
+            logger.exception("AdvancedTimeline could not be parsed.")
             return
-        logger.info('Parsed AdvancedTimeline successfully.')
+        logger.info("Parsed AdvancedTimeline successfully.")
         data = parsed.info
         at = AdvancedTimeline(match=match, frame_interval=data.frameInterval)
         start_writing = time.perf_counter()
         at.save()
 
-        frames_to_save = tuple(Frame(timeline=at, timestamp=fm.timestamp) for fm in data.frames)
+        frames_to_save = tuple(
+            Frame(timeline=at, timestamp=fm.timestamp) for fm in data.frames
+        )
         Frame.objects.bulk_create(frames_to_save)
 
         pframes = []
@@ -524,7 +549,6 @@ def import_advanced_timeline(match_id: str | int, overwrite=False):
                 dmg_stats = pfm.damageStats
                 p_frame_data = {
                     "frame": frame,
-
                     "participant_id": pfm.participantId,
                     "current_gold": pfm.currentGold,
                     "jungle_minions_killed": pfm.jungleMinionsKilled,
@@ -580,19 +604,23 @@ def import_advanced_timeline(match_id: str | int, overwrite=False):
                 assert frame.id
                 match evm:
                     case tmparsers.WardPlacedEventModel():
-                        ward_placed_events.append(WardPlacedEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            creator_id=evm.creatorId,
-                            ward_type=evm.wardType,
-                        ))
+                        ward_placed_events.append(
+                            WardPlacedEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                creator_id=evm.creatorId,
+                                ward_type=evm.wardType,
+                            )
+                        )
                     case tmparsers.WardKillEventModel():
-                        ward_kill_events.append(WardKillEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            killer_id=evm.killerId,
-                            ward_type=evm.wardType,
-                        ))
+                        ward_kill_events.append(
+                            WardKillEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                killer_id=evm.killerId,
+                                ward_type=evm.wardType,
+                            )
+                        )
                     case tmparsers.PauseEndEventModel():
                         ...
                     case tmparsers.PauseStartEventModel():
@@ -606,96 +634,116 @@ def import_advanced_timeline(match_id: str | int, overwrite=False):
                     case tmparsers.DragonSoulGivenEventModel():
                         ...
                     case tmparsers.ItemDestroyedEventModel():
-                        item_destroyed_events.append(ItemDestroyedEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            item_id=evm.itemId,
-                            participant_id=evm.participantId,
-                        ))
+                        item_destroyed_events.append(
+                            ItemDestroyedEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                item_id=evm.itemId,
+                                participant_id=evm.participantId,
+                            )
+                        )
                     case tmparsers.ItemSoldEventModel():
-                        item_sold_events.append(ItemSoldEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            item_id=evm.itemId,
-                            participant_id=evm.participantId,
-                        ))
+                        item_sold_events.append(
+                            ItemSoldEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                item_id=evm.itemId,
+                                participant_id=evm.participantId,
+                            )
+                        )
                     case tmparsers.ItemPurchasedEventModel():
-                        item_purchase_events.append(ItemPurchasedEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            item_id=evm.itemId,
-                            participant_id=evm.participantId,
-                        ))
+                        item_purchase_events.append(
+                            ItemPurchasedEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                item_id=evm.itemId,
+                                participant_id=evm.participantId,
+                            )
+                        )
                     case tmparsers.ItemUndoEventModel():
-                        item_undo_events.append(ItemUndoEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            participant_id=evm.participantId,
-                            before_id=evm.beforeId,
-                            after_id=evm.afterId,
-                            gold_gain=evm.goldGain,
-                        ))
+                        item_undo_events.append(
+                            ItemUndoEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                participant_id=evm.participantId,
+                                before_id=evm.beforeId,
+                                after_id=evm.afterId,
+                                gold_gain=evm.goldGain,
+                            )
+                        )
                     case tmparsers.SkillLevelUpEventModel():
-                        skill_level_up_events.append(SkillLevelUpEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            level_up_type=evm.levelUpType,
-                            participant_id=evm.participantId,
-                            skill_slot=evm.skillSlot,
-                        ))
+                        skill_level_up_events.append(
+                            SkillLevelUpEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                level_up_type=evm.levelUpType,
+                                participant_id=evm.participantId,
+                                skill_slot=evm.skillSlot,
+                            )
+                        )
                     case tmparsers.LevelUpModel():
-                        level_up_events.append(LevelUpEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            level=evm.level,
-                            participant_id=evm.participantId,
-                        ))
+                        level_up_events.append(
+                            LevelUpEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                level=evm.level,
+                                participant_id=evm.participantId,
+                            )
+                        )
                     case tmparsers.ChampionSpecialKillEventModel():
-                        champion_special_kill_events.append(ChampionSpecialKillEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            assisting_participant_ids=evm.assistingParticipantIds,
-                            kill_type=evm.killType,
-                            killer_id=evm.killerId,
-                            multi_kill_length=evm.multiKillLength,
-                            x=evm.position.x,
-                            y=evm.position.y,
-                        ))
+                        champion_special_kill_events.append(
+                            ChampionSpecialKillEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                assisting_participant_ids=evm.assistingParticipantIds,
+                                kill_type=evm.killType,
+                                killer_id=evm.killerId,
+                                multi_kill_length=evm.multiKillLength,
+                                x=evm.position.x,
+                                y=evm.position.y,
+                            )
+                        )
                     case tmparsers.TurretPlateDestroyedEventModel():
-                        turret_plate_destroyed_events.append(TurretPlateDestroyedEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            killer_id=evm.killerId,
-                            lane_type=evm.laneType,
-                            x=evm.position.x,
-                            y=evm.position.y,
-                            team_id=evm.teamId,
-                        ))
+                        turret_plate_destroyed_events.append(
+                            TurretPlateDestroyedEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                killer_id=evm.killerId,
+                                lane_type=evm.laneType,
+                                x=evm.position.x,
+                                y=evm.position.y,
+                                team_id=evm.teamId,
+                            )
+                        )
                     case tmparsers.EliteMonsterKillEventModel():
-                        elite_monster_kill_events.append(EliteMonsterKillEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            killer_id=evm.killerId,
-                            killer_team_id=evm.killerTeamId,
-                            bounty=evm.bounty,
-                            x=evm.position.x,
-                            y=evm.position.y,
-                            monster_type=evm.monsterType,
-                            monster_sub_type=evm.monsterSubType,
-                        ))
+                        elite_monster_kill_events.append(
+                            EliteMonsterKillEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                killer_id=evm.killerId,
+                                killer_team_id=evm.killerTeamId,
+                                bounty=evm.bounty,
+                                x=evm.position.x,
+                                y=evm.position.y,
+                                monster_type=evm.monsterType,
+                                monster_sub_type=evm.monsterSubType,
+                            )
+                        )
                     case tmparsers.BuildingKillEventModel():
-                        building_kill_events.append(BuildingKillEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            killer_id=evm.killerId,
-                            bounty=evm.bounty,
-                            x=evm.position.x,
-                            y=evm.position.y,
-                            building_type=evm.buildingType,
-                            lane_type=evm.laneType,
-                            tower_type=evm.towerType,
-                            team_id=evm.teamId,
-                        ))
+                        building_kill_events.append(
+                            BuildingKillEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                killer_id=evm.killerId,
+                                bounty=evm.bounty,
+                                x=evm.position.x,
+                                y=evm.position.y,
+                                building_type=evm.buildingType,
+                                lane_type=evm.laneType,
+                                tower_type=evm.towerType,
+                                team_id=evm.teamId,
+                            )
+                        )
                     case tmparsers.GameEndEventModel():
                         GameEndEvent.objects.create(
                             frame_id=frame.id,
@@ -705,46 +753,52 @@ def import_advanced_timeline(match_id: str | int, overwrite=False):
                             winning_team=evm.winningTeam,
                         )
                     case tmparsers.ChampionKillEventModel():
-                        cke_to_save.append(ChampionKillEvent(
-                            frame_id=frame.id,
-                            timestamp=evm.timestamp,
-                            bounty=evm.bounty,
-                            shutdown_bounty=evm.shutdownBounty,
-                            kill_streak_length=evm.killStreakLength,
-                            killer_id=evm.killerId,
-                            victim_id=evm.victimId,
-                            x=evm.position.x,
-                            y=evm.position.y,
-                        ))
+                        cke_to_save.append(
+                            ChampionKillEvent(
+                                frame_id=frame.id,
+                                timestamp=evm.timestamp,
+                                bounty=evm.bounty,
+                                shutdown_bounty=evm.shutdownBounty,
+                                kill_streak_length=evm.killStreakLength,
+                                killer_id=evm.killerId,
+                                victim_id=evm.victimId,
+                                x=evm.position.x,
+                                y=evm.position.y,
+                            )
+                        )
                         cke_events.append(evm)
         ChampionKillEvent.objects.bulk_create(cke_to_save, batch_size=50)
         for cke, evm in zip(cke_to_save, cke_events):
             for vd in evm.victimDamageDealt or []:
-                victim_damage_dealt_events.append(VictimDamageDealt(
-                    championkillevent_id=cke.id,
-                    basic=vd.basic,
-                    magic_damage=vd.magicDamage,
-                    name=vd.name,
-                    participant_id=vd.participantId,
-                    physical_damage=vd.physicalDamage,
-                    spell_name=vd.spellName,
-                    spell_slot=vd.spellSlot,
-                    true_damage=vd.trueDamage,
-                    type=vd.type,
-                ))
+                victim_damage_dealt_events.append(
+                    VictimDamageDealt(
+                        championkillevent_id=cke.id,
+                        basic=vd.basic,
+                        magic_damage=vd.magicDamage,
+                        name=vd.name,
+                        participant_id=vd.participantId,
+                        physical_damage=vd.physicalDamage,
+                        spell_name=vd.spellName,
+                        spell_slot=vd.spellSlot,
+                        true_damage=vd.trueDamage,
+                        type=vd.type,
+                    )
+                )
             for vd in evm.victimDamageReceived or []:
-                victim_damage_received_events.append(VictimDamageReceived(
-                    championkillevent_id=cke.id,
-                    basic=vd.basic,
-                    magic_damage=vd.magicDamage,
-                    name=vd.name,
-                    participant_id=vd.participantId,
-                    physical_damage=vd.physicalDamage,
-                    spell_name=vd.spellName,
-                    spell_slot=vd.spellSlot,
-                    true_damage=vd.trueDamage,
-                    type=vd.type,
-                ))
+                victim_damage_received_events.append(
+                    VictimDamageReceived(
+                        championkillevent_id=cke.id,
+                        basic=vd.basic,
+                        magic_damage=vd.magicDamage,
+                        name=vd.name,
+                        participant_id=vd.participantId,
+                        physical_damage=vd.physicalDamage,
+                        spell_name=vd.spellName,
+                        spell_slot=vd.spellSlot,
+                        true_damage=vd.trueDamage,
+                        type=vd.type,
+                    )
+                )
         ParticipantFrame.objects.bulk_create(pframes, batch_size=50)
         WardPlacedEvent.objects.bulk_create(ward_placed_events)
         WardKillEvent.objects.bulk_create(ward_kill_events)
@@ -759,7 +813,9 @@ def import_advanced_timeline(match_id: str | int, overwrite=False):
         EliteMonsterKillEvent.objects.bulk_create(elite_monster_kill_events)
         BuildingKillEvent.objects.bulk_create(building_kill_events)
         VictimDamageDealt.objects.bulk_create(victim_damage_dealt_events, batch_size=50)
-        VictimDamageReceived.objects.bulk_create(victim_damage_received_events, batch_size=50)
+        VictimDamageReceived.objects.bulk_create(
+            victim_damage_received_events, batch_size=50
+        )
         end_writing = time.perf_counter()
         logger.info(f"Writing Advanced Timeline took {end_writing - start_writing}.")
 
@@ -783,7 +839,7 @@ def import_summoners_from_spectate(parsed: SpectateModel, region):
     summoner_list = []
     for part in parsed.participants:
         if part.riotId:
-            name, tagline = part.riotId.split('#')
+            name, tagline = part.riotId.split("#")
             sum_data = {
                 "puuid": part.puuid,
                 "riot_id_name": name,
@@ -802,8 +858,11 @@ def import_summoners_from_spectate(parsed: SpectateModel, region):
 
 
 def get_player_ranks(summoner_list, threshold_days=1, sync=True):
-    logger.info('Applying player ranks.')
-    jobs = [pt.import_positions.s(x.id, threshold_days=threshold_days) for x in summoner_list]  # type: ignore
+    logger.info("Applying player ranks.")
+    jobs = [
+        pt.import_positions.s(x.id, threshold_days=threshold_days)  # type: ignore
+        for x in summoner_list
+    ]
     jobs = [(x.id, threshold_days) for x in summoner_list]
     if jobs:
         if sync:
@@ -811,50 +870,64 @@ def get_player_ranks(summoner_list, threshold_days=1, sync=True):
                 pt.import_positions(*x)
         else:
             with ThreadPool(processes=10) as pool:
+
                 def pool_position_import(a, b):
                     pt.import_positions(a, b)
                     connections.close_all()
+
                 start_time = time.perf_counter()
                 pool.starmap(pool_position_import, jobs)
-                logger.info(f'ThreadPool positions import: {time.perf_counter() - start_time}')
+                logger.info(
+                    f"ThreadPool positions import: {time.perf_counter() - start_time}"
+                )
 
 
 def apply_player_ranks(match, threshold_days=1):
     if not isinstance(match, Match):
         match = Match.objects.get(id=match)
+    one_day_ago = timezone.now() - timedelta(days=1)
+    if match.get_creation() <= one_day_ago:
+        return
+    # ok -- apply ranks
+    parts = match.participants.all()
+    q = Q()
+    for part in parts:
+        q |= Q(puuid=part.puuid)
+    summoner_list = list(
+        Summoner.objects.filter(q).prefetch_related("rankcheckpoints__positions")
+    )
+    summoners = {x.puuid: x for x in summoner_list}
+    get_player_ranks(summoner_list, threshold_days=threshold_days, sync=False)
 
-    now = timezone.now()
-    one_day_ago = now - timedelta(days=1)
-    if match.get_creation() > one_day_ago:
-        # ok -- apply ranks
-        parts = match.participants.all()
-        q = Q()
-        for part in parts:
-            q |= Q(puuid=part.puuid)
-        summoner_qs = Summoner.objects.filter(q)
-        summoner_list = [x for x in summoner_qs]
-        summoners = {x.puuid: x for x in summoner_qs}
-        get_player_ranks(summoner_list, threshold_days=threshold_days, sync=False)
+    to_save = []
+    for part in parts:
+        if part.tier:
+            return
 
-        to_save = []
-        for part in parts:
-            if not part.tier:
-                # only applying if it is not already applied
-                summoner = summoners.get(part.puuid)
-                if summoner:
-                    checkpoint = summoner.get_newest_rank_checkpoint()
-                    if checkpoint:
-                        query = checkpoint.positions.filter(
-                            queue_type="RANKED_SOLO_5x5"
-                        )
-                        if query:
-                            position = query[0]
-                            part.rank, part.tier = position.rank, position.tier
-                            to_save.append(part)
-            else:
-                # if any tiers are already applied, stop
-                return
-        Participant.objects.bulk_update(to_save, fields=['rank', 'tier'])
+        # only applying if it is not already applied
+        summoner = summoners.get(part.puuid)
+        if not summoner:
+            continue
+
+        checkpoint = (
+            summoner.rankcheckpoints.all()
+            .prefetch_related("positions")
+            .order_by("-created_date")
+            .first()
+        )
+        if not checkpoint:
+            continue
+
+        positions = [
+            x for x in checkpoint.positions.all() if x.queue_type == "RANKED_SOLO_5x5"
+        ]
+        if not positions:
+            continue
+
+        position = positions[0]
+        part.rank, part.tier = position.rank, position.tier
+        to_save.append(part)
+    Participant.objects.bulk_update(to_save, fields=["rank", "tier"])
 
 
 PARTICIPANT_ROLE_KEYS = {
@@ -910,6 +983,7 @@ def build_participant(part: ParticipantModel, match: Match):
         riot_id_tagline=part.riotIdTagline,
     )
 
+
 def build_team(team: TeamModel, match: Match):
     return Team(
         match=match,
@@ -928,6 +1002,7 @@ def build_team(team: TeamModel, match: Match):
         win=team.win,
     )
 
+
 def build_ban(ban: BanType, team: Team):
     return Ban(
         champion_id=ban.championId,
@@ -935,7 +1010,8 @@ def build_ban(ban: BanType, team: Team):
         team=team,
     )
 
-def build_stats(part: ParticipantModel, participant: Participant|None = None):
+
+def build_stats(part: ParticipantModel, participant: Participant | None = None):
     return Stats(
         participant=participant,
         all_in_pings=part.allInPings,
@@ -952,10 +1028,8 @@ def build_stats(part: ParticipantModel, participant: Participant|None = None):
         on_my_way_pings=part.onMyWayPings,
         push_pings=part.pushPings,
         vision_cleared_pings=part.visionClearedPings,
-
         game_ended_in_early_surrender=part.gameEndedInEarlySurrender,
         game_ended_in_surrender=part.gameEndedInSurrender,
-
         assists=part.assists,
         champ_level=part.champLevel,
         damage_dealt_to_objectives=part.damageDealtToObjectives,
@@ -992,28 +1066,24 @@ def build_stats(part: ParticipantModel, participant: Participant|None = None):
         perk_3=part.perks.primary_style.selections[3].perk,
         perk_4=part.perks.sub_style.selections[0].perk,
         perk_5=part.perks.sub_style.selections[1].perk,
-
         perk_0_var_1=part.perks.primary_style.selections[0].var1,
         perk_1_var_1=part.perks.primary_style.selections[1].var1,
         perk_2_var_1=part.perks.primary_style.selections[2].var1,
         perk_3_var_1=part.perks.primary_style.selections[3].var1,
         perk_4_var_1=part.perks.sub_style.selections[0].var1,
         perk_5_var_1=part.perks.sub_style.selections[1].var1,
-
         perk_0_var_2=part.perks.primary_style.selections[0].var2,
         perk_1_var_2=part.perks.primary_style.selections[1].var2,
         perk_2_var_2=part.perks.primary_style.selections[2].var2,
         perk_3_var_2=part.perks.primary_style.selections[3].var2,
         perk_4_var_2=part.perks.sub_style.selections[0].var2,
         perk_5_var_2=part.perks.sub_style.selections[1].var2,
-
         perk_0_var_3=part.perks.primary_style.selections[0].var3,
         perk_1_var_3=part.perks.primary_style.selections[1].var3,
         perk_2_var_3=part.perks.primary_style.selections[2].var3,
         perk_3_var_3=part.perks.primary_style.selections[3].var3,
         perk_4_var_3=part.perks.sub_style.selections[0].var3,
         perk_5_var_3=part.perks.sub_style.selections[1].var3,
-
         perk_primary_style=part.perks.primary_style.style,
         perk_sub_style=part.perks.sub_style.style,
         spell_1_casts=part.spell1Casts,
@@ -1043,6 +1113,7 @@ def build_stats(part: ParticipantModel, participant: Participant|None = None):
         win=part.win,
     )
 
+
 def build_match(match: MatchResponseModel):
     info = match.info
     sem_ver = info.sem_ver
@@ -1055,15 +1126,16 @@ def build_match(match: MatchResponseModel):
         platform_id=info.platformId,
         queue_id=info.queueId,
         game_version=info.gameVersion,
-        major=sem_ver.get(0, ''),
-        minor=sem_ver.get(1, ''),
-        patch=sem_ver.get(2, ''),
-        build=sem_ver.get(3, ''),
+        major=sem_ver.get(0, ""),
+        minor=sem_ver.get(1, ""),
+        patch=sem_ver.get(2, ""),
+        build=sem_ver.get(3, ""),
         end_of_game_result=info.endOfGameResult,
     )
 
 
-MATCH_SUMMARY_INTRO_PROMPT = ' '.join("""
+MATCH_SUMMARY_INTRO_PROMPT = " ".join(
+    """
 You are a knowledgeable league of legends pro turned coach.  You are analyzing
 the data for a given game and are tasked with summarizing the game. Use
 markdown. Refer to Team 100 as 'Blue Team' and Team 200
@@ -1094,10 +1166,12 @@ If a player played terribly, say it. Don't try to beat around the bush.
 You may indicate a player's position and champion played, but do not write out their PUUID.
 
 Do not repeat this prompt in your response.
-""".strip().split())
+""".strip().split()
+)
+
 
 @app.task(name="match.tasks.get_summary_of_match")
-def get_summary_of_match(match_id: str, focus_player_puuid: str|None=None):
+def get_summary_of_match(match_id: str, focus_player_puuid: str | None = None):
     match = Match.objects.get(_id=match_id)
     matchsummary: MatchSummary | None
     matchsummary, created = MatchSummary.objects.get_or_create(
@@ -1114,7 +1188,10 @@ def get_summary_of_match(match_id: str, focus_player_puuid: str|None=None):
     ]
     if focus_player_puuid:
         messages.append(
-            {"role": "system", "content": f"Take particular focus on the player with puuid {focus_player_puuid}"},
+            {
+                "role": "system",
+                "content": f"Take particular focus on the player with puuid {focus_player_puuid}",
+            },
         )
     messages.append(
         {"role": "user", "content": data_json},

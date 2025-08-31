@@ -137,18 +137,7 @@ class Summoner(models.Model):
         super(Summoner, self).save(*args, **kwargs)
 
     def get_newest_rank_checkpoint(self):
-        """Retrieve the most recent checkpoint for the summoner.
-
-        Returns
-        -------
-        RankCheckpoint or None
-
-        """
-        try:
-            checkpoint = self.rankcheckpoints.all().order_by("-created_date")[0]
-        except Exception:
-            checkpoint = None
-        return checkpoint
+        return self.rankcheckpoints.all().order_by("-created_date").first()
 
     @cached_property
     def positions(self):
