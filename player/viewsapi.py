@@ -312,48 +312,29 @@ def get_summoner_champions_overview(request, format=None):
 @api_view(["GET"])
 def summoner_search(request: Request, format=None):
     """Provide at least 3 character simple_name to take advantage of trigram gin index.
-
-    POST Parameters
-    ---------------
-    simple_name__icontains : str
-    region : str
-    start : int
-    end : int
-    order_by : str
-    fields : list[str]
-
-    Returns
-    -------
-    JSON Response
-
     """
     data = {}
     status_code = 200
 
     if request.method == "GET":
-        simple_name__icontains = request.query_params.get("simple_name__icontains", None)
-        simple_name = request.query_params.get("simple_name", None)
-        simple_riot_id__icontains = request.query_params.get("simple_riot_id__icontains", None)
-        simple_riot_id__startswith = request.query_params.get("simple_riot_id__startswith", None)
-        if simple_riot_id__startswith:
-            simple_riot_id__startswith = simple_riot_id__startswith.lower()
-        region = request.query_params.get("region", None)
+        query = Summoner.objects.all()
+        if simple_name__icontains := request.query_params.get("simple_name__icontains", None):
+            query = query.filter(simple_name__icontains=simple_name__icontains)
+        if simple_name := request.query_params.get("simple_name", None):
+            query = query.filter(simple_name=simple_name)
+        if simple_riot_id__icontains := request.query_params.get("simple_riot_id__icontains", None):
+            query = query.filter(simple_riot_id__icontains=simple_riot_id__icontains)
+        if simple_riot_id__startswith := request.query_params.get("simple_riot_id__startswith", None):
+            query = query.filter(simple_riot_id__startswith=simple_riot_id__startswith.lower())
+        if region := request.query_params.get("region", None):
+            query = query.filter(region=region)
+        if order_by := request.query_params.get("order_by", None):
+            query = query.order_by(order_by)
         start = int(request.query_params.get("start", 0))
         end = int(request.query_params.get("end", 10))
-        order_by = request.query_params.get("order_by", None)
         if end - start > 100:
             end = start + 100
         fields = request.query_params.get("fields", None)
-
-        kwargs = {
-            "simple_name__icontains": simple_name__icontains,
-            "simple_riot_id__icontains": simple_riot_id__icontains,
-            "simple_riot_id__startswith": simple_riot_id__startswith,
-            "simple_name": simple_name,
-            "region": region,
-            "order_by": order_by,
-        }
-        query = player_filters.summoner_search(**kwargs)
         query = query[start:end]
         serialized = SummonerSerializer(query, many=True, fields=fields).data
         data = {"data": serialized}
@@ -703,7 +684,7 @@ def get_connected_accounts(request, format=None):
     status_code = 200
     if request.method == "GET":
         if request.user.is_authenticated:
-            query = player_filters.get_connected_accounts_query(request.user)
+            query = Summoner.objects.get_connected_accounts(request.user)
             serialized = SummonerSerializer(query, many=True).data
         else:
             serialized = []

@@ -20,6 +20,7 @@ from data import constants as dc
 from data.models import CDProfileIcon, ProfileIcon
 
 from player.constants import VERIFY_WITH_ICON
+from player.managers import SummonerManager
 from player.utils import SIMPLE_RIOT_ID_EXPR, get_admin
 
 
@@ -112,6 +113,8 @@ class Summoner(models.Model):
     rankcheckpoints: models.QuerySet['RankCheckpoint']
     pageview_set: models.QuerySet['PageView']
     summonerlinks: models.QuerySet['SummonerLink']
+
+    objects: SummonerManager = SummonerManager()  # type: ignore
 
     def __str__(self):
         return f'Summoner(region={self.region}, riot_id_name={self.riot_id_name}, riot_id_tagline={self.riot_id_tagline})'

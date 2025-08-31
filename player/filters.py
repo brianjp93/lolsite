@@ -1,10 +1,8 @@
-"""player/filters.py"""
-
 from data import constants as dc
 from data.models import Champion
 from data.constants import QUEUE_SELECT_OPTIONS, Region
 from match.viewsapi import MatchBySummoner
-from player.models import Summoner, SummonerLink, simplify
+from player.models import Summoner, simplify
 from match.models import Participant, Stats
 
 from django.db.models import Exists, Sum, Count, F, FloatField
@@ -229,38 +227,6 @@ def get_summoner_champions_overview(
     )
 
     return query
-
-
-def summoner_search(
-    simple_name__icontains=None,
-    simple_name=None,
-    region=None,
-    order_by=None,
-    simple_riot_id__icontains=None,
-    simple_riot_id__startswith=None,
-):
-    query = Summoner.objects.all()
-
-    if simple_name__icontains is not None:
-        query = query.filter(simple_name__contains=simple_name__icontains.lower())
-    if simple_name is not None:
-        query = query.filter(simple_name=simple_name)
-    if region is not None:
-        query = query.filter(region=region)
-    if simple_riot_id__icontains:
-        query = query.filter(simple_riot_id__contains=simple_riot_id__icontains.lower())
-    if simple_riot_id__startswith:
-        query = query.filter(simple_riot_id__startswith=simple_riot_id__startswith.lower())
-    if order_by is not None:
-        query = query.order_by(order_by)
-    return query
-
-
-def get_connected_accounts_query(user):
-    id_list = [
-        x.summoner.id for x in SummonerLink.objects.filter(user=user, verified=True)
-    ]
-    return Summoner.objects.filter(id__in=id_list)
 
 
 class SummonerMatchFilter(django_filters.FilterSet):
