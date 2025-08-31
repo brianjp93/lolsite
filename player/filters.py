@@ -76,17 +76,7 @@ def get_summoner_champions_overview(
         query = query.filter(participant__match__game_creation__gt=end_timestamp)
     if season is not None:
         season = int(season)
-        season_start = dc.SEASON_PATCHES[season]["season"]["start"]
-        season_end = dc.SEASON_PATCHES[season]["season"]["end"]
-        q = Q(
-            participant__match__major=season_start[0],
-            participant__match__minor__gte=season_start[1],
-        )
-        q |= Q(
-            participant__match__major=season_end[0],
-            participant__match__minor__lte=season_end[1],
-        )
-        query = query.filter(q)
+        query = query.filter(participant__match__major=season)
 
     query = query.annotate(
         champion_id=F("participant__champion_id"),

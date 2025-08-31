@@ -431,3 +431,15 @@ def get_played_together(request, format=None):
     qs = _get_played_together(summoner_names)
     data = {'count': qs.count()}
     return Response(data)
+
+
+class MajorPatchView(ListAPIView):
+    """Get the last 5 major patches from matches."""
+
+    def get_queryset(self):
+        return Match.objects.values('major').distinct().order_by('-major')[:5]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        data = [{'major': item['major'], 'version': f"{item['major']}"} for item in queryset]
+        return Response({'results': data})
