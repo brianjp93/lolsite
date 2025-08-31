@@ -23,7 +23,6 @@ from django.shortcuts import get_object_or_404
 from lolsite.helpers import CustomLimitOffsetPagination
 
 from player import tasks as pt
-from player.models import simplify
 from player.serializers import RankPositionSerializer
 
 from data.models import Champion
@@ -398,38 +397,6 @@ def get_latest_unlabeled_match(request, format=None):
     match = p.match
     serializer = MatchSerializer(match)
     data = {"data": serializer.data}
-    return Response(data)
-
-
-def _get_played_together(summoner_names):
-    simplified_names = [simplify(x) for x in summoner_names]
-    if simplified_names:
-        qs = Match.objects.all()
-        for name in simplified_names:
-            qs = qs.filter(participants__summoner_name_simplified=name)
-    else:
-        qs = Match.objects.none()
-    return qs
-
-
-@api_view(['GET'])
-def get_played_together(request, format=None):
-    """Get a count of games played together
-
-    Parameters
-    ----------
-    summoner_names: list
-    region: str
-
-    Returns
-    -------
-    json
-        {count: int}
-
-    """
-    summoner_names = request.GET.get('summoner_names')
-    qs = _get_played_together(summoner_names)
-    data = {'count': qs.count()}
     return Response(data)
 
 
