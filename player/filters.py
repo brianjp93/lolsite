@@ -290,7 +290,7 @@ class SummonerMatchFilter(django_filters.FilterSet):
             .first()
         )
         assert champ
-        self.form.fields["champion"].choices = [
+        self.form.fields["champion"].choices = [  # type: ignore
             (x.key, x.name)
             for x in Champion.objects.filter(
                 major=champ["major"], minor=champ["minor"], patch=champ["patch"]
