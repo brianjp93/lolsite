@@ -5,7 +5,7 @@ from django.db import models
 from data.models import Champion, ReforgedRune, ReforgedTree, Item, CDSummonerSpell
 
 if TYPE_CHECKING:
-    from match.models import Match
+    from match.models import Match, Stats
 
 
 class MatchQuerySet(models.QuerySet["Match"]):

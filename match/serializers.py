@@ -211,6 +211,8 @@ class FullParticipantSerializer(serializers.ModelSerializer):
     stats = serializers.SerializerMethodField()
     summoner_1_image = serializers.SerializerMethodField()
     summoner_2_image = serializers.SerializerMethodField()
+    impact_score = serializers.FloatField()
+    impact_rank = serializers.IntegerField()
 
     class Meta:  # type: ignore[override]
         model = Participant

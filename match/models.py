@@ -1,4 +1,5 @@
 from datetime import datetime
+from itertools import chain
 import zoneinfo
 import logging
 from typing import Iterable, List, TypedDict, Union
@@ -322,6 +323,63 @@ class Match(VersionedModel):
     def queue_name(self):
         return constants.QUEUE_DICT.get(self.queue_id, {}).get('description', self.queue_id)
 
+    @cached_property
+    def impact_scores(self) -> dict[str, tuple[float, int]]:
+        if len(self.participants.all()) != 10:
+            return {x.puuid: (1.0, 10) for x in self.participants.all()}
+        def rank_team(participants: Iterable[Participant]):
+            f1 = 1000
+            f1_weight = 1
+            f2 = 1000
+            f2_weight = 0.5
+            f3 = 1000
+            f3_weight = 0.7
+            f4 = 5
+            f4_weight = 2.5
+            f5 = 0
+            f5_weight = 1
+            f6 = 1000
+            f6_weight = 0.3
+            f7 = 5
+            f7_weight = 0.3
+            d1 = 3
+            d1_weight = 2
+            for part in participants:
+                assert part.stats
+                f1 += part.stats.total_damage_dealt_to_champions
+                f2 += part.stats.damage_dealt_to_objectives
+                f3 += part.stats.damage_dealt_to_turrets
+                f4 += part.stats.kills
+                f5 += part.stats.vision_score
+                f6 += part.stats.total_heal
+                f7 += part.stats.time_ccing_others
+                d1 += part.stats.deaths
+
+            team: dict[str, float] = {}
+            for part in participants:
+                assert part.stats
+                team[part.puuid] = sum((
+                    part.stats.total_damage_dealt_to_champions / f1 * f1_weight,
+                    part.stats.damage_dealt_to_objectives / f2 * f2_weight,
+                    part.stats.damage_dealt_to_turrets / f3 * f3_weight,
+                    part.stats.kills / f4 * f4_weight,
+                    part.stats.vision_score / f5 * f5_weight,
+                    part.stats.total_heal / f6 * f6_weight,
+                    part.stats.time_ccing_others / f7 * f7_weight,
+                    -(part.stats.deaths / d1 * d1_weight),
+                ))
+            return team
+        team100 = rank_team([p for p in self.participants.all() if p.team_id == 100])
+        team200 = rank_team([p for p in self.participants.all() if p.team_id == 200])
+        mean = (sum(team100.values()) + sum(team200.values())) / max(len(team100) + len(team200), 1) or 1
+        # normalize impact scores
+        for team in (team100, team200):
+            for puuid, impact in team.items():
+                team[puuid] = impact / mean
+        team100_ranked = {x[0]: (x[1], i) for i, x in enumerate(sorted(team100.items(), key=lambda x: -x[1]), 1)}
+        team200_ranked = {x[0]: (x[1], i) for i, x in enumerate(sorted(team200.items(), key=lambda x: -x[1]), 1)}
+        return team100_ranked | team200_ranked
+
 
 class Participant(models.Model):
     id: int | None
@@ -480,6 +538,14 @@ class Participant(models.Model):
         if team_kills > 0:
             return ((self.get_stat('kills') + self.get_stat('assists')) / team_kills) * 100
         return 0
+
+    @cached_property
+    def impact_score(self):
+        return self.match.impact_scores[self.puuid][0]
+
+    @cached_property
+    def impact_rank(self):
+        return self.match.impact_scores[self.puuid][1]
 
 
 class Stats(models.Model):
