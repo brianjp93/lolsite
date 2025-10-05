@@ -14,9 +14,9 @@ from openai.types.chat import ChatCompletionMessageParam
 
 from django.conf import settings
 from django.db.utils import IntegrityError
-from django.db.models import Count, Exists, Prefetch, Subquery, OuterRef, query
+from django.db.models import Count, Exists, Subquery, OuterRef
 from django.db.models import Case, When, Sum
-from django.db.models import IntegerField, Q
+from django.db.models import IntegerField
 from django.utils import timezone
 from django.db import connections, transaction, connection
 
@@ -47,7 +47,7 @@ from .models import Spectate
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
-from player.models import RankCheckpoint, RankPosition, Summoner
+from player.models import RankPosition, Summoner
 from player import tasks as pt
 
 from lolsite.celery import app
@@ -859,10 +859,6 @@ def import_summoners_from_spectate(parsed: SpectateModel, region):
 
 def get_player_ranks(summoner_list, threshold_days=1, sync=True):
     logger.info("Applying player ranks.")
-    jobs = [
-        pt.import_positions.s(x.id, threshold_days=threshold_days)  # type: ignore
-        for x in summoner_list
-    ]
     jobs = [(x.id, threshold_days) for x in summoner_list]
     if jobs:
         if sync:
@@ -890,46 +886,40 @@ def apply_player_ranks(match, threshold_days=1):
         return
     # ok -- apply ranks
     parts = match.participants.all()
-    q = Q()
-    for part in parts:
-        q |= Q(puuid=part.puuid)
-    prefetch_solo_positions = Prefetch(
-        'positions',
-        queryset=RankPosition.objects.filter(queue_type='RANKED_SOLO_5x5'),
-        to_attr='solo_positions' # Use a custom attribute to store the result
-    )
-    prefetch_latest_checkpoint = Prefetch(
-        'rankcheckpoints',
-        queryset=RankCheckpoint.objects.order_by('-created_date').prefetch_related(prefetch_solo_positions)[:1],
-        to_attr='latest_checkpoint_list' # Give it a unique attribute name
-    )
     summoner_list = list(
-        Summoner.objects.filter(q).prefetch_related(prefetch_latest_checkpoint)
+        Summoner.objects.filter(puuid__in=[part.puuid for part in parts]).annotate(
+            most_recent_position_id=RankPosition.objects.filter(
+                checkpoint__summoner_id=OuterRef('id'),
+                queue_type='RANKED_SOLO_5x5',
+            ).order_by('-checkpoint__created_date').values('id')[:1],
+        )
     )
+    positions = {rank.id: rank for rank in RankPosition.objects.filter(
+        id__in=[x.most_recent_position_id for x in summoner_list if x is not None]  # type: ignore
+    )}
     summoners = {x.puuid: x for x in summoner_list}
+
     get_player_ranks(summoner_list, threshold_days=threshold_days, sync=False)
 
     to_save = []
     for part in parts:
         if part.tier:
-            return
+            continue
 
         # only applying if it is not already applied
         summoner = summoners.get(part.puuid)
         if not summoner:
             continue
 
-        if not summoner.latest_checkpoint_list:  # type: ignore
+        if not summoner.most_recent_position_id:  # type: ignore
             continue
-        checkpoint = summoner.latest_checkpoint_list[0]  # type: ignore
 
-        positions = checkpoint.solo_positions
-        if not positions:
-            continue
-        position = positions[0]
+        position = positions[summoner.most_recent_position_id]  # type: ignore
+
         part.rank, part.tier = position.rank, position.tier
         to_save.append(part)
-    Participant.objects.bulk_update(to_save, fields=["rank", "tier"])
+    if to_save:
+        Participant.objects.bulk_update(to_save, fields=["rank", "tier"])
 
 
 PARTICIPANT_ROLE_KEYS = {

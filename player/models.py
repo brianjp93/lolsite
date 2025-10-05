@@ -263,6 +263,7 @@ class NameChange(models.Model):
 
 
 class RankCheckpoint(models.Model):
+    id: int
     summoner = models.ForeignKey(
         "Summoner", on_delete=models.CASCADE, related_name="rankcheckpoints"
     )
@@ -271,6 +272,7 @@ class RankCheckpoint(models.Model):
 
 
 class RankPosition(models.Model):
+    id: int
     checkpoint = models.ForeignKey(
         "RankCheckpoint", on_delete=models.CASCADE, related_name="positions"
     )
