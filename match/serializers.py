@@ -228,7 +228,7 @@ class FullParticipantSerializer(serializers.ModelSerializer):
                 assert instance
                 match_qs = Match.objects.filter(id=instance.match.id)
             if match_qs:
-                self.extra = match_qs.get_related()
+                self.extra = match_qs.related
         self.spell_images = self.extra.get('spell_images', {})
         self.runes = self.extra.get('runes', {})
         self.items = self.extra.get('items', {})
@@ -272,28 +272,15 @@ class FullMatchSerializer(serializers.ModelSerializer):
             assert instance
             match_qs = Match.objects.filter(id=instance.pk)
         if match_qs:
-            self.extra = match_qs.get_related()
+            self.extra = match_qs.related
         elif isinstance(instance, models.QuerySet):
-            self.extra = instance.get_related()  # type: ignore
+            self.extra = instance.related  # type: ignore
         super().__init__(instance, **kwargs)
 
     def get_participants(self, obj):
         from match import tasks as mt
         parts = mt.get_sorted_participants(obj, participants=obj.participants.all())
         return FullParticipantSerializer(parts, many=True, extra=self.extra).data
-
-    def to_representation(self, instance):
-        """Override to use cache
-        """
-        cache_key = f'fullmatch/{instance.id}'
-        data = cache.get(cache_key)
-        if not data:
-            data = super().to_representation(instance)
-            logger.info('Caching FullMatchSerializer data.')
-            cache.set(cache_key, data, CACHE_TIME)
-        else:
-            logger.info('Found cached data for FullMatchSerializer.')
-        return data
 
 
 class ParticipantFrameSerializer(serializers.ModelSerializer):
@@ -648,14 +635,6 @@ class AdvancedTimelineSerializer(serializers.ModelSerializer):
             'frames',
         ]
 
-    def to_representation(self, instance):
-        cache_key = f'advancedtimeline/{instance.id}'
-        data = cache.get(cache_key)
-        if not data:
-            data = super().to_representation(instance)
-            cache.set(cache_key, data, CACHE_TIME)
-        return data
-
 
 class BasicStatsSerializer(serializers.ModelSerializer):
     perk_0_image_url = serializers.SerializerMethodField()
@@ -747,27 +726,20 @@ class BasicMatchSerializer(serializers.ModelSerializer):
         if isinstance(instance, QuerySet):
             instance = instance.prefetch_related(
                 'participants', 'participants__stats', 'teams',
+                'teams__bans',
             )
         return super().__new__(cls, instance, *args, **kwargs)
 
     def __init__(self, instance=None, **kwargs):
         self.extra = None
         if isinstance(instance, QuerySet):
-            self.extra = instance.get_related()  # type: ignore
+            self.extra = instance.related  # type: ignore
         super().__init__(instance=instance, **kwargs)
 
     def get_participants(self, obj):
         from match import tasks as mt
         parts = mt.get_sorted_participants(obj, participants=obj.participants.all())
         return BasicParticipantSerializer(parts, many=True, extra=self.extra).data
-
-    def to_representation(self, instance):
-        cache_key = f'basicmatch/{instance.id}'
-        data = cache.get(cache_key)
-        if not data:
-            data = super().to_representation(instance)
-            cache.set(cache_key, data, CACHE_TIME)
-        return data
 
 
 class LlmStatsSerializer(serializers.ModelSerializer):

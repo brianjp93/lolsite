@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -178,7 +179,8 @@ class MatchQuerySet(models.QuerySet["Match"]):
             )
         return {x.key: x for x in qs}
 
-    def get_related(self):
+    @cached_property
+    def related(self):
         return {
             "items": self.get_items(),
             "runes": self.get_runes(),

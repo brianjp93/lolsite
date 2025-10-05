@@ -133,7 +133,7 @@ class BanWithChampion(TypedDict):
 def set_related_match_objects(object_list: Iterable['Match'], timeline: 'AdvancedTimeline | None' = None):
     qs = Match.objects.filter(id__in=[x.id for x in object_list])
     qs = qs.prefetch_related("participants", "participants__stats")
-    related = qs.get_related()
+    related = qs.related
     for obj in object_list:
         for team in obj.teams.all():
             for ban in team.bans.all():

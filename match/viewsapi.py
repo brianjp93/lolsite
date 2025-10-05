@@ -155,9 +155,30 @@ class MatchSummaryView(HtmxMixin, RetrieveAPIView):  # type: ignore
                 return obj
         raise Http404("Game not found.")
 
+
 class AdvancedTimelineView(RetrieveAPIView):
     serializer_class = AdvancedTimelineSerializer
-    queryset = AdvancedTimeline.objects.all()
+    queryset = AdvancedTimeline.objects.prefetch_related(
+        'frames',
+        'frames__participantframes',
+        'frames__wardkillevent_set',
+        'frames__wardplacedevent_set',
+        'frames__levelupevent_set',
+        'frames__skilllevelupevent_set',
+        'frames__itempurchasedevent_set',
+        'frames__itemdestroyedevent_set',
+        'frames__itemsoldevent_set',
+        'frames__itemundoevent_set',
+        'frames__turretplatedestroyedevent_set',
+        'frames__elitemonsterkillevent_set',
+        'frames__championspecialkillevent_set',
+        'frames__buildingkillevent_set',
+        'frames__gameendevent_set',
+        'frames__championkillevent_set',
+        'frames__championkillevent_set__victimdamagereceived_set',
+        'frames__championkillevent_set__victimdamagedealt_set',
+        'match__participants',
+    )
     lookup_field = 'match_id'
 
     def get_object(self):
@@ -167,28 +188,8 @@ class AdvancedTimelineView(RetrieveAPIView):
         if not getattr(match, 'advancedtimeline', None):
             mt.import_advanced_timeline(match.pk)
 
-        qs = AdvancedTimeline.objects.filter(match___id=_id).prefetch_related(
-            'frames',
-            'frames__participantframes',
-            'frames__wardkillevent_set',
-            'frames__wardplacedevent_set',
-            'frames__levelupevent_set',
-            'frames__skilllevelupevent_set',
-            'frames__itempurchasedevent_set',
-            'frames__itemdestroyedevent_set',
-            'frames__itemsoldevent_set',
-            'frames__itemundoevent_set',
-            'frames__turretplatedestroyedevent_set',
-            'frames__elitemonsterkillevent_set',
-            'frames__championspecialkillevent_set',
-            'frames__buildingkillevent_set',
-            'frames__gameendevent_set',
-            'frames__championkillevent_set',
-            'frames__championkillevent_set__victimdamagereceived_set',
-            'frames__championkillevent_set__victimdamagedealt_set',
-        )
         try:
-            return qs[:1].get()
+            return self.get_queryset().get(match_id=match.id)
         except AdvancedTimeline.DoesNotExist:
             return None
 
