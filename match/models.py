@@ -1,5 +1,4 @@
 from datetime import datetime
-from itertools import chain
 import zoneinfo
 import logging
 from typing import Iterable, List, TypedDict, Union
