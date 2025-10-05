@@ -14,7 +14,7 @@ from openai.types.chat import ChatCompletionMessageParam
 
 from django.conf import settings
 from django.db.utils import IntegrityError
-from django.db.models import Count, Exists, Subquery, OuterRef
+from django.db.models import Count, Exists, Prefetch, Subquery, OuterRef, query
 from django.db.models import Case, When, Sum
 from django.db.models import IntegerField, Q
 from django.utils import timezone
@@ -47,7 +47,7 @@ from .models import Spectate
 from lolsite.tasks import get_riot_api
 from lolsite.helpers import query_debugger
 
-from player.models import Summoner
+from player.models import RankCheckpoint, RankPosition, Summoner
 from player import tasks as pt
 
 from lolsite.celery import app
@@ -893,8 +893,18 @@ def apply_player_ranks(match, threshold_days=1):
     q = Q()
     for part in parts:
         q |= Q(puuid=part.puuid)
+    prefetch_solo_positions = Prefetch(
+        'positions',
+        queryset=RankPosition.objects.filter(queue_type='RANKED_SOLO_5x5'),
+        to_attr='solo_positions' # Use a custom attribute to store the result
+    )
+    prefetch_latest_checkpoint = Prefetch(
+        'rankcheckpoints',
+        queryset=RankCheckpoint.objects.order_by('-created_date').prefetch_related(prefetch_solo_positions)[:1],
+        to_attr='latest_checkpoint_list' # Give it a unique attribute name
+    )
     summoner_list = list(
-        Summoner.objects.filter(q).prefetch_related("rankcheckpoints__positions")
+        Summoner.objects.filter(q).prefetch_related(prefetch_latest_checkpoint)
     )
     summoners = {x.puuid: x for x in summoner_list}
     get_player_ranks(summoner_list, threshold_days=threshold_days, sync=False)
@@ -909,21 +919,13 @@ def apply_player_ranks(match, threshold_days=1):
         if not summoner:
             continue
 
-        checkpoint = (
-            summoner.rankcheckpoints.all()
-            .prefetch_related("positions")
-            .order_by("-created_date")
-            .first()
-        )
-        if not checkpoint:
+        if not summoner.latest_checkpoint_list:  # type: ignore
             continue
+        checkpoint = summoner.latest_checkpoint_list[0]  # type: ignore
 
-        positions = [
-            x for x in checkpoint.positions.all() if x.queue_type == "RANKED_SOLO_5x5"
-        ]
+        positions = checkpoint.solo_positions
         if not positions:
             continue
-
         position = positions[0]
         part.rank, part.tier = position.rank, position.tier
         to_save.append(part)
