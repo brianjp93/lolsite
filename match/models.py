@@ -362,7 +362,7 @@ class Match(VersionedModel):
                     part.stats.damage_dealt_to_objectives / f2 * f2_weight,
                     part.stats.damage_dealt_to_turrets / f3 * f3_weight,
                     part.stats.kills / f4 * f4_weight,
-                    part.stats.vision_score / f5 * f5_weight,
+                    part.stats.vision_score / (f5 or 1) * f5_weight,
                     part.stats.total_heal / f6 * f6_weight,
                     part.stats.time_ccing_others / f7 * f7_weight,
                     -(part.stats.deaths / d1 * d1_weight),
