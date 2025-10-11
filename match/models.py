@@ -338,9 +338,13 @@ class Match(VersionedModel):
             f5 = 0
             f5_weight = 1
             f6 = 1000
-            f6_weight = 0.3
+            f6_weight = 0.2
             f7 = 5
             f7_weight = 0.3
+            f8 = 1000
+            f8_weight = 0.2
+            f9 = 1000
+            f9_weight = 0.2
             d1 = 3
             d1_weight = 2
             for part in participants:
@@ -352,6 +356,8 @@ class Match(VersionedModel):
                 f5 += part.stats.vision_score
                 f6 += part.stats.total_heal
                 f7 += part.stats.time_ccing_others
+                f8 += part.stats.total_heals_on_teammates
+                f9 += part.stats.total_damage_shielded_on_teammates
                 d1 += part.stats.deaths
 
             team: dict[str, float] = {}
@@ -365,6 +371,8 @@ class Match(VersionedModel):
                     part.stats.vision_score / (f5 or 1) * f5_weight,
                     part.stats.total_heal / f6 * f6_weight,
                     part.stats.time_ccing_others / f7 * f7_weight,
+                    part.stats.total_heals_on_teammates / f8 * f8_weight,
+                    part.stats.total_damage_shielded_on_teammates / f9 * f9_weight,
                     -(part.stats.deaths / d1 * d1_weight),
                 ))
             return team
