@@ -177,7 +177,7 @@ def _get_match_meta_data(riot_id_name: str, riot_id_tagline: str, region: str, m
     ]
     stats = ' ᐃ '.join(stats_list)
 
-    meta['title'] = f'{summoner.get_name()} ({kills} / {deaths} / {assists})[{kda:.2f} KDA] {queue}'
+    meta['title'] = f'{summoner.get_name()} ({kills} / {part.stats.deaths} / {assists})[{kda:.2f} KDA] {queue}'
     meta['description'] = stats
     meta['image'] = image
     return meta
