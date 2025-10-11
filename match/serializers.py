@@ -627,13 +627,26 @@ class FrameSerializer(serializers.ModelSerializer):
 # ADVANCED TIMELINE
 class AdvancedTimelineSerializer(serializers.ModelSerializer):
     frames = FrameSerializer(many=True, read_only=True)
+    bounties = serializers.SerializerMethodField()
+    team_bounties = serializers.SerializerMethodField()
 
     class Meta:  # type: ignore[override]
         model = AdvancedTimeline
         fields = [
             'frame_interval',
             'frames',
+            'bounties',
+            'team_bounties',
         ]
+
+    def get_bounties(self, obj):
+        bounties_dict = {}
+        for participant_id, bounty in obj.bounties.items():
+            bounties_dict[str(participant_id)] = bounty.model_dump()
+        return bounties_dict
+
+    def get_team_bounties(self, obj):
+        return obj.team_bounties
 
 
 class BasicStatsSerializer(serializers.ModelSerializer):
