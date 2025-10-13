@@ -120,6 +120,10 @@ class SimpleItemListView(ListAPIView):
     serializer_class = SimpleItemSerializer
     pagination_class = LargeResultsSetPagination
 
+    @method_decorator(cache_control(max_age=3600))
+    def get(self, request, *args, **kwargs) -> Response:
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         qs = Item.objects.all().select_related('image', 'gold')
         ids = self.request.query_params.get('ids', None)
