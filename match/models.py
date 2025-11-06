@@ -563,6 +563,7 @@ class Stats(models.Model):
     damage_dealt_to_objectives = models.IntegerField(default=0, blank=True)
     damage_dealt_to_turrets = models.IntegerField(default=0, blank=True)
     damage_self_mitigated = models.IntegerField(default=0, blank=True)
+    damage_dealt_to_epic_monsters = models.IntegerField(default=0, blank=True)
     deaths = models.IntegerField(default=0, blank=True)
     double_kills = models.IntegerField(default=0, blank=True)
     first_blood_assist = models.BooleanField(default=False, blank=True)

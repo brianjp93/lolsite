@@ -1027,6 +1027,7 @@ def build_stats(part: ParticipantModel, participant: Participant | None = None):
         damage_dealt_to_objectives=part.damageDealtToObjectives,
         damage_dealt_to_turrets=part.damageDealtToTurrets,
         damage_self_mitigated=part.damageSelfMitigated,
+        damage_dealt_to_epic_monsters=part.damageDealtToEpicMonsters,
         deaths=part.deaths,
         double_kills=part.doubleKills,
         first_blood_assist=part.firstBloodAssist,
