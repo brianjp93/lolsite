@@ -119,7 +119,7 @@ class ParticipantModel(BaseModelWithLogger):
     damageDealtToObjectives: int
     damageDealtToTurrets: int
     damageSelfMitigated: int
-    damageDealtToEpicMonsters: int | None = None
+    damageDealtToEpicMonsters: int | None = 0
     deaths: int
     detectorWardsPlaced: int
     doubleKills: int
