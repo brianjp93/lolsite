@@ -130,6 +130,10 @@ class SimpleItemListView(ListAPIView):
         major = self.kwargs['major']
         minor = self.kwargs['minor']
         qs = qs.filter(major=major, minor=minor)
+        if not list(qs):
+            item: Item | None = Item.objects.order_by('-major', '-minor').first()
+            if item:
+                qs = Item.objects.filter(major=item.major, minor=item.minor).select_related('image', 'gold')
         if ids:
             qs = qs.filter(_id__in=ids)
         return qs
