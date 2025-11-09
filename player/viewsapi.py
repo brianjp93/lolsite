@@ -951,3 +951,21 @@ def is_suspicious_account(request, format=None):
     summoner = get_object_or_404(Summoner, puuid=puuid)
     sus = summoner.suspicious_account()
     return Response(sus)
+
+
+class FollowingListAPIView(ListAPIView):
+    serializer_class = SummonerSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):  # type: ignore
+        user = self.request.user
+        return Summoner.objects.filter(
+            id__in=user.follow_set.all().values("summoner_id")  # type: ignore
+        )
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            'data': serializer.data,
+        })
