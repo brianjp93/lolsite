@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from lolsite.celery import app
 
+from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth.models import User
 
@@ -239,11 +240,12 @@ def create_account(email, password):
     user = False
 
     if is_valid:
-        user = User.objects.create_user(email, email, password)
-        custom = Custom(user=user)
-        custom.save()
-        verification = EmailVerification(user=user)
-        verification.save()
+        with transaction.atomic():
+            user = User.objects.create_user(email, email, password)
+            custom = Custom(user=user)
+            custom.save()
+            verification = EmailVerification(user=user)
+            verification.save()
     return user
 
 

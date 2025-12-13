@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.core.paginator import Paginator
 from django.core.cache import cache
 
-from .models import Comment, Summoner, NameChange
+from .models import Comment, Summoner, NameChange, SummonerNote
 from .models import RankCheckpoint, RankPosition
 from .models import Custom, EmailVerification, SummonerLink
 
@@ -80,6 +80,12 @@ class CommentAdmin(admin.ModelAdmin):
         if obj.markdown:
             return obj.markdown[:20]
         return ''
+
+
+@admin.register(SummonerNote)
+class SummonerNoteAdmin(admin.ModelAdmin):
+    list_display = ("user", "summoner")
+    raw_id_fields = ("user", "summoner")
 
 
 admin.site.register(Summoner, SummonerAdmin)

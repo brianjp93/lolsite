@@ -192,6 +192,20 @@ class Summoner(models.Model):
         add_match_to_summoner_champion_stats(self, match)
 
 
+class SummonerNote(models.Model):
+    user = models.ForeignKey[User, User](User, on_delete=models.CASCADE)
+    summoner = models.ForeignKey[Summoner, Summoner](Summoner, on_delete=models.CASCADE)
+    note = models.TextField()
+    created_date = models.DateTimeField(default=timezone.now)
+    modified_date = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = [('user', 'summoner')]
+
+    def __str__(self) -> str:
+        return f"SummonerNote(user={self.user.email}, summoner={self.summoner.simple_riot_id})"  # type: ignore
+
+
 class Pro(models.Model):
     position_choices = (
         ("top", "top"),

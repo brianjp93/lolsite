@@ -21,6 +21,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.functions import Extract
 from django.db.models import Max, Min
 from django.shortcuts import get_object_or_404
+from django.db.models import Prefetch
 
 from lolsite.viewsapi import require_login
 from lolsite.helpers import CustomCursorPagination, UserType, query_debugger
@@ -31,7 +32,7 @@ from player import filters as player_filters
 from player.models import (
     RankPosition, Comment, Favorite,
     SummonerLink, decode_int_to_rank, validate_password,
-    Reputation, NameChange, get_simple_riot_id,
+    Reputation, NameChange, get_simple_riot_id, SummonerNote
 )
 
 from data.models import ProfileIcon, Champion
@@ -92,6 +93,15 @@ def get_summoner(request, format=None):
         else:
             query = Summoner.objects.none()
 
+        if request.user.is_authenticated:
+            query = query.prefetch_related(
+                Prefetch(
+                    'summonernote_set',
+                    queryset=SummonerNote.objects.filter(user=request.user),
+                    to_attr='user_notes'
+                )
+            )
+
         if summoner := query.first():
             serializer = SummonerSerializer(summoner, context={'request': request})
             data["data"] = serializer.data
@@ -117,10 +127,19 @@ class SummonerByRiotId(RetrieveAPIView):
         region = self.kwargs['region']
         simple_riot_id = get_simple_riot_id(riot_id_name, riot_id_tagline)
         try:
-            summoner = Summoner.objects.filter(
+            qs = Summoner.objects.filter(
                 simple_riot_id=simple_riot_id,
                 region=region,
-            ).get()
+            )
+            if self.request.user.is_authenticated:
+                qs = qs.prefetch_related(
+                    Prefetch(
+                        'summonernote_set',
+                        queryset=SummonerNote.objects.filter(user=self.request.user),
+                        to_attr='user_notes'
+                    )
+                )
+            summoner = qs.get()
         except Summoner.DoesNotExist:
             summoner_id = pt.import_summoner(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
             return get_object_or_404(Summoner, id=summoner_id)
@@ -151,6 +170,14 @@ def get_summoners(request, format=None):
         puuids = puuids[:100]
         region = request.data["region"]
         query = Summoner.objects.filter(puuid__in=puuids, region=region)
+        if request.user.is_authenticated:
+            query = query.prefetch_related(
+                Prefetch(
+                    'summonernote_set',
+                    queryset=SummonerNote.objects.filter(user=request.user),
+                    to_attr='user_notes'
+                )
+            )
         serializer = SummonerSerializer(query, many=True)
         data = {"data": serializer.data}
     return Response(data, status=status_code)
@@ -335,6 +362,14 @@ def summoner_search(request: Request, format=None):
         if end - start > 100:
             end = start + 100
         fields = request.query_params.get("fields", None)
+        if request.user.is_authenticated:
+            query = query.prefetch_related(
+                Prefetch(
+                    'summonernote_set',
+                    queryset=SummonerNote.objects.filter(user=request.user),
+                    to_attr='user_notes'
+                )
+            )
         query = query[start:end]
         serialized = SummonerSerializer(query, many=True, fields=fields).data
         data = {"data": serialized}
@@ -427,6 +462,14 @@ def following(request, format=None):
         _id = request.data['id']
         user.follow_set.filter(summoner__id=_id).delete()
     qs = Summoner.objects.filter(follow__user=user)
+    if user.is_authenticated:
+        qs = qs.prefetch_related(
+            Prefetch(
+                'summonernote_set',
+                queryset=SummonerNote.objects.filter(user=user),
+                to_attr='user_notes'
+            )
+        )
     data = SummonerSerializer(qs, many=True).data
     return Response(data)
 
@@ -685,6 +728,13 @@ def get_connected_accounts(request, format=None):
     if request.method == "GET":
         if request.user.is_authenticated:
             query = Summoner.objects.get_connected_accounts(request.user)
+            query = query.prefetch_related(
+                Prefetch(
+                    'summonernote_set',
+                    queryset=SummonerNote.objects.filter(user=request.user),
+                    to_attr='user_notes'
+                )
+            )
             serialized = SummonerSerializer(query, many=True).data
         else:
             serialized = []
@@ -959,9 +1009,18 @@ class FollowingListAPIView(ListAPIView):
 
     def get_queryset(self):  # type: ignore
         user = self.request.user
-        return Summoner.objects.filter(
+        qs = Summoner.objects.filter(
             id__in=user.follow_set.all().values("summoner_id")  # type: ignore
         )
+        if user.is_authenticated:
+            qs = qs.prefetch_related(
+                Prefetch(
+                    'summonernote_set',
+                    queryset=SummonerNote.objects.filter(user=user),
+                    to_attr='user_notes'
+                )
+            )
+        return qs
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

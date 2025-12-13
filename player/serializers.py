@@ -7,9 +7,15 @@ from data.serializers import DynamicSerializer
 from lolsite.helpers import HtmxHttpRequest, UserType
 from .models import Summoner, Reputation
 from .models import RankPosition, Custom
-from .models import Favorite, Comment, NameChange
+from .models import Favorite, Comment, NameChange, SummonerNote
 
 from match.models import Participant
+
+
+class SummonerNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SummonerNote
+        fields = ["note", "created_date", "modified_date"]
 
 
 class ReputationSerializer(serializers.ModelSerializer):
@@ -73,6 +79,7 @@ class ReputationSerializer(serializers.ModelSerializer):
 class SummonerSerializer(DynamicSerializer):
     has_match_overlap = serializers.SerializerMethodField()
     profile_icon = serializers.SerializerMethodField()
+    notes = serializers.SerializerMethodField()
 
     class Meta:  # type: ignore[override]
         model = Summoner
@@ -88,6 +95,7 @@ class SummonerSerializer(DynamicSerializer):
             "summoner_level",
             "riot_id_name",
             "riot_id_tagline",
+            "notes",
         )
 
     def get_has_match_overlap(self, obj):
@@ -103,6 +111,12 @@ class SummonerSerializer(DynamicSerializer):
         if icon := CDProfileIcon.objects.filter(ext_id=obj.profile_icon_id).first():
             return icon.image_url()
         return ''
+
+    def get_notes(self, obj):
+        # only render notes if it was explicitly prefetched for the queryset
+        if notes := getattr(obj, "user_notes", None):
+            return SummonerNoteSerializer(notes[0]).data
+        return None
 
 
 class RankPositionSerializer(DynamicSerializer):
