@@ -9,8 +9,6 @@ from urllib3.exceptions import MaxRetryError
 from requests.exceptions import ConnectionError
 
 from pydantic import ValidationError
-from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam
 
 from django.conf import settings
 from django.db.utils import IntegrityError
@@ -1177,27 +1175,4 @@ def get_summary_of_match(match_id: str, focus_player_puuid: str | None = None):
     data = LlmMatchSerializer(match, many=False).data
     data_json = json.dumps(data, indent=None)
     logger.info(data_json)
-    chat = OpenAI(api_key=settings.OPENAI_KEY)
-    messages: list[ChatCompletionMessageParam] = [
-        {"role": "system", "content": MATCH_SUMMARY_INTRO_PROMPT},
-    ]
-    if focus_player_puuid:
-        messages.append(
-            {
-                "role": "system",
-                "content": f"Take particular focus on the player with puuid {focus_player_puuid}",
-            },
-        )
-    messages.append(
-        {"role": "user", "content": data_json},
-    )
-    r = chat.chat.completions.create(
-        model="gpt-4o",
-        messages=messages,
-        temperature=0.1,
-    )
-    content = r.choices[0].message.content
-    matchsummary.content = content or ""
-    matchsummary.status = MatchSummary.Status.COMPLETE
-    matchsummary.save()
     return matchsummary.pk

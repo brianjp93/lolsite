@@ -41,23 +41,6 @@ logger = logging.getLogger('django')
 def import_missing(
     max_versions=10, until_found=True, language="en_US", last_import_hours=1
 ):
-    """
-
-    Parameters
-    ----------
-    max_versions: int
-        The max number of data versions to import
-    until_found: bool
-        Once a version that exists in the DB is found, stop
-    last_import_hours: int
-        only run import if the last import was done more than
-        <last_import_hours> hours ago.
-
-    Returns
-    -------
-    None
-
-    """
     rito = Rito.objects.first()
     if not rito:
         logger.warning("Rito object not found.")
@@ -830,11 +813,12 @@ def import_versions():
     api = get_riot_api()
     r = api.lolstaticdata.versions()
     if r.status_code == 200:
-        rito = Rito.objects.first()
-        if not rito:
-            return
-        rito.versions = r.text
-        rito.save()
+        rito, _ = Rito.objects.update_or_create(
+            defaults={
+                'versions': r.text,
+            }
+        )
+        return rito
 
 
 def compute_champion_last_change(index=None, start_patch=None, language="en_US"):

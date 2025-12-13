@@ -1,11 +1,11 @@
-FROM python:3.13.0-alpine3.19
+FROM python:3.14-alpine
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONFAULTHANDLER=1
 ENV TAILWINDCSS_VERSION=v3.4.17
 WORKDIR /code
 COPY requirements.txt .
 
-RUN apk add --no-cache alpine-sdk gcc g++ python3-dev
+RUN apk add --no-cache alpine-sdk gcc g++ python3-dev jpeg-dev zlib-dev
 
 RUN pip install --upgrade pip
 RUN pip install uv

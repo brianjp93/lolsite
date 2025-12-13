@@ -25,7 +25,8 @@ vim-markdown-preview.html
 htmlcov/
 wily-report.html
 
-celerybeat-schedule
+# celery
+celerybeat-schedule*
 celerybeat.pid
 
 # ignore tailwind generated file

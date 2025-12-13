@@ -27,7 +27,6 @@ pydantic<3
 redis<5
 requests
 sentry-sdk
-openai
 pytz
 pytailwindcss
 django-htmx
