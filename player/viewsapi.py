@@ -48,6 +48,7 @@ from .serializers import (
     FavoriteSerializer, CommentSerializer,
     ReputationSerializer, UserSerializer,
     NameChangeSerializer,
+    SummonerNoteSerializer,
 )
 
 import random
@@ -55,6 +56,34 @@ import logging
 
 
 logger = logging.getLogger(__name__)
+
+
+@api_view(["POST"])
+@require_login
+def save_summoner_note(request, format=None):
+    data = {}
+    status_code = 200
+    summoner_id = request.data.get('summoner_id')
+    note = request.data.get('note', '')
+    if len(note) > 10000:
+        return Response({'message': 'Note is too long'}, status=400)
+
+    if not summoner_id:
+        return Response({'message': 'summoner_id is required'}, status=400)
+
+    summoner = get_object_or_404(Summoner, id=summoner_id)
+
+    obj, _ = SummonerNote.objects.update_or_create(
+        user=request.user,
+        summoner=summoner,
+        defaults={'note': note}
+    )
+
+    data = {
+        'status': 'success',
+        'data': SummonerNoteSerializer(obj).data
+    }
+    return Response(data, status=status_code)
 
 
 def get_by_puuid(puuid, region='na'):

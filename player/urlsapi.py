@@ -49,6 +49,7 @@ urlpatterns = [
     path('login/', player_views.login_action),
     path('logout/', player_views.logout_action),
     path('is_suspicious/', player_views.is_suspicious_account),
+    path("summoner-note/", player_views.save_summoner_note),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
