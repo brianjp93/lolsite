@@ -20,7 +20,7 @@ gunicorn
 hypothesis
 ipython
 lolwrapper @ git+https://github.com/brianjp93/lolapi.git@c84841786484f7e0b844fa203c06f8bdea54647f
-Pillow>=9.0.0
+Pillow>=12.0.0
 psycopg[binary]
 python-decouple
 pydantic<3
