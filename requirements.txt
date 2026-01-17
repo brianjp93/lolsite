@@ -102,9 +102,11 @@ hypothesis==6.115.0
     # via -r requirements.in
 idna==3.10
     # via requests
-ipython==8.28.0
+ipython==9.9.0
     # via -r requirements.in
-jedi==0.19.1
+ipython-pygments-lexers==1.1.1
+    # via ipython
+jedi==0.19.2
     # via ipython
 jmespath==1.0.1
     # via
@@ -150,7 +152,9 @@ pydantic==2.12.5
 pydantic-core==2.41.5
     # via pydantic
 pygments==2.18.0
-    # via ipython
+    # via
+    #   ipython
+    #   ipython-pygments-lexers
 pytailwindcss==0.2.0
     # via -r requirements.in
 python-dateutil==2.9.0.post0
