@@ -20,7 +20,7 @@ class MatchQuerySet(models.QuerySet["Match"]):
         from match.models import Stats
         major, minor = self.version
         item_ids = set()
-        qs = Stats.objects.filter(participant__match__in=self)
+        qs = Stats.objects.filter(participant__match__in=self).select_related('participant')
         if puuid is not None:
             qs = qs.filter(participant__puuid=puuid)
         for stat in qs:
@@ -28,6 +28,8 @@ class MatchQuerySet(models.QuerySet["Match"]):
                 key = f"item_{i}"
                 item_id = getattr(stat, key)
                 item_ids.add(item_id)
+            if stat.participant.role_bound_item:
+                item_ids.add(stat.participant.role_bound_item)
         qs = Item.objects.filter(_id__in=item_ids, major=major, minor=minor).select_related('image')
         if not len(qs):
             # backup

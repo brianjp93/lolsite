@@ -37,14 +37,20 @@ for data imports
 logger = logging.getLogger('django')
 
 
+def get_rito():
+    if rito := Rito.objects.first():
+        return rito
+    rito = import_versions()
+    if not rito:
+        raise Exception('No Rito')
+    return rito
+
+
 @app.task(name="data.tasks.import_missing")
 def import_missing(
     max_versions=10, until_found=True, language="en_US", last_import_hours=1
 ):
-    rito = Rito.objects.first()
-    if not rito:
-        logger.warning("Rito object not found.")
-        return
+    rito = get_rito()
     thresh = timezone.now() - timedelta(hours=last_import_hours)
     if rito.last_data_import is None or rito.last_data_import < thresh:
         rito.last_data_import = timezone.now()
@@ -824,9 +830,7 @@ def import_versions():
 def compute_champion_last_change(index=None, start_patch=None, language="en_US"):
     """Compute and save the last time a champion was changed.
     """
-    rito = Rito.objects.first()
-    if not rito:
-        raise Exception('Expected Rito object')
+    rito = get_rito()
     versions = json.loads(rito.versions)
     if index is None:
         index = versions.index(start_patch)
@@ -852,9 +856,7 @@ def compute_champion_last_change(index=None, start_patch=None, language="en_US")
 def compute_item_last_change(index=None, start_patch=None, language="en_US"):
     """Compute and save the last time a champion was changed.
     """
-    rito = Rito.objects.first()
-    if not rito:
-        raise Exception('Expected Rito object')
+    rito = get_rito()
     versions = json.loads(rito.versions)
     if index is None:
         index = versions.index(start_patch)

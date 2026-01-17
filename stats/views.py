@@ -1,18 +1,17 @@
 from django.shortcuts import render
 from django.db.models import F, Sum
 
+from data.tasks import get_rito
 from stats.models import SummonerChampion
 from stats.tasks import add_all_matches_for_summoner_to_stats
 
-from data.models import Rito, Champion
+from data.models import Champion
 
 
 def champion_stats_context(puuid, major=None, minor=None, queue=420):
     versions = []
     last_major = None
-    rito = Rito.objects.first()
-    if not rito:
-        return {}
+    rito = get_rito()
     for version in rito.minor_version_list:
         if version["major"] != last_major:
             last_major = version["major"]

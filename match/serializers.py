@@ -6,7 +6,6 @@ from .models import (
 from . import models
 
 from django.db.models import QuerySet
-from django.core.cache import cache
 
 import logging
 
@@ -706,6 +705,7 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
             "team_position",
             "placement",
             "subteam_placement",
+            "role_bound_item",
         ]
 
     def __init__(self, instance=None, extra=None, **kwargs):

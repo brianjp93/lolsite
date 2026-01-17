@@ -426,6 +426,7 @@ class Participant(models.Model):
     # label for ML training
     # 0=top, 1=jg, 2=mid, 3=adc, 4=sup
     role_label = models.IntegerField(default=None, null=True)
+    role_bound_item = models.IntegerField(default=None, null=True)
 
     stats: Union["Stats", None]
 
@@ -556,7 +557,8 @@ class Participant(models.Model):
 
 
 class Stats(models.Model):
-    participant = models.OneToOneField("Participant", on_delete=models.CASCADE)
+    participant = models.OneToOneField[Participant]("Participant", on_delete=models.CASCADE)
+    participant_id: int
 
     assists = models.IntegerField(default=0, blank=True)
     champ_level = models.IntegerField(default=0, null=True, blank=True)

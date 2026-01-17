@@ -253,6 +253,7 @@ class ParticipantModel(BaseModelWithLogger):
     PlayerScore11: float|None = 0
     missions: MissionsModel|None = None
     championSkinId: int | None = None
+    roleBoundItem: int | None = None
 
     @property
     def simple_name(self):

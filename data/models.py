@@ -384,7 +384,7 @@ class Item(VersionedModel):
                 case "critical strike damage":
                     self.percent_crit_damage = num
                 case _:
-                    logger.warning(f"Found unknown stat: {stat}")
+                    logger.warning(f"Found unknown stat: {stat} in description\n{desc}")
         if save:
             self.save()
 

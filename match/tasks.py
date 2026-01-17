@@ -10,7 +10,6 @@ from requests.exceptions import ConnectionError
 
 from pydantic import ValidationError
 
-from django.conf import settings
 from django.db.utils import IntegrityError
 from django.db.models import Count, Exists, Subquery, OuterRef
 from django.db.models import Case, When, Sum
@@ -971,6 +970,7 @@ def build_participant(part: ParticipantModel, match: Match):
         subteam_placement=part.subteamPlacement,
         riot_id_name=part.riotIdGameName,
         riot_id_tagline=part.riotIdTagline,
+        role_bound_item=part.roleBoundItem,
     )
 
 

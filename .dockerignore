@@ -6,6 +6,7 @@ media/
 .hypothesis
 .mypy_cache
 .pytest_cache
+.venv
 go.fish
 schema.prisma
 react/node_modules/
