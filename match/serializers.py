@@ -1,7 +1,14 @@
 from rest_framework import serializers
 from .models import (
-    Match, MatchSummary, Participant, Stats, Team, Ban,
-    AdvancedTimeline, Frame, ParticipantFrame,
+    Match,
+    MatchSummary,
+    Participant,
+    Stats,
+    Team,
+    Ban,
+    AdvancedTimeline,
+    Frame,
+    ParticipantFrame,
 )
 from . import models
 
@@ -19,22 +26,22 @@ class MatchSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = Match
         fields = [
-            'id',
-            '_id',
-            'game_creation',
-            'game_duration',
-            'game_mode',
-            'game_type',
-            'map_id',
-            'platform_id',
-            'season_id',
-            'game_version',
-            'build',
-            'major',
-            'minor',
-            'patch',
-            'url',
-            'queue_id',
+            "id",
+            "_id",
+            "game_creation",
+            "game_duration",
+            "game_mode",
+            "game_type",
+            "map_id",
+            "platform_id",
+            "season_id",
+            "game_version",
+            "build",
+            "major",
+            "minor",
+            "patch",
+            "url",
+            "queue_id",
         ]
 
     def __init__(self, *args, summoner_name=None, **kwargs):
@@ -60,134 +67,133 @@ class StatsSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = Stats
         fields = [
-            'perk_0_image_url',
-            'perk_sub_style_image_url',
-            'participant',
-            'assists',
-            'champ_level',
-            'damage_dealt_to_objectives',
-            'damage_dealt_to_turrets',
-            'damage_self_mitigated',
-            'deaths',
-            'double_kills',
-            'first_blood_assist',
-            'first_blood_kill',
-            'first_tower_assist',
-            'first_tower_kill',
-            'gold_earned',
-            'gold_spent',
-            'inhibitor_kills',
-            'item_0',
-            'item_1',
-            'item_2',
-            'item_3',
-            'item_4',
-            'item_5',
-            'item_6',
-            'kills',
-            'largest_multi_kill',
-            'magic_damage_dealt',
-            'magic_damage_dealt_to_champions',
-            'magical_damage_taken',
-            'neutral_minions_killed',
-            'penta_kills',
-            'perk_0',
-            'perk_0_var_1',
-            'perk_0_var_2',
-            'perk_0_var_3',
-            'perk_1',
-            'perk_1_var_1',
-            'perk_1_var_2',
-            'perk_1_var_3',
-            'perk_2',
-            'perk_2_var_1',
-            'perk_2_var_2',
-            'perk_2_var_3',
-            'perk_3',
-            'perk_3_var_1',
-            'perk_3_var_2',
-            'perk_3_var_3',
-            'perk_4',
-            'perk_4_var_1',
-            'perk_4_var_2',
-            'perk_4_var_3',
-            'perk_5',
-            'perk_5_var_1',
-            'perk_5_var_2',
-            'perk_5_var_3',
-            'perk_primary_style',
-            'perk_sub_style',
-            'physical_damage_dealt',
-            'physical_damage_dealt_to_champions',
-            'physical_damage_taken',
-            'quadra_kills',
-            'stat_perk_0',
-            'stat_perk_1',
-            'stat_perk_2',
-            'spell_1_casts',
-            'spell_2_casts',
-            'spell_3_casts',
-            'spell_4_casts',
-            'time_ccing_others',
-            'total_damage_dealt',
-            'total_damage_dealt_to_champions',
-            'total_damage_taken',
-            'total_heal',
-            'total_heals_on_teammates',
-            'total_damage_shielded_on_teammates',
-            'total_minions_killed',
-            'total_time_crowd_control_dealt',
-            'total_units_healed',
-            'total_ally_jungle_minions_killed',
-            'total_enemy_jungle_minions_killed',
-            'triple_kills',
-            'true_damage_dealt',
-            'true_damage_dealt_to_champions',
-            'true_damage_taken',
-            'vision_score',
-            'vision_wards_bought_in_game',
-            'wards_killed',
-            'wards_placed',
-            'win',
-
-            'all_in_pings',
-            'assist_me_pings',
-            'bait_pings',
-            'basic_pings',
-            'command_pings',
-            'danger_pings',
-            'enemy_missing_pings',
-            'enemy_vision_pings',
-            'get_back_pings',
-            'hold_pings',
-            'need_vision_pings',
-            'on_my_way_pings',
-            'push_pings',
-            'vision_cleared_pings',
+            "perk_0_image_url",
+            "perk_sub_style_image_url",
+            "participant",
+            "assists",
+            "champ_level",
+            "damage_dealt_to_objectives",
+            "damage_dealt_to_turrets",
+            "damage_self_mitigated",
+            "deaths",
+            "double_kills",
+            "first_blood_assist",
+            "first_blood_kill",
+            "first_tower_assist",
+            "first_tower_kill",
+            "gold_earned",
+            "gold_spent",
+            "inhibitor_kills",
+            "item_0",
+            "item_1",
+            "item_2",
+            "item_3",
+            "item_4",
+            "item_5",
+            "item_6",
+            "kills",
+            "largest_multi_kill",
+            "magic_damage_dealt",
+            "magic_damage_dealt_to_champions",
+            "magical_damage_taken",
+            "neutral_minions_killed",
+            "penta_kills",
+            "perk_0",
+            "perk_0_var_1",
+            "perk_0_var_2",
+            "perk_0_var_3",
+            "perk_1",
+            "perk_1_var_1",
+            "perk_1_var_2",
+            "perk_1_var_3",
+            "perk_2",
+            "perk_2_var_1",
+            "perk_2_var_2",
+            "perk_2_var_3",
+            "perk_3",
+            "perk_3_var_1",
+            "perk_3_var_2",
+            "perk_3_var_3",
+            "perk_4",
+            "perk_4_var_1",
+            "perk_4_var_2",
+            "perk_4_var_3",
+            "perk_5",
+            "perk_5_var_1",
+            "perk_5_var_2",
+            "perk_5_var_3",
+            "perk_primary_style",
+            "perk_sub_style",
+            "physical_damage_dealt",
+            "physical_damage_dealt_to_champions",
+            "physical_damage_taken",
+            "quadra_kills",
+            "stat_perk_0",
+            "stat_perk_1",
+            "stat_perk_2",
+            "spell_1_casts",
+            "spell_2_casts",
+            "spell_3_casts",
+            "spell_4_casts",
+            "time_ccing_others",
+            "total_damage_dealt",
+            "total_damage_dealt_to_champions",
+            "total_damage_taken",
+            "total_heal",
+            "total_heals_on_teammates",
+            "total_damage_shielded_on_teammates",
+            "total_minions_killed",
+            "total_time_crowd_control_dealt",
+            "total_units_healed",
+            "total_ally_jungle_minions_killed",
+            "total_enemy_jungle_minions_killed",
+            "triple_kills",
+            "true_damage_dealt",
+            "true_damage_dealt_to_champions",
+            "true_damage_taken",
+            "vision_score",
+            "vision_wards_bought_in_game",
+            "wards_killed",
+            "wards_placed",
+            "win",
+            "all_in_pings",
+            "assist_me_pings",
+            "bait_pings",
+            "basic_pings",
+            "command_pings",
+            "danger_pings",
+            "enemy_missing_pings",
+            "enemy_vision_pings",
+            "get_back_pings",
+            "hold_pings",
+            "need_vision_pings",
+            "on_my_way_pings",
+            "push_pings",
+            "vision_cleared_pings",
         ]
 
     def __init__(self, instance=None, extra=None, **kwargs):
         extra = extra or {}
-        self.perk_substyles = extra.get('perk_substyles', {})
-        self.runes = extra.get('runes', {})
+        self.perk_substyles = extra.get("perk_substyles", {})
+        self.runes = extra.get("runes", {})
         super().__init__(instance=instance, **kwargs)
 
     def get_perk_0_image_url(self, obj):
-        rune = self.runes.get(obj.perk_0, '')
+        rune = self.runes.get(obj.perk_0, "")
         if rune:
             return rune.image_url()
-        return ''
+        return ""
 
     def get_perk_sub_style_image_url(self, obj):
-        return self.perk_substyles.get(obj.perk_sub_style, '') or ''
+        return self.perk_substyles.get(obj.perk_sub_style, "") or ""
 
 
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = Team
         fields = [
-            '_id',
-            'win',
+            "_id",
+            "win",
         ]
 
 
@@ -197,9 +203,9 @@ class BanSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = Ban
         fields = [
-            'pick_turn',
-            'champion_id',
-            'team',
+            "pick_turn",
+            "champion_id",
+            "team",
         ]
 
     def get_team(self, obj):
@@ -223,25 +229,25 @@ class FullParticipantSerializer(serializers.ModelSerializer):
             match_qs = None
             if isinstance(instance, QuerySet):
                 match_qs = Match.objects.filter(participants__in=instance)
-            elif hasattr(instance, 'match'):
+            elif hasattr(instance, "match"):
                 assert instance
                 match_qs = Match.objects.filter(id=instance.match.id)
             if match_qs:
                 self.extra = match_qs.related
-        self.spell_images = self.extra.get('spell_images', {})
-        self.runes = self.extra.get('runes', {})
-        self.items = self.extra.get('items', {})
-        self.perk_substyles = self.extra.get('perk_substyles', {})
+        self.spell_images = self.extra.get("spell_images", {})
+        self.runes = self.extra.get("runes", {})
+        self.items = self.extra.get("items", {})
+        self.perk_substyles = self.extra.get("perk_substyles", {})
         super().__init__(instance=instance, **kwargs)
 
     def get_stats(self, obj):
         return StatsSerializer(obj.stats, extra=self.extra).data
 
     def get_summoner_1_image(self, obj):
-        return self.spell_images.get(obj.summoner_1_id, '')
+        return self.spell_images.get(obj.summoner_1_id, "")
 
     def get_summoner_2_image(self, obj):
-        return self.spell_images.get(obj.summoner_2_id, '')
+        return self.spell_images.get(obj.summoner_2_id, "")
 
 
 class FullTeamSerializer(serializers.ModelSerializer):
@@ -267,7 +273,7 @@ class FullMatchSerializer(serializers.ModelSerializer):
     def __init__(self, instance=None, **kwargs):
         self.extra = {}
         match_qs = None
-        if hasattr(instance, 'major'):
+        if hasattr(instance, "major"):
             assert instance
             match_qs = Match.objects.filter(id=instance.pk)
         if match_qs:
@@ -278,6 +284,7 @@ class FullMatchSerializer(serializers.ModelSerializer):
 
     def get_participants(self, obj):
         from match import tasks as mt
+
         parts = mt.get_sorted_participants(obj, participants=obj.participants.all())
         return FullParticipantSerializer(parts, many=True, extra=self.extra).data
 
@@ -288,57 +295,55 @@ class ParticipantFrameSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = ParticipantFrame
         fields = [
-            'participant_id',
-            'current_gold',
-            'gold_per_second',
-            'jungle_minions_killed',
-            'total_cs',
-            'level',
-            'minions_killed',
-            'team_score',
-            'total_gold',
-            'time_enemy_spent_controlled',
-            'xp',
-            'x',
-            'y',
-
-            'ability_haste',
-            'ability_power',
-            'armor',
-            'armor_pen',
-            'armor_pen_percent',
-            'attack_damage',
-            'attack_speed',
-            'bonus_armor_pen_percent',
-            'bonus_magic_pen_percent',
-            'cc_reduction',
-            'health',
-            'health_max',
-            'health_regen',
-            'lifesteal',
-            'magic_pen',
-            'magic_pen_percent',
-            'magic_resist',
-            'movement_speed',
-            'omnivamp',
-            'physical_vamp',
-            'power',
-            'power_max',
-            'power_regen',
-            'spell_vamp',
-
-            'magic_damage_done',
-            'magic_damage_done_to_champions',
-            'magic_damage_taken',
-            'physical_damage_done',
-            'physical_damage_done_to_champions',
-            'physical_damage_taken',
-            'total_damage_done',
-            'total_damage_done_to_champions',
-            'total_damage_taken',
-            'true_damage_done',
-            'true_damage_done_to_champions',
-            'true_damage_taken',
+            "participant_id",
+            "current_gold",
+            "gold_per_second",
+            "jungle_minions_killed",
+            "total_cs",
+            "level",
+            "minions_killed",
+            "team_score",
+            "total_gold",
+            "time_enemy_spent_controlled",
+            "xp",
+            "x",
+            "y",
+            "ability_haste",
+            "ability_power",
+            "armor",
+            "armor_pen",
+            "armor_pen_percent",
+            "attack_damage",
+            "attack_speed",
+            "bonus_armor_pen_percent",
+            "bonus_magic_pen_percent",
+            "cc_reduction",
+            "health",
+            "health_max",
+            "health_regen",
+            "lifesteal",
+            "magic_pen",
+            "magic_pen_percent",
+            "magic_resist",
+            "movement_speed",
+            "omnivamp",
+            "physical_vamp",
+            "power",
+            "power_max",
+            "power_regen",
+            "spell_vamp",
+            "magic_damage_done",
+            "magic_damage_done_to_champions",
+            "magic_damage_taken",
+            "physical_damage_done",
+            "physical_damage_done_to_champions",
+            "physical_damage_taken",
+            "total_damage_done",
+            "total_damage_done_to_champions",
+            "total_damage_taken",
+            "true_damage_done",
+            "true_damage_done_to_champions",
+            "true_damage_taken",
         ]
 
     def get_total_cs(self, instance):
@@ -346,181 +351,181 @@ class ParticipantFrameSerializer(serializers.ModelSerializer):
 
 
 class WardKillEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='WARD_KILL')
+    _type = serializers.ReadOnlyField(default="WARD_KILL")
 
     class Meta:  # type: ignore[override]
         model = models.WardKillEvent
         fields = [
-            'timestamp',
-            'killer_id',
-            'ward_type',
-            '_type',
+            "timestamp",
+            "killer_id",
+            "ward_type",
+            "_type",
         ]
 
 
 class WardPlacedEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='WARD_PLACED')
+    _type = serializers.ReadOnlyField(default="WARD_PLACED")
 
     class Meta:  # type: ignore[override]
         model = models.WardPlacedEvent
         fields = [
-            'timestamp',
-            'creator_id',
-            'ward_type',
-            '_type',
+            "timestamp",
+            "creator_id",
+            "ward_type",
+            "_type",
         ]
 
 
 class LevelUpEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='LEVEL_UP')
+    _type = serializers.ReadOnlyField(default="LEVEL_UP")
 
     class Meta:  # type: ignore[override]
         model = models.LevelUpEvent
         fields = [
-            'timestamp',
-            'level',
-            'participant_id',
-            '_type',
+            "timestamp",
+            "level",
+            "participant_id",
+            "_type",
         ]
 
 
 class SkillLevelUpEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='SKILL_LEVEL_UP')
+    _type = serializers.ReadOnlyField(default="SKILL_LEVEL_UP")
 
     class Meta:  # type: ignore[override]
         model = models.SkillLevelUpEvent
         fields = [
-            'timestamp',
-            'level_up_type',
-            'participant_id',
-            'skill_slot',
-            '_type',
+            "timestamp",
+            "level_up_type",
+            "participant_id",
+            "skill_slot",
+            "_type",
         ]
 
 
 class ItemPurchasedEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='ITEM_PURCHASED')
+    _type = serializers.ReadOnlyField(default="ITEM_PURCHASED")
 
     class Meta:  # type: ignore[override]
         model = models.ItemPurchasedEvent
         fields = [
-            'timestamp',
-            'item_id',
-            'participant_id',
-            '_type',
+            "timestamp",
+            "item_id",
+            "participant_id",
+            "_type",
         ]
 
 
 class ItemDestroyedEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='ITEM_DESTROYED')
+    _type = serializers.ReadOnlyField(default="ITEM_DESTROYED")
 
     class Meta:  # type: ignore[override]
         model = models.ItemDestroyedEvent
         fields = [
-            'timestamp',
-            'item_id',
-            'participant_id',
-            '_type',
+            "timestamp",
+            "item_id",
+            "participant_id",
+            "_type",
         ]
 
 
 class ItemSoldEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='ITEM_SOLD')
+    _type = serializers.ReadOnlyField(default="ITEM_SOLD")
 
     class Meta:  # type: ignore[override]
         model = models.ItemSoldEvent
         fields = [
-            'timestamp',
-            'item_id',
-            'participant_id',
-            '_type',
+            "timestamp",
+            "item_id",
+            "participant_id",
+            "_type",
         ]
 
 
 class ItemUndoEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='ITEM_UNDO')
+    _type = serializers.ReadOnlyField(default="ITEM_UNDO")
 
     class Meta:  # type: ignore[override]
         model = models.ItemUndoEvent
         fields = [
-            'timestamp',
-            'participant_id',
-            'before_id',
-            'after_id',
-            'gold_gain',
-            '_type',
+            "timestamp",
+            "participant_id",
+            "before_id",
+            "after_id",
+            "gold_gain",
+            "_type",
         ]
 
 
 class TurretPlateDestroyedEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='TURRET_PLATE_DESTROYED')
+    _type = serializers.ReadOnlyField(default="TURRET_PLATE_DESTROYED")
 
     class Meta:  # type: ignore[override]
         model = models.TurretPlateDestroyedEvent
         fields = [
-            'timestamp',
-            'killer_id',
-            'lane_type',
-            'x',
-            'y',
-            'team_id',
-            '_type',
+            "timestamp",
+            "killer_id",
+            "lane_type",
+            "x",
+            "y",
+            "team_id",
+            "_type",
         ]
 
 
 class EliteMonsterKillEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='ELITE_MONSTER_KILL')
+    _type = serializers.ReadOnlyField(default="ELITE_MONSTER_KILL")
 
     class Meta:  # type: ignore[override]
         model = models.EliteMonsterKillEvent
         fields = [
-            'bounty',
-            'timestamp',
-            'killer_id',
-            'assisting_participant_ids',
-            'killer_team_id',
-            'monster_type',
-            'monster_sub_type',
-            'x',
-            'y',
-            '_type',
+            "bounty",
+            "timestamp",
+            "killer_id",
+            "assisting_participant_ids",
+            "killer_team_id",
+            "monster_type",
+            "monster_sub_type",
+            "x",
+            "y",
+            "_type",
         ]
 
 
 class ChampionSpecialKillEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='CHAMPION_SPECIAL_KILL')
+    _type = serializers.ReadOnlyField(default="CHAMPION_SPECIAL_KILL")
 
     class Meta:  # type: ignore[override]
         model = models.ChampionSpecialKillEvent
         fields = [
-            'timestamp',
-            'assisting_participant_ids',
-            'kill_type',
-            'killer_id',
-            'multi_kill_length',
-            'x',
-            'y',
-            '_type',
+            "timestamp",
+            "assisting_participant_ids",
+            "kill_type",
+            "killer_id",
+            "multi_kill_length",
+            "x",
+            "y",
+            "_type",
         ]
 
 
 class BuildingKillEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='BUILDING_KILL')
+    _type = serializers.ReadOnlyField(default="BUILDING_KILL")
 
     class Meta:  # type: ignore[override]
         model = models.BuildingKillEvent
         fields = [
-            'timestamp',
-            'bounty',
-            'assisting_participant_ids',
-            'building_type',
-            'killer_id',
-            'lane_type',
-            'team_id',
-            'tower_type',
-            'x',
-            'y',
-            '_type',
+            "timestamp",
+            "bounty",
+            "assisting_participant_ids",
+            "building_type",
+            "killer_id",
+            "lane_type",
+            "team_id",
+            "tower_type",
+            "x",
+            "y",
+            "_type",
         ]
 
 
@@ -528,15 +533,15 @@ class VictimDamageDealtSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = models.VictimDamageDealt
         fields = [
-            'basic',
-            'magic_damage',
-            'name',
-            'participant_id',
-            'physical_damage',
-            'spell_name',
-            'spell_slot',
-            'true_damage',
-            'type',
+            "basic",
+            "magic_damage",
+            "name",
+            "participant_id",
+            "physical_damage",
+            "spell_name",
+            "spell_slot",
+            "true_damage",
+            "type",
         ]
 
 
@@ -544,84 +549,98 @@ class VictimDamageReceivedSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = models.VictimDamageReceived
         fields = [
-            'basic',
-            'magic_damage',
-            'name',
-            'participant_id',
-            'physical_damage',
-            'spell_name',
-            'spell_slot',
-            'true_damage',
-            'type',
+            "basic",
+            "magic_damage",
+            "name",
+            "participant_id",
+            "physical_damage",
+            "spell_name",
+            "spell_slot",
+            "true_damage",
+            "type",
         ]
 
 
 class ChampionKillEventSerializer(serializers.ModelSerializer):
-    _type = serializers.ReadOnlyField(default='CHAMPION_KILL')
+    _type = serializers.ReadOnlyField(default="CHAMPION_KILL")
     victimdamagedealt_set = VictimDamageDealtSerializer(many=True)
     victimdamagereceived_set = VictimDamageReceivedSerializer(many=True)
 
     class Meta:  # type: ignore[override]
         model = models.ChampionKillEvent
         fields = [
-            'timestamp',
-            'bounty',
-            'shutdown_bounty',
-            'kill_streak_length',
-            'killer_id',
-            'victim_id',
-            'x',
-            'y',
-
-            'victimdamagereceived_set',
-            'victimdamagedealt_set',
-            '_type',
+            "timestamp",
+            "bounty",
+            "shutdown_bounty",
+            "kill_streak_length",
+            "killer_id",
+            "victim_id",
+            "x",
+            "y",
+            "victimdamagereceived_set",
+            "victimdamagedealt_set",
+            "_type",
         ]
 
 
 class FrameSerializer(serializers.ModelSerializer):
     participantframes = ParticipantFrameSerializer(many=True)
-    wardkillevents = WardKillEventSerializer(many=True, source='wardkillevent_set')
-    wardplacedevents = WardPlacedEventSerializer(many=True, source='wardplacedevent_set')
-    levelupevents = LevelUpEventSerializer(many=True, source='levelupevent_set')
-    skilllevelupevents = SkillLevelUpEventSerializer(many=True, source='skilllevelupevent_set')
-    itempurchaseevents = ItemPurchasedEventSerializer(many=True, source='itempurchasedevent_set')
-    itemdestroyedevents = ItemDestroyedEventSerializer(many=True, source='itemdestroyedevent_set')
-    itemundoevents = ItemUndoEventSerializer(many=True, source='itemundoevent_set')
-    itemsoldevents = ItemSoldEventSerializer(many=True, source='itemsoldevent_set')
+    wardkillevents = WardKillEventSerializer(many=True, source="wardkillevent_set")
+    wardplacedevents = WardPlacedEventSerializer(
+        many=True, source="wardplacedevent_set"
+    )
+    levelupevents = LevelUpEventSerializer(many=True, source="levelupevent_set")
+    skilllevelupevents = SkillLevelUpEventSerializer(
+        many=True, source="skilllevelupevent_set"
+    )
+    itempurchaseevents = ItemPurchasedEventSerializer(
+        many=True, source="itempurchasedevent_set"
+    )
+    itemdestroyedevents = ItemDestroyedEventSerializer(
+        many=True, source="itemdestroyedevent_set"
+    )
+    itemundoevents = ItemUndoEventSerializer(many=True, source="itemundoevent_set")
+    itemsoldevents = ItemSoldEventSerializer(many=True, source="itemsoldevent_set")
     turretplatedestroyedevents = TurretPlateDestroyedEventSerializer(
         many=True,
-        source='turretplatedestroyedevent_set',
+        source="turretplatedestroyedevent_set",
     )
-    elitemonsterkillevents = EliteMonsterKillEventSerializer(many=True, source='elitemonsterkillevent_set')
+    elitemonsterkillevents = EliteMonsterKillEventSerializer(
+        many=True, source="elitemonsterkillevent_set"
+    )
     championspecialkillevents = ChampionSpecialKillEventSerializer(
         many=True,
-        source='championspecialkillevent_set',
+        source="championspecialkillevent_set",
     )
-    buildingkillevents = BuildingKillEventSerializer(many=True, source='buildingkillevent_set')
-    championkillevents = ChampionKillEventSerializer(many=True, source='championkillevent_set')
+    buildingkillevents = BuildingKillEventSerializer(
+        many=True, source="buildingkillevent_set"
+    )
+    championkillevents = ChampionKillEventSerializer(
+        many=True, source="championkillevent_set"
+    )
 
     class Meta:  # type: ignore[override]
         model = Frame
         fields = [
-            'timestamp',
-            'participantframes',
-            'wardkillevents',
-            'wardplacedevents',
-            'levelupevents',
-            'skilllevelupevents',
-            'itempurchaseevents',
-            'itemdestroyedevents',
-            'itemsoldevents',
-            'itemundoevents',
-            'turretplatedestroyedevents',
-            'elitemonsterkillevents',
-            'championspecialkillevents',
-            'buildingkillevents',
-            'championkillevents',
-            'team100_gold',
-            'team200_gold',
+            "timestamp",
+            "participantframes",
+            "wardkillevents",
+            "wardplacedevents",
+            "levelupevents",
+            "skilllevelupevents",
+            "itempurchaseevents",
+            "itemdestroyedevents",
+            "itemsoldevents",
+            "itemundoevents",
+            "turretplatedestroyedevents",
+            "elitemonsterkillevents",
+            "championspecialkillevents",
+            "buildingkillevents",
+            "championkillevents",
+            "team100_gold",
+            "team200_gold",
         ]
+
 
 # ADVANCED TIMELINE
 class AdvancedTimelineSerializer(serializers.ModelSerializer):
@@ -632,10 +651,10 @@ class AdvancedTimelineSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = AdvancedTimeline
         fields = [
-            'frame_interval',
-            'frames',
-            'bounties',
-            'team_bounties',
+            "frame_interval",
+            "frames",
+            "bounties",
+            "team_bounties",
         ]
 
     def get_bounties(self, obj):
@@ -655,35 +674,51 @@ class BasicStatsSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = Stats
         fields = [
-            "kills", "deaths", "assists",
-            "champ_level", "total_damage_dealt_to_champions", "vision_score",
-            "total_damage_taken", "damage_dealt_to_objectives", "damage_dealt_to_turrets",
-            "gold_earned", "total_heal", "time_ccing_others",
-            "item_0", "item_1", "item_2",
-            "item_3", "item_4", "item_5", "item_6",
-            'perk_0_image_url', 'perk_sub_style_image_url',
+            "kills",
+            "deaths",
+            "assists",
+            "champ_level",
+            "total_damage_dealt_to_champions",
+            "vision_score",
+            "total_damage_taken",
+            "damage_dealt_to_objectives",
+            "damage_dealt_to_turrets",
+            "gold_earned",
+            "total_heal",
+            "time_ccing_others",
+            "item_0",
+            "item_1",
+            "item_2",
+            "item_3",
+            "item_4",
+            "item_5",
+            "item_6",
+            "perk_0_image_url",
+            "perk_sub_style_image_url",
         ]
 
     def __init__(self, instance=None, extra=None, **kwargs):
         self.extra = extra or {}
-        self.runes = self.extra.get('runes', {})
-        self.perk_substyles = self.extra.get('perk_substyles', {})
+        self.runes = self.extra.get("runes", {})
+        self.perk_substyles = self.extra.get("perk_substyles", {})
         super().__init__(instance=instance, **kwargs)
 
     def get_perk_0_image_url(self, obj):
         rune = self.runes.get(obj.perk_0, {})
         if rune:
             return rune.image_url()
-        return ''
+        return ""
 
     def get_perk_sub_style_image_url(self, obj):
-        return self.perk_substyles.get(obj.perk_sub_style) or ''
+        return self.perk_substyles.get(obj.perk_sub_style) or ""
 
 
 class BasicParticipantSerializer(serializers.ModelSerializer):
     stats = serializers.SerializerMethodField()
     summoner_1_image = serializers.SerializerMethodField()
     summoner_2_image = serializers.SerializerMethodField()
+    impact_score = serializers.SerializerMethodField()
+    impact_rank = serializers.SerializerMethodField()
 
     class Meta:  # type: ignore[override]
         model = Participant
@@ -706,21 +741,31 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
             "placement",
             "subteam_placement",
             "role_bound_item",
+            "impact_score",
+            "impact_rank",
         ]
 
     def __init__(self, instance=None, extra=None, **kwargs):
         self.extra = extra or {}
-        self.spell_images = self.extra.get('spell_images', {})
+        self.spell_images = self.extra.get("spell_images", {})
         super().__init__(instance=instance, **kwargs)
 
     def get_stats(self, obj):
         return BasicStatsSerializer(obj.stats, extra=self.extra).data
 
     def get_summoner_1_image(self, obj):
-        return self.spell_images.get(obj.summoner_1_id, '')
+        return self.spell_images.get(obj.summoner_1_id, "")
 
     def get_summoner_2_image(self, obj):
-        return self.spell_images.get(obj.summoner_2_id, '')
+        return self.spell_images.get(obj.summoner_2_id, "")
+
+    def get_impact_score(self, obj):
+        impact_scores = obj.match.impact_scores
+        return impact_scores.get(obj.puuid, [1.0, 10])[0]
+
+    def get_impact_rank(self, obj):
+        impact_scores = obj.match.impact_scores
+        return impact_scores.get(obj.puuid, [1.0, 10])[1]
 
 
 class BasicMatchSerializer(serializers.ModelSerializer):
@@ -730,16 +775,24 @@ class BasicMatchSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = Match
         fields = [
-            "id", "_id", "game_duration",
-            "game_creation", "queue_id", "major",
-            "minor", "participants", "teams"
+            "id",
+            "_id",
+            "game_duration",
+            "game_creation",
+            "queue_id",
+            "major",
+            "minor",
+            "participants",
+            "teams",
         ]
 
     def __new__(cls, instance, *args, **kwargs):
         if isinstance(instance, QuerySet):
             instance = instance.prefetch_related(
-                'participants', 'participants__stats', 'teams',
-                'teams__bans',
+                "participants",
+                "participants__stats",
+                "teams",
+                "teams__bans",
             )
         return super().__new__(cls, instance, *args, **kwargs)
 
@@ -751,6 +804,7 @@ class BasicMatchSerializer(serializers.ModelSerializer):
 
     def get_participants(self, obj):
         from match import tasks as mt
+
         parts = mt.get_sorted_participants(obj, participants=obj.participants.all())
         return BasicParticipantSerializer(parts, many=True, extra=self.extra).data
 
@@ -775,6 +829,7 @@ class LlmStatsSerializer(serializers.ModelSerializer):
             "vision_score",
         ]
 
+
 class LlmParticipantSerializer(serializers.ModelSerializer):
     stats = LlmStatsSerializer(many=False)
 
@@ -787,9 +842,9 @@ class LlmParticipantSerializer(serializers.ModelSerializer):
             "role",
             "individual_position",
             "team_position",
-
             "stats",
         ]
+
 
 class LlmParticipantFrames(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
@@ -804,6 +859,7 @@ class LlmParticipantFrames(serializers.ModelSerializer):
             "x",
             "y",
         ]
+
 
 class LlmFrameSerializer(serializers.ModelSerializer):
     participantframes = LlmParticipantFrames(many=True)
@@ -823,14 +879,14 @@ class LlmFrameSerializer(serializers.ModelSerializer):
             "championkillevent_set",
         ]
 
+
 class LlmTimelineSerializer(serializers.ModelSerializer):
     frames = LlmFrameSerializer(many=True)
 
     class Meta:  # type: ignore[override]
         model = AdvancedTimeline
-        fields = [
-            "frames"
-        ]
+        fields = ["frames"]
+
 
 class LlmMatchSerializer(serializers.ModelSerializer):
     participants = LlmParticipantSerializer(many=True)
