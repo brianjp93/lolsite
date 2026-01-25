@@ -12,11 +12,10 @@ BASE_URL = "http://localhost:3000"
 BACKEND_URL = "http://localhost:8000"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-MIDDLEWARE = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-] + MIDDLEWARE
-
 if 'test' not in sys.argv and DEBUG:
+    MIDDLEWARE = [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    ] + MIDDLEWARE
     INSTALLED_APPS += [
         "debug_toolbar",
     ]
