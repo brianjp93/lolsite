@@ -10,7 +10,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/local/Dockerfile
-    command: python manage.py runserver_plus 0.0.0.0:8000
+    command: uv run manage.py runserver_plus 0.0.0.0:8000
     ports:
       - "8000:8000"
     volumes:
@@ -27,7 +27,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/local/Dockerfile
-    command: celery -A lolsite worker -l info
+    command: uv run celery -A lolsite worker -l info
     volumes:
       - .:/code
     links:
@@ -41,7 +41,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/local/Dockerfile
-    command: celery -A lolsite beat -l INFO
+    command: uv run celery -A lolsite beat -l INFO
     volumes:
       - .:/code
     links:
@@ -57,7 +57,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/local/Dockerfile
-    command: tailwindcss -i ./lolsite/static/src/main.css -o ./lolsite/static/src/output.css --minify --watch
+    command: uv run tailwindcss -i ./lolsite/static/src/main.css -o ./lolsite/static/src/output.css --minify --watch
     volumes:
       - .:/code
     env_file: .docker_env
