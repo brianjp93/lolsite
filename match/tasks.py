@@ -4,7 +4,7 @@ import json
 from datetime import timedelta, datetime
 from multiprocessing.pool import ThreadPool
 from functools import partial
-from typing import Optional
+from typing import Optional, assert_never
 from urllib3.exceptions import MaxRetryError
 from requests.exceptions import ConnectionError
 
@@ -313,35 +313,6 @@ def bulk_import(puuid: str, last_import_time_hours: int = 24, count=200, offset=
         summoner.last_summoner_page_import = now
         summoner.save()
         import_recent_matches(offset, offset + count, puuid, region=summoner.region)
-
-
-def celery_task_pool(jobs, pool_size=10):
-    pool: list = [None] * pool_size
-    i = 0
-    for job in jobs:
-        job_started = False
-        while not job_started:
-            for i in range(len(pool)):
-                pool_job = pool[i]
-                if not pool_job or pool_job.ready():
-                    result = job.delay()
-                    pool[i] = result
-                    job_started = True
-                    if pool_job and pool_job.ready():
-                        i += 1
-                        yield i
-                    break
-            time.sleep(0.1)
-    pool = [job for job in pool if job is not None]
-    expected = len(pool)
-    ready_count = 0
-    while ready_count < expected:
-        for job in pool:
-            if job.ready():
-                ready_count += 1
-                i += 1
-                yield i
-        time.sleep(0.1)
 
 
 @app.task
@@ -764,6 +735,10 @@ def import_advanced_timeline(match_id: str | int, overwrite=False):
                             )
                         )
                         cke_events.append(evm)
+                    case tmparsers.FeatUpdateEventModel():
+                        ...
+                    case _:
+                        assert_never(evm)
         ChampionKillEvent.objects.bulk_create(cke_to_save, batch_size=50)
         for cke, evm in zip(cke_to_save, cke_events):
             for vd in evm.victimDamageDealt or []:
