@@ -110,6 +110,22 @@ class VictimDamageReceivedModel(VictimDamageDealtModel):
     ...
 
 
+class VictimTeamfightDamageDealtModel(BaseModelWithLogger):
+    basic: bool
+    magicDamage: int
+    name: str
+    participantId: int
+    physicalDamage: int
+    spellName: str
+    spellSlot: int
+    trueDamage: int
+    type: str
+
+
+class VictimTeamfightDamageReceivedModel(VictimTeamfightDamageDealtModel):
+    ...
+
+
 class ChampionKillEventModel(BaseModelWithLogger):
     type: Literal["CHAMPION_KILL"]
     assistingParticipantIds: list[int] | None = None
@@ -122,8 +138,16 @@ class ChampionKillEventModel(BaseModelWithLogger):
     victimDamageDealt: list[VictimDamageDealtModel] | None = None
     victimDamageReceived: list[VictimDamageReceivedModel] | None = None
     victimId: int
+    victimTeamfightDamageDealt: list[VictimTeamfightDamageDealtModel] | None = None
+    victimTeamfightDamageReceived: list[VictimTeamfightDamageReceivedModel] | None = None
 
-    @field_validator("victimDamageDealt", "victimDamageReceived", mode='before')
+    @field_validator(
+        "victimDamageDealt",
+        "victimDamageReceived",
+        "victimTeamfightDamageDealt",
+        "victimTeamfightDamageReceived",
+        mode='before',
+    )
     @classmethod
     def victim_damage_defaults(cls, v):
         if not v:

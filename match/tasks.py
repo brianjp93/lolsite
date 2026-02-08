@@ -510,7 +510,7 @@ def import_advanced_timeline(match_id: str | int, overwrite=False):
 
         pframes = []
         cke_to_save = []
-        cke_events = []
+        cke_events: list[tmparsers.ChampionKillEventModel] = []
         for frame, fm in zip(frames_to_save, data.frames):
             for pfm in fm.participantFrames.values():
                 stats = pfm.championStats
