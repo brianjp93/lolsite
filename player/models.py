@@ -191,6 +191,64 @@ class Summoner(models.Model):
         from stats.tasks import add_match_to_summoner_champion_stats
         add_match_to_summoner_champion_stats(self, match)
 
+    def get_top_played_with(
+        self,
+        team=True,
+        season_id=None,
+        queue_id=None,
+        recent=None,
+        recent_days=None,
+        group_by="puuid",
+    ):
+        from match.models import Participant, Match
+
+        p = Participant.objects.filter(match__participants__puuid=self.puuid)
+        if season_id is not None:
+            p = p.filter(match__season_id=season_id)
+        if queue_id is not None:
+            p = p.filter(match__queue_id=queue_id)
+
+        if recent is not None:
+            m = Match.objects.all()
+            if season_id is not None:
+                m = m.filter(season_id=season_id)
+            if queue_id is not None:
+                m = m.filter(queue_id=queue_id)
+            m = m.order_by("-game_creation")
+            p = p.filter(match__in=m[:recent])
+        elif recent_days is not None:
+            start_time = timezone.now() - timedelta(days=recent_days)
+            p = p.filter(match__game_creation_dt__gt=start_time)
+
+        p = p.exclude(puuid=self.puuid)
+
+        if not team:
+            p = p.exclude(
+                team_id=models.Subquery(
+                    Participant.objects.filter(
+                        match__participants__id=models.OuterRef("id"),
+                        puuid=self.puuid,
+                    ).values("team_id")[:1]
+                )
+            )
+        else:
+            p = p.filter(
+                team_id=models.Subquery(
+                    Participant.objects.filter(
+                        match__participants__id=models.OuterRef("id"),
+                        puuid=self.puuid,
+                    ).values("team_id")[:1]
+                )
+            )
+        p = p.annotate(
+            win=models.Case(models.When(stats__win=True, then=1), default=0, output_field=models.IntegerField())
+        )
+
+        p = p.values(group_by).annotate(count=models.Count(group_by), wins=models.Sum("win"))
+        p = p.order_by("-count")
+
+        return p
+
 
 class SummonerNote(models.Model):
     user = models.ForeignKey[User, User](User, on_delete=models.CASCADE)

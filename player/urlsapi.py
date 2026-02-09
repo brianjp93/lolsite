@@ -40,7 +40,6 @@ urlpatterns = [
     ),
     path("get-connected-accounts/", player_views.get_connected_accounts),
     path("change-password/", player_views.change_password),
-    path("get-top-played-with/", player_views.get_top_played_with),
     path("comment/match/<int:match_id>/", player_views.CommentListView.as_view()),
     path("comment/", player_views.CommentCreateView.as_view()),
     path("comment/<int:pk>/", player_views.CommentRetrieveUpdateView.as_view()),

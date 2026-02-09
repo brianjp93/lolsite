@@ -815,68 +815,6 @@ def change_password(request, format=None):
     return Response(data, status=status_code)
 
 
-@api_view(["POST"])
-def get_top_played_with(request, format=None):
-    """
-
-    Parameters
-    ----------
-    puuid : RIOT PUUID
-    group_by : ['summoner_name', 'puuid']
-    season_id : int
-    queue_id : int
-    recent : int
-    recent_days : int
-    start : int
-    end : int
-
-    Returns
-    -------
-    list of players
-
-    """
-    data = {}
-    status_code = 200
-    cache_seconds = 60 * 60 * 12
-
-    if request.method == "POST":
-        puuid = request.data.get("puuid", None)
-        group_by = request.data.get("group_by", None)
-        season_id = request.data.get("season_id", None)
-        queue_id = request.data.get("queue_id", None)
-        recent = request.data.get("recent", None)
-        recent_days = request.data.get("recent_days", None)
-        start = int(request.data.get("start", 0))
-        end = int(request.data.get("end", 20))
-
-        if end - start > 100:
-            end = start + 100
-
-        if puuid:
-            cache_key = f"{puuid}/{group_by}/{season_id}/{queue_id}/{recent}/{start}/{end}/{recent_days}"
-            cached = cache.get(cache_key)
-
-            if cached:
-                data = cached
-            else:
-                query = mt.get_top_played_with(
-                    puuid,
-                    season_id=season_id,
-                    queue_id=queue_id,
-                    recent=recent,
-                    recent_days=recent_days,
-                    group_by=group_by,
-                )
-                query = query[start:end]
-                query = list(query.values(group_by, "wins", "count"))
-                data = {"data": query}
-                cache.set(cache_key, data, cache_seconds)
-
-    else:
-        data = {"message": "Only post allowed.", "status": "INVALID_REQUEST"}
-    return Response(data, status=status_code)
-
-
 @api_view(["GET"])
 def comment_count(request, format=None):
     """Get comment count for matches.

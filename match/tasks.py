@@ -11,9 +11,7 @@ from requests.exceptions import ConnectionError
 from pydantic import ValidationError
 
 from django.db.utils import IntegrityError
-from django.db.models import Count, Exists, Subquery, OuterRef
-from django.db.models import Case, When, Sum
-from django.db.models import IntegerField
+from django.db.models import Exists, OuterRef
 from django.utils import timezone
 from django.db import connections, transaction, connection
 
@@ -50,7 +48,6 @@ from player import tasks as pt
 from lolsite.celery import app
 
 
-ROLES = ["top", "jg", "mid", "adc", "sup"]
 logger = logging.getLogger(__name__)
 api = get_riot_api()
 
@@ -376,94 +373,6 @@ def huge_match_import_task(hours_thresh=24, exclude_hours=6):
         )
 
     logger.info("enqueued all tasks for huge_match_import_task.")
-
-
-def get_top_played_with(
-    summoner_id,
-    team=True,
-    season_id=None,
-    queue_id=None,
-    recent=None,
-    recent_days=None,
-    group_by="summoner_name",
-):
-    """Find the summoner names that you have played with the most.
-
-    Parameters
-    ----------
-    summoner_id : int
-        The *internal* Summoner ID
-    team : bool
-        Only count players who were on the same team
-    season_id : int
-    queue_id : int
-    recent : int
-        count of most recent games to check
-    recent_days : int
-
-    Returns
-    -------
-    query of counts
-
-    """
-    summoner = Summoner.objects.get(id=summoner_id)
-
-    p = Participant.objects.all()
-    if season_id is not None:
-        p = p.filter(match__season_id=season_id)
-    if queue_id is not None:
-        p = p.filter(match__queue_id=queue_id)
-
-    if recent is not None:
-        m = Match.objects.all()
-        if season_id is not None:
-            m = m.filter(season_id=season_id)
-        if queue_id is not None:
-            m = m.filter(queue_id=queue_id)
-        m = m.order_by("-game_creation")
-        m_id_list = [x.id for x in m[:recent]]
-
-        p = p.filter(match__id__in=m_id_list)
-    elif recent_days is not None:
-        now = timezone.now()
-        start_time = now - timedelta(days=recent_days)
-        start_time = int(start_time.timestamp() * 1000)
-        p = p.filter(match__game_creation__gt=start_time)
-
-    # get all participants that were in a match with the given summoner
-    p = p.filter(match__participants__puuid=summoner.puuid)
-
-    # exclude the summoner
-    p = p.exclude(puuid=summoner.puuid)
-
-    # I could include and `if team` condition, but I am assuming the top
-    # values will be the same as the totals
-    if not team:
-        p = p.exclude(
-            team_id=Subquery(
-                Participant.objects.filter(
-                    match__participants__id=OuterRef("id"),
-                    puuid=summoner.puuid,
-                ).values("team_id")[:1]
-            )
-        )
-    else:
-        p = p.filter(
-            team_id=Subquery(
-                Participant.objects.filter(
-                    match__participants__id=OuterRef("id"),
-                    puuid=summoner.puuid,
-                ).values("team_id")[:1]
-            )
-        )
-    p = p.annotate(
-        win=Case(When(stats__win=True, then=1), default=0, output_field=IntegerField())
-    )
-
-    p = p.values(group_by).annotate(count=Count(group_by), wins=Sum("win"))
-    p = p.order_by("-count")
-
-    return p
 
 
 @app.task(name="match.tasks.import_advanced_timeline")
