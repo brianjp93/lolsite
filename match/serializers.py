@@ -17,7 +17,6 @@ from django.db.models import QuerySet
 import logging
 
 logger = logging.getLogger(__name__)
-CACHE_TIME = 60 * 60 * 48
 
 
 class MatchSerializer(serializers.ModelSerializer):

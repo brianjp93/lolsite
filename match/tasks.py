@@ -2,7 +2,7 @@ import logging
 import time
 import json
 from datetime import timedelta, datetime
-from multiprocessing.pool import ThreadPool
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from typing import Optional, assert_never
 from urllib3.exceptions import MaxRetryError
@@ -282,8 +282,8 @@ def import_recent_matches(
                 if len(jobs) == 1:
                     pool_match_import(*jobs[0], close_connections=False)
                 else:
-                    with ThreadPool(processes=min(10, len(jobs))) as pool:
-                        pool.starmap(pool_match_import, jobs)
+                    with ThreadPoolExecutor(max_workers=min(10, len(jobs))) as executor:
+                        executor.map(lambda args: pool_match_import(*args), jobs)
                 logger.info(
                     f"ThreadPool match import: {time.perf_counter() - start_time}"
                 )
@@ -746,14 +746,13 @@ def get_player_ranks(summoner_list, threshold_days=1, sync=True):
             for x in jobs:
                 pt.import_positions(*x)
         else:
-            with ThreadPool(processes=10) as pool:
-
+            with ThreadPoolExecutor(max_workers=10) as executor:
                 def pool_position_import(a, b):
                     pt.import_positions(a, b)
                     connections.close_all()
 
                 start_time = time.perf_counter()
-                pool.starmap(pool_position_import, jobs)
+                executor.map(lambda args: pool_position_import(*args), jobs)
                 logger.info(
                     f"ThreadPool positions import: {time.perf_counter() - start_time}"
                 )
