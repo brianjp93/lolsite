@@ -562,17 +562,15 @@ class Comment(models.Model):
         blank=True,
         related_name="replies",
     )
-    likes = models.IntegerField(default=0, db_index=True, blank=True)
     liked_by = models.ManyToManyField(User, related_name="liked_comments", blank=True)
-    dislikes = models.IntegerField(default=0, db_index=True, blank=True)
     disliked_by = models.ManyToManyField(User, related_name="disliked_comments", blank=True)
     is_deleted = models.BooleanField(default=False, null=True)
 
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
-    modified_date = models.DateTimeField(default=timezone.now, blank=True)
+    modified_date = models.DateTimeField(auto_now=True, blank=True)
 
     def save(self, *args, **kwargs):
-        create_notifications = True if self.id is None else False
+        create_notifications = self.id is None
         self.modified_date = timezone.now()
         super().save(*args, **kwargs)
         if create_notifications:
@@ -600,13 +598,6 @@ class Comment(models.Model):
             )
 
     def get_op_summoners(self):
-        """Get the connected summoner accounts of the comment poster.
-
-        Returns
-        -------
-        [Summoner]
-
-        """
         op_users = [
             x.user
             for x in SummonerLink.objects.filter(summoner=self.summoner, verified=True)
@@ -620,13 +611,6 @@ class Comment(models.Model):
         return User.objects.filter(summonerlinks__summoner=self.summoner)
 
     def create_comment_notifications(self):
-        """Create notifications for all existing users in game.
-
-        Returns
-        -------
-        None
-
-        """
         participants = self.match.participants.all()
         puuids = [x.puuid for x in participants]
         summoners = Summoner.objects.filter(puuid__in=puuids)
@@ -643,8 +627,6 @@ class Comment(models.Model):
                         notification.save()
 
     def create_reply_notifications(self):
-        """Create notification for the comment that was replied to.
-        """
         if self.reply_to is not None:
             participants = self.match.participants.all()
             summoner_ids = [x.puuid for x in participants]

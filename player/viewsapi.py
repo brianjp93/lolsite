@@ -19,7 +19,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.functions import Extract
-from django.db.models import Max, Min
+from django.db.models import Count, Max, Min
 from django.shortcuts import get_object_or_404
 from django.db.models import Prefetch
 
@@ -849,6 +849,9 @@ class CommentListView(ListAPIView):
         match_id = self.kwargs['match_id']
         return Comment.objects.filter(
             match_id=match_id
+        ).annotate(
+            likes=Count('liked_by'),
+            dislikes=Count('disliked_by'),
         ).select_related('summoner')
 
 
