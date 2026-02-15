@@ -134,10 +134,10 @@ class MatchBySummoner(ListAPIView):
             qs = qs.filter(Exists(Participant.objects.filter(puuid=x.puuid, match_id=OuterRef('id'))))
         return qs
 
+
 def user_can_create_match_summary(user: UserType | AnonymousUser):
-    if user.is_superuser:
-        return True
-    return False
+    return user.is_superuser
+
 
 class MatchSummaryView(HtmxMixin, RetrieveAPIView):  # type: ignore
     serializer_class = MatchSummarySerializer
@@ -257,8 +257,6 @@ class ParticipantsView(ListAPIView):
         if self.apply_ranks:
             mt.apply_player_ranks(self.match, threshold_days=1)
 
-        # I am using the FullMatchSerializer here because it's mostly the participants
-        # and it is being cached
         participants = FullMatchSerializer(self.match_qs, many=True).data[0]['participants']
         data = {"data": participants}
         return Response(data, status=status_code)
