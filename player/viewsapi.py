@@ -817,25 +817,14 @@ def change_password(request, format=None):
 
 @api_view(["GET"])
 def comment_count(request, format=None):
-    """Get comment count for matches.
-
-    Parameters
-    ----------
-    match_ids : list[int]
-        Internal match ID
-
-    Returns
-    -------
-    JSON
-        {data : [{match_id: count}, ...]}
-
-    """
-    status_code = 200
     match_ids = request.GET.getlist("match_ids[]")
-    query = Match.objects.filter(id__in=match_ids)
-    counts = {x.id: x.get_comment_count() for x in query}
-    data = {"data": counts}
-    return Response(data, status=status_code)
+    query = Match.objects.filter(
+        id__in=match_ids,
+    ).annotate(
+        comment_count=Count('comments'),
+    ).values('id', 'comment_count')
+    counts = {x['id']: x['comment_count'] for x in query}
+    return Response(counts, status=200)
 
 
 class CommentListView(ListAPIView):
