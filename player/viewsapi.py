@@ -14,7 +14,6 @@ from rest_framework import filters
 
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import AnonymousUser, User
@@ -38,7 +37,6 @@ from player.models import (
 from data.models import ProfileIcon, Champion
 from data.serializers import ProfileIconSerializer
 
-from match import tasks as mt
 from match.models import Match, sort_positions
 
 from .models import EmailVerification, Follow, Summoner, simplify
