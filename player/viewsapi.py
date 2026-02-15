@@ -373,7 +373,7 @@ def summoner_search(request: Request, format=None):
     status_code = 200
 
     if request.method == "GET":
-        query = Summoner.objects.all()
+        query = Summoner.objects.exclude(riot_id_name="")
         if simple_name__icontains := request.query_params.get("simple_name__icontains", None):
             query = query.filter(simple_name__icontains=simple_name__icontains)
         if simple_name := request.query_params.get("simple_name", None):
