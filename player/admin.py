@@ -35,17 +35,17 @@ class SummonerAdmin(admin.ModelAdmin):
 class SummonerLinkAdmin(admin.ModelAdmin):
     list_display = ("user", "summoner")
     raw_id_fields = ("user", "summoner")
-    search_fields = ("user__email", "summoner__simple_name")
+    search_fields = ("user__email", "summoner__simple_riot_id")
 
 
 class NameChangeAdmin(admin.ModelAdmin):
     list_display = ("summoner", "old_name", "created_date")
-    search_fields = ("old_name", "summoner__name", "summoner__simple_name")
+    search_fields = ("old_name", "summoner__name", "summoner__simple_riot_id")
 
 
 class RankCheckpointAdmin(admin.ModelAdmin):
     list_display = ("summoner", "created_date")
-    search_fields = ("summoner__name", "summoner__simple_name", "summoner__account_id")
+    search_fields = ("summoner__name", "summoner__simple_riot_id", "summoner__account_id")
     raw_id_fields = ("summoner",)
     show_full_result_count = False
     list_per_page = 30
@@ -55,7 +55,7 @@ class RankPositionAdmin(admin.ModelAdmin):
     list_display = ("queue_type", "rank", "tier", "position")
     search_fields = (
         "checkpoint__summoner__name",
-        "checkpoint__summoner__simple_name",
+        "checkpoint__summoner__simple_riot_id",
     )
     raw_id_fields = ("checkpoint",)
 

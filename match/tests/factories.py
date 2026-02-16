@@ -47,7 +47,8 @@ class ParticipantFactory(DjangoModelFactory):
     summoner_2_id = 2
     team_id = 100
     puuid = factory.Faker("uuid4")
-    summoner_name = factory.Faker("name")
+    riot_id_name = factory.Faker("name")
+    riot_id_tagline = "NA1"
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):

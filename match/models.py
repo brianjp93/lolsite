@@ -238,7 +238,7 @@ class Match(VersionedModel):
         if pname is None:
             pname = ""
             if part := self.participants.all().first():
-                pname = part.summoner_name_simplified
+                pname = f"{part.riot_id_name}#{part.riot_id_tagline}"
             else:
                 logger.exception("problem while finding participant")
         else:
@@ -396,8 +396,6 @@ class Participant(models.Model):
     _id = models.IntegerField()  # participantID
 
     puuid = models.CharField(max_length=128, default=None, db_index=True, null=True)
-    summoner_name = models.CharField(max_length=256, default="", blank=True)
-    summoner_name_simplified = models.CharField(max_length=128, default="", blank=True)
 
     champion_id = models.IntegerField()
     champ_experience = models.IntegerField(default=None, null=True, blank=True)
@@ -443,20 +441,13 @@ class Participant(models.Model):
     def get_absolute_url(self):
         return reverse("player:summoner-puuid", kwargs={"puuid": self.puuid})
 
-    def save(self, *args, **kwargs):
-        self.summoner_name_simplified = simplify(self.summoner_name)
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return (
-            f"Participant(summoner_name={self.summoner_name}, match={self.match._id})"
+            f"Participant(summoner_name={self.riot_id_name}#{self.riot_id_tagline}, match={self.match._id})"
         )
 
     def get_name(self):
-        if self.riot_id_name and self.riot_id_tagline:
-            name = f"{self.riot_id_name}#{self.riot_id_tagline}"
-        else:
-            name = self.summoner_name
+        name = f"{self.riot_id_name}#{self.riot_id_tagline}"
         return " ".join(name.split()).strip()
 
     def get_champion(self):
@@ -678,7 +669,7 @@ class Stats(models.Model):
     game_ended_in_surrender = models.BooleanField(default=False, blank=True)
 
     def __str__(self):
-        return f"Stats(participant={self.participant.summoner_name})"
+        return f"Stats(participant={self.participant.riot_id_name}#{self.participant.riot_id_tagline})"
 
     @cached_property
     def cs(self):

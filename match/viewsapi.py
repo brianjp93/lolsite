@@ -210,18 +210,6 @@ class MatchView(RetrieveAPIView):
     queryset = Match.objects.all()
     lookup_field = '_id'
 
-    def get_serializer(self, *args, **kwargs):
-        match = args[0]
-        op_summoners = []
-        if self.request.user.is_authenticated:
-            op_summoners = [
-                x for x in Summoner.objects.filter(summonerlinks__user=self.request.user)
-                if x.summonerlinks.get(user=self.request.user).verified is True
-            ]
-        if part := match.is_summoner_in_game(op_summoners):
-            kwargs['summoner_name'] = part.summoner_name_simplified
-        return super().get_serializer(*args, **kwargs)
-
 
 class ParticipantsView(ListAPIView):
     """Retrieve participants for a specific game.
@@ -368,7 +356,7 @@ def set_role_label(request, format=None):
             p.role_label = role
             p.save()
             data = {
-                "message": f"set participant {p.summoner_name} to role {p.role_label}"
+                "message": f"set participant {p.riot_id_name}#{p.riot_id_tagline} to role {p.role_label}"
             }
     return Response(data, status=status_code)
 

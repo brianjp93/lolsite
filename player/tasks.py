@@ -12,40 +12,13 @@ from .models import NameChange, Summoner
 from .models import simplify
 from .models import RankCheckpoint, RankPosition
 from .models import Custom, EmailVerification
-from .models import Pro
 
-from . import constants
 
 from lolsite.tasks import get_riot_api
 import logging
 
 
 logger = logging.getLogger(__name__)
-
-
-def import_pros(overwrite=False):
-    # TODO import pros
-    if overwrite:
-        for pro in Pro.objects.all():
-            pro.delete()
-    for alias in constants.PROS:
-        query = Pro.objects.filter(ign=alias)
-        if not query.exists():
-            pro = Pro(ign=alias)
-            pro.save()
-        else:
-            pro = query[:1].get()
-        for ign, region in constants.PROS[alias]:
-            ign = simplify(ign)
-            query = Summoner.objects.filter(region=region, simple_name=ign)
-            if not query.exists():
-                summoner_id = import_summoner(region, name=ign)
-                summoner = Summoner.objects.get(id=summoner_id)
-            else:
-                summoner = query[:1].get()
-            if not summoner.pro == pro:
-                summoner.pro = pro
-                summoner.save()
 
 
 @app.task(name="player.tasks.import_summoner")
@@ -89,8 +62,6 @@ def import_summoner(
     data = r.json()
     name = data.get('name', '')
     model_data = {
-        "name": data.get('name', '').strip(),
-        "simple_name": simplify(name),
         "profile_icon_id": data["profileIconId"],
         "revision_date": data["revisionDate"],
         "summoner_level": data["summonerLevel"],
@@ -118,12 +89,8 @@ def handle_name_change(summoner: Summoner, riot_id: str, riot_tagline: str):
     simple_riot_id = simplify(f"{riot_id}#{riot_tagline}")
     if not simple_riot_id:
         return
-    if summoner.simple_riot_id:
-        old_name = summoner.simple_riot_id
-        og = f"{summoner.riot_id_name}#{summoner.riot_id_tagline}"
-    else:
-        old_name = summoner.simple_name
-        og = summoner.name
+    old_name = summoner.simple_riot_id
+    og = f"{summoner.riot_id_name}#{summoner.riot_id_tagline}"
     if simple_riot_id != old_name:
         return NameChange.objects.create(
             summoner=summoner,

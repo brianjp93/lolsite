@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 
 class MatchSerializer(serializers.ModelSerializer):
-    url = serializers.SerializerMethodField()
 
     class Meta:  # type: ignore[override]
         model = Match
@@ -39,16 +38,8 @@ class MatchSerializer(serializers.ModelSerializer):
             "major",
             "minor",
             "patch",
-            "url",
             "queue_id",
         ]
-
-    def __init__(self, *args, summoner_name=None, **kwargs):
-        self.summoner_name = summoner_name
-        super().__init__(*args, **kwargs)
-
-    def get_url(self, obj):
-        return obj.get_absolute_url(pname=self.summoner_name)
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
@@ -723,7 +714,6 @@ class BasicParticipantSerializer(serializers.ModelSerializer):
         model = Participant
         fields = [
             "_id",
-            "summoner_name",
             "riot_id_name",
             "riot_id_tagline",
             "puuid",

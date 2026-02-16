@@ -100,13 +100,9 @@ def get_summoner(request, format=None):
     data = {}
     status_code = 200
     if request.method == "POST":
-        name = request.data.get("name", "")
         puuid = request.data.get("puuid", "")
         region = request.data.get("region")
-        if name:
-            name = pt.simplify(name)
-            query = Summoner.objects.filter(simple_name=name, region=region)
-        elif puuid:
+        if puuid:
             query = Summoner.objects.filter(puuid=puuid)
             if summoner := query.first():
                 if not summoner.riot_id_name or not summoner.riot_id_tagline:
@@ -365,19 +361,11 @@ def get_summoner_champions_overview(request, format=None):
 
 @api_view(["GET"])
 def summoner_search(request: Request, format=None):
-    """Provide at least 3 character simple_name to take advantage of trigram gin index.
-    """
     data = {}
     status_code = 200
 
     if request.method == "GET":
         query = Summoner.objects.exclude(riot_id_name="")
-        if simple_name__icontains := request.query_params.get("simple_name__icontains", None):
-            query = query.filter(simple_name__icontains=simple_name__icontains)
-        if simple_name := request.query_params.get("simple_name", None):
-            query = query.filter(simple_name=simple_name)
-        if simple_riot_id__icontains := request.query_params.get("simple_riot_id__icontains", None):
-            query = query.filter(simple_riot_id__icontains=simple_riot_id__icontains)
         if simple_riot_id__startswith := request.query_params.get("simple_riot_id__startswith", None):
             query = query.filter(simple_riot_id__startswith=simple_riot_id__startswith.lower())
         if region := request.query_params.get("region", None):

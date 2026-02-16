@@ -41,7 +41,8 @@ class SummonerFactory(DjangoModelFactory):
 
     puuid = factory.Sequence(lambda n: f'puuid{n}')
     region = 'na'
-    name = factory.Faker('name')
+    riot_id_name = factory.Faker('name')
+    riot_id_tagline = 'NA1'
 
 
 class ReputationFactory(DjangoModelFactory):

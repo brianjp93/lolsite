@@ -256,10 +256,6 @@ class ParticipantModel(BaseModelWithLogger):
     roleBoundItem: int | None = None
 
     @property
-    def simple_name(self):
-        return simplify(self.summonerName)
-
-    @property
     def stat_perk_0(self):
         return self.perks.statPerks.get('offense', 0)
 

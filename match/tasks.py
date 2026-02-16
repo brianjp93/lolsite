@@ -82,8 +82,6 @@ def prepare_summoners_from_participants(participants: list[ParticipantModel], re
     for part in participants:
         if (part.puuid or "").lower() != "bot":
             summoner = Summoner(
-                name=part.summonerName.strip(),
-                simple_name=part.simple_name,
                 region=region.lower(),
                 puuid=part.puuid,
                 riot_id_name=part.riotIdGameName,
@@ -836,8 +834,6 @@ def build_participant(part: ParticipantModel, match: Match):
         match=match,
         _id=part.participantId,
         puuid=part.puuid,
-        summoner_name=part.summonerName,
-        summoner_name_simplified=part.simple_name,
         champion_id=part.championId,
         champ_experience=part.champExperience,
         summoner_1_id=part.summoner1Id,

@@ -61,7 +61,7 @@ class ParticipantAdmin(admin.ModelAdmin):
 class StatsAdmin(admin.ModelAdmin):
     list_display = ("participant",)
     raw_id_fields = ("participant",)
-    search_fields = ("participant__match___id", "participant__summoner_name")
+    search_fields = ("participant__match___id", "participant__riot_id_name")
     show_full_result_count = False
     list_per_page = 30
     paginator = CachedCountPaginator

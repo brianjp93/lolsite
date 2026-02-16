@@ -83,8 +83,6 @@ class Summoner(models.Model):
         related_name="summoners",
     )
     region = models.CharField(max_length=8, default="", blank=True)
-    name = models.CharField(max_length=64, default="", blank=True)
-    simple_name = models.CharField(max_length=64, default="", blank=True)
     profile_icon_id = models.IntegerField(default=0)
     puuid = models.CharField(
         max_length=128,
@@ -126,15 +124,10 @@ class Summoner(models.Model):
         return reverse("player:summoner-puuid", kwargs={"puuid": self.puuid})
 
     def get_name(self):
-        return self.simple_riot_id or self.name
+        return self.simple_riot_id
 
     def get_profile_icon(self):
         return CDProfileIcon.objects.filter(ext_id=self.profile_icon_id).first()
-
-    def save(self, *args, **kwargs):
-        if self.name:
-            self.simple_name = simplify(self.name)
-        super(Summoner, self).save(*args, **kwargs)
 
     def get_newest_rank_checkpoint(self):
         return self.rankcheckpoints.all().order_by("-created_date").first()
@@ -180,7 +173,7 @@ class Summoner(models.Model):
             game_creation__gte=dt.timestamp() * 1000
         ).count()
         end = time.perf_counter()
-        logger.info(f"{self.name} suspicious_account query took {end - start:.2f} seconds.")
+        logger.info(f"{self.simple_riot_id} suspicious_account query took {end - start:.2f} seconds.")
         return {'quick_ff_count': quick_surrender_count, 'total': all_games_count}
 
     @cached_property
@@ -301,7 +294,7 @@ class Favorite(models.Model):
         super(Favorite, self).save(*args, **kwargs)
 
     def name(self):
-        return self.summoner.name if self.summoner else ""
+        return self.summoner.simple_riot_id if self.summoner else ""
 
     def region(self):
         return self.summoner.region if self.summoner else ""
@@ -330,7 +323,7 @@ class NameChange(models.Model):
 
     def __str__(self):
         return (
-            f'NameChange(old_name="{self.old_name}", new_name="{self.summoner.name}")'
+            f'NameChange(old_name="{self.old_name}", new_name="{self.summoner.simple_riot_id}")'
         )
 
 
@@ -584,7 +577,7 @@ class Comment(models.Model):
         admin = get_admin()
         subject = "New comment written."
         message = f"""
-            User {self.summoner.name} wrote a comment.
+            User {self.summoner.simple_riot_id} wrote a comment.
 
             {self.markdown}
         """

@@ -88,8 +88,6 @@ class SummonerSerializer(DynamicSerializer):
             'has_match_overlap',
             "profile_icon",
             "region",
-            "name",
-            "simple_name",
             "profile_icon_id",
             "puuid",
             "summoner_level",

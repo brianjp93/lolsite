@@ -13,15 +13,9 @@
             {{ summoner.summoner_level }}
           </div>
         </div>
-        {% if summoner.simple_riot_id %}
-          <div class="overflow-ellipsis overflow-hidden whitespace-nowrap">
-            {{ summoner.riot_id_name }}#{{ summoner.riot_id_tagline }}
-          </div>
-        {% else %}
-          <div class="overflow-ellipsis overflow-hidden whitespace-nowrap">
-            {{ summoner.name }}
-          </div>
-        {% endif %}
+        <div class="overflow-ellipsis overflow-hidden whitespace-nowrap">
+          {{ summoner.riot_id_name }}#{{ summoner.riot_id_tagline }}
+        </div>
       </a>
     {% empty %}
       <div>
