@@ -717,6 +717,10 @@ def import_spectate_from_data(parsed: SpectateModel, region: str):
 def import_summoners_from_spectate(parsed: SpectateModel, region):
     summoner_list = []
     for part in parsed.participants:
+        if not part.puuid:
+            # there may be users that have "streamer mode" on, in which case
+            # there will not be a puuid set and their riotId is just the champion name
+            continue
         if part.riotId:
             name, tagline = part.riotId.split("#")
             sum_data = {
