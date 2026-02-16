@@ -99,4 +99,5 @@ sentry_sdk.init(
     enable_tracing=True,
     before_breadcrumb=before_breadcrumb,
     before_send=before_send,
+    release=config("GIT_REV", ""),  # type: ignore
 )
