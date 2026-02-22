@@ -257,7 +257,7 @@ def get_spectate(request, format=None):
     region = request.query_params["region"]
     api = get_riot_api()
     r = api.spectator.get(puuid, region)
-    if r.status_code == 404:
+    if r.status_code != 200:
         data = 'not found'
     else:
         parsed = SpectateModel.model_validate_json(r.content)
