@@ -99,38 +99,28 @@ def get_by_puuid(puuid, region='na'):
 def get_summoner(request, format=None):
     data = {}
     status_code = 200
-    if request.method == "POST":
-        puuid = request.data.get("puuid", "")
-        region = request.data.get("region")
-        if puuid:
-            query = Summoner.objects.filter(puuid=puuid)
-            if summoner := query.first():
-                if not summoner.riot_id_name or not summoner.riot_id_tagline:
-                    summoner_id = pt.import_summoner(region=summoner.region, puuid=puuid)
-                    summoner.refresh_from_db()
-                else:
-                    pt.import_summoner.delay(region=summoner.region, puuid=puuid)  # type: ignore
-            else:
-                summoner_id = pt.import_summoner(region=region, puuid=puuid)
-                query = Summoner.objects.filter(id=summoner_id)
-        else:
-            query = Summoner.objects.none()
+    query = Summoner.objects.none()
+    puuid = request.data.get("puuid", "")
+    if puuid:
+        summoner = get_object_or_404(Summoner, puuid=puuid)
+        summoner_id = pt.import_summoner(region=summoner.region, puuid=puuid)
+        query = Summoner.objects.filter(id=summoner_id)
 
-        if request.user.is_authenticated:
-            query = query.prefetch_related(
-                Prefetch(
-                    'summonernote_set',
-                    queryset=SummonerNote.objects.filter(user=request.user),
-                    to_attr='user_notes'
-                )
+    if request.user.is_authenticated:
+        query = query.prefetch_related(
+            Prefetch(
+                'summonernote_set',
+                queryset=SummonerNote.objects.filter(user=request.user),
+                to_attr='user_notes'
             )
+        )
 
-        if summoner := query.first():
-            serializer = SummonerSerializer(summoner, context={'request': request})
-            data["data"] = serializer.data
-        else:
-            data["error"] = "No summoner found"
-            status_code = 400
+    if summoner := query.first():
+        serializer = SummonerSerializer(summoner, context={'request': request})
+        data["data"] = serializer.data
+    else:
+        data["error"] = "No summoner found"
+        status_code = 400
     return Response(data, status=status_code)
 
 
