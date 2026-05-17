@@ -147,6 +147,7 @@ class Item(VersionedModel):
     percent_magic_penetration = models.IntegerField(null=True, blank=True)
     flat_magic_penetration = models.IntegerField(null=True, blank=True)
     percent_crit_damage = models.IntegerField(null=True, blank=True)
+    adaptive_force = models.IntegerField(null=True, blank=True)
 
     diff = models.JSONField(default=None, null=True)
 
@@ -166,6 +167,7 @@ class Item(VersionedModel):
         "flat_attack_damage": "AD",
         "flat_magic_resist": "MR",
         "percent_attack_speed": "% AS",
+        "adaptive_force": "Adaptive Force",
         "percent_movement_speed": "% MS",
         "percent_life_steal": "Life Steal",
         "flat_lethality": "Lethality",
@@ -336,7 +338,7 @@ class Item(VersionedModel):
             desc = self.description
         for num, percent, stat in stat_parser.findall(desc):
             num = int(num)
-            match stat.lower():
+            match stat.lower().strip():
                 case "armor":
                     self.flat_armor = num
                 case "health":
@@ -383,6 +385,8 @@ class Item(VersionedModel):
                     self.percent_crit = num
                 case "critical strike damage":
                     self.percent_crit_damage = num
+                case "adaptive force":
+                    self.adaptive_force = num
                 case _:
                     logger.warning(f"Found unknown stat: {stat} in description\n{desc}")
         if save:
