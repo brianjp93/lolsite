@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:16.4-alpine
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5435:5432"
     env_file: .docker_env
@@ -62,3 +62,6 @@ services:
       - .:/code
     env_file: .docker_env
     stdin_open: true
+
+volumes:
+  postgres_data:
