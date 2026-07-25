@@ -2,11 +2,16 @@
 https://gist.github.com/goutomroy/d61fc8a8445954c71b5585af042e5cf4
 
 """
+
 import functools
 import time
 
 from django_htmx.middleware import HtmxDetails
-from rest_framework.pagination import CursorPagination, PageNumberPagination, LimitOffsetPagination
+from rest_framework.pagination import (
+    CursorPagination,
+    PageNumberPagination,
+    LimitOffsetPagination,
+)
 
 from django.db import connection, reset_queries, models
 from django.http import HttpRequest
@@ -28,11 +33,12 @@ def query_debugger(func):
         if count:
             queries = connection.queries[-count:]
             for query in queries:
-                print(f'[TIME: {query["time"]}] [sql: {query["sql"]}]')
+                print(f"[TIME: {query['time']}] [sql: {query['sql']}]")
         print(f"Function : {func.__name__}")
         print(f"Number of Queries : {end_queries - start_queries}")
         print(f"Finished in : {(end - start):.2f}s")
         return result
+
     return inner_func
 
 
@@ -43,13 +49,13 @@ class LargeResultsSetPagination(PageNumberPagination):
 
 class Paginator(PageNumberPagination):
     page_size = 10
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
 
 
 class CustomLimitOffsetPagination(LimitOffsetPagination):
-    offset_query_param = 'start'
-    limit_query_param = 'limit'
+    offset_query_param = "start"
+    limit_query_param = "limit"
     default_limit = 10
     max_limit = 100
 
@@ -67,7 +73,7 @@ class CustomLimitOffsetPagination(LimitOffsetPagination):
 
         if self.count == 0 or self.offset > self.count:
             return []
-        return queryset[self.offset:self.offset + self.limit]
+        return queryset[self.offset : self.offset + self.limit]
 
 
 class CustomCursorPagination(CursorPagination):
@@ -81,7 +87,7 @@ class UserType(User):
     custom: Custom
     summonerlinks: models.QuerySet[SummonerLink]
 
-    class Meta:
+    class Meta:  # type: ignore[override]
         abstract = True
 
 

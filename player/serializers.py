@@ -13,7 +13,7 @@ from match.models import Participant
 
 
 class SummonerNoteSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta:  # type: ignore[override]
         model = SummonerNote
         fields = ["note", "created_date", "modified_date"]
 
@@ -28,26 +28,32 @@ class ReputationSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = Reputation
         fields = [
-            'id',
-            'summoner',
-            'is_approve',
+            "id",
+            "summoner",
+            "is_approve",
         ]
 
     def validate(self, attrs):
-        attrs['user'] = self.context['request'].user
-        user = attrs['user']
+        attrs["user"] = self.context["request"].user
+        user = attrs["user"]
         self.validate_user(user)
-        summoner = attrs['summoner']
+        summoner = attrs["summoner"]
         if not self.user_has_match_overlap(user, summoner):
             raise serializers.ValidationError(
-                {'summoner': ['This summoner has no overlap with the user\'s linked accounts.']}
+                {
+                    "summoner": [
+                        "This summoner has no overlap with the user's linked accounts."
+                    ]
+                }
             )
         return super().validate(attrs)
 
     def validate_user(self, user):
-        if self.context['request'].user == user:
+        if self.context["request"].user == user:
             return user
-        raise serializers.ValidationError('User must match the user making the request.')
+        raise serializers.ValidationError(
+            "User must match the user making the request."
+        )
 
     @staticmethod
     def user_has_match_overlap(user: UserType | AnonymousUser, summoner: Summoner):
@@ -59,9 +65,11 @@ class ReputationSerializer(serializers.ModelSerializer):
         if isinstance(user, AnonymousUser):
             return 0
         user_summoners = list(
-            user.summonerlinks.filter(verified=True).annotate(
+            user.summonerlinks.filter(verified=True)
+            .annotate(
                 puuid=F("summoner__puuid"),
-            ).values_list("puuid", flat=True)
+            )
+            .values_list("puuid", flat=True)
         )
 
         # The summoner we are checking cannot belong to the user.
@@ -84,8 +92,8 @@ class SummonerSerializer(DynamicSerializer):
     class Meta:  # type: ignore[override]
         model = Summoner
         fields = (
-            'id',
-            'has_match_overlap',
+            "id",
+            "has_match_overlap",
             "profile_icon",
             "region",
             "profile_icon_id",
@@ -97,7 +105,7 @@ class SummonerSerializer(DynamicSerializer):
         )
 
     def get_has_match_overlap(self, obj):
-        request: HtmxHttpRequest | None = self.context.get('request')
+        request: HtmxHttpRequest | None = self.context.get("request")
         if request:
             try:
                 return ReputationSerializer.user_has_match_overlap(request.user, obj)
@@ -108,7 +116,7 @@ class SummonerSerializer(DynamicSerializer):
     def get_profile_icon(self, obj):
         if icon := CDProfileIcon.objects.filter(ext_id=obj.profile_icon_id).first():
             return icon.image_url()
-        return ''
+        return ""
 
     def get_notes(self, obj):
         # only render notes if it was explicitly prefetched for the queryset
@@ -139,20 +147,21 @@ class FavoriteSerializer(DynamicSerializer):
     class Meta:  # type: ignore[override]
         model = Favorite
         fields = (
-            'name',
-            'region',
-            'puuid',
-            'sort_int',
-            'summoner_id',
-            'riot_id_name',
-            'riot_id_tagline',
+            "name",
+            "region",
+            "puuid",
+            "sort_int",
+            "summoner_id",
+            "riot_id_name",
+            "riot_id_tagline",
         )
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = User
         fields = [
-            'email',
+            "email",
         ]
 
 
@@ -182,34 +191,41 @@ class CommentSerializer(DynamicSerializer):
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
-    summoner = serializers.SlugRelatedField('puuid', queryset=Summoner.objects.all())
+    summoner = serializers.SlugRelatedField("puuid", queryset=Summoner.objects.all())
 
     class Meta:  # type: ignore[override]
         model = Comment
         fields = [
-            'markdown',
-            'match',
-            'reply_to',
-            'summoner',
+            "markdown",
+            "match",
+            "reply_to",
+            "summoner",
         ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        request = self.context['request']
-        self.fields['summoner'].queryset = Summoner.objects.filter(  # type: ignore
-            id__in=request.user.summonerlinks.all().values_list('summoner_id', flat=True)
+        request = self.context["request"]
+        self.fields["summoner"].queryset = Summoner.objects.filter(  # type: ignore
+            id__in=request.user.summonerlinks.all().values_list(
+                "summoner_id", flat=True
+            )
         )
 
     def validate_summoner(self, obj: Summoner):
-        if 'request' not in self.context:
+        if "request" not in self.context:
             return obj
-        request = self.context['request']
+        request = self.context["request"]
         user: User = request.user
         if not user.is_authenticated:
-            raise serializers.ValidationError('No connected summoners.', code='summoner_not_connected')
+            raise serializers.ValidationError(
+                "No connected summoners.", code="summoner_not_connected"
+            )
         if user.summonerlinks.filter(summoner=obj).first():  # type: ignore
             return obj
-        raise serializers.ValidationError('The selected summoner is not connected to this account.', code='summoner_not_connected')
+        raise serializers.ValidationError(
+            "The selected summoner is not connected to this account.",
+            code="summoner_not_connected",
+        )
 
 
 class CommentUpdateSerializer(serializers.ModelSerializer):
@@ -218,19 +234,25 @@ class CommentUpdateSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = Comment
         fields = [
-            'markdown',
+            "markdown",
         ]
 
     def validate(self, attrs):
-        request = self.context['request']
+        request = self.context["request"]
         user = request.user
         assert isinstance(self.instance, Comment)
         if self.instance.is_deleted:  # type: ignore
-            raise serializers.ValidationError('Comment is deleted, cannot update.', code='comment_already_deleted')
+            raise serializers.ValidationError(
+                "Comment is deleted, cannot update.", code="comment_already_deleted"
+            )
         if not user.is_authenticated:
-            raise serializers.ValidationError('Comment not owned by user.', code='invalid_comment_update')
+            raise serializers.ValidationError(
+                "Comment not owned by user.", code="invalid_comment_update"
+            )
         if not user.summonerlinks.filter(summoner=self.instance.summoner).exists():
-            raise serializers.ValidationError('Comment not owned by user.', code='invalid_comment_update')
+            raise serializers.ValidationError(
+                "Comment not owned by user.", code="invalid_comment_update"
+            )
         return super().validate(attrs)
 
 
@@ -238,6 +260,6 @@ class NameChangeSerializer(serializers.ModelSerializer):
     class Meta:  # type: ignore[override]
         model = NameChange
         fields = (
-            'old_name',
-            'created_date',
+            "old_name",
+            "created_date",
         )
