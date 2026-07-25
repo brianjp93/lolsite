@@ -3,8 +3,8 @@ revision = 3
 requires-python = "==3.14.*"
 
 [options]
-exclude-newer = "2026-04-13T04:12:40.995367265Z"
-exclude-newer-span = "P7D"
+exclude-newer = "2026-07-11T18:49:11.395815808Z"
+exclude-newer-span = "P14D"
 
 [[package]]
 name = "amqp"

@@ -41,7 +41,7 @@ dependencies = [
 lolwrapper = { git = "https://github.com/brianjp93/lolapi.git", rev = "c84841786484f7e0b844fa203c06f8bdea54647f" }
 
 [tool.uv]
-exclude-newer = "P7D"
+exclude-newer = "P14D"
 
 [tool.black]
 exclude = '/*migrations*/'
