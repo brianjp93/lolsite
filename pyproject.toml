@@ -83,3 +83,8 @@ indent_size = 2
 [tool.pyright]
 exclude = ["**/migrations/**", ".venv/**", "**/tests/**"]
 typeCheckingMode = "standard"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.411",
+]
