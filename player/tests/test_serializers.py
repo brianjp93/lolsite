@@ -1,7 +1,9 @@
-from django.test import TestCase, Client
+from unittest.mock import Mock, patch
+
+from django.test import TestCase, Client, SimpleTestCase
 from django.contrib.auth import get_user_model
 
-from player.serializers import ReputationSerializer
+from player.serializers import LoginSerializer, ReputationSerializer
 from player.tests import factories
 
 from match.tests.factories import MatchFactory
@@ -10,11 +12,45 @@ from match.tests.factories import MatchFactory
 User = get_user_model()
 
 
+class LoginSerializerTest(SimpleTestCase):
+    @patch("player.serializers.authenticate")
+    def test_validates_credentials(self, authenticate):
+        request = Mock()
+        user = Mock()
+        authenticate.return_value = user
+        serializer = LoginSerializer(
+            data={"email": "user@example.com", "password": " password "},
+            context={"request": request},
+        )
+
+        self.assertTrue(serializer.is_valid())
+        self.assertIs(serializer.validated_data["user"], user)
+        authenticate.assert_called_once_with(
+            request,
+            username="user@example.com",
+            password=" password ",
+        )
+
+        authenticate.return_value = None
+        serializer = LoginSerializer(
+            data={"email": "user@example.com", "password": "wrong"},
+            context={"request": request},
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(
+            serializer.errors["password"],
+            ["Username or password is incorrect."],
+        )
+
+
 class ReputationSerializerTest(TestCase):
     def setUp(self):
         self.client = Client(enforce_csrf_checks=False)
         self.user = factories.UserFactory()
-        slinks = factories.SummonerLinkFactory.create_batch(10, user=self.user, verified=True)
+        slinks = factories.SummonerLinkFactory.create_batch(
+            10, user=self.user, verified=True
+        )
         self.summoners = [x.summoner for x in slinks]
         self.client.force_login(self.user)
         self.matches = MatchFactory.create_batch(10, participants=10)
@@ -23,7 +59,7 @@ class ReputationSerializerTest(TestCase):
         summoner = self.summoners[0]
         random_summoner = factories.SummonerFactory()
         for match in self.matches[:5]:
-            p1 = match.participants.order_by('pk').first()
+            p1 = match.participants.order_by("pk").first()
             p1.puuid = summoner.puuid
             p1.save()
         self.assertFalse(
@@ -34,7 +70,7 @@ class ReputationSerializerTest(TestCase):
         summoner = self.summoners[0]
         random_summoner = factories.SummonerFactory()
         for match in self.matches[:5]:
-            p1, p2 = match.participants.order_by('pk')[1:3]
+            p1, p2 = match.participants.order_by("pk")[1:3]
             p1.puuid = summoner.puuid
             p1.save()
 

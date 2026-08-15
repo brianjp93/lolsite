@@ -4,8 +4,11 @@ from datetime import timedelta
 from rest_framework import permissions
 from rest_framework.decorators import api_view
 from rest_framework.generics import (
-    RetrieveAPIView, CreateAPIView, UpdateAPIView,
-    ListAPIView, RetrieveUpdateDestroyAPIView,
+    RetrieveAPIView,
+    CreateAPIView,
+    UpdateAPIView,
+    ListAPIView,
+    RetrieveUpdateDestroyAPIView,
 )
 from rest_framework.request import Request
 from rest_framework import exceptions
@@ -15,23 +18,29 @@ from rest_framework import filters
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.functions import Extract
 from django.db.models import Count, Max, Min
 from django.shortcuts import get_object_or_404
-from django.db.models import Prefetch
 
 from lolsite.viewsapi import require_login
-from lolsite.helpers import CustomCursorPagination, UserType, query_debugger
+from lolsite.helpers import CustomCursorPagination, UserType
 
 from player import tasks as pt
 from player import constants as player_constants
 from player import filters as player_filters
 from player.models import (
-    RankPosition, Comment, Favorite,
-    SummonerLink, decode_int_to_rank, validate_password,
-    Reputation, NameChange, get_simple_riot_id, SummonerNote
+    RankPosition,
+    Comment,
+    Favorite,
+    SummonerLink,
+    decode_int_to_rank,
+    validate_password,
+    Reputation,
+    NameChange,
+    get_simple_riot_id,
+    SummonerNote,
 )
 
 from data.models import ProfileIcon, Champion
@@ -41,12 +50,17 @@ from match.models import Match, sort_positions
 
 from .models import EmailVerification, Follow, Summoner, simplify
 from .serializers import (
-    CommentCreateSerializer, CommentUpdateSerializer,
-    SummonerSerializer, RankPositionSerializer,
-    FavoriteSerializer, CommentSerializer,
-    ReputationSerializer, UserSerializer,
+    CommentCreateSerializer,
+    CommentUpdateSerializer,
+    SummonerSerializer,
+    RankPositionSerializer,
+    FavoriteSerializer,
+    CommentSerializer,
+    ReputationSerializer,
+    UserSerializer,
     NameChangeSerializer,
     SummonerNoteSerializer,
+    LoginSerializer,
 )
 
 import random
@@ -61,30 +75,25 @@ logger = logging.getLogger(__name__)
 def save_summoner_note(request, format=None):
     data = {}
     status_code = 200
-    summoner_id = request.data.get('summoner_id')
-    note = request.data.get('note', '')
+    summoner_id = request.data.get("summoner_id")
+    note = request.data.get("note", "")
     if len(note) > 10000:
-        return Response({'message': 'Note is too long'}, status=400)
+        return Response({"message": "Note is too long"}, status=400)
 
     if not summoner_id:
-        return Response({'message': 'summoner_id is required'}, status=400)
+        return Response({"message": "summoner_id is required"}, status=400)
 
     summoner = get_object_or_404(Summoner, id=summoner_id)
 
     obj, _ = SummonerNote.objects.update_or_create(
-        user=request.user,
-        summoner=summoner,
-        defaults={'note': note}
+        user=request.user, summoner=summoner, defaults={"note": note}
     )
 
-    data = {
-        'status': 'success',
-        'data': SummonerNoteSerializer(obj).data
-    }
+    data = {"status": "success", "data": SummonerNoteSerializer(obj).data}
     return Response(data, status=status_code)
 
 
-def get_by_puuid(puuid, region='na'):
+def get_by_puuid(puuid, region="na"):
     query = Summoner.objects.filter(puuid=puuid)
     if summoner := query.first():
         summoner_id = pt.import_summoner(region=summoner.region, puuid=puuid)
@@ -102,11 +111,11 @@ def get_summoner(request, format=None):
     puuid = request.data["puuid"]
     summoner = get_object_or_404(Summoner, puuid=puuid)
     summoner_id = pt.import_summoner(region=summoner.region, puuid=puuid)
-    summoner = Summoner.objects.filter(id=summoner_id).with_user_notes(user=request.user).get()
-    serializer = SummonerSerializer(summoner, context={'request': request})
-    data = {
-        "data": serializer.data
-    }
+    summoner = (
+        Summoner.objects.filter(id=summoner_id).with_user_notes(user=request.user).get()
+    )
+    serializer = SummonerSerializer(summoner, context={"request": request})
+    data = {"data": serializer.data}
     return Response(data, status=200)
 
 
@@ -121,21 +130,31 @@ class SummonerByRiotId(RetrieveAPIView):
     serializer_class = SummonerSerializer
 
     def get_object(self):
-        riot_id_name = self.kwargs['riot_id_name']
-        riot_id_tagline = self.kwargs['riot_id_tagline']
-        region = self.kwargs['region']
+        riot_id_name = self.kwargs["riot_id_name"]
+        riot_id_tagline = self.kwargs["riot_id_tagline"]
+        region = self.kwargs["region"]
         simple_riot_id = get_simple_riot_id(riot_id_name, riot_id_tagline)
         try:
-            summoner = Summoner.objects.filter(
-                simple_riot_id=simple_riot_id,
-                region=region,
-            ).with_user_notes(user=self.request.user).get()
+            summoner = (
+                Summoner.objects.filter(
+                    simple_riot_id=simple_riot_id,
+                    region=region,
+                )
+                .with_user_notes(user=self.request.user)
+                .get()
+            )
         except Summoner.DoesNotExist:
-            summoner_id = pt.import_summoner(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
+            summoner_id = pt.import_summoner(
+                region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline
+            )
             return get_object_or_404(Summoner, id=summoner_id)
         except Summoner.MultipleObjectsReturned:
-            return pt.handle_multiple_summoners(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
-        pt.import_summoner.delay(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)  # type: ignore
+            return pt.handle_multiple_summoners(
+                region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline
+            )
+        pt.import_summoner.delay(
+            region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline
+        )  # type: ignore
         return summoner
 
 
@@ -159,7 +178,9 @@ def get_summoners(request, format=None):
         puuids = request.data["puuids"]
         puuids = puuids[:100]
         region = request.data["region"]
-        query = Summoner.objects.filter(puuid__in=puuids, region=region).with_user_notes(user=request.user)
+        query = Summoner.objects.filter(
+            puuid__in=puuids, region=region
+        ).with_user_notes(user=request.user)
         serializer = SummonerSerializer(query, many=True)
         data = {"data": serializer.data}
     return Response(data, status=status_code)
@@ -200,7 +221,7 @@ def get_positions(request, format=None):
             data = {"data": pos_data}
             status_code = 200
         except Exception:
-            logger.exception('Error while trying to serialize rank positions.')
+            logger.exception("Error while trying to serialize rank positions.")
             data = {"data": []}
             status_code = 200
     else:
@@ -221,20 +242,20 @@ def sign_up(request, format=None):
     else:
         email = request.data.get("email")
         password = request.data.get("password")
-        token = request.data.get('token')
+        token = request.data.get("token")
 
         response = requests.post(
-            f'https://recaptchaenterprise.googleapis.com/v1/projects/{settings.GOOGLE_RECAPTCHA_PROJECT_ID}/assessments?key={settings.GOOGLE_RECAPTCHA_API_KEY}',
+            f"https://recaptchaenterprise.googleapis.com/v1/projects/{settings.GOOGLE_RECAPTCHA_PROJECT_ID}/assessments?key={settings.GOOGLE_RECAPTCHA_API_KEY}",
             json={
                 "event": {
                     "token": token,
                     "siteKey": settings.GOOGLE_RECAPTCHA_KEY,
-                    "expectedAction": "LOGIN"
+                    "expectedAction": "LOGIN",
                 }
-            }
+            },
         )
-        score = response.json()['riskAnalysis']['score']
-        logger.info(f'Got {score=} for signup: {email=}')
+        score = response.json()["riskAnalysis"]["score"]
+        logger.info(f"Got {score=} for signup: {email=}")
         # TODO: do something with this score
         # decline signup if score is too low
 
@@ -243,9 +264,7 @@ def sign_up(request, format=None):
             data = {"message": "Account created."}
         else:
             if User.objects.filter(email__iexact=email):
-                data = {
-                    "message": "The email given already exists.  Try logging in."
-                }
+                data = {"message": "The email given already exists.  Try logging in."}
             else:
                 data = {"message": "The email or password was invalid."}
             status_code = 403
@@ -321,8 +340,12 @@ def get_summoner_champions_overview(request, format=None):
 @api_view(["GET"])
 def summoner_search(request: Request, format=None):
     query = Summoner.objects.exclude(riot_id_name="")
-    if simple_riot_id__startswith := request.query_params.get("simple_riot_id__startswith", None):
-        query = query.filter(simple_riot_id__startswith=simple_riot_id__startswith.lower())
+    if simple_riot_id__startswith := request.query_params.get(
+        "simple_riot_id__startswith", None
+    ):
+        query = query.filter(
+            simple_riot_id__startswith=simple_riot_id__startswith.lower()
+        )
     if region := request.query_params.get("region", None):
         query = query.filter(region=region)
     if order_by := request.query_params.get("order_by", None):
@@ -411,17 +434,17 @@ def get_rank_history(request, format=None):
     return Response(data, status=status_code)
 
 
-@api_view(['POST', 'DELETE', 'GET'])
+@api_view(["POST", "DELETE", "GET"])
 def following(request, format=None):
     user = request.user
-    if request.method == 'POST':
-        _id = request.data['id']
+    if request.method == "POST":
+        _id = request.data["id"]
         Follow.objects.get_or_create(
             summoner=Summoner.objects.get(id=_id),
             user=user,
         )
-    elif request.method == 'DELETE':
-        _id = request.data['id']
+    elif request.method == "DELETE":
+        _id = request.data["id"]
         user.follow_set.filter(summoner__id=_id).delete()
     qs = Summoner.objects.filter(follow__user=user).with_user_notes(user=user)
     data = SummonerSerializer(qs, many=True).data
@@ -465,9 +488,9 @@ def favorites(request, format=None):
             summoner = Summoner.objects.get(id=summoner_id)
             if favorite.filter(summoner=summoner).exists():
                 # already exists
-                data[
-                    "message"
-                ] = "The summoner selected is already being followed.  No changes made."
+                data["message"] = (
+                    "The summoner selected is already being followed.  No changes made."
+                )
             else:
                 favorite_model = Favorite(user=user, summoner=summoner)
                 favorite_model.save()
@@ -491,7 +514,7 @@ def favorites(request, format=None):
                     flist.append(favorite_model)
                 except ObjectDoesNotExist:
                     pass
-            Favorite.objects.bulk_update(flist, fields=['sort_int'])
+            Favorite.objects.bulk_update(flist, fields=["sort_int"])
             data["message"] = "Saved ordering."
 
         favorite = user.favorite_set.all()
@@ -546,14 +569,16 @@ def generate_code(request, format=None):
                 user = request.user
                 full_tagline = request.data["simple_riot_id"]
                 full_tagline = simplify(full_tagline)
-                name, tagline = full_tagline.split('#')
+                name, tagline = full_tagline.split("#")
                 region = request.data["region"]
 
                 query = SummonerLink.objects.filter(user=user, verified=False)
                 if link := query.first():
                     link.delete()
 
-                summoner_id = pt.import_summoner(region, riot_id_name=name, riot_id_tagline=tagline)
+                summoner_id = pt.import_summoner(
+                    region, riot_id_name=name, riot_id_tagline=tagline
+                )
                 summoner = Summoner.objects.get(id=summoner_id)
 
                 icon_id = None
@@ -569,7 +594,11 @@ def generate_code(request, format=None):
                 version = Champion.objects.all()[:1].get().get_newest_version()
                 icon = ProfileIcon.objects.get(_id=icon_id, version=version)
                 icon_data = ProfileIconSerializer(icon, many=False).data
-                data = {"uuid": link.uuid, "icon": icon_data, "simple_riot_id": summoner.simple_riot_id}
+                data = {
+                    "uuid": link.uuid,
+                    "icon": icon_data,
+                    "simple_riot_id": summoner.simple_riot_id,
+                }
             else:
                 data = {"message": 'action must be "create" or "get".'}
                 status_code = 400
@@ -584,7 +613,7 @@ def generate_code(request, format=None):
 
 @api_view(["DELETE"])
 def unlink_account(request, format=None):
-    puuid = request.data['puuid']
+    puuid = request.data["puuid"]
     summoner = get_object_or_404(Summoner, puuid=puuid)
     user: User = request.user
     if not user.is_authenticated:
@@ -616,7 +645,7 @@ def connect_account_with_profile_icon(request, format=None):
     if request.method == "POST":
         simple_riot_id = request.data["simple_riot_id"]
         region = request.data["region"]
-        name, tagline = simple_riot_id.split('#')
+        name, tagline = simple_riot_id.split("#")
 
         try:
             _id = pt.import_summoner(region, riot_id_name=name, riot_id_tagline=tagline)
@@ -677,7 +706,9 @@ def connect_account_with_profile_icon(request, format=None):
 
 @api_view(["GET"])
 def get_connected_accounts(request, format=None):
-    query = Summoner.objects.get_connected_accounts(request.user).with_user_notes(user=request.user)
+    query = Summoner.objects.get_connected_accounts(request.user).with_user_notes(
+        user=request.user
+    )
     serialized = SummonerSerializer(query, many=True).data
     return Response({"data": serialized})
 
@@ -727,12 +758,16 @@ def change_password(request, format=None):
 @api_view(["GET"])
 def comment_count(request, format=None):
     match_ids = request.GET.getlist("match_ids[]")
-    query = Match.objects.filter(
-        id__in=match_ids,
-    ).annotate(
-        comment_count=Count('comments'),
-    ).values('id', 'comment_count')
-    counts = {x['id']: x['comment_count'] for x in query}
+    query = (
+        Match.objects.filter(
+            id__in=match_ids,
+        )
+        .annotate(
+            comment_count=Count("comments"),
+        )
+        .values("id", "comment_count")
+    )
+    counts = {x["id"]: x["comment_count"] for x in query}
     return Response(counts, status=200)
 
 
@@ -740,17 +775,19 @@ class CommentListView(ListAPIView):
     serializer_class = CommentSerializer
     pagination_class = CustomCursorPagination
     filter_backends = [filters.OrderingFilter]
-    ordering_fields = ['created_date']
-    ordering = ['-created_date']
+    ordering_fields = ["created_date"]
+    ordering = ["-created_date"]
 
     def get_queryset(self):
-        match_id = self.kwargs['match_id']
-        return Comment.objects.filter(
-            match_id=match_id
-        ).annotate(
-            likes=Count('liked_by'),
-            dislikes=Count('disliked_by'),
-        ).select_related('summoner')
+        match_id = self.kwargs["match_id"]
+        return (
+            Comment.objects.filter(match_id=match_id)
+            .annotate(
+                likes=Count("liked_by"),
+                dislikes=Count("disliked_by"),
+            )
+            .select_related("summoner")
+        )
 
 
 class CommentCreateView(CreateAPIView):
@@ -758,21 +795,21 @@ class CommentCreateView(CreateAPIView):
 
 
 class CommentRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
-    queryset = Comment.objects.all().select_related('summoner')
+    queryset = Comment.objects.all().select_related("summoner")
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
+        if self.request.method == "GET":
             return CommentSerializer
-        elif self.request.method in ('PUT', 'PATCH', 'DELETE'):
+        elif self.request.method in ("PUT", "PATCH", "DELETE"):
             return CommentUpdateSerializer
-        raise exceptions.MethodNotAllowed(self.request.method or '')
+        raise exceptions.MethodNotAllowed(self.request.method or "")
 
     def perform_destroy(self, instance):
         user = self.request.user
         if not user.is_authenticated:
-            raise exceptions.NotAuthenticated('User must be logged in.')
+            raise exceptions.NotAuthenticated("User must be logged in.")
         if not user.summonerlinks.filter(summoner=instance.summoner).exists():  # type: ignore
-            raise exceptions.PermissionDenied('User does not own this comment.')
+            raise exceptions.PermissionDenied("User does not own this comment.")
         instance.is_deleted = True
         instance.save()
 
@@ -782,27 +819,33 @@ class CommentRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
 def edit_default_summoner(request, format=None):
     data = {}
     status_code = 200
-    summoner_id = request.data['summoner_id']
+    summoner_id = request.data["summoner_id"]
     if summoner_id is None:
         request.user.custom.default_summoner = None
         request.user.custom.save()
-        data = {'status': 'success', 'default_summoner': {}}
+        data = {"status": "success", "default_summoner": {}}
     else:
         qs = Summoner.objects.filter(id=summoner_id)
         if qs.exists():
             summoner = qs.first()
             request.user.custom.default_summoner = summoner
             request.user.custom.save()
-            data = {'status': 'success', 'default_summoner': SummonerSerializer(summoner).data}
+            data = {
+                "status": "success",
+                "default_summoner": SummonerSerializer(summoner).data,
+            }
         else:
             status_code = 404
-            data = {'status': 'failure', 'message': 'Could not find Summoner with given id.'}
+            data = {
+                "status": "failure",
+                "message": "Could not find Summoner with given id.",
+            }
     return Response(data, status=status_code)
 
 
 class ReputationRetrieveAPIView(RetrieveAPIView):
     serializer_class = ReputationSerializer
-    lookup_field = 'summoner_pk'
+    lookup_field = "summoner_pk"
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
@@ -826,46 +869,43 @@ class ReputationUpdateView(UpdateAPIView):
 
 class NameChangeListView(ListAPIView):
     serializer_class = NameChangeSerializer
-    lookup_field = 'summoner_pk'
+    lookup_field = "summoner_pk"
 
     def get_queryset(self):
         qs = NameChange.objects.filter(summoner=self.kwargs[self.lookup_field])
-        qs = qs.order_by('-created_date')
+        qs = qs.order_by("-created_date")
         return qs
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 def login_action(request, format=None):
-    email = request.data.get("email")
-    password = request.data.get("password")
-    user: UserType | None = authenticate(request, username=email, password=password)  # type: ignore
-    if user:
-        if user.custom.is_email_verified:
-            logger.info(f'Logging in user: {user}')
-            login(request, user)
-            return Response({'message': 'logged in.'})
-        else:
-            thresh = timezone.now() - timedelta(minutes=10)
-            query = user.emailverification_set.filter(created_date__gt=thresh)
-            if not query.exists():
-                # Create new email verification model.
-                EmailVerification.objects.create(user=user)
-            raise exceptions.PermissionDenied(code='not-verified')
-    else:
-        raise exceptions.NotAuthenticated()
+    serializer = LoginSerializer(data=request.data, context={"request": request})
+    serializer.is_valid(raise_exception=True)
+    user: UserType = serializer.validated_data["user"]
+    if user.custom.is_email_verified:
+        logger.info(f"Logging in user: {user}")
+        login(request, user)
+        return Response({"message": "logged in."})
+
+    thresh = timezone.now() - timedelta(minutes=10)
+    query = user.emailverification_set.filter(created_date__gt=thresh)
+    if not query.exists():
+        # Create new email verification model.
+        EmailVerification.objects.create(user=user)
+    raise exceptions.PermissionDenied(code="not-verified")
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 def logout_action(request, format=None):
     user: User | AnonymousUser = request.user
     if user.is_authenticated:
         logout(request)
-    return Response('logged out')
+    return Response("logged out")
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def is_suspicious_account(request, format=None):
-    puuid = request.query_params['puuid']
+    puuid = request.query_params["puuid"]
     summoner = get_object_or_404(Summoner, puuid=puuid)
     sus = summoner.suspicious_account()
     return Response(sus)
@@ -885,6 +925,8 @@ class FollowingListAPIView(ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
-        return Response({
-            'data': serializer.data,
-        })
+        return Response(
+            {
+                "data": serializer.data,
+            }
+        )

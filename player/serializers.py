@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import Q, F
 from rest_framework import serializers
@@ -10,6 +11,24 @@ from .models import RankPosition, Custom
 from .models import Favorite, Comment, NameChange, SummonerNote
 
 from match.models import Participant
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+
+    def validate(self, attrs):
+        user = authenticate(
+            self.context["request"],
+            username=attrs["email"],
+            password=attrs["password"],
+        )
+        if user is None:
+            raise serializers.ValidationError(
+                {"password": "Username or password is incorrect."}
+            )
+        attrs["user"] = user
+        return attrs
 
 
 class SummonerNoteSerializer(serializers.ModelSerializer):
