@@ -39,7 +39,6 @@ CELERY_RESULT_BACKEND = f"redis://{REDIS_URL}/0"
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.dummy.DummyCache",
-        # "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "lolsite-dev-cache",
     }
 }
@@ -77,3 +76,4 @@ def show_toolbar(request):
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK" : show_toolbar,
 }
+AUTH_PASSWORD_VALIDATORS = []
