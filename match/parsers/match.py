@@ -7,14 +7,12 @@ from pydantic.functional_validators import BeforeValidator
 from core.parsers import BaseModelWithLogger
 from lolsite.tasks import get_riot_api
 
-from player.models import simplify
-
 logger = logging.getLogger(__name__)
 
 
 class StylesModel(BaseModelWithLogger):
     description: str
-    selections: list[dict[Literal['perk', 'var1', 'var2', 'var3'], int]]
+    selections: list[dict[Literal["perk", "var1", "var2", "var3"], int]]
     style: int
 
 
@@ -26,47 +24,47 @@ class SelectionModel(BaseModelWithLogger):
 
 
 class PrimaryPerkStyleModel(BaseModelWithLogger):
-    description: Literal['primaryStyle']
+    description: Literal["primaryStyle"]
     style: int
     selections: list[SelectionModel]
 
-    @field_validator('selections')
+    @field_validator("selections")
     @classmethod
     def validate_selections(cls, v):
         if len(v) != 4:
-            raise ValueError(f'selections should have length 4 but had length {len(v)}')
+            raise ValueError(f"selections should have length 4 but had length {len(v)}")
         return v
 
 
 class SubPerkStyleModel(BaseModelWithLogger):
-    description: Literal['subStyle']
+    description: Literal["subStyle"]
     style: int
     selections: list[SelectionModel]
 
-    @field_validator('selections')
+    @field_validator("selections")
     @classmethod
     def validate_selections(cls, v):
         if len(v) != 2:
-            raise ValueError(f'selections should have length 2 but had length {len(v)}')
+            raise ValueError(f"selections should have length 2 but had length {len(v)}")
         return v
 
 
 class PerksModel(BaseModelWithLogger):
-    statPerks: dict[Literal['defense', 'flex', 'offense'], int]
+    statPerks: dict[Literal["defense", "flex", "offense"], int]
     styles: list[StylesModel]
 
     @property
     def primary_style(self):
-        out = [x for x in self.styles if x.description == 'primaryStyle'][0]
+        out = [x for x in self.styles if x.description == "primaryStyle"][0]
         return PrimaryPerkStyleModel(**out.model_dump())
 
     @property
     def sub_style(self):
-        out = [x for x in self.styles if x.description == 'subStyle'][0]
+        out = [x for x in self.styles if x.description == "subStyle"][0]
         return SubPerkStyleModel(**out.model_dump())
 
 
-def ping_validator(v: int|None):
+def ping_validator(v: int | None):
     if not v:
         return 0
     return v
@@ -76,31 +74,31 @@ Ping = Annotated[int, BeforeValidator(ping_validator)]
 
 
 class MissionsModel(BaseModelWithLogger):
-    PlayerScore0: float|None = 0
-    PlayerScore1: float|None = 0
-    PlayerScore2: float|None = 0
-    PlayerScore3: float|None = 0
-    PlayerScore4: float|None = 0
-    PlayerScore5: float|None = 0
-    PlayerScore6: float|None = 0
-    PlayerScore7: float|None = 0
-    PlayerScore8: float|None = 0
-    PlayerScore9: float|None = 0
-    PlayerScore10: float|None = 0
-    PlayerScore11: float|None = 0
+    PlayerScore0: float | None = 0
+    PlayerScore1: float | None = 0
+    PlayerScore2: float | None = 0
+    PlayerScore3: float | None = 0
+    PlayerScore4: float | None = 0
+    PlayerScore5: float | None = 0
+    PlayerScore6: float | None = 0
+    PlayerScore7: float | None = 0
+    PlayerScore8: float | None = 0
+    PlayerScore9: float | None = 0
+    PlayerScore10: float | None = 0
+    PlayerScore11: float | None = 0
 
-    playerScore0: float|None = 0
-    playerScore1: float|None = 0
-    playerScore2: float|None = 0
-    playerScore3: float|None = 0
-    playerScore4: float|None = 0
-    playerScore5: float|None = 0
-    playerScore6: float|None = 0
-    playerScore7: float|None = 0
-    playerScore8: float|None = 0
-    playerScore9: float|None = 0
-    playerScore10: float|None = 0
-    playerScore11: float|None = 0
+    playerScore0: float | None = 0
+    playerScore1: float | None = 0
+    playerScore2: float | None = 0
+    playerScore3: float | None = 0
+    playerScore4: float | None = 0
+    playerScore5: float | None = 0
+    playerScore6: float | None = 0
+    playerScore7: float | None = 0
+    playerScore8: float | None = 0
+    playerScore9: float | None = 0
+    playerScore10: float | None = 0
+    playerScore11: float | None = 0
 
 
 class ParticipantModel(BaseModelWithLogger):
@@ -239,33 +237,43 @@ class ParticipantModel(BaseModelWithLogger):
     playerAugment6: int = 0
     playerSubteamId: int = 0
     subteamPlacement: int = 0
-    PlayerScore0: float|None = 0
-    PlayerScore1: float|None = 0
-    PlayerScore2: float|None = 0
-    PlayerScore3: float|None = 0
-    PlayerScore4: float|None = 0
-    PlayerScore5: float|None = 0
-    PlayerScore6: float|None = 0
-    PlayerScore7: float|None = 0
-    PlayerScore8: float|None = 0
-    PlayerScore9: float|None = 0
-    PlayerScore10: float|None = 0
-    PlayerScore11: float|None = 0
-    missions: MissionsModel|None = None
+    PlayerScore0: float | None = 0
+    PlayerScore1: float | None = 0
+    PlayerScore2: float | None = 0
+    PlayerScore3: float | None = 0
+    PlayerScore4: float | None = 0
+    PlayerScore5: float | None = 0
+    PlayerScore6: float | None = 0
+    PlayerScore7: float | None = 0
+    PlayerScore8: float | None = 0
+    PlayerScore9: float | None = 0
+    PlayerScore10: float | None = 0
+    PlayerScore11: float | None = 0
+    missions: MissionsModel | None = None
     championSkinId: int | None = None
     roleBoundItem: int | None = None
+    PlayerBehavior: dict[str, int] = Field(default_factory=dict)
+    causedGameEndFromIGNBSurrender: bool = False
+    gameEndedInIGNBSurrender: bool = False
+    positionAssignedByMatchmaking: str = ""
+    selectedRolePreferences: str = ""
+    teamIGNBSurrendered: bool = False
+    wasPremadeWithIGNBGameEndCauser: bool = False
+    wasPremadeWithSevereTransgressor: bool = False
+    wasSevereTransgressor: bool = False
+    wasAfk: bool = False
 
     @property
     def stat_perk_0(self):
-        return self.perks.statPerks.get('offense', 0)
+        return self.perks.statPerks.get("offense", 0)
 
     @property
     def stat_perk_1(self):
-        return self.perks.statPerks.get('flex', 0)
+        return self.perks.statPerks.get("flex", 0)
 
     @property
     def stat_perk_2(self):
-        return self.perks.statPerks.get('defense', 0)
+        return self.perks.statPerks.get("defense", 0)
 
 
 class BanType(BaseModelWithLogger):
@@ -334,12 +342,20 @@ class MatchModel(BaseModelWithLogger):
     platformId: str
     queueId: int
     tournamentCode: str | None
-    endOfGameResult: Literal['GameComplete', 'Abort_Unexpected', 'Abort_AntiCheatExit', 'Abort_TooFewPlayers'] | None = None
+    endOfGameResult: (
+        Literal[
+            "GameComplete",
+            "Abort_Unexpected",
+            "Abort_AntiCheatExit",
+            "Abort_TooFewPlayers",
+        ]
+        | None
+    ) = None
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     def game_duration_is_sometimes_not_right(cls, data):
-        if data['gameEndTimestamp']:
-            data['gameDuration'] *= 1000
+        if data["gameEndTimestamp"]:
+            data["gameDuration"] *= 1000
         return data
 
     @property
@@ -355,7 +371,7 @@ class MatchResponseModel(BaseModelWithLogger):
 
 def do_test():
     api = get_riot_api()
-    response = api.match.get('NA1_4495779664', 'na')
+    response = api.match.get("NA1_4495779664", "na")
     start = time.perf_counter()
     MatchResponseModel.model_validate_json(response.content)
-    print(f'Parse Time: {time.perf_counter() - start}')
+    print(f"Parse Time: {time.perf_counter() - start}")
