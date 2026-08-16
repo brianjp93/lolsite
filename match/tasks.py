@@ -269,10 +269,10 @@ def import_recent_matches(
                 except Exception:
                     time.sleep(2**retry_count)
         if len(matches) > 0:
-            existing_ids = [x._id for x in Match.objects.filter(_id__in=matches)]
+            existing_ids = set(Match.objects.filter(_id__in=matches).values_list('_id', flat=True))
             if existing_ids and break_on_match_found:
                 has_more = False
-            new_matches = list(set(matches) - set(existing_ids))
+            new_matches = set(matches) - existing_ids
             import_count += len(new_matches)
             start_time = time.perf_counter()
             jobs = [(x, region) for x in new_matches]
