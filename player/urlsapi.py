@@ -3,7 +3,7 @@ from . import viewsapi as player_views
 from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
-    path('me/', player_views.MyUserView.as_view(), name='me'),
+    path("me/", player_views.MyUserView.as_view(), name="me"),
     path(
         "reputation/<int:summoner_pk>/",
         player_views.ReputationRetrieveAPIView.as_view(),
@@ -19,13 +19,16 @@ urlpatterns = [
         player_views.ReputationUpdateView.as_view(),
         name="update-reputation",
     ),
-    path("summoner/by-riot-id/<str:region>/<str:riot_id_name>/<str:riot_id_tagline>/", player_views.SummonerByRiotId.as_view()),
+    path(
+        "summoner/by-riot-id/<str:region>/<str:riot_id_name>/<str:riot_id_tagline>/",
+        player_views.SummonerByRiotId.as_view(),
+    ),
     path("summoner/", player_views.get_summoner),
-    path("summoner/<int:summoner_pk>/name-changes/", player_views.NameChangeListView.as_view()),
+    path("name-changes/", player_views.NameChangeListView.as_view()),
     path("summoners/", player_views.get_summoners),
     path("summoner-search/", player_views.summoner_search),
     path("champions-overview/", player_views.get_summoner_champions_overview),
-    path("positions/", player_views.get_positions),
+    path("positions/", player_views.RankPositionListView.as_view()),
     path("sign-up/", player_views.sign_up),
     path("verify/", player_views.verify_email),
     path("rank-history/", player_views.get_rank_history),
@@ -45,9 +48,9 @@ urlpatterns = [
     path("comment/<int:pk>/", player_views.CommentRetrieveUpdateView.as_view()),
     path("comment/count/", player_views.comment_count),
     path("default-summoner/", player_views.edit_default_summoner),
-    path('login/', player_views.login_action),
-    path('logout/', player_views.logout_action),
-    path('is_suspicious/', player_views.is_suspicious_account),
+    path("login/", player_views.login_action),
+    path("logout/", player_views.logout_action),
+    path("is_suspicious/", player_views.is_suspicious_account),
     path("summoner-note/", player_views.save_summoner_note),
 ]
 

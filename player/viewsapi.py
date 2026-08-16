@@ -14,6 +14,7 @@ from rest_framework.request import Request
 from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
@@ -152,9 +153,9 @@ class SummonerByRiotId(RetrieveAPIView):
             return pt.handle_multiple_summoners(
                 region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline
             )
-        pt.import_summoner.delay(
+        getattr(pt.import_summoner, "delay")(
             region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline
-        )  # type: ignore
+        )
         return summoner
 
 
@@ -186,49 +187,44 @@ def get_summoners(request, format=None):
     return Response(data, status=status_code)
 
 
-@api_view(["POST"])
-def get_positions(request, format=None):
-    """Get a player's positional ranks.
+class RankPositionListView(ListAPIView):
+    serializer_class = RankPositionSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = player_filters.RankPositionFilter
+    pagination_class = None
 
-    Parameters
-    ----------
-    puuid : str
-    region : str
-    update : bool [true by default]
-        Whether or not to try to create a new RankCheckpoint
+    def get_queryset(self):
+        puuid = self.request.query_params.get("puuid")
+        riot_id_name = self.request.query_params.get("riot_id_name")
+        riot_id_tagline = self.request.query_params.get("riot_id_tagline")
+        region = self.request.query_params.get("region")
 
-    Returns
-    -------
-    JSON Riot Response Data
+        if puuid:
+            summoner = get_object_or_404(Summoner, puuid=puuid)
+        elif riot_id_name and riot_id_tagline and region:
+            summoner = get_object_or_404(
+                Summoner,
+                simple_riot_id=get_simple_riot_id(riot_id_name, riot_id_tagline),
+                region=region,
+            )
+        else:
+            raise exceptions.ValidationError(
+                "Provide puuid or riot_id_name, riot_id_tagline, and region."
+            )
 
-    """
-    data = {}
-    status_code = 200
-    puuid = request.data["puuid"]
-    region = request.data["region"]
-    summoner = Summoner.objects.get(puuid=puuid, region=region)
-    if request.data.get("update", True) is True:
-        pt.import_positions(summoner.pk)
+        update = self.request.query_params.get("update", "true").lower()
+        if update == "true":
+            pt.import_positions(summoner.pk)
 
-    summoner.refresh_from_db()
-    rankcheckpoint = summoner.get_newest_rank_checkpoint()
-    if rankcheckpoint:
-        try:
-            positions = rankcheckpoint.positions.all()
-            pos_data = RankPositionSerializer(positions, many=True).data
-            # pos_data.sort(key=lambda x: (tier_sort(x), rank_sort(x), lp_sort(x)))
-            pos_data = sort_positions(pos_data)
-            data = {"data": pos_data}
-            status_code = 200
-        except Exception:
-            logger.exception("Error while trying to serialize rank positions.")
-            data = {"data": []}
-            status_code = 200
-    else:
-        data = {"data": []}
-        status_code = 200
+        rankcheckpoint = summoner.get_newest_rank_checkpoint()
+        if not rankcheckpoint:
+            return RankPosition.objects.none()
+        return rankcheckpoint.positions.all()
 
-    return Response(data, status=status_code)
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        response.data = {"data": sort_positions(response.data)}
+        return response
 
 
 @api_view(["POST"])
@@ -253,6 +249,7 @@ def sign_up(request, format=None):
                     "expectedAction": "LOGIN",
                 }
             },
+            timeout=10,
         )
         score = response.json()["riskAnalysis"]["score"]
         logger.info(f"Got {score=} for signup: {email=}")
@@ -314,8 +311,11 @@ def get_summoner_champions_overview(request, format=None):
     data = {}
     status_code = 200
 
-    start = int(request.query_params.get("start", 0))
-    end = int(request.query_params.get("end", 5))
+    try:
+        start = int(request.query_params.get("start", 0))
+        end = int(request.query_params.get("end", 5))
+    except (TypeError, ValueError) as error:
+        raise exceptions.ValidationError("start and end must be integers") from error
     order_by = request.query_params.get("order_by", None)
     kwargs = {
         "puuid": request.query_params.get("puuid", None),
@@ -350,8 +350,11 @@ def summoner_search(request: Request, format=None):
         query = query.filter(region=region)
     if order_by := request.query_params.get("order_by", None):
         query = query.order_by(order_by)
-    start = int(request.query_params.get("start", 0))
-    end = int(request.query_params.get("end", 10))
+    try:
+        start = int(request.query_params.get("start", 0))
+        end = int(request.query_params.get("end", 10))
+    except (TypeError, ValueError) as error:
+        raise exceptions.ValidationError("start and end must be integers") from error
     if end - start > 100:
         end = start + 100
     fields = request.query_params.get("fields", None)
@@ -739,7 +742,7 @@ def change_password(request, format=None):
             is_pass_correct = request.user.check_password(password)
             if is_pass_correct:
                 # good
-                if is_valid:
+                if is_valid and new_password:
                     request.user.set_password(new_password)
                     request.user.save()
                     data = {"data": True, "message": "Successfully set new password."}
@@ -869,12 +872,21 @@ class ReputationUpdateView(UpdateAPIView):
 
 class NameChangeListView(ListAPIView):
     serializer_class = NameChangeSerializer
-    lookup_field = "summoner_pk"
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = player_filters.NameChangeFilter
+    queryset = NameChange.objects.order_by("-created_date")
 
     def get_queryset(self):
-        qs = NameChange.objects.filter(summoner=self.kwargs[self.lookup_field])
-        qs = qs.order_by("-created_date")
-        return qs
+        params = self.request.query_params
+        if params.get("puuid") or (
+            params.get("riot_id_name")
+            and params.get("riot_id_tagline")
+            and params.get("region")
+        ):
+            return super().get_queryset()
+        raise exceptions.ValidationError(
+            "Provide puuid or riot_id_name, riot_id_tagline, and region."
+        )
 
 
 @api_view(["POST"])

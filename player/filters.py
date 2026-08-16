@@ -1,14 +1,19 @@
-from data import constants as dc
 from data.models import Champion
 from data.constants import QUEUE_SELECT_OPTIONS, Region
 from match.viewsapi import MatchBySummoner
-from player.models import Summoner, simplify
+from player.models import (
+    NameChange,
+    RankPosition,
+    Summoner,
+    get_simple_riot_id,
+    simplify,
+)
 from match.models import Participant, Stats
 
 from django.db.models import Exists, Sum, Count, F, FloatField
 from django.db.models import ExpressionWrapper, Value, Case, When
 from django.db.models import Subquery, OuterRef
-from django.db.models import IntegerField, Q
+from django.db.models import IntegerField
 
 from django.utils.dateparse import parse_datetime
 
@@ -24,7 +29,7 @@ def get_summoner_champions_overview(
     champion_in=None,
     start_datetime=None,
     end_datetime=None,
-    fields=[],
+    fields=None,
 ):
     """Get QuerySet of Champion Stats for a summoner.
 
@@ -46,6 +51,7 @@ def get_summoner_champions_overview(
     QuerySet
 
     """
+    fields = fields or []
     all_fields = True if not fields else False
     min_game_time = 60 * 5 * 1000
     query = Stats.objects.select_related("participant", "participant__match").filter(
@@ -75,7 +81,10 @@ def get_summoner_champions_overview(
         end_timestamp = end_dt.timestamp() * 1000
         query = query.filter(participant__match__game_creation__gt=end_timestamp)
     if season is not None:
-        season = int(season)
+        try:
+            season = int(season)
+        except (TypeError, ValueError) as error:
+            raise ValueError("season must be an integer") from error
         query = query.filter(participant__match__major=season)
 
     query = query.annotate(
@@ -278,6 +287,52 @@ class SummonerMatchFilter(django_filters.FilterSet):
         if value:
             return qs.filter(queue_id=value)
         return qs
+
+
+class RankPositionFilter(django_filters.FilterSet):
+    puuid = django_filters.CharFilter(field_name="checkpoint__summoner__puuid")
+    riot_id_name = django_filters.CharFilter(
+        field_name="checkpoint__summoner__riot_id_name", lookup_expr="iexact"
+    )
+    riot_id_tagline = django_filters.CharFilter(
+        field_name="checkpoint__summoner__riot_id_tagline", lookup_expr="iexact"
+    )
+    region = django_filters.ChoiceFilter(
+        field_name="checkpoint__summoner__region",
+        choices=[(x, x) for x in Region],
+    )
+
+    class Meta:
+        model = RankPosition
+        fields = ["puuid", "riot_id_name", "riot_id_tagline", "region"]
+
+
+class NameChangeFilter(django_filters.FilterSet):
+    puuid = django_filters.CharFilter()
+    riot_id_name = django_filters.CharFilter()
+    riot_id_tagline = django_filters.CharFilter()
+    region = django_filters.ChoiceFilter(choices=[(x, x) for x in Region])
+
+    class Meta:
+        model = NameChange
+        fields = ["puuid", "riot_id_name", "riot_id_tagline", "region"]
+
+    def filter_queryset(self, queryset):
+        data = self.form.cleaned_data
+        if puuid := data.get("puuid"):
+            queryset = queryset.filter(summoner__puuid=puuid)
+
+        riot_id_name = data.get("riot_id_name")
+        riot_id_tagline = data.get("riot_id_tagline")
+        if riot_id_name and riot_id_tagline:
+            queryset = queryset.filter(
+                summoner__simple_riot_id=get_simple_riot_id(
+                    riot_id_name, riot_id_tagline
+                )
+            )
+        if region := data.get("region"):
+            queryset = queryset.filter(summoner__region=region)
+        return queryset
 
 
 class SummonerAutocompleteFilter(django_filters.FilterSet):

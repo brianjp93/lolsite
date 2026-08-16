@@ -389,6 +389,10 @@ class RankPosition(models.Model):
                 return "FlexQ"
             case "RANKED_SOLO_5x5":
                 return "SoloQ"
+            case "JADE_RANKED_SOLO_5x5":
+                return "Classic"
+            case "RANKED_PREMADE_5x5":
+                return "Premade 5x5"
         return self.queue_type
 
     def winrate(self):
@@ -400,6 +404,9 @@ class RankPosition(models.Model):
 
 def encode_rank_to_int(tier, division, lp):
     ranks = dc.RANKS[13.2]
+    # this isn't the right thing to do
+    if tier.lower() not in ranks["TIERS"]:
+        return 0
     tier_index = ranks["TIERS"].index(tier.lower())
     division_index = (
         len(ranks["DIVISIONS"]) - 1 - ranks["DIVISIONS"].index(division.upper())
