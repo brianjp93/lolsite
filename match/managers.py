@@ -167,7 +167,7 @@ class MatchQuerySet(models.QuerySet["Match"]):
             )
             .select_related("image")
             .order_by("key", "-major", "-minor")
-            .distinct()
+            .defer('lore')
         )
         if not len(qs):
             # backup query
@@ -177,7 +177,8 @@ class MatchQuerySet(models.QuerySet["Match"]):
                 )
                 .select_related("image")
                 .order_by("key", "-major", "-minor")
-                .distinct()
+                .distinct('key')
+                .defer('lore')
             )
         return {x.key: x for x in qs}
 
