@@ -164,13 +164,13 @@ class Summoner(models.Model):
         quick_surrender_count = Match.objects.filter(
             game_duration__lt=1000 * 60 * 5,
             queue_id=queue,
-            game_creation__gte=dt.timestamp() * 1000,
+            game_creation_dt__gte=dt,
             participants__puuid=self.puuid,
         ).count()
         all_games_count = Match.objects.filter(
             participants__puuid=self.puuid,
             queue_id=queue,
-            game_creation__gte=dt.timestamp() * 1000
+            game_creation_dt__gte=dt,
         ).count()
         end = time.perf_counter()
         logger.info(f"{self.simple_riot_id} suspicious_account query took {end - start:.2f} seconds.")
@@ -207,7 +207,7 @@ class Summoner(models.Model):
                 m = m.filter(season_id=season_id)
             if queue_id is not None:
                 m = m.filter(queue_id=queue_id)
-            m = m.order_by("-game_creation")
+            m = m.order_by("-game_creation_dt")
             p = p.filter(match__in=m[:recent])
         elif recent_days is not None:
             start_time = timezone.now() - timedelta(days=recent_days)

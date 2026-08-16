@@ -764,7 +764,7 @@ def apply_player_ranks(match, threshold_days=1):
     if not isinstance(match, Match):
         match = Match.objects.get(id=match)
     one_day_ago = timezone.now() - timedelta(days=1)
-    if match.get_creation() <= one_day_ago:
+    if match.game_creation_dt <= one_day_ago:
         return
     # ok -- apply ranks
     parts = match.participants.all()

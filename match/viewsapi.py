@@ -80,7 +80,7 @@ class MatchBySummoner(ListAPIView):
                 queue=queue,  # type: ignore
             )
             mt.bulk_import.s(summoner.puuid, count=40, offset=start + limit).apply_async(countdown=5)  # type: ignore
-        qs = qs.order_by('-game_creation')
+        qs = qs.order_by('-game_creation_dt')
         return qs
 
     @staticmethod
@@ -376,7 +376,7 @@ def get_latest_unlabeled_match(request, format=None):
     """
     p = (
         Participant.objects.filter(role_label=None, match__queue_id=420)
-        .order_by("-match__game_creation")
+        .order_by("-match__game_creation_dt")
         .first()
     )
     if not p:

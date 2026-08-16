@@ -174,7 +174,7 @@ class SummonerPage(HtmxMixin, generic.ListView):  # type: ignore
     def get_queryset(self):
         qs = self.filterset.qs
         qs = qs.prefetch_related("participants", "participants__stats", "teams__bans")
-        qs = qs.order_by("-game_creation")
+        qs = qs.order_by("-game_creation_dt")
         return qs
 
 
@@ -223,7 +223,7 @@ class SummonerMatchList(generic.ListView):
     def get_queryset(self):
         qs = self.filterset.qs
         qs = qs.prefetch_related("participants", "participants__stats")
-        qs = qs.order_by("-game_creation")
+        qs = qs.order_by("-game_creation_dt")
         return qs
 
 

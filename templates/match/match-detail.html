@@ -48,7 +48,7 @@
       Game Version: {{ object.game_version }}
     </div>
     <div>
-      Played At: <span x-dt1>{{ object.get_creation.isoformat }}</span> ({{ object.get_creation|naturaltime }})
+      Played At: <span x-dt1>{{ object.game_creation_dt.isoformat }}</span> ({{ object.game_creation_dt|naturaltime }})
     </div>
 
     {% include "match/_teams.html" %}

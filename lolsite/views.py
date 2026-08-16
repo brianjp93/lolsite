@@ -63,7 +63,7 @@ class FeedView(LoginRequiredMixin, HtmxMixin, generic.ListView):  # type: ignore
                 )
             )
             .prefetch_related("participants", "participants__stats")
-            .order_by("-game_creation")
+            .order_by("-game_creation_dt")
         )
 
 

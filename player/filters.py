@@ -73,13 +73,11 @@ def get_summoner_champions_overview(
     if start_datetime is not None:
         start_dt = parse_datetime(start_datetime)
         assert start_dt
-        start_timestamp = start_dt.timestamp() * 1000
-        query = query.filter(participant__match__game_creation__gt=start_timestamp)
+        query = query.filter(participant__match__game_creation_dt__gt=start_dt)
     if end_datetime is not None:
         end_dt = parse_datetime(end_datetime)
         assert end_dt
-        end_timestamp = end_dt.timestamp() * 1000
-        query = query.filter(participant__match__game_creation__gt=end_timestamp)
+        query = query.filter(participant__match__game_creation_dt__gt=end_dt)
     if season is not None:
         try:
             season = int(season)

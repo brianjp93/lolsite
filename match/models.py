@@ -181,7 +181,7 @@ class ToTimestamp(Func):
 
 class Match(VersionedModel):
     _id = models.CharField(unique=True, db_index=True, max_length=32)
-    game_creation = models.BigIntegerField(db_index=True)
+    game_creation = models.BigIntegerField()
     game_creation_dt = models.GeneratedField(
         expression=ToTimestamp(models.F("game_creation") / 1000),
         output_field=models.DateTimeField(),
@@ -300,12 +300,6 @@ class Match(VersionedModel):
 
     def team200(self):
         return [x for x in self.sorted_participants if x.team_id != 100]
-
-    def get_creation(self):
-        """Get creation as datetime"""
-        utc = zoneinfo.ZoneInfo("UTC")
-        dt = datetime.fromtimestamp(self.game_creation // 1000, tz=utc)
-        return dt
 
     def get_comment_count(self):
         return self.comments.all().count()

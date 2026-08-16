@@ -66,7 +66,7 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
         matches = Match.objects.filter(
             participants__puuid=summoner.puuid,
             game_duration__gt=600,
-        ).order_by('-game_creation')[:20]
+        ).order_by('-game_creation_dt')[:20]
         for match in matches:
             part = match.participants.get(puuid=summoner.puuid)
             assert part.stats
