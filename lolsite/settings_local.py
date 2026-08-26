@@ -1,7 +1,6 @@
 from .settings import *
 import os
 from decouple import config
-import socket
 import dj_database_url
 import sys
 
@@ -20,10 +19,6 @@ if 'test' not in sys.argv and DEBUG:
         "debug_toolbar",
     ]
 
-
-# settings internal ips for docker
-hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2", "localhost"]
 
 DATABASES = {'default': dj_database_url.config()}
 

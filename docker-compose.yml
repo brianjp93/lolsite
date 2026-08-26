@@ -6,6 +6,11 @@ services:
     ports:
       - "5435:5432"
     env_file: .docker_env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
   web:
     build:
       context: .
@@ -15,13 +20,12 @@ services:
       - "8000:8000"
     volumes:
       - .:/code
-    links:
-      - db:db
-      - redis:redis
     env_file: .docker_env
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     stdin_open: true
   worker:
     build:
@@ -30,13 +34,12 @@ services:
     command: celery -A lolsite worker -l info
     volumes:
       - .:/code
-    links:
-      - db:db
-      - redis:redis
     env_file: .docker_env
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
   beat:
     build:
       context: .
@@ -44,13 +47,12 @@ services:
     command: celery -A lolsite beat -l INFO
     volumes:
       - .:/code
-    links:
-      - db:db
-      - redis:redis
     env_file: .docker_env
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
   redis:
     image: redis
   tailwind:
