@@ -1,87 +1,60 @@
-import time
-import logging
+import json
+from pathlib import Path
 
-from django.contrib import messages
-from django.db.models import Exists, OuterRef
-from django.shortcuts import redirect
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.templatetags.static import static
 from django.views import generic
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.decorators.vary import vary_on_headers
 
-from lolsite.helpers import HtmxMixin
-from match.models import Match, Participant, set_related_match_objects
-from match.tasks import RefreshFeed
-from player.models import Summoner
+from lolsite.viewsapi import _get_match_meta_data, _get_summoner_meta_data
 
 
-logger = logging.getLogger(__name__)
+class FrontendView(generic.TemplateView):
+    template_name = "frontend.html"
 
-
-class Home(generic.TemplateView):
-    template_name = "layout/home.html"
-
-
-class FeedView(LoginRequiredMixin, HtmxMixin, generic.ListView):  # type: ignore
-    template_name = "player/feed.html"
-    hx_template_name = "player/_feed.html"
-    paginate_by = 20
-
-    @vary_on_headers("hx-request")
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def get_template_names(self):
-        if self.request.htmx:
-            return [self.hx_template_name]
-        return super().get_template_names()
-
-    def get_context_data(self, object_list=None, **kwargs):
-        if self.request.htmx:
-            user = self.request.user
-            rf = RefreshFeed()
-            logger.info(f"Refreshing feed for {user=}")
-            rf.refresh(user)
-            while not rf.is_refresh_feed_done(user):
-                time.sleep(0.5)
-        context = super().get_context_data(object_list=object_list, **kwargs)
-        context["following"] = self.following
-        context["following_puuids"] = [x.puuid for x in self.following]
-        set_related_match_objects(context["object_list"])
-        return context
-
-    def get_queryset(self):
-        self.following = Summoner.objects.filter(
-            id__in=self.request.user.follow_set.all().values("summoner_id")  # type: ignore
-        )
-        return (
-            Match.objects.filter(
-                Exists(
-                    Participant.objects.filter(
-                        puuid__in=self.following.values("puuid"),
-                        match_id=OuterRef("id"),
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        resolver_match = self.request.resolver_match
+        if resolver_match:
+            match resolver_match.url_name:
+                case "summoner-page":
+                    riot_id_name, riot_id_tagline = kwargs["riot_id"]
+                    context.update(
+                        _get_summoner_meta_data(
+                            riot_id_name, riot_id_tagline, kwargs["region"]
+                        )
                     )
-                )
+                case "frontend-match-detail":
+                    riot_id_name, riot_id_tagline = kwargs["riot_id"]
+                    context.update(
+                        _get_match_meta_data(
+                            riot_id_name,
+                            riot_id_tagline,
+                            kwargs["region"],
+                            kwargs["match_id"],
+                        )
+                    )
+
+        if settings.REACT_PROXY_URL:
+            base = settings.REACT_PROXY_URL.rstrip("/")
+            context.update(
+                react_refresh_url=f"{base}/@react-refresh",
+                react_scripts=[f"{base}/@vite/client", f"{base}/src/main.tsx"],
+                react_styles=[],
             )
-            .prefetch_related("participants", "participants__stats")
-            .order_by("-game_creation_dt")
+            return context
+
+        manifest_path = Path(settings.FRONTEND_MANIFEST_PATH)
+        try:
+            manifest = json.loads(manifest_path.read_text())
+            entry = manifest["index.html"]
+        except (OSError, json.JSONDecodeError, KeyError) as error:
+            raise ImproperlyConfigured(
+                f"Build the frontend before serving Django: {manifest_path}"
+            ) from error
+
+        context.update(
+            react_scripts=[static(entry["file"])],
+            react_styles=[static(path) for path in entry.get("css", [])],
         )
-
-
-class FollowingListView(LoginRequiredMixin, generic.ListView):
-    template_name = "player/following.html"
-
-    def get_queryset(self):
-        return Summoner.objects.filter(
-            id__in=self.request.user.follow_set.all().values("summoner_id")  # type: ignore
-        )
-
-    def get_context_data(self, object_list=None, **kwargs):
-        context = super().get_context_data(object_list=object_list, **kwargs)
-        context["count"] = self.get_queryset().count()
         return context
-
-    def post(self, *args, **kwargs):
-        summoner_id = self.request.POST["summoner_id"]
-        count, _ = self.request.user.follow_set.filter(summoner_id=summoner_id).delete()  # type: ignore
-        messages.info(self.request, f"Successfully removed {count} summoners from your follow list.")
-        return redirect("following")

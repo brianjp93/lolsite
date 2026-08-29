@@ -1,0 +1,51 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{% static 'gen/logo-clean.png' %}"
+    />
+    {# These data-server-head tagged items get deleted on tanstack route changes #}
+    <title data-server-head>{{ title|default:"hardstuck.club" }}</title>
+    {% if description %}
+    <meta data-server-head name="description" content="{{ description }}" />
+    <meta
+      data-server-head
+      property="og:description"
+      content="{{ description }}"
+    />
+    {% endif %} {% if type %}
+    <meta data-server-head property="og:type" content="{{ type }}" />
+    {% endif %} {% if title %}
+    <meta data-server-head property="og:title" content="{{ title }}" />
+    {% endif %} {% if url %}
+    <meta data-server-head property="og:url" content="{{ url }}" />
+    {% endif %} {% if image %}
+    <meta data-server-head property="og:image" content="{{ image }}" />
+    {% endif %}
+    <script>
+      window.STATIC_PREFIX = "{% get_static_prefix %}";
+    </script>
+    {% for style in react_styles %}
+    <link rel="stylesheet" href="{{ style }}" />
+    {% endfor %}
+  </head>
+  <body>
+    <div id="app"></div>
+    {% if react_refresh_url %}
+    <script type="module">
+      import RefreshRuntime from "{{ react_refresh_url }}";
+      RefreshRuntime.injectIntoGlobalHook(window);
+      window.$RefreshReg$ = () => {};
+      window.$RefreshSig$ = () => (type) => type;
+      window.__vite_plugin_react_preamble_installed__ = true;
+    </script>
+    {% endif %} {% for script in react_scripts %}
+    <script type="module" src="{{ script }}"></script>
+    {% endfor %}
+  </body>
+</html>

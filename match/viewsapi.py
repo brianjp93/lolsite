@@ -1,6 +1,6 @@
 from django.db.models import Exists, OuterRef
 from django.db import models
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import User as DjangoUser
 from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -8,7 +8,6 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.exceptions import NotFound
 
 from lolsite.tasks import get_riot_api
-from lolsite.helpers import HtmxMixin, UserType, query_debugger
 from data import constants
 from match import tasks as mt
 from match.parsers.spectate import SpectateModel
@@ -135,11 +134,7 @@ class MatchBySummoner(ListAPIView):
         return qs
 
 
-def user_can_create_match_summary(user: UserType | AnonymousUser):
-    return user.is_superuser
-
-
-class MatchSummaryView(HtmxMixin, RetrieveAPIView):  # type: ignore
+class MatchSummaryView(RetrieveAPIView):  # type: ignore
     serializer_class = MatchSummarySerializer
     lookup_field = 'match_id'
 
@@ -149,7 +144,8 @@ class MatchSummaryView(HtmxMixin, RetrieveAPIView):  # type: ignore
         if matchsummary := getattr(match, 'matchsummary', None):
             return matchsummary
         else:
-            if user_can_create_match_summary(self.request.user):
+            user = self.request.user
+            if isinstance(user, DjangoUser) and user.is_superuser:
                 mt.get_summary_of_match.delay(match._id)  # type: ignore
                 obj = get_object_or_404(MatchSummary, match=match)
                 return obj

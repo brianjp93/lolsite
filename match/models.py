@@ -11,7 +11,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Func, QuerySet
 from django.contrib.postgres.fields import ArrayField
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -433,7 +432,7 @@ class Participant(models.Model):
         return simplify(f"{self.riot_id_name}#{self.riot_id_tagline}")
 
     def get_absolute_url(self):
-        return reverse("player:summoner-puuid", kwargs={"puuid": self.puuid})
+        return f"/puuid/{self.puuid}/"
 
     def __str__(self):
         return (

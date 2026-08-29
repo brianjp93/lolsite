@@ -9,13 +9,16 @@ https://docs.djangoproject.com/en/2.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
+
 import os
 from decouple import config
 import logging
+
 # must be imported for app to know about periodic task schedule
 from lolsite import periodic_tasks  # noqa: F401
 
 import django_stubs_ext
+
 django_stubs_ext.monkeypatch()
 
 logger = logging.getLogger(__name__)
@@ -26,11 +29,9 @@ SECRET_KEY = config(
     "LOLSITE_SECRET_KEY", "6cs%&oj!lvxpvj44r63-#ie=-%er1hs@%sbt1k9=lf7-b_mlxv"
 )
 
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'lolsite.helpers.Paginator'
-}
+REST_FRAMEWORK = {"DEFAULT_PAGINATION_CLASS": "lolsite.helpers.Paginator"}
 
-VERSION_STRING = '0.1.0'
+VERSION_STRING = "0.1.0"
 
 # Application definition
 INSTALLED_APPS = [
@@ -43,13 +44,11 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
-    "django_htmx",
-    "django_cotton",
     "corsheaders",
     "django_extensions",
     "rest_framework",
     "storages",
-    'core',
+    "core",
     "activity",
     "lolsite",
     "data",
@@ -71,7 +70,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django_htmx.middleware.HtmxMiddleware",
 ]
 
 ROOT_URLCONF = "lolsite.urls"
@@ -83,19 +81,14 @@ TEMPLATES = [
         "APP_DIRS": False,
         "OPTIONS": {
             "loaders": [
+                "django.template.loaders.filesystem.Loader",
                 "django.template.loaders.app_directories.Loader",
-                "django_cotton.cotton_loader.Loader",
             ],
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "lolsite.context_processors.search_form",
-                "lolsite.context_processors.favorites_list",
-            ],
-            'builtins': [
-                'django_cotton.templatetags.cotton',
             ],
         },
     },
@@ -108,9 +101,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
 ]
 
 
@@ -128,7 +127,13 @@ USE_L10N = True
 USE_TZ = True
 
 
-STATICFILES_DIRS = ["lolsite/static"]
+FRONTEND_DIST = os.path.join(BASE_DIR, "frontend", "dist")
+FRONTEND_PUBLIC = os.path.join(BASE_DIR, "frontend", "public")
+FRONTEND_MANIFEST_PATH = os.path.join(FRONTEND_DIST, ".vite", "manifest.json")
+REACT_PROXY_URL = config("REACT_PROXY_URL", "")
+
+FRONTEND_STATIC_DIR = FRONTEND_DIST
+STATICFILES_DIRS = ["lolsite/static", FRONTEND_STATIC_DIR]
 
 
 CORS_ALLOW_CREDENTIALS = True
@@ -167,19 +172,19 @@ EMAIL_USE_TLS = True
 
 DEFAULT_FROM_EMAIL = "support@hardstuck.club"
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-RIOT_API_TOKEN = config('RIOT_API_TOKEN')
+RIOT_API_TOKEN = config("RIOT_API_TOKEN")
 
 # api key is the same for prod an local
-GOOGLE_RECAPTCHA_API_KEY=config('GOOGLE_RECAPTCHA_API_KEY', "")
-GOOGLE_RECAPTCHA_PROJECT_ID="hardstuck-1687887414200"
-GOOGLE_RECAPTCHA_KEY=config('GOOGLE_RECAPTCHA_KEY', "")
+GOOGLE_RECAPTCHA_API_KEY = config("GOOGLE_RECAPTCHA_API_KEY", "")
+GOOGLE_RECAPTCHA_PROJECT_ID = "hardstuck-1687887414200"
+GOOGLE_RECAPTCHA_KEY = config("GOOGLE_RECAPTCHA_KEY", "")
 
-OPENAI_KEY=config("OPENAI_KEY", "")
+OPENAI_KEY = config("OPENAI_KEY", "")
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL = "player:login"
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")

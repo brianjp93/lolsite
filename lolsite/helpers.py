@@ -6,7 +6,6 @@ https://gist.github.com/goutomroy/d61fc8a8445954c71b5585af042e5cf4
 import functools
 import time
 
-from django_htmx.middleware import HtmxDetails
 from rest_framework.pagination import (
     CursorPagination,
     PageNumberPagination,
@@ -14,8 +13,7 @@ from rest_framework.pagination import (
 )
 
 from django.db import connection, reset_queries, models
-from django.http import HttpRequest
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import User
 
 from player.models import Custom, EmailVerification, Favorite, Follow, SummonerLink
 
@@ -89,17 +87,3 @@ class UserType(User):
 
     class Meta:  # type: ignore[override]
         abstract = True
-
-
-class HtmxHttpRequest(HttpRequest):
-    htmx: HtmxDetails
-    user: UserType | AnonymousUser  # type: ignore
-
-
-class AuthenticatedHtmxHttpRequest(HttpRequest):
-    htmx: HtmxDetails
-    user: UserType  # type: ignore
-
-
-class HtmxMixin:
-    request: HtmxHttpRequest

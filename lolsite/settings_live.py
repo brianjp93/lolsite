@@ -1,19 +1,25 @@
-from .settings import *
-
-from decouple import config
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
 import dj_database_url
+import sentry_sdk
+from decouple import config
+from sentry_sdk.integrations.django import DjangoIntegration
+
+from . import settings as base_settings
+
+for setting_name in dir(base_settings):
+    if setting_name.isupper():
+        globals()[setting_name] = getattr(base_settings, setting_name)
 
 
 DEBUG = False
 
+FRONTEND_STATIC_DIR = base_settings.FRONTEND_DIST
+STATICFILES_DIRS = ["lolsite/static", FRONTEND_STATIC_DIR]
 
-ALLOWED_HOSTS = ["app.hardstuck.club"]
+ALLOWED_HOSTS = ["hardstuck.club"]
 BASE_URL = "https://hardstuck.club"
-BACKEND_URL = "https://app.hardstuck.club"
+BACKEND_URL = BASE_URL
 
-DATABASES = {'default': dj_database_url.config()}
+DATABASES = {"default": dj_database_url.config()}
 
 AWS_ACCESS_KEY_ID = config("AWS_KEY")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET")
@@ -36,7 +42,7 @@ STORAGES = {
     },
 }
 
-REDIS_URL = config('REDIS_URL', 'localhost')
+REDIS_URL = config("REDIS_URL", "localhost")
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = f"{REDIS_URL}/0"
 
@@ -48,35 +54,34 @@ CACHES = {
 }
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': '[{asctime}][{levelname}] {filename}:{funcName}:{lineno} :: {message}',
-            'style': "{",
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {
+            "format": "[{asctime}][{levelname}] {filename}:{funcName}:{lineno} :: {message}",
+            "style": "{",
         }
     },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'default',
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
     },
 }
 
 
-CORS_ALLOWED_ORIGINS = ['https://hardstuck.club', 'https://dev.hardstuck.club']
+CORS_ALLOWED_ORIGINS = ["https://hardstuck.club", "https://dev.hardstuck.club"]
 CSRF_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_DOMAIN = '.hardstuck.club'
+CSRF_COOKIE_DOMAIN = ".hardstuck.club"
 CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_DOMAIN = 'hardstuck.club'
+SESSION_COOKIE_DOMAIN = "hardstuck.club"
 CSRF_TRUSTED_ORIGINS = [
     "https://hardstuck.club",
-    "https://app.hardstuck.club",
     "https://dev.hardstuck.club",
 ]
 
@@ -95,6 +100,7 @@ def before_send(event, hint):
 
 sentry_sdk.init(
     dsn=config("SENTRY_DSN", ""),  # type: ignore
+    environment='production',
     integrations=[DjangoIntegration()],
     enable_tracing=True,
     before_breadcrumb=before_breadcrumb,
