@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    background: linear-gradient(180deg, #292e49, #536976);
+    @apply min-h-screen;
+  }
+
+  /* don't apply to recharts tooltip -- colors were getting overwritten */
+  *:not(.recharts-tooltip-wrapper *) {
+    box-sizing: border-box;
+    @apply text-gray-300;
+  }
+
+  h1 {
+    @apply text-4xl font-bold;
+  }
+
+  label {
+    @apply block text-sm font-bold opacity-75;
+  }
+
+  input {
+    @apply block border-b border-slate-400 bg-transparent px-1 pt-2;
+
+    &:focus {
+      @apply border-slate-300 outline-none;
+    }
+  }
+
+  .btn {
+    @apply block rounded border border-white/20 px-4 py-2 font-bold text-gray-100 cursor-pointer;
+
+    &.btn-default {
+      &:hover {
+        @apply border-white/30 bg-white/10;
+      }
+
+      &.disabled {
+        @apply pointer-events-none border-none bg-black/40 text-gray-500;
+      }
+    }
+
+    &.btn-primary {
+      @apply border-none bg-linear-to-r from-[#17334e] to-[#4f362a];
+
+      &:hover {
+        @apply shadow-md;
+        @apply bg-linear-to-r from-[#203c5a] to-[#3b4f69];
+      }
+
+      &:active {
+        @apply shadow-none;
+      }
+    }
+
+    &.btn-link {
+      @apply border-none hover:underline text-sm text-zinc-300 font-normal;
+    }
+  }
+
+  a {
+    @apply hover:underline;
+  }
+
+  select {
+    @apply border-r-8 border-r-transparent bg-transparent;
+
+    &.default {
+      @apply bg-zinc-500/20 py-1 px-2;
+    }
+
+    option {
+      @apply bg-slate-800 border-none outline-none;
+    }
+  }
+
+  /* LOW PROFILE SCROLLBAR */
+  .quiet-scroll::-webkit-scrollbar {
+    @apply h-2 w-2 bg-[#F5F5F500];
+  }
+  .quiet-scroll::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: #2525257d;
+  }
+  .quiet-scroll::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background-color: #f5f5f500;
+  }
+  .quiet-scroll {
+    scrollbar-color: #222 #575757;
+    scrollbar-width: thin;
+  }
+
+  .react-tiny-popover-container {
+    @apply bg-zinc-900/90 p-8 rounded-md max-w-md;
+  }
+
+  .ReactModal__Content {
+    @apply bg-zinc-800! border-2! border-zinc-900! rounded-lg!;
+  }
+
+  .ReactModal__Overlay {
+    @apply bg-zinc-900/75! z-20;
+  }
+}

@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-echo "-----> Running Tailwind CSS compilation"
-tailwindcss -i ./lolsite/static/src/main.css -o ./lolsite/static/src/output.css --minify
+cd "${BUILD_DIR:?}"
+
+echo "-----> Building Vite frontend"
+# ponytail: nested install is uncached; use an npm workspace if deploy time matters.
+npm --prefix frontend ci --include=dev
+npm --prefix frontend run build
+rm -rf frontend/node_modules
 
 echo "-----> Running collectstatic"
-export PYTHONPATH=$BUILD_DIR:$PYTHONPATH
-cd $BUILD_DIR
+export PYTHONPATH="$BUILD_DIR${PYTHONPATH:+:$PYTHONPATH}"
 python manage.py collectstatic --noinput

@@ -9,7 +9,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import models
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
 
@@ -118,10 +117,10 @@ class Summoner(models.Model):
         return f'Summoner(region={self.region}, riot_id_name={self.riot_id_name}, riot_id_tagline={self.riot_id_tagline})'
 
     def get_absolute_url(self):
-        return reverse("player:summoner-page", kwargs={"region": self.region, "name": self.riot_id_name, "tagline": self.riot_id_tagline})
+        return f"/{self.region}/{self.riot_id_name}-{self.riot_id_tagline}/"
 
     def get_puuid_url(self):
-        return reverse("player:summoner-puuid", kwargs={"puuid": self.puuid})
+        return f"/puuid/{self.puuid}/"
 
     def get_name(self):
         return self.simple_riot_id

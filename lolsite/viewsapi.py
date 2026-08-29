@@ -1,11 +1,10 @@
-from django.http import Http404
+from django.db.models import Prefetch
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.templatetags.static import static
 
-from match.models import Match
+from data.models import Champion
+from match.models import Match, Participant
 from data.constants import QUEUE_DICT
 
 from player.models import Summoner, simplify
@@ -66,9 +65,20 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
         matches = Match.objects.filter(
             participants__puuid=summoner.puuid,
             game_duration__gt=600,
-        ).order_by('-game_creation_dt')[:20]
+        ).prefetch_related(Prefetch(
+            lookup='participants',
+            queryset=Participant.objects.filter(puuid=summoner.puuid).select_related('stats'),
+        )).order_by('-game_creation_dt')[:20]
+        champion_keys = {part.champion_id for match in matches for part in match.participants.all()}
+        champs = {x.key: x for x in(
+            Champion.objects
+            .filter(key__in=champion_keys)
+            .order_by('key', '-major', '-minor')
+            .distinct('key')
+        )}
         for match in matches:
-            part = match.participants.get(puuid=summoner.puuid)
+            # we should be able to assume they exist
+            part = match.participants.all()[0]
             assert part.stats
             is_win = part.stats.win
             kills += part.stats.kills
@@ -85,7 +95,7 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
                 losses += 1
 
             # per champ stats
-            champ = part.get_champion()
+            champ = champs.get(part.champion_id, None)
             if champ:
                 newstat = champions[champ.name] = champions.get(champ.name, {'wins': 0, 'count': 0})
                 newstat['count'] += 1
@@ -121,20 +131,6 @@ def _get_summoner_meta_data(riot_id_name: str, riot_id_tagline: str, region: str
     return meta
 
 
-@api_view(['GET'])
-def get_summoner_meta_data(request, region: str, name: str, format=None):
-    if '-' in name:
-        try:
-            riot_id_name, riot_id_tagline = name.split('-')
-        except ValueError:
-            # unexpected number of items
-            return Response(get_meta())
-    else:
-        return Response(get_meta())
-    meta = _get_summoner_meta_data(riot_id_name, riot_id_tagline, region)
-    return Response(meta)
-
-
 def _get_match_meta_data(riot_id_name: str, riot_id_tagline: str, region: str, match_id: str):
     meta = get_meta()
     riot_id_name = simplify(riot_id_name)
@@ -148,11 +144,12 @@ def _get_match_meta_data(riot_id_name: str, riot_id_tagline: str, region: str, m
     except Summoner.MultipleObjectsReturned:
         summoner = handle_multiple_summoners(region, simple_riot_id=full_id)
     match = Match.objects.get(_id=match_id)
-    part = match.participants.get(puuid=summoner.puuid)
+    # we should be able to assume this exists
+    part = next(x for x in match.participants.all() if x.puuid==summoner.puuid)
     assert part.stats
     kills = part.stats.kills
     deaths = part.stats.deaths
-    deaths = 1 if deaths < 1 else deaths
+    deaths = max(deaths, 1)
     assists = part.stats.assists
     minutes = match.game_duration / 60_000
     dpm = 0.0
@@ -181,19 +178,3 @@ def _get_match_meta_data(riot_id_name: str, riot_id_tagline: str, region: str, m
     meta['description'] = stats
     meta['image'] = image
     return meta
-
-
-@api_view(['GET'])
-def get_match_meta_data(request, region, name, match_id, format=None):
-    if '-' in name:
-        try:
-            riot_id_name, riot_id_tagline = name.split('-')
-        except ValueError:
-            raise Http404('Could not find object.')
-    else:
-        return Response(get_meta())
-    try:
-        meta = _get_match_meta_data(riot_id_name, riot_id_tagline, region, match_id)
-    except ObjectDoesNotExist:
-        raise Http404("Could not find object.")
-    return Response(meta)

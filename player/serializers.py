@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from data.models import CDProfileIcon
 from data.serializers import DynamicSerializer
-from lolsite.helpers import HtmxHttpRequest, UserType
+from lolsite.helpers import UserType
 from .models import Summoner, Reputation
 from .models import RankPosition, Custom
 from .models import Favorite, Comment, NameChange, SummonerNote
@@ -124,7 +124,7 @@ class SummonerSerializer(DynamicSerializer):
         )
 
     def get_has_match_overlap(self, obj):
-        request: HtmxHttpRequest | None = self.context.get("request")
+        request = self.context.get("request")
         if request:
             try:
                 return ReputationSerializer.user_has_match_overlap(request.user, obj)
