@@ -4,7 +4,7 @@ from django.db.models.functions import Greatest, Cast
 from django.db import models
 
 if TYPE_CHECKING:
-    pass
+    from stats.models import SummonerChampion  # noqa: F401
 
 
 class SummonerChampionQuerySet(QuerySet):

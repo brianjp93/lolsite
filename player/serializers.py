@@ -105,7 +105,7 @@ class ReputationSerializer(serializers.ModelSerializer):
 
 class SummonerSerializer(DynamicSerializer):
     has_match_overlap = serializers.SerializerMethodField()
-    profile_icon = serializers.SerializerMethodField()
+    profile_icon = serializers.CharField(default="")
     notes = serializers.SerializerMethodField()
 
     class Meta:  # type: ignore[override]
@@ -131,11 +131,6 @@ class SummonerSerializer(DynamicSerializer):
             except serializers.ValidationError:
                 pass
         return 0
-
-    def get_profile_icon(self, obj):
-        if icon := CDProfileIcon.objects.filter(ext_id=obj.profile_icon_id).first():
-            return icon.image_url()
-        return ""
 
     def get_notes(self, obj):
         # only render notes if it was explicitly prefetched for the queryset

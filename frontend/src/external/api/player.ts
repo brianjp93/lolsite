@@ -157,7 +157,7 @@ async function removeFollow({ id }: { id: number }) {
 async function getFavorites() {
   const url = `${base}/favorites/`;
   const response = await axios.get(url);
-  return z.array(Favorite).parse(response.data.data);
+  return z.array(Favorite).parse(response.data);
 }
 
 async function setFavorite(summoner_id: number) {

@@ -107,14 +107,14 @@ class Summoner(models.Model):
     last_summoner_page_import = models.DateTimeField(null=True)
     huge_match_import_at = models.DateTimeField(null=True, db_index=True)
     created_date = models.DateTimeField(default=timezone.now)
-    rankcheckpoints: models.QuerySet['RankCheckpoint']
-    pageview_set: models.QuerySet['PageView']
-    summonerlinks: models.QuerySet['SummonerLink']
+    rankcheckpoints: models.QuerySet[RankCheckpoint]
+    pageview_set: models.QuerySet[PageView]
+    summonerlinks: models.QuerySet[SummonerLink]
 
     objects: SummonerManager = SummonerManager()  # type: ignore
 
     def __str__(self):
-        return f'Summoner(region={self.region}, riot_id_name={self.riot_id_name}, riot_id_tagline={self.riot_id_tagline})'
+        return f"Summoner(region={self.region}, riot_id_name={self.riot_id_name}, riot_id_tagline={self.riot_id_tagline})"
 
     def get_absolute_url(self):
         return f"/{self.region}/{self.riot_id_name}-{self.riot_id_tagline}/"
@@ -148,7 +148,7 @@ class Summoner(models.Model):
     def add_view(self):
         today = timezone.now().date()
         if pageview := self.pageview_set.filter(bucket_date=today).first():
-            PageView.objects.filter(id=pageview.pk).update(views=models.F('views') + 1)
+            PageView.objects.filter(id=pageview.pk).update(views=models.F("views") + 1)
         else:
             PageView.objects.create(summoner=self, bucket_date=today, views=1)
 
@@ -158,6 +158,7 @@ class Summoner(models.Model):
 
     def suspicious_account(self, queue=dc.FLEX_QUEUE) -> SuspiciousAccountOutput:
         from match.models import Match
+
         dt = timezone.now() - timedelta(days=90)
         start = time.perf_counter()
         quick_surrender_count = Match.objects.filter(
@@ -172,8 +173,10 @@ class Summoner(models.Model):
             game_creation_dt__gte=dt,
         ).count()
         end = time.perf_counter()
-        logger.info(f"{self.simple_riot_id} suspicious_account query took {end - start:.2f} seconds.")
-        return {'quick_ff_count': quick_surrender_count, 'total': all_games_count}
+        logger.info(
+            f"{self.simple_riot_id} suspicious_account query took {end - start:.2f} seconds."
+        )
+        return {"quick_ff_count": quick_surrender_count, "total": all_games_count}
 
     @cached_property
     def get_namechanges(self):
@@ -181,6 +184,7 @@ class Summoner(models.Model):
 
     def add_match_to_stats(self, match):
         from stats.tasks import add_match_to_summoner_champion_stats
+
         add_match_to_summoner_champion_stats(self, match)
 
     def get_top_played_with(
@@ -233,10 +237,16 @@ class Summoner(models.Model):
                 )
             )
         p = p.annotate(
-            win=models.Case(models.When(stats__win=True, then=1), default=0, output_field=models.IntegerField())
+            win=models.Case(
+                models.When(stats__win=True, then=1),
+                default=0,
+                output_field=models.IntegerField(),
+            )
         )
 
-        p = p.values(group_by).annotate(count=models.Count(group_by), wins=models.Sum("win"))
+        p = p.values(group_by).annotate(
+            count=models.Count(group_by), wins=models.Sum("win")
+        )
         p = p.order_by("-count")
 
         return p
@@ -250,7 +260,7 @@ class SummonerNote(models.Model):
     modified_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        unique_together = [('user', 'summoner')]
+        unique_together = [("user", "summoner")]
 
     def __str__(self) -> str:
         return f"SummonerNote(user={self.user.email}, summoner={self.summoner.simple_riot_id})"  # type: ignore
@@ -273,7 +283,7 @@ class Pro(models.Model):
 
     def __str__(self):
         return (
-            f'Pro(ign={self.ign}, position={self.position if self.position else "NA"})'
+            f"Pro(ign={self.ign}, position={self.position if self.position else 'NA'})"
         )
 
 
@@ -290,7 +300,7 @@ class Favorite(models.Model):
         if self.sort_int is None:
             count = Favorite.objects.filter(user=self.user).count()
             self.sort_int = count
-        super(Favorite, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def name(self):
         return self.summoner.simple_riot_id if self.summoner else ""
@@ -304,11 +314,11 @@ class Follow(models.Model):
     summoner = models.ForeignKey("Summoner", on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ['user', 'summoner']
+        unique_together = ["user", "summoner"]
 
 
 class PageView(models.Model):
-    summoner = models.ForeignKey('Summoner', on_delete=models.CASCADE)
+    summoner = models.ForeignKey("Summoner", on_delete=models.CASCADE)
     bucket_date = models.DateField(default=timezone.now)
     views = models.IntegerField(default=0)
 
@@ -321,9 +331,7 @@ class NameChange(models.Model):
     created_date = models.DateTimeField(default=timezone.now, db_index=True)
 
     def __str__(self):
-        return (
-            f'NameChange(old_name="{self.old_name}", new_name="{self.summoner.simple_riot_id}")'
-        )
+        return f'NameChange(old_name="{self.old_name}", new_name="{self.summoner.simple_riot_id}")'
 
 
 class RankCheckpoint(models.Model):
@@ -332,7 +340,7 @@ class RankCheckpoint(models.Model):
         "Summoner", on_delete=models.CASCADE, related_name="rankcheckpoints"
     )
     created_date = models.DateTimeField(default=timezone.now, db_index=True)
-    positions: models.QuerySet['RankPosition']
+    positions: models.QuerySet["RankPosition"]
 
 
 class RankPosition(models.Model):
@@ -360,7 +368,7 @@ class RankPosition(models.Model):
     def save(self, *args, **kwargs):
         if self.rank_integer == 0:
             self.rank_integer = self.encode()
-        super(RankPosition, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def encode(self):
         """Encode tier, rank, league_points to an integer.
@@ -431,7 +439,13 @@ def decode_int_to_rank(rank_integer):
 class Custom(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone = models.CharField(max_length=20, default=None, null=True, blank=True)
-    default_summoner = models.OneToOneField('player.Summoner', default=None, null=True, blank=True, on_delete=models.SET_NULL)
+    default_summoner = models.OneToOneField(
+        "player.Summoner",
+        default=None,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     is_email_verified = models.BooleanField(default=False, db_index=True, blank=True)
 
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
@@ -443,11 +457,10 @@ class Custom(models.Model):
         # Send email to admin if new user.
         if self.pk is None:
             self.notify_admin_user_created()
-        super(Custom, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def notify_admin_user_created(self):
-        """Send email to admin about new user.
-        """
+        """Send email to admin about new user."""
         admin = get_admin()
         subject = "new user created on hardstuck.club"
         message = f"""
@@ -472,7 +485,7 @@ class EmailVerification(models.Model):
         # send verification email for new EmailVerification models.
         if self.pk is None:
             self.send_verification_email()
-        super(EmailVerification, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def get_verification_url(self):
         return f"{settings.BASE_URL}/verify/?code={self.code.hex}"
@@ -535,10 +548,14 @@ class SummonerLink(models.Model):
             self.profile_icon_id = random.choice(VERIFY_WITH_ICON)
         # Always set modified_date on save().
         self.modified_date = timezone.now()
-        super(SummonerLink, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def profile_icon(self):
-        return ProfileIcon.objects.filter(_id=self.profile_icon_id).order_by("-major", "-minor").first()
+        return (
+            ProfileIcon.objects.filter(_id=self.profile_icon_id)
+            .order_by("-major", "-minor")
+            .first()
+        )
 
 
 class Comment(models.Model):
@@ -562,7 +579,9 @@ class Comment(models.Model):
         related_name="replies",
     )
     liked_by = models.ManyToManyField(User, related_name="liked_comments", blank=True)
-    disliked_by = models.ManyToManyField(User, related_name="disliked_comments", blank=True)
+    disliked_by = models.ManyToManyField(
+        User, related_name="disliked_comments", blank=True
+    )
     is_deleted = models.BooleanField(default=False, null=True)
 
     created_date = models.DateTimeField(default=timezone.now, db_index=True, blank=True)
@@ -578,8 +597,7 @@ class Comment(models.Model):
             self.notify_admin_comment_created()
 
     def notify_admin_comment_created(self):
-        """Send email to admin about created comment.
-        """
+        """Send email to admin about created comment."""
         admin = get_admin()
         subject = "New comment written."
         message = f"""
@@ -649,4 +667,4 @@ class Reputation(models.Model):
     is_approve = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ['user', 'summoner']
+        unique_together = ["user", "summoner"]

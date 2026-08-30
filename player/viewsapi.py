@@ -113,7 +113,7 @@ def get_summoner(request, format=None):
     summoner = get_object_or_404(Summoner, puuid=puuid)
     summoner_id = pt.import_summoner(region=summoner.region, puuid=puuid)
     summoner = (
-        Summoner.objects.filter(id=summoner_id).with_user_notes(user=request.user).get()
+        Summoner.objects.filter(id=summoner_id).with_user_notes(user=request.user).with_profile_icon().get()
     )
     serializer = SummonerSerializer(summoner, context={"request": request})
     data = {"data": serializer.data}
@@ -135,6 +135,8 @@ class SummonerByRiotId(RetrieveAPIView):
         riot_id_tagline = self.kwargs["riot_id_tagline"]
         region = self.kwargs["region"]
         simple_riot_id = get_simple_riot_id(riot_id_name, riot_id_tagline)
+        do_delayed_import = True
+        summoner_id = None
         try:
             summoner = (
                 Summoner.objects.filter(
@@ -142,21 +144,32 @@ class SummonerByRiotId(RetrieveAPIView):
                     region=region,
                 )
                 .with_user_notes(user=self.request.user)
+                .with_profile_icon()
                 .get()
             )
+            return summoner
         except Summoner.DoesNotExist:
             summoner_id = pt.import_summoner(
                 region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline
             )
-            return get_object_or_404(Summoner, id=summoner_id)
+            do_delayed_import = False
         except Summoner.MultipleObjectsReturned:
-            return pt.handle_multiple_summoners(
+            summoner = pt.handle_multiple_summoners(
                 region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline
             )
-        getattr(pt.import_summoner, "delay")(
-            region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline
+            summoner_id = summoner.id
+            do_delayed_import = False
+
+        if do_delayed_import:
+            pt.import_summoner.delay(  # type: ignore
+                region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline
+            )
+        summoner_qs = (
+            Summoner.objects.filter(id=summoner_id)
+            .with_user_notes(user=self.request.user)
+            .with_profile_icon()
         )
-        return summoner
+        return get_object_or_404(summoner_qs)
 
 
 @api_view(["POST"])
@@ -179,9 +192,11 @@ def get_summoners(request, format=None):
         puuids = request.data["puuids"]
         puuids = puuids[:100]
         region = request.data["region"]
-        query = Summoner.objects.filter(
-            puuid__in=puuids, region=region
-        ).with_user_notes(user=request.user)
+        query = (
+            Summoner.objects.filter(puuid__in=puuids, region=region)
+            .with_user_notes(user=request.user)
+            .with_profile_icon()
+        )
         serializer = SummonerSerializer(query, many=True)
         data = {"data": serializer.data}
     return Response(data, status=status_code)
@@ -358,7 +373,7 @@ def summoner_search(request: Request, format=None):
     if end - start > 100:
         end = start + 100
     fields = request.query_params.get("fields", None)
-    query = query.with_user_notes(request.user)
+    query = query.with_user_notes(request.user).with_profile_icon()
     query = query[start:end]
     serialized = SummonerSerializer(query, many=True, fields=fields).data
     data = {"data": serialized}
@@ -449,7 +464,11 @@ def following(request, format=None):
     elif request.method == "DELETE":
         _id = request.data["id"]
         user.follow_set.filter(summoner__id=_id).delete()
-    qs = Summoner.objects.filter(follow__user=user).with_user_notes(user=user)
+    qs = (
+        Summoner.objects.filter(follow__user=user)
+        .with_user_notes(user=user)
+        .with_profile_icon()
+    )
     data = SummonerSerializer(qs, many=True).data
     return Response(data)
 
@@ -482,8 +501,7 @@ def favorites(request, format=None):
 
     if request.method == "GET":
         favorite = favorite.order_by("sort_int")
-        serialized = FavoriteSerializer(favorite, many=True).data
-        data["data"] = serialized
+        data = FavoriteSerializer(favorite, many=True).data
     elif request.method == "POST":
         verb = request.data.get("verb")
         if verb == "set":
@@ -711,7 +729,7 @@ def connect_account_with_profile_icon(request, format=None):
 def get_connected_accounts(request, format=None):
     query = Summoner.objects.get_connected_accounts(request.user).with_user_notes(
         user=request.user
-    )
+    ).with_profile_icon()
     serialized = SummonerSerializer(query, many=True).data
     return Response({"data": serialized})
 
@@ -925,20 +943,12 @@ def is_suspicious_account(request, format=None):
 
 class FollowingListAPIView(ListAPIView):
     serializer_class = SummonerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = None
 
     def get_queryset(self):  # type: ignore
         user = self.request.user
         qs = Summoner.objects.filter(
             id__in=user.follow_set.all().values("summoner_id")  # type: ignore
-        ).with_user_notes(user=user)
-        return qs
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(
-            {
-                "data": serializer.data,
-            }
         )
+        return qs

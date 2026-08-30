@@ -1,13 +1,28 @@
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.test import SimpleTestCase, override_settings
+
+from lolsite.views import FrontendView
 
 
 @override_settings(ALLOWED_HOSTS=["testserver"])
 class FrontendViewTests(SimpleTestCase):
+    def setUp(self):
+        self.common_initial_data = {
+            "queues": [],
+            "majorPatches": {"results": []},
+            "basicChampions": [],
+        }
+        common_data = patch(
+            "lolsite.views._get_common_initial_data",
+            return_value=self.common_initial_data,
+        )
+        common_data.start()
+        self.addCleanup(common_data.stop)
+
     @override_settings(REACT_PROXY_URL="http://localhost:3000")
     def test_development_uses_vite_server(self):
         response = self.client.get("/")
@@ -16,6 +31,48 @@ class FrontendViewTests(SimpleTestCase):
         self.assertContains(response, "__vite_plugin_react_preamble_installed__")
         self.assertContains(response, "http://localhost:3000/@vite/client")
         self.assertContains(response, "http://localhost:3000/src/main.tsx")
+        self.assertContains(
+            response,
+            '<script id="initial-data" type="application/json">'
+            '{"queues": [], "majorPatches": {"results": []}, '
+            '"basicChampions": [], "me": null, "following": [], '
+            '"favorites": []}</script>',
+        )
+
+    @override_settings(REACT_PROXY_URL="http://localhost:3000")
+    @patch("lolsite.views.FavoriteSerializer")
+    @patch("lolsite.views.SummonerSerializer")
+    @patch("lolsite.views.UserSerializer")
+    @patch("lolsite.views.Favorite.objects.filter")
+    @patch("lolsite.views.Summoner.objects.filter")
+    def test_initial_data_for_authenticated_user(
+        self,
+        filter_summoners,
+        filter_favorites,
+        user_serializer,
+        summoner_serializer,
+        favorite_serializer,
+    ):
+        user = Mock(is_authenticated=True)
+        user_serializer.return_value.data = {"email": "user@example.com"}
+        summoner_serializer.return_value.data = [{"id": 1}]
+        favorite_serializer.return_value.data = [{"summoner_id": 2}]
+        view = FrontendView()
+        view.request = Mock(user=user, resolver_match=None)
+
+        context = view.get_context_data()
+
+        self.assertEqual(
+            context["initial_data"],
+            {
+                **self.common_initial_data,
+                "me": {"email": "user@example.com"},
+                "following": [{"id": 1}],
+                "favorites": [{"summoner_id": 2}],
+            },
+        )
+        filter_summoners.assert_called_once_with(follow__user=user)
+        filter_favorites.assert_called_once_with(user=user)
 
     def test_production_uses_vite_manifest(self):
         with tempfile.TemporaryDirectory() as directory:

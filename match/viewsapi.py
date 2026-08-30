@@ -14,7 +14,11 @@ from match.parsers.spectate import SpectateModel
 
 from .models import Match, AdvancedTimeline, MatchSummary
 from .models import Participant, sort_positions, Ban
-from .serializers import FullMatchSerializer, BasicMatchSerializer, MatchSummarySerializer
+from .serializers import (
+    FullMatchSerializer,
+    BasicMatchSerializer,
+    MatchSummarySerializer,
+)
 from .serializers import MatchSerializer, AdvancedTimelineSerializer, BanSerializer
 
 from player.models import Summoner
@@ -39,14 +43,16 @@ class MatchBySummoner(ListAPIView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        riot_id_name = pt.simplify(self.kwargs['riot_id_name'])
-        riot_id_tagline = self.kwargs['riot_id_tagline']
-        region = self.kwargs['region']
-        queue = self.request.query_params.get('queue', None)
+        riot_id_name = pt.simplify(self.kwargs["riot_id_name"])
+        riot_id_tagline = self.kwargs["riot_id_tagline"]
+        region = self.kwargs["region"]
+        queue = self.request.query_params.get("queue", None)
         if isinstance(queue, str) and queue.isdigit():
             queue = int(queue)
-        played_with: list[str] = self.request.query_params.get('playedWith', '').split(',')
-        sync_import = self.request.query_params.get('sync_import', False)
+        played_with: list[str] = self.request.query_params.get("playedWith", "").split(
+            ","
+        )
+        sync_import = self.request.query_params.get("sync_import", False)
         assert self.paginator
         paginator: CustomLimitOffsetPagination = self.paginator  # type: ignore
         start: int = paginator.get_offset(self.request)
@@ -63,8 +69,7 @@ class MatchBySummoner(ListAPIView):
             qs = qs.filter(queue_id=queue)
 
         played_with = [
-            pt.simplify(name)
-            for name in played_with if len(name.strip()) > 0
+            pt.simplify(name) for name in played_with if len(name.strip()) > 0
         ]
         if played_with:
             sync_import = False
@@ -78,8 +83,10 @@ class MatchBySummoner(ListAPIView):
                 region,
                 queue=queue,  # type: ignore
             )
-            mt.bulk_import.s(summoner.puuid, count=40, offset=start + limit).apply_async(countdown=5)  # type: ignore
-        qs = qs.order_by('-game_creation_dt')
+            mt.bulk_import.s(
+                summoner.puuid, count=40, offset=start + limit
+            ).apply_async(countdown=5)  # type: ignore
+        qs = qs.order_by("-game_creation_dt")
         return qs
 
     @staticmethod
@@ -97,10 +104,16 @@ class MatchBySummoner(ListAPIView):
         elif len(summoner_query) >= 2:
             for summoner in summoner_query:
                 pt.import_summoner(region=region, puuid=summoner.puuid)
-            summoner = get_object_or_404(Summoner, region=region, simple_riot_id=full_id)
+            summoner = get_object_or_404(
+                Summoner, region=region, simple_riot_id=full_id
+            )
         else:
             # update in the background if we already have the user imported
-            pt.import_summoner.s(riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline, region=region).apply_async(countdown=1)  # type: ignore
+            pt.import_summoner.s(
+                riot_id_name=riot_id_name,
+                riot_id_tagline=riot_id_tagline,
+                region=region,
+            ).apply_async(countdown=1)  # type: ignore
             summoner = summoner_query[0]
         return summoner
 
@@ -110,17 +123,20 @@ class MatchBySummoner(ListAPIView):
         if not match:
             return qs.none()
         region = match.region
-        played_with = [
-            pt.simplify(name)
-            for name in names if len(name.strip()) > 0
-        ][:10]
+        played_with = [pt.simplify(name) for name in names if len(name.strip()) > 0][
+            :10
+        ]
         summoner_ids = []
         for simple_name in played_with:
             if "#" in simple_name:
                 riot_id_name, riot_id_tagline = simple_name.split("#")
-                sid = pt.import_summoner(region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline)
+                sid = pt.import_summoner(
+                    region, riot_id_name=riot_id_name, riot_id_tagline=riot_id_tagline
+                )
             else:
-                obj = Summoner.objects.filter(region=region, riot_id_name__iexact=simple_name).first()
+                obj = Summoner.objects.filter(
+                    region=region, riot_id_name__iexact=simple_name
+                ).first()
                 sid = None
                 if obj:
                     sid = obj.id
@@ -130,18 +146,22 @@ class MatchBySummoner(ListAPIView):
         if not with_summoners:
             return qs.none()
         for x in with_summoners:
-            qs = qs.filter(Exists(Participant.objects.filter(puuid=x.puuid, match_id=OuterRef('id'))))
+            qs = qs.filter(
+                Exists(
+                    Participant.objects.filter(puuid=x.puuid, match_id=OuterRef("id"))
+                )
+            )
         return qs
 
 
 class MatchSummaryView(RetrieveAPIView):  # type: ignore
     serializer_class = MatchSummarySerializer
-    lookup_field = 'match_id'
+    lookup_field = "match_id"
 
     def get_object(self):
         _id = self.kwargs[self.lookup_field]
         match = get_object_or_404(Match.objects.all(), _id=_id)
-        if matchsummary := getattr(match, 'matchsummary', None):
+        if matchsummary := getattr(match, "matchsummary", None):
             return matchsummary
         else:
             user = self.request.user
@@ -155,33 +175,33 @@ class MatchSummaryView(RetrieveAPIView):  # type: ignore
 class AdvancedTimelineView(RetrieveAPIView):
     serializer_class = AdvancedTimelineSerializer
     queryset = AdvancedTimeline.objects.prefetch_related(
-        'frames',
-        'frames__participantframes',
-        'frames__wardkillevent_set',
-        'frames__wardplacedevent_set',
-        'frames__levelupevent_set',
-        'frames__skilllevelupevent_set',
-        'frames__itempurchasedevent_set',
-        'frames__itemdestroyedevent_set',
-        'frames__itemsoldevent_set',
-        'frames__itemundoevent_set',
-        'frames__turretplatedestroyedevent_set',
-        'frames__elitemonsterkillevent_set',
-        'frames__championspecialkillevent_set',
-        'frames__buildingkillevent_set',
-        'frames__gameendevent_set',
-        'frames__championkillevent_set',
-        'frames__championkillevent_set__victimdamagereceived_set',
-        'frames__championkillevent_set__victimdamagedealt_set',
-        'match__participants',
+        "frames",
+        "frames__participantframes",
+        "frames__wardkillevent_set",
+        "frames__wardplacedevent_set",
+        "frames__levelupevent_set",
+        "frames__skilllevelupevent_set",
+        "frames__itempurchasedevent_set",
+        "frames__itemdestroyedevent_set",
+        "frames__itemsoldevent_set",
+        "frames__itemundoevent_set",
+        "frames__turretplatedestroyedevent_set",
+        "frames__elitemonsterkillevent_set",
+        "frames__championspecialkillevent_set",
+        "frames__buildingkillevent_set",
+        "frames__gameendevent_set",
+        "frames__championkillevent_set",
+        "frames__championkillevent_set__victimdamagereceived_set",
+        "frames__championkillevent_set__victimdamagedealt_set",
+        "match__participants",
     )
-    lookup_field = 'match_id'
+    lookup_field = "match_id"
 
     def get_object(self):
         _id = self.kwargs[self.lookup_field]
         match = get_object_or_404(Match.objects.all(), _id=_id)
         assert match.pk
-        if not getattr(match, 'advancedtimeline', None):
+        if not getattr(match, "advancedtimeline", None):
             mt.import_advanced_timeline(match.pk)
 
         try:
@@ -194,17 +214,17 @@ class MatchBanListView(ListAPIView):
     serializer_class = BanSerializer
 
     def get_queryset(self):
-        _id = self.kwargs['_id']
+        _id = self.kwargs["_id"]
         qs = Ban.objects.filter(team__match___id=_id)
-        qs = qs.order_by('pick_turn')
-        qs = qs.select_related('team')
+        qs = qs.order_by("pick_turn")
+        qs = qs.select_related("team")
         return qs
 
 
 class MatchView(RetrieveAPIView):
     serializer_class = MatchSerializer
     queryset = Match.objects.all()
-    lookup_field = '_id'
+    lookup_field = "_id"
 
 
 class ParticipantsView(ListAPIView):
@@ -220,8 +240,9 @@ class ParticipantsView(ListAPIView):
     `apply_ranks`: bool\n
 
     """
+
     def get_queryset(self):  # type: ignore
-        if qs := getattr(self, 'qs', None):
+        if qs := getattr(self, "qs", None):
             return qs
         match_id = self.request.query_params.get("match_id")
         match__id = self.request.query_params.get("match__id")
@@ -231,7 +252,9 @@ class ParticipantsView(ListAPIView):
             match_qs = Match.objects.filter(id=match_id)
         else:
             match_qs = Match.objects.filter(_id=match__id)
-        self.match_qs = match_qs.prefetch_related("participants", "participants__stats", 'teams__bans', 'teams')
+        self.match_qs = match_qs.prefetch_related(
+            "participants", "participants__stats", "teams__bans", "teams"
+        )
         self.match = get_object_or_404(self.match_qs)
 
     def get(self, *args, **kwargs):
@@ -241,7 +264,9 @@ class ParticipantsView(ListAPIView):
         if self.apply_ranks:
             mt.apply_player_ranks(self.match, threshold_days=1)
 
-        participants = FullMatchSerializer(self.match_qs, many=True).data[0]['participants']
+        participants = FullMatchSerializer(self.match_qs, many=True).data[0][
+            "participants"
+        ]
         data = {"data": participants}
         return Response(data, status=status_code)
 
@@ -254,7 +279,7 @@ def get_spectate(request, format=None):
     api = get_riot_api()
     r = api.spectator.get(puuid, region)
     if r.status_code != 200:
-        data = 'not found'
+        data = "not found"
     else:
         parsed = SpectateModel.model_validate_json(r.content)
         mt.import_spectate_from_data(parsed, region)
@@ -271,20 +296,21 @@ def get_spectate(request, format=None):
 
         # Prefetch all summoners with their rank checkpoints and positions
         summoners_with_positions = Summoner.objects.filter(
-            region=region,
-            puuid__in=participant_puuids
-        ).prefetch_related(
-            'rankcheckpoints__positions'
-        )
+            region=region, puuid__in=participant_puuids
+        ).prefetch_related("rankcheckpoints__positions")
 
         # Create a mapping of puuid to summoner
         summoner_map = {s.puuid: s for s in summoners_with_positions}
 
         champions = Champion.objects.filter(
             key__in=champion_keys,
-            major=Champion.objects.order_by('-major', '-minor').values_list('major', flat=True)[:1],
-            minor=Champion.objects.order_by('-major', '-minor').values_list('minor', flat=True)[:1],
-        ).select_related('image')
+            major=Champion.objects.order_by("-major", "-minor").values_list(
+                "major", flat=True
+            )[:1],
+            minor=Champion.objects.order_by("-major", "-minor").values_list(
+                "minor", flat=True
+            )[:1],
+        ).select_related("image")
 
         champion_map = {champion.key: champion for champion in champions}
 
@@ -303,7 +329,7 @@ def get_spectate(request, format=None):
             part["positions"] = positions
 
             if champion := champion_map.get(part["championId"]):
-                part['champion'] = BasicChampionWithImageSerializer(champion).data
+                part["champion"] = BasicChampionWithImageSerializer(champion).data
             else:
                 logger.info(f"Champion not found for: {part['championId']}")
 
@@ -376,7 +402,7 @@ def get_latest_unlabeled_match(request, format=None):
         .first()
     )
     if not p:
-        raise NotFound('Participant not found.')
+        raise NotFound("Participant not found.")
     match = p.match
     serializer = MatchSerializer(match)
     data = {"data": serializer.data}
@@ -387,9 +413,15 @@ class MajorPatchView(ListAPIView):
     """Get the last 5 major patches from matches."""
 
     def get_queryset(self):
-        return Match.objects.values('major').distinct().order_by('-major')[:5]
+        return Match.objects.values("major").distinct().order_by("-major")[:5]
+
+    def get_data(self):
+        return {
+            "results": [
+                {"major": item["major"], "version": f"{item['major']}"}
+                for item in self.get_queryset()
+            ]
+        }
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        data = [{'major': item['major'], 'version': f"{item['major']}"} for item in queryset]
-        return Response({'results': data})
+        return Response(self.get_data())

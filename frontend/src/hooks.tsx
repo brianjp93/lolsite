@@ -1,14 +1,35 @@
 import { useState, useEffect, useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { UseQueryOptions } from "@tanstack/react-query";
+import { z } from "zod";
 import api from "@/external/api/api.ts";
-
+import {
+  BasicChampionWithImage,
+  Favorite,
+  Summoner,
+  User,
+} from "@/external/types";
 import type {
   ChampionType,
   RuneType,
   BasicChampionWithImageType,
 } from "@/external/types";
+import { Queue } from "./external/iotypes/data";
 import type { QueueType, SimpleItem } from "./external/iotypes/data";
+import { MajorPatchesResponse } from "./external/iotypes/match";
+
+const initialData = z
+  .object({
+    me: User.nullable().optional(),
+    following: z.array(Summoner).optional(),
+    favorites: z.array(Favorite).optional(),
+    queues: z.array(Queue).optional(),
+    majorPatches: MajorPatchesResponse.optional(),
+    basicChampions: z.array(BasicChampionWithImage).optional(),
+  })
+  .parse(
+    JSON.parse(document.getElementById("initial-data")?.textContent ?? "{}"),
+  );
 
 export function useDebounce<V>(value: V, delay: number) {
   // State and setters for debounced value
@@ -36,6 +57,7 @@ export function useUser() {
   const userQuery = useQuery({
     queryKey: userKey,
     queryFn: api.player.getMyUser,
+    initialData: initialData.me,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 10,
@@ -105,6 +127,7 @@ export function useMajorPatches() {
   return useQuery({
     queryKey: ["major-patches"],
     queryFn: () => api.match.getMajorPatches(),
+    initialData: initialData.majorPatches,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 60, // 1 hour
@@ -187,6 +210,7 @@ export function useBasicChampions(): Record<
   const championQuery = useQuery({
     queryKey: ["basic-champions"],
     queryFn: () => api.data.basicChampions().then((x) => x.results),
+    initialData: initialData.basicChampions,
     retry: true,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 10,
@@ -353,8 +377,9 @@ export function useTimeline({ matchId }: { matchId: string }) {
 export function useQueues() {
   return useQuery({
     queryKey: ["queues-data"],
-    queryFn: async () => {
-      const data = await api.data.getQueues();
+    queryFn: () => api.data.getQueues(),
+    initialData: initialData.queues,
+    select: (data) => {
       const out: Record<number, QueueType> = {};
       for (const x of data) {
         x.description = x.description.replace("games", "").trim();
@@ -470,6 +495,7 @@ export function useFavorites({ enabled = true }: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["favorites"],
     queryFn: () => api.player.getFavorites(),
+    initialData: initialData.favorites,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 60,
@@ -608,6 +634,8 @@ export function useFollowList({ enabled }: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["followList"],
     queryFn: () => api.player.getFollowList(),
+    initialData: initialData.following,
     enabled,
+    staleTime: 1000 * 60 * 10,
   });
 }

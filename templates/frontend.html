@@ -9,7 +9,9 @@
       type="image/png"
       href="{% static 'gen/logo-clean.png' %}"
     />
-    {# These data-server-head tagged items get deleted on tanstack route changes #}
+    {% comment %}
+      These data-server-head tagged items get deleted on tanstack route changes
+    {% endcomment %}
     <title data-server-head>{{ title|default:"hardstuck.club" }}</title>
     {% if description %}
     <meta data-server-head name="description" content="{{ description }}" />
@@ -36,7 +38,7 @@
   </head>
   <body>
     <div id="app"></div>
-    {% if react_refresh_url %}
+    {{ initial_data|json_script:"initial-data" }} {% if react_refresh_url %}
     <script type="module">
       import RefreshRuntime from "{{ react_refresh_url }}";
       RefreshRuntime.injectIntoGlobalHook(window);

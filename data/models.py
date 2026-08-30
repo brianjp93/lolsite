@@ -4,6 +4,7 @@ from string import ascii_uppercase
 
 from typing import Self, Union
 from django.db import models
+from django.db.models.functions import Cast, Coalesce, Concat
 from django.utils import timezone
 from django.contrib.postgres import fields
 import logging
@@ -258,13 +259,19 @@ class Item(VersionedModel):
                             "type": "percentage",
                             "multiplier": ap_decimal,
                             "affected_stat": "AP",
-                            "affected_stat_value": ITEM_STAT_COSTS["flat_ability_power"],
-                            "notes": f"This item has immediate bonus value as you get {ap} x {ap_percent}% = {int(ap_decimal * ap)} additional AP."
+                            "affected_stat_value": ITEM_STAT_COSTS[
+                                "flat_ability_power"
+                            ],
+                            "notes": f"This item has immediate bonus value as you get {ap} x {ap_percent}% = {int(ap_decimal * ap)} additional AP.",
                         },
                     }
             # Overlord's Bloodmail
             case 2501:
-                if match := re.search(r"gain (\d+)% of your.*bonus health.*as.*attack damage", self.description, re.IGNORECASE):
+                if match := re.search(
+                    r"gain (\d+)% of your.*bonus health.*as.*attack damage",
+                    self.description,
+                    re.IGNORECASE,
+                ):
                     percent = match.groups()[0]
                     return {
                         "Bonus-HP": {
@@ -273,27 +280,37 @@ class Item(VersionedModel):
                             "type": "percentage",
                             "multiplier": int(percent) / 100,
                             "affected_stat": "AD",
-                            "affected_stat_value": ITEM_STAT_COSTS["flat_attack_damage"],
+                            "affected_stat_value": ITEM_STAT_COSTS[
+                                "flat_attack_damage"
+                            ],
                             "notes": "Bonus HP = Total HP - Base HP. Generally, this is HP from items.",
                         }
                     }
             # sterak's gage
             case 3053:
-                if match := re.search(r"gain.*bonus attack damage", self.description, re.IGNORECASE):
+                if match := re.search(
+                    r"gain.*bonus attack damage", self.description, re.IGNORECASE
+                ):
                     return {
                         "Base-AD": {
                             "range": [60, 120],
                             "initial": 90,
                             "type": "percentage",
-                            "multiplier": .45,
+                            "multiplier": 0.45,
                             "affected_stat": "AD",
-                            "affected_stat_value": ITEM_STAT_COSTS["flat_attack_damage"],
+                            "affected_stat_value": ITEM_STAT_COSTS[
+                                "flat_attack_damage"
+                            ],
                             "notes": "Base HP differs per champion but generally ranges between 60 at level 1 to 120 at level 18",
                         }
                     }
             # Riftmaker
             case 4633:
-                if match := re.search(r"gain (\d+)% of your.*bonus health.*as.*ability power", self.description, re.IGNORECASE):
+                if match := re.search(
+                    r"gain (\d+)% of your.*bonus health.*as.*ability power",
+                    self.description,
+                    re.IGNORECASE,
+                ):
                     percent = match.groups()[0]
                     return {
                         "Bonus-HP": {
@@ -302,13 +319,19 @@ class Item(VersionedModel):
                             "type": "percentage",
                             "multiplier": int(percent) / 100,
                             "affected_stat": "AP",
-                            "affected_stat_value": ITEM_STAT_COSTS["flat_ability_power"],
+                            "affected_stat_value": ITEM_STAT_COSTS[
+                                "flat_ability_power"
+                            ],
                             "notes": "Bonus HP = Total HP - Base HP. Generally, this is HP from items.",
                         }
                     }
             # archangel's staff
             case 3003:
-                if match := re.search(r"gain ability power equal to.*(\d+)% bonus mana", self.description, re.IGNORECASE):
+                if match := re.search(
+                    r"gain ability power equal to.*(\d+)% bonus mana",
+                    self.description,
+                    re.IGNORECASE,
+                ):
                     percent = match.groups()[0]
                     return {
                         "Bonus-Mana": {
@@ -317,7 +340,9 @@ class Item(VersionedModel):
                             "type": "percentage",
                             "multiplier": int(percent) / 100,
                             "affected_stat": "AP",
-                            "affected_stat_value": ITEM_STAT_COSTS["flat_ability_power"],
+                            "affected_stat_value": ITEM_STAT_COSTS[
+                                "flat_ability_power"
+                            ],
                         }
                     }
         return {}
@@ -503,12 +528,24 @@ class CDProfileIcon(VersionedModel, TimestampedModel):  # type: ignore[override]
     year_released = models.IntegerField()
     is_legacy = models.BooleanField(default=False)
     image_path = models.CharField(max_length=256)
+    image_url = models.GeneratedField(
+        expression=Concat(
+            models.Value("https://raw.communitydragon.org/"),
+            Coalesce(Cast("major", models.CharField()), models.Value("None")),
+            models.Value("."),
+            Coalesce(Cast("minor", models.CharField()), models.Value("None")),
+            models.Value(
+                "/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/"
+            ),
+            "ext_id",
+            models.Value(".jpg"),
+        ),
+        output_field=models.CharField(max_length=256),
+        db_persist=True,
+    )
 
     def __str__(self):
         return f"CDProfileIcon(title={self.title})"
-
-    def image_url(self):
-        return f"https://raw.communitydragon.org/{self.major}.{self.minor}/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/{self.ext_id}.jpg"
 
 
 class Champion(VersionedModel):
