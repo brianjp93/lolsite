@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, List, TypedDict, Union
+from typing import Iterable, TypedDict
 from functools import cached_property
 
 from pydantic import BaseModel
@@ -200,10 +200,10 @@ class Match(VersionedModel):
 
     id: int | None
     pk: int | None
-    advancedtimeline: Union["AdvancedTimeline", None]
-    participants: QuerySet["Participant"]
+    advancedtimeline: AdvancedTimeline | None
+    participants: QuerySet[Participant]
     comments: QuerySet[Comment]
-    teams: QuerySet["Team"]
+    teams: QuerySet[Team]
 
     matchsummary: MatchSummary | None
 
@@ -300,7 +300,7 @@ class Match(VersionedModel):
     def get_comment_count(self):
         return self.comments.all().count()
 
-    def is_summoner_in_game(self, summoners: List[Summoner]):
+    def is_summoner_in_game(self, summoners: list[Summoner]):
         """Find if a summoner is in the game."""
         try:
             return self.participants.filter(puuid__in=[x.puuid for x in summoners])[
@@ -416,7 +416,7 @@ class Participant(models.Model):
     role_label = models.IntegerField(default=None, null=True)
     role_bound_item = models.IntegerField(default=None, null=True)
 
-    stats: Union["Stats", None]
+    stats: Stats | None
 
     class Meta:
         unique_together = ("match", "_id")
@@ -476,7 +476,7 @@ class Participant(models.Model):
         return 'loss'
 
     def get_stat(self, stat, default=0):
-        if stats := getattr(self, 'stats'):
+        if stats := getattr(self, 'stats', None):
             return getattr(stats, stat, default)
         return default
 
@@ -710,7 +710,7 @@ class Stats(models.Model):
         url = ""
         try:
             value = getattr(self, f"perk_{number}")
-        except:
+        except AttributeError:
             pass
         else:
             query = ReforgedRune.objects.filter(_id=value).order_by(
@@ -743,7 +743,7 @@ class Stats(models.Model):
         url = ""
         try:
             item_id = getattr(self, f"item_{number}")
-        except:
+        except AttributeError:
             pass
         else:
             query = Item.objects.filter(_id=item_id).order_by(
@@ -792,7 +792,7 @@ class Team(models.Model):
     id: int | None
     match = models.ForeignKey['Match']("Match", on_delete=models.CASCADE, related_name="teams")
     _id = models.IntegerField()
-    bans: QuerySet['Ban']
+    bans: QuerySet[Ban]
 
     baron_kills = models.IntegerField(default=0, blank=True)
     dominion_victory_score = models.IntegerField(default=0, blank=True)
@@ -863,7 +863,7 @@ class AdvancedTimeline(models.Model):
     match = models.OneToOneField("Match", on_delete=models.CASCADE)
     frame_interval = models.IntegerField(default=60000, blank=True)
 
-    frames: QuerySet['Frame']
+    frames: QuerySet[Frame]
 
     def __str__(self):
         return f"AdvancedTimeline(match={self.match._id})"
@@ -934,13 +934,13 @@ class Frame(models.Model):
     )
     timestamp = models.IntegerField(null=True, blank=True)
 
-    elitemonsterkillevent_set: QuerySet['EliteMonsterKillEvent']
-    buildingkillevent_set: QuerySet['BuildingKillEvent']
-    championkillevent_set: QuerySet['ChampionKillEvent']
-    participantframes: QuerySet['ParticipantFrame']
+    elitemonsterkillevent_set: QuerySet[EliteMonsterKillEvent]
+    buildingkillevent_set: QuerySet[BuildingKillEvent]
+    championkillevent_set: QuerySet[ChampionKillEvent]
+    participantframes: QuerySet[ParticipantFrame]
 
     class Meta:
-        ordering = ["timestamp"]
+        ordering = ("timestamp",)
 
     def __str__(self):
         return f"Frame(match={self.timeline.match._id}, timestamp={self.timestamp})"
@@ -1168,8 +1168,8 @@ class ChampionKillEvent(Event):
     x = models.PositiveIntegerField()
     y = models.PositiveIntegerField()
 
-    victimdamagereceived_set: QuerySet['VictimDamageReceived']
-    victimdamagedealt_set: QuerySet['VictimDamageDealt']
+    victimdamagereceived_set: QuerySet[VictimDamageReceived]
+    victimdamagedealt_set: QuerySet[VictimDamageDealt]
 
     def assisters(self):
         ret = {}
