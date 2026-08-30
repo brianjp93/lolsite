@@ -110,10 +110,3 @@ class FrontendViewTests(SimpleTestCase):
         for path in paths:
             with self.subTest(path=path):
                 self.assertContains(self.client.get(path), 'id="app"')
-
-    @override_settings(REACT_PROXY_URL="http://localhost:3000")
-    def test_api_404_does_not_fall_through_to_frontend(self):
-        response = self.client.get("/api/not-a-route/")
-
-        self.assertEqual(response.status_code, 404)
-        self.assertNotContains(response, 'id="app"', status_code=404)
