@@ -17,6 +17,7 @@ export default function LogoutButton({
         type="button"
         onClick={() => logout.mutate()}
         className={`btn btn-default ${className}`}
+        disabled={logout.isPending}
       >
         logout
       </button>

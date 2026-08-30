@@ -28,6 +28,12 @@
     }
   }
 
+  button {
+   &[disabled] {
+     @apply cursor-not-allowed border-none bg-black/40 text-gray-500;
+   }
+  }
+
   .btn {
     @apply block rounded border border-white/20 px-4 py-2 font-bold text-gray-100 cursor-pointer;
 
