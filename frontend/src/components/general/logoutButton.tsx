@@ -1,5 +1,4 @@
 import api from "@/external/api/api.ts";
-import { useUser } from "@/hooks";
 import { useMutation } from "@tanstack/react-query";
 
 export default function LogoutButton({
@@ -7,10 +6,9 @@ export default function LogoutButton({
 }: {
   className?: string;
 }) {
-  const userQuery = useUser();
   const logout = useMutation({
     mutationFn: () => api.player.logout(),
-    onSuccess: () => userQuery.refetch(),
+    onSuccess: () => window.location.reload(),
   });
 
   return (

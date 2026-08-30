@@ -1,12 +1,10 @@
 import Skeleton from "@/components/general/skeleton";
-import { useUser } from "@/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { ErrorField } from "@/components/utils";
 import api from "@/external/api/api";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "@/compat/router";
 import { Link } from "@tanstack/react-router";
 import { signUpRoute } from "@/routes";
 import axios from "axios";
@@ -39,15 +37,11 @@ function LoginInner() {
     resolver: zodResolver(LoginSchema),
   });
 
-  const router = useRouter();
-  const userQuery = useUser();
-
   const login = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       api.player.login({ email, password }),
     onSuccess: async () => {
-      await userQuery.refetch();
-      router.push("/");
+      window.location.href = '/';
     },
   });
   const onSubmit = async ({ email, password }: LoginSchema) => {
