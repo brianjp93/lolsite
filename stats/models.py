@@ -5,7 +5,7 @@ from django.db.models import F, Func
 from django.contrib.postgres.fields import ArrayField
 
 from data.models import Champion
-from stats.managers import SummonerChampionManager, SummonerChampionQuerySet
+from stats.managers import SummonerChampionManager
 
 
 class ArrayConstructor(Func):

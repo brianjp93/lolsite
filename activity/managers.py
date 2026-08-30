@@ -9,7 +9,7 @@ from player.models import get_activity_api
 
 
 if TYPE_CHECKING:
-    from activity.models import Heartrate
+    from activity.models import Heartrate  # noqa: F401
 
 
 class HeartrateManager(Manager['Heartrate']):

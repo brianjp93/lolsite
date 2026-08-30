@@ -1,7 +1,5 @@
 """
 """
-from pro.models import League, LeagueAbout, LeagueName
-from pro.models import LeagueTournament, TournamentRoster
 
 
 from ext.lolpro import lolpro

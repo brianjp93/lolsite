@@ -4,7 +4,7 @@ from django.db.models.functions import Greatest, Cast
 from django.db import models
 
 if TYPE_CHECKING:
-    from stats.models import SummonerChampion
+    pass
 
 
 class SummonerChampionQuerySet(QuerySet):

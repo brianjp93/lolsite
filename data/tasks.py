@@ -212,7 +212,7 @@ def import_items(version="", language="en_US", overwrite=False):
             item_model = Item(**item_model_data)
             try:
                 item_model.set_stats(save=True)
-            except IntegrityError as error:
+            except IntegrityError:
                 if overwrite:
                     query = Item.objects.filter(
                         version=version, language=language, _id=int(item_id)
@@ -363,7 +363,7 @@ def import_profile_icons(version="", language="en_US", overwrite=False):
             profile_icon_model = ProfileIcon(**icon_model_data)
             try:
                 profile_icon_model.save()
-            except IntegrityError as error:
+            except IntegrityError:
                 if overwrite:
                     query = ProfileIcon.objects.filter(
                         version=version, language=language, _id=profile_data["id"]
@@ -757,7 +757,7 @@ def import_summoner_spells(version="", language="en_US"):
             spell_model = SummonerSpell(**spell_model_data)
             try:
                 spell_model.save()
-            except IntegrityError as error:
+            except IntegrityError:
                 query = SummonerSpell.objects.filter(
                     version=version, language=language, key=_spell["key"]
                 )

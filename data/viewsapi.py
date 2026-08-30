@@ -1,7 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Exists, OuterRef
 from django.http import Http404, HttpRequest
-from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
 from rest_framework.response import Response
@@ -20,7 +19,7 @@ from .serializers import ItemSerializer, SimpleItemSerializer
 from .serializers import ReforgedRuneSerializer, ChampionSerializer
 from .serializers import ChampionSpellSerializer, BasicChampionWithImageSerializer
 
-from lolsite.helpers import query_debugger, LargeResultsSetPagination
+from lolsite.helpers import LargeResultsSetPagination
 from django.core.cache import cache
 from django.conf import settings
 import logging

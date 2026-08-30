@@ -3,7 +3,7 @@ from django.db import models
 
 
 if TYPE_CHECKING:
-    from player.models import Summoner
+    pass
 
 
 class SummonerQuerySet(models.QuerySet['Summoner']):
