@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import type { Favorite } from "@/external/types";
-import { puuidRoute } from "@/routes";
 import { Reorder, useDragControls } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useFavorites, useQueues, useSimpleSpectate } from "@/hooks";
@@ -80,7 +79,8 @@ function FavoriteItem({
         </div>
         <Link
           className="flex cursor-pointer px-2 py-1 hover:underline"
-          to={puuidRoute(fav.puuid)}
+          to="/puuid/$puuid"
+          params={{ puuid: fav.puuid }}
         >
           <div className="mr-2 font-bold">{fav.region}</div>
           {spectate && (

@@ -4,7 +4,6 @@ import Orbit from "../general/spinner";
 import { useMutation } from "@tanstack/react-query";
 import api from "@/external/api/api";
 import { Link } from "@tanstack/react-router";
-import { myAccount } from "@/routes";
 import clsx from "clsx";
 
 export function CreateComment({
@@ -48,10 +47,7 @@ export function CreateComment({
       {!connectedQ.isLoading && connected.length === 0 && (
         <div className="text-sm text-gray-400">
           No Summoners connected. Please connect an account at
-          <Link
-            to={myAccount()}
-            className="ml-1 text-blue-400 hover:underline"
-          >
+          <Link to="/account" className="ml-1 text-blue-400 hover:underline">
             my account
           </Link>
         </div>

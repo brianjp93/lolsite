@@ -1,6 +1,3 @@
-import api from "@/external/api/api.ts";
-import { profileRoute } from "@/routes";
-
 export const ARENA_QUEUE = 1700;
 
 export const REGIONS = [
@@ -666,19 +663,3 @@ export const RUNEDATA = {
     },
   },
 };
-
-export function getRiotIdAndTaglineFromSearchName(searchName: string) {
-  let [name, tagline] = searchName.split("-");
-  name = name || "";
-  tagline = tagline || "";
-  return [name, tagline] as const;
-}
-
-export async function getProfileRouteFromPuuid(puuid: string, region: string) {
-  const response = await api.player.getSummoner({ puuid, region });
-  return profileRoute({
-    region: region,
-    riotIdName: response.riot_id_name,
-    riotIdTagline: response.riot_id_tagline,
-  });
-}

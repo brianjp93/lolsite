@@ -6,7 +6,6 @@ import { ErrorField } from "@/components/utils";
 import api from "@/external/api/api";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { signUpRoute } from "@/routes";
 import axios from "axios";
 
 export function loginPath() {
@@ -41,7 +40,7 @@ function LoginInner() {
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       api.player.login({ email, password }),
     onSuccess: async () => {
-      window.location.href = '/';
+      window.location.href = "/";
     },
   });
   const onSubmit = async ({ email, password }: LoginSchema) => {
@@ -89,7 +88,7 @@ function LoginInner() {
 
       <div className="mt-3 flex">
         <div className="my-auto text-lg">No account?</div>
-        <Link className="btn btn-link ml-2 inline" to={signUpRoute()}>
+        <Link className="btn btn-link ml-2 inline" to="/signup">
           Sign Up
         </Link>
       </div>

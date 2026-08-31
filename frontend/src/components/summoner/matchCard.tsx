@@ -9,12 +9,10 @@ import {
   useSimpleItem,
   useTimeline,
 } from "@/hooks";
-import { matchRoute } from "@/pages/[region]/[searchName]/[match]";
 import { usePickTurn } from "@/stores";
 import clsx from "clsx";
 import Image from "@/compat/image";
-import { Link } from "@tanstack/react-router";
-import { useRouter } from "@/compat/router";
+import { Link, getRouteApi, useLocation } from "@tanstack/react-router";
 import numeral from "numeral";
 import { ItemPopover } from "../data/item";
 import { Popover } from "react-tiny-popover";
@@ -28,8 +26,9 @@ import {
   mediaUrl,
   queueColor,
 } from "../utils";
-import { puuidRoute } from "@/routes";
 import { ImpactRank } from "./impactRank";
+
+const routeApi = getRouteApi("/$region/$searchName");
 
 export default function MatchCard({
   match,
@@ -38,11 +37,8 @@ export default function MatchCard({
   match: BasicMatchType;
   summoner: SummonerType;
 }) {
-  const router = useRouter();
-  const { region, searchName } = router.query as {
-    region: string;
-    searchName: string;
-  };
+  const location = useLocation();
+  const { region, searchName } = routeApi.useParams();
   const queues = useQueues().data || {};
   const queue = queues[match.queue_id];
   const part = getMyPart(match.participants, summoner.puuid);
@@ -50,12 +46,11 @@ export default function MatchCard({
   const enemyTeam = match.teams.filter((x) => x._id !== part?.team_id)?.[0];
   const minutes = match.game_duration / 1000 / 60;
   const minuteSecond = `${Math.floor(minutes)}:${numeral(
-    (match.game_duration / 1000) % 60
+    (match.game_duration / 1000) % 60,
   ).format("00")}`;
   const creationFull = formatDatetimeFull(match.game_creation);
   const creation = formatDatetime(match.game_creation);
   const isTie = minutes < 5;
-  const params = new URLSearchParams({ returnPath: router.asPath });
   return (
     <>
       <div
@@ -66,7 +61,7 @@ export default function MatchCard({
             "from-[#71101366]": enemyTeam?.win && !isTie,
             "from-[#1d6944ba]": myTeam?.win && !isTie,
             "from-zinc-900/50": isTie,
-          }
+          },
         )}
       >
         <div className="flex">
@@ -98,7 +93,7 @@ export default function MatchCard({
               <div
                 className={clsx(
                   "text-xs font-bold",
-                  queueColor(match.queue_id)
+                  queueColor(match.queue_id),
                 )}
               >
                 {queue?.description || match.queue_id}
@@ -125,7 +120,13 @@ export default function MatchCard({
             <Link
               title="View match details"
               className="btn btn-default m-auto flex h-full w-full p-0!"
-              to={matchRoute(region, searchName, match._id) + "?" + params}
+              to="/$region/$searchName/$match"
+              params={{
+                region,
+                searchName,
+                match: match._id,
+              }}
+              search={{ returnPath: location.href }}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -191,7 +192,7 @@ function TeamClump({
               "ml-1 overflow-hidden overflow-ellipsis whitespace-nowrap text-xs",
               {
                 "font-bold": teammate.puuid === part?.puuid,
-              }
+              },
             )}
             title={teammate.riot_id_name}
           >
@@ -210,15 +211,16 @@ function TeamClump({
                   alt={champion.name}
                 />
               )}
-              {teammate.puuid !== part?.puuid ? (
+              {teammate.puuid === part?.puuid ? (
+                link
+              ) : (
                 <Link
                   className="cursor-pointer overflow-hidden hover:underline"
-                  to={puuidRoute(teammate.puuid)}
+                  to="/puuid/$puuid"
+                  params={{ puuid: teammate.puuid }}
                 >
                   {link}
                 </Link>
-              ) : (
-                link
               )}
             </>
             <div className="ml-auto mr-1 hidden text-xs md:flex">
@@ -271,10 +273,10 @@ export function TeamContributionStrip({
       {stats.map(([label, title, stat, color]) => {
         const total = team.reduce(
           (sum, teammate) => sum + teammate.stats[stat],
-          0
+          0,
         );
         const percent = Math.round(
-          total ? (part.stats[stat] / total) * 100 : 0
+          total ? (part.stats[stat] / total) * 100 : 0,
         );
         return (
           <div
@@ -297,7 +299,7 @@ export function TeamContributionStrip({
                 "[&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-zinc-700/80",
                 "[&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-current",
                 "[&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-current",
-                color
+                color,
               )}
               max={100}
               value={percent}

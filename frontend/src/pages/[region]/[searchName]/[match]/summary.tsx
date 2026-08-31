@@ -1,33 +1,38 @@
 import api from "@/external/api/api";
-import {useQuery} from "@tanstack/react-query";
-import {useRouter} from "@/compat/router";
+import { useQuery } from "@tanstack/react-query";
+import { getRouteApi } from "@tanstack/react-router";
+
+const routeApi = getRouteApi("/$region/$searchName/$match/summary");
 
 export default function MatchSummary() {
-  const router = useRouter();
-  const {
-    match: matchId,
-  } = router.query as { searchName: string; match: string; region: string };
+  const { match: matchId } = routeApi.useParams();
   const query = useQuery({
-    queryKey: ['matchSummary', matchId],
+    queryKey: ["matchSummary", matchId],
     queryFn: () => {
-      return api.match.getMatchSummary(matchId)
+      return api.match.getMatchSummary(matchId);
     },
     retry: false,
     enabled: !!matchId,
     refetchInterval: (query) => {
       if (!query.state.data || query.state.data.status === "r") {
-        return 3000
+        return 3000;
       }
-      return false
+      return false;
     },
     staleTime: 10000000,
-  })
+  });
   return (
     <div className="h-screen">
       {(query.isLoading || query.data?.status === "r") && "loading..."}
-      {query.data && <>
-        <textarea readOnly value={query.data.content} className="w-full h-full bg-black p-8" />
-      </>}
+      {query.data && (
+        <>
+          <textarea
+            readOnly
+            value={query.data.content}
+            className="w-full h-full bg-black p-8"
+          />
+        </>
+      )}
     </div>
-  )
+  );
 }

@@ -19,7 +19,12 @@ import Verify from "./pages/verify";
 import SummonerPage from "./pages/[region]/[searchName]";
 import Match from "./pages/[region]/[searchName]/[match]";
 import MatchSummary from "./pages/[region]/[searchName]/[match]/summary";
-import { summonerSearchSchema } from "./searchParams";
+import {
+  matchSearchSchema,
+  summonerSearchSchema,
+  verifySearchSchema,
+} from "./searchParams";
+import { searchNameParamsSchema } from "./routeParams";
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({ meta: [{ title: "hardstuck.club" }] }),
@@ -72,11 +77,18 @@ const routes = [
     getParentRoute: () => rootRoute,
     path: "/verify",
     component: Verify,
+    validateSearch: verifySearchSchema,
   }),
   createRoute({
     getParentRoute: () => rootRoute,
     path: "/$region/$searchName",
     component: SummonerPage,
+    params: {
+      parse: (params) => ({
+        ...params,
+        ...searchNameParamsSchema.parse(params),
+      }),
+    },
     validateSearch: summonerSearchSchema,
     head: ({ params }) => ({
       meta: [{ title: `${params.searchName.trim()} | hardstuck.club` }],
@@ -86,6 +98,13 @@ const routes = [
     getParentRoute: () => rootRoute,
     path: "/$region/$searchName/$match",
     component: Match,
+    params: {
+      parse: (params) => ({
+        ...params,
+        ...searchNameParamsSchema.parse(params),
+      }),
+    },
+    validateSearch: matchSearchSchema,
     head: () => ({
       meta: [{ title: "Match Details | hardstuck.club" }],
     }),
@@ -94,6 +113,12 @@ const routes = [
     getParentRoute: () => rootRoute,
     path: "/$region/$searchName/$match/summary",
     component: MatchSummary,
+    params: {
+      parse: (params) => ({
+        ...params,
+        ...searchNameParamsSchema.parse(params),
+      }),
+    },
   }),
 ];
 

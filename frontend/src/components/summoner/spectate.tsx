@@ -8,7 +8,6 @@ import { Popover } from "react-tiny-popover";
 import { SummonerSummary } from "./SummonerSummary";
 import { useSpectate } from "@/hooks";
 import { Link } from "@tanstack/react-router";
-import {puuidRoute} from "@/routes";
 
 export function Spectate({
   region,
@@ -26,10 +25,10 @@ export function Spectate({
   const [isHover, setIsHover] = useState<string | undefined>(undefined);
 
   const team100 = (spectateQuery.data?.participants || []).filter(
-    (x) => x.teamId === 100
+    (x) => x.teamId === 100,
   );
   const team200 = (spectateQuery.data?.participants || []).filter(
-    (x) => x.teamId === 200
+    (x) => x.teamId === 200,
   );
 
   const matchtime = useRef<HTMLElement>(null);
@@ -84,7 +83,7 @@ export function Spectate({
   const participantLine = (part: any) => {
     const pos = getTopSoloPosition(part.positions);
     const champion = part.champion || {};
-    const [name, tagline] = part.riotId.split('#')
+    const [name, tagline] = part.riotId.split("#");
     return (
       <div key={part.puuid}>
         <hr />
@@ -127,7 +126,8 @@ export function Spectate({
                 >
                   <Link
                     className="cursor-pointer align-top hover:underline"
-                    to={puuidRoute(part.puuid)}
+                    to="/puuid/$puuid"
+                    params={{ puuid: part.puuid }}
                   >
                     {part.riotId}
                   </Link>
@@ -146,7 +146,7 @@ export function Spectate({
               </small>
               <br />
               <small>{`${numeral(
-                (pos.wins / (pos.wins + pos.losses)) * 100
+                (pos.wins / (pos.wins + pos.losses)) * 100,
               ).format("0.0")}%`}</small>
             </div>
           )}

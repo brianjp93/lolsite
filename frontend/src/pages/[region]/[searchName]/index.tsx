@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import {
   useMatchList,
   useNameChanges,
@@ -21,17 +21,16 @@ import { ProfileCardInner } from "@/components/summoner/matchDetails/profileCard
 import { RecentlyPlayedWith } from "@/components/summoner/recentlyPlayedWith";
 import { PlayerChampionSummary } from "@/components/summoner/PlayerChampionSummary";
 import { MatchListSummary } from "@/components/summoner/SummonerSummary";
-import { getRiotIdAndTaglineFromSearchName } from "@/utils/constants";
 import { SummonerNote } from "@/components/summoner/summonerNote";
 import { keepPreviousData } from "@tanstack/react-query";
 import { LoadingScreen } from "@/components/general/loadingScreen";
 
-export default function SummonerPage() {
-  const { region, searchName } = useParams({ from: "/$region/$searchName" });
-  const search = useSearch({ from: "/$region/$searchName" });
+const routeApi = getRouteApi("/$region/$searchName");
 
-  const [riot_id_name, riot_id_tagline] =
-    getRiotIdAndTaglineFromSearchName(searchName);
+export default function SummonerPage() {
+  const params = routeApi.useParams();
+  const { region, riot_id_name = "", riot_id_tagline = "" } = params;
+  const search = routeApi.useSearch();
 
   const page = search.page ?? 1;
   const queue = search.queue;
@@ -72,9 +71,11 @@ export default function SummonerPage() {
     nameChangesQuery.isLoading;
 
   if (positionsQuery.isError) {
-    return <Skeleton>
-      <div>There was an error while trying to fetch the summoner.</div>
-    </Skeleton>
+    return (
+      <Skeleton>
+        <div>There was an error while trying to fetch the summoner.</div>
+      </Skeleton>
+    );
   }
 
   if (loading) {
@@ -89,11 +90,15 @@ export default function SummonerPage() {
 }
 
 function Summoner() {
-  const { region, searchName } = useParams({ from: "/$region/$searchName" });
-  const search = useSearch({ from: "/$region/$searchName" });
-  const navigate = useNavigate({ from: "/$region/$searchName" });
-  const [riot_id_name, riot_id_tagline] =
-    getRiotIdAndTaglineFromSearchName(searchName);
+  const params = routeApi.useParams();
+  const {
+    region,
+    searchName,
+    riot_id_name = "",
+    riot_id_tagline = "",
+  } = params;
+  const search = routeApi.useSearch();
+  const navigate = routeApi.useNavigate();
 
   const page = search.page ?? 1;
   const queue = search.queue;
@@ -293,7 +298,7 @@ function MatchFilter({
   region: string;
   onSubmit: (data: MatchFilterSchema) => void;
 }>) {
-  const { queue, playedWith } = useSearch({ from: "/$region/$searchName" });
+  const { queue, playedWith } = routeApi.useSearch();
   const { register, getValues, handleSubmit } = useForm<MatchFilterSchema>({
     resolver: zodResolver(MatchFilterSchema),
     defaultValues: { queue, playedWith },

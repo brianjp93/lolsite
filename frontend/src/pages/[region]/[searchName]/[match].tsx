@@ -11,10 +11,8 @@ import {
   useBasicChampions,
   useSimpleSpectate,
 } from "@/hooks";
-import { useRouter } from "@/compat/router";
+import { Link, getRouteApi } from "@tanstack/react-router";
 import type { SimpleMatchType, SummonerType } from "@/external/types";
-import { Link } from "@tanstack/react-router";
-import { profileRoute, puuidRoute } from "@/routes";
 import type {
   BanType,
   AdvancedTimelineType,
@@ -49,26 +47,20 @@ import { formatDatetimeFull } from "@/components/utils";
 import { PingStats } from "@/components/summoner/matchDetails/pingStats";
 import { Popover } from "react-tiny-popover";
 import { InGameDot } from "@/components/general/favoriteList";
-import {
-  ARENA_QUEUE,
-  getRiotIdAndTaglineFromSearchName,
-} from "@/utils/constants";
+import { ARENA_QUEUE } from "@/utils/constants";
 import { LoadingScreen } from "@/components/general/loadingScreen";
 
-export const matchRoute = (region: string, name: string, matchId: string) => {
-  return `/${region}/${name}/${matchId}/`;
-};
+const routeApi = getRouteApi("/$region/$searchName/$match");
 
 export default function Match() {
-  const router = useRouter();
   const {
-    searchName,
     match: matchId,
     region,
-  } = router.query as { searchName: string; match: string; region: string };
-  const returnPath = (router.query.returnPath as string) || "";
-  const [riotIdName, riotIdTagline] =
-    getRiotIdAndTaglineFromSearchName(searchName);
+    searchName,
+    riot_id_name: riotIdName = "",
+    riot_id_tagline: riotIdTagline = "",
+  } = routeApi.useParams();
+  const { returnPath = "" } = routeApi.useSearch();
   const matchQuery = useMatch(matchId);
   const match = matchQuery.data;
   const participantsQuery = useParticipants(matchId);
@@ -110,11 +102,8 @@ export default function Match() {
     <Skeleton topPad={0}>
       <div className="ml-10 flex">
         <Link
-          to={
-            returnPath
-              ? returnPath
-              : profileRoute({ region, riotIdName, riotIdTagline })
-          }
+          to={returnPath || "/$region/$searchName"}
+          params={{ region, searchName }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -403,13 +392,11 @@ function ParticipantInfo({
   match: SimpleMatchType;
   team: FullParticipantType[];
 }) {
-  const router = useRouter();
-  const { region, searchName } = router.query as {
-    region: string;
-    searchName: string;
-  };
-  const [riotIdName, riotIdTagline] =
-    getRiotIdAndTaglineFromSearchName(searchName);
+  const {
+    region,
+    riot_id_name: riotIdName = "",
+    riot_id_tagline: riotIdTagline = "",
+  } = routeApi.useParams();
   const summoner = useSummoner({ region, riotIdName, riotIdTagline }).data;
   const name = part.riot_id_name.split(/\s+/).join(" ");
   const spectate = useSimpleSpectate(part.puuid, region).data;
@@ -425,7 +412,8 @@ function ParticipantInfo({
           <div className="text-sm font-bold">
             <Link
               className="flex cursor-pointer hover:underline"
-              to={puuidRoute(part.puuid)}
+              to="/puuid/$puuid"
+              params={{ puuid: part.puuid }}
             >
               <>
                 <div>{name}</div>

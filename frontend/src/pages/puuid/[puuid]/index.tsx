@@ -2,13 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import Skeleton from "@/components/general/skeleton";
 import { getSummonerByPuuidQueryOptions } from "@/queryOptions";
-import { profileRoute } from "@/routes";
-import { useRouter } from "@/compat/router";
+import { getRouteApi } from "@tanstack/react-router";
 import { LoadingScreen } from "@/components/general/loadingScreen";
 
+const routeApi = getRouteApi("/puuid/$puuid");
+
 export default function PuuidPage() {
-  const router = useRouter();
-  const puuid = router.query.puuid as string;
+  const navigate = routeApi.useNavigate();
+  const { puuid } = routeApi.useParams();
   const summonerQuery = useQuery({
     ...getSummonerByPuuidQueryOptions(puuid),
     enabled: !!puuid,
@@ -18,18 +19,23 @@ export default function PuuidPage() {
   useEffect(() => {
     const summoner = summonerQuery.data;
     if (!summoner) return;
-    void router.replace(
-      profileRoute({
+    void navigate({
+      to: "/$region/$searchName",
+      params: {
         region: summoner.region,
-        riotIdName: summoner.riot_id_name,
-        riotIdTagline: summoner.riot_id_tagline,
-      }),
-    );
-  }, [router, summonerQuery.data]);
+        searchName: summoner.riot_id,
+      },
+      replace: true,
+    });
+  }, [navigate, summonerQuery.data]);
 
   return (
     <Skeleton>
-      {summonerQuery.isError ? "Summoner not found." : <LoadingScreen message="Loading Summoner..." />}
+      {summonerQuery.isError ? (
+        "Summoner not found."
+      ) : (
+        <LoadingScreen message="Loading Summoner..." />
+      )}
     </Skeleton>
   );
 }

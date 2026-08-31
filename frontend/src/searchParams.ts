@@ -10,3 +10,11 @@ export const summonerSearchSchema = z.object({
 });
 
 export type SummonerSearch = z.infer<typeof summonerSearchSchema>;
+
+export const matchSearchSchema = z.object({
+  returnPath: z.string().optional(),
+});
+
+export const verifySearchSchema = z.object({
+  code: z.string().optional(),
+});

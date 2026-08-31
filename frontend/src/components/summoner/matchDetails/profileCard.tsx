@@ -12,13 +12,10 @@ import {
   useUser,
 } from "@/hooks";
 import Image from "@/compat/image";
-import { useRouter } from "@/compat/router";
+import { getRouteApi } from "@tanstack/react-router";
 import { Popover } from "react-tiny-popover";
 import { useState } from "react";
-import {
-  QUEUE_CONVERT,
-  getRiotIdAndTaglineFromSearchName,
-} from "@/utils/constants";
+import { QUEUE_CONVERT } from "@/utils/constants";
 import numeral from "numeral";
 import api from "@/external/api/api";
 import { useMutation } from "@tanstack/react-query";
@@ -27,14 +24,15 @@ import { UsersIcon } from "@/components/icons";
 import { InGameDot } from "@/components/general/favoriteList";
 import clsx from "clsx";
 
+const routeApi = getRouteApi("/$region/$searchName");
+
 export function ProfileCard({ className = "" }: { className: string }) {
-  const router = useRouter();
-  const { searchName, region } = router.query as {
-    searchName: string;
-    region: string;
-  };
-  const [riotIdName, riotIdTagline] =
-    getRiotIdAndTaglineFromSearchName(searchName);
+  const params = routeApi.useParams();
+  const {
+    region,
+    riot_id_name: riotIdName = "",
+    riot_id_tagline: riotIdTagline = "",
+  } = params;
   const summonerQ = useSummoner({ region, riotIdName, riotIdTagline });
   const summoner = summonerQ.data;
   const positionQ = usePositions({
@@ -168,7 +166,7 @@ export function ProfileCardInner({
     summoner.region,
     summoner?.puuid,
     1000 * 60,
-    !!summoner?.puuid
+    !!summoner?.puuid,
   );
   const spectate = spectateQuery.data;
   const queues = useQueues().data || {};

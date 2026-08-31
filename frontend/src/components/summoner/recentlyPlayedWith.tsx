@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import type { SummonerType } from "@/external/types";
 import type { BasicParticipantType } from "@/external/iotypes/match";
-import { puuidRoute } from "@/routes";
 import { Link } from "@tanstack/react-router";
 
 interface PlayerCount {
@@ -86,7 +85,8 @@ export function RecentlyPlayedWith({
               >
                 <div className="w-3/4 p-1 text-sm">
                   <Link
-                    to={puuidRoute(data.puuid)}
+                    to="/puuid/$puuid"
+                    params={{ puuid: data.puuid }}
                     className="cursor-pointer hover:underline"
                   >
                     {data.summoner_name}

@@ -14,7 +14,7 @@ import type {
   VictimDamageType,
 } from "@/external/types";
 import Image from "@/compat/image";
-import { useRouter } from "@/compat/router";
+import { getRouteApi } from "@tanstack/react-router";
 import { mediaUrl } from "@/components/utils";
 import type { ValueOf } from "@/compat/types";
 import { staticUrl } from "@/utils/staticUrl";
@@ -47,13 +47,10 @@ function mapAssistName(name: string) {
   return name;
 }
 
+const routeApi = getRouteApi("/$region/$searchName/$match");
+
 export function MapEvents() {
-  const router = useRouter();
-  const { match: matchId } = router.query as {
-    searchName: string;
-    match: string;
-    region: string;
-  };
+  const { match: matchId } = routeApi.useParams();
   const timelineQ = useTimeline({ matchId });
   const timeline = timelineQ.data;
   const participantsQ = useParticipants(matchId);
@@ -87,7 +84,7 @@ export function MapEventsInner({
   const [players, setPlayers] = useState<any>([]);
   const champions = useBasicChampions();
   const [outerTimelineIndex, setOuterTimelineIndex] = useTimelineIndex(
-    match._id
+    match._id,
   );
 
   const image_size = 500;
@@ -194,7 +191,7 @@ export function MapEventsInner({
   }, [index, buildings, slice.buildingkillevents]);
 
   const getPlayers = useCallback(
-    function() {
+    function () {
       const new_players = [];
       for (const pframe of slice.participantframes) {
         const part = part_dict[pframe.participant_id];
@@ -202,7 +199,7 @@ export function MapEventsInner({
       }
       setPlayers(new_players);
     },
-    [slice, part_dict]
+    [slice, part_dict],
   );
 
   useEffect(() => {
@@ -242,7 +239,7 @@ export function MapEventsInner({
     <div className="inline-block">
       <div className="relative">
         <Image
-          loading='eager'
+          loading="eager"
           height={image_size}
           width={image_size}
           className="min-w-fit rounded-lg"
@@ -275,12 +272,12 @@ export function MapEventsInner({
                   <Image
                     className={clsx(
                       "rounded-full ring-2",
-                      isBlue ? "ring-blue-500" : "ring-red-500"
+                      isBlue ? "ring-blue-500" : "ring-red-500",
                     )}
                     width={25}
                     height={25}
                     src={mediaUrl(
-                      champions[player.part.champion_id]?.image?.file_40
+                      champions[player.part.champion_id]?.image?.file_40,
                     )}
                     alt={champions[player.part.champion_id]?.name || ""}
                     title={player.part.riot_id_name}
@@ -289,7 +286,7 @@ export function MapEventsInner({
                   <div
                     className={clsx(
                       "h-[25px] w-[25px] rounded-full ring-2",
-                      isBlue ? "ring-blue-500" : "ring-red-500"
+                      isBlue ? "ring-blue-500" : "ring-red-500",
                     )}
                   />
                 )}
@@ -452,7 +449,7 @@ function EventBubble({
                     src={mediaUrl(
                       champions?.[
                         part_dict[ev.killer_id]?.champion_id || 10000000
-                      ]?.image?.file_40
+                      ]?.image?.file_40,
                     )}
                     alt=""
                   />
@@ -477,8 +474,8 @@ function EventBubble({
                   src={mediaUrl(
                     champions?.[
                       part_dict?.[championKillEvent.victim_id]?.champion_id ||
-                      1000000
-                    ]?.image?.file_40
+                        1000000
+                    ]?.image?.file_40,
                   )}
                   alt=""
                 />
@@ -535,7 +532,7 @@ function EventBubble({
                     src={mediaUrl(
                       champions?.[
                         part_dict[ev.killer_id]?.champion_id || 1000000
-                      ]?.image?.file_40
+                      ]?.image?.file_40,
                     )}
                     alt=""
                   />
@@ -564,7 +561,7 @@ function EventBubble({
                   height={35}
                   src={mediaUrl(
                     champions?.[part_dict[ev.killer_id]?.champion_id || 1000000]
-                      ?.image?.file_40
+                      ?.image?.file_40,
                   )}
                   alt=""
                 />
@@ -632,9 +629,7 @@ function Building({
     <div
       className={clsx(
         "absolute h-[15px] w-[15px] rounded-full border-[3px]",
-        is_alive
-          ? "border-black bg-white"
-          : "border-red-950 bg-red-900/70"
+        is_alive ? "border-black bg-white" : "border-red-950 bg-red-900/70",
       )}
       style={{ left: pos[0], bottom: pos[1] }}
     />

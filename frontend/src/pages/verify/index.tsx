@@ -1,41 +1,39 @@
-import {useQuery} from "@tanstack/react-query"
-import {useRouter} from "@/compat/router"
-import api from '@/external/api/api'
-import Skeleton from "@/components/general/skeleton"
-import { Link } from "@tanstack/react-router"
-import {loginPath} from "../login"
+import { useQuery } from "@tanstack/react-query";
+import { Link, getRouteApi } from "@tanstack/react-router";
+import api from "@/external/api/api";
+import Skeleton from "@/components/general/skeleton";
+import { loginPath } from "../login";
+
+const routeApi = getRouteApi("/verify");
 
 export default function Verify() {
-  const router = useRouter()
-  const query = router.query as {code?: string}
-  const code = query?.code
+  const { code } = routeApi.useSearch();
 
   const verifyQ = useQuery({
-    queryKey: ['verify'],
+    queryKey: ["verify"],
     queryFn: () => api.player.verify(code || ""),
     enabled: !!code,
     retry: false,
-  })
+  });
 
   return (
     <Skeleton>
-      {verifyQ.isPending &&
-        <div>
-          Verifying your email...
-        </div>
-      }
-      {verifyQ.isSuccess &&
+      {verifyQ.isPending && <div>Verifying your email...</div>}
+      {verifyQ.isSuccess && (
         <div>
           Email verified! Please
-          <Link className="btn btn-link ml-1 inline" to={loginPath()}>Log In</Link>.
+          <Link className="btn btn-link ml-1 inline" to={loginPath()}>
+            Log In
+          </Link>
+          .
         </div>
-      }
-      {verifyQ.isError &&
+      )}
+      {verifyQ.isError && (
         <div>
           There was an issue while verifying your email. It may have already
-          been verified.  Try to log in, or request a new verification email.
+          been verified. Try to log in, or request a new verification email.
         </div>
-      }
+      )}
     </Skeleton>
-  )
+  );
 }

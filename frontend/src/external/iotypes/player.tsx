@@ -67,6 +67,11 @@ export const Summoner = z.object({
   riot_id_name: z.string(),
   riot_id_tagline: z.string(),
   notes: SummonerNote.nullable(),
+}).transform(obj => {
+  return {
+    ...obj,
+    riot_id: `${obj.riot_id_name}-${obj.riot_id_tagline}`,
+  }
 });
 export type SummonerType = z.infer<typeof Summoner>;
 

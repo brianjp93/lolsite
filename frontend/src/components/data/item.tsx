@@ -1,5 +1,5 @@
 import { useSimpleItem } from "@/hooks";
-import { itemHistoryRoute } from "@/routes";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Popover } from "react-tiny-popover";
 
@@ -18,11 +18,14 @@ export function Item(props: any) {
       {props.item !== null && (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-3">
-            <a href={itemHistoryRoute(props.item._id)}>
+            <Link
+              to="/data/items/$itemId/history"
+              params={{ itemId: String(props.item._id) }}
+            >
               <span className="font-semibold text-white underline decoration-zinc-500 hover:decoration-white">
                 {props.item.name}
               </span>
-            </a>
+            </Link>
             <span className="font-bold text-yellow-400">
               {props.item.gold.total}g
             </span>

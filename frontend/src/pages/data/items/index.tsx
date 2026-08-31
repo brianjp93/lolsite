@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ErrorField, mediaUrl } from "@/components/utils";
 import Image from "@/compat/image";
 import { Link } from "@tanstack/react-router";
-import { itemHistoryRoute } from "./[itemId]/history";
 import numeral from "numeral";
 
 function fuzzyMatch(pattern: string, str: string) {
@@ -43,9 +42,9 @@ function ItemsPageInner({ items }: { items: ItemType[] }) {
   } = useForm<LoginSchema>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
-      order_by: 'price desc',
-      search: '',
-    }
+      order_by: "price desc",
+      search: "",
+    },
   });
 
   const search = watch("search");
@@ -58,10 +57,10 @@ function ItemsPageInner({ items }: { items: ItemType[] }) {
     return search ? fuzzyMatch(search, x.name) : true;
   });
 
-  if (orderBy === 'price desc') {
-    filteredItems.sort((a, b) => b.gold.total - a.gold.total)
-  } else if (orderBy === 'price asc') {
-    filteredItems.sort((a, b) => a.gold.total - b.gold.total)
+  if (orderBy === "price desc") {
+    filteredItems.sort((a, b) => b.gold.total - a.gold.total);
+  } else if (orderBy === "price asc") {
+    filteredItems.sort((a, b) => a.gold.total - b.gold.total);
   }
 
   return (
@@ -92,31 +91,50 @@ function ItemsPageInner({ items }: { items: ItemType[] }) {
         <div className="flex flex-wrap">
           {filteredItems.map((x) => {
             return (
-              <div key={x.id} className="m-2 w-56 p-2 bg-gray-900 rounded-md max-h-52 overflow-y-scroll quiet-scroll">
+              <div
+                key={x.id}
+                className="m-2 w-56 p-2 bg-gray-900 rounded-md max-h-52 overflow-y-scroll quiet-scroll"
+              >
                 <div className="flex mb-2">
-                  <Image src={mediaUrl(x.image.file_40 || "")} height={40} width={40} alt={x.name} className="h-[40px]" />
-                  <Link to={itemHistoryRoute(x._id)}>
-                    <div className="ml-1 text-sm font-bold">
-                      {x.name}
-                    </div>
+                  <Image
+                    src={mediaUrl(x.image.file_40 || "")}
+                    height={40}
+                    width={40}
+                    alt={x.name}
+                    className="h-[40px]"
+                  />
+                  <Link
+                    to="/data/items/$itemId/history"
+                    params={{ itemId: String(x._id) }}
+                  >
+                    <div className="ml-1 text-sm font-bold">{x.name}</div>
                   </Link>
                   <div>
-                    <div className="ml-3 text-sm font-bold text-yellow-600">{x.gold.total}g</div>
-                    <div title="stat gold efficiency" className="ml-3 text-sm font-bold text-cyan-300">{numeral(x.stat_efficiency.gold_efficiency).format('0')}%</div>
-                    {x.last_changed &&
-                      <div className="text-sm">Last Changed: {x.last_changed}</div>
-                    }
+                    <div className="ml-3 text-sm font-bold text-yellow-600">
+                      {x.gold.total}g
+                    </div>
+                    <div
+                      title="stat gold efficiency"
+                      className="ml-3 text-sm font-bold text-cyan-300"
+                    >
+                      {numeral(x.stat_efficiency.gold_efficiency).format("0")}%
+                    </div>
+                    {x.last_changed && (
+                      <div className="text-sm">
+                        Last Changed: {x.last_changed}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div
                   className="text-sm"
-                  dangerouslySetInnerHTML={{ __html: x.description }} />
+                  dangerouslySetInnerHTML={{ __html: x.description }}
+                />
               </div>
             );
           })}
         </div>
       </div>
-
     </>
   );
 }
