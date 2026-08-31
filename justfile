@@ -1,2 +1,4 @@
 pyright:
-    pyright . --pythonpath $(which python)
+    uv run pyright
+ruff:
+    uv run ruff check

@@ -3,7 +3,6 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import Q, F
 from rest_framework import serializers
 
-from data.models import CDProfileIcon
 from data.serializers import DynamicSerializer
 from lolsite.helpers import UserType
 from .models import Summoner, Reputation
