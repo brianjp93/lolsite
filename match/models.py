@@ -1161,7 +1161,7 @@ class GameEndEvent(Event):
 class ChampionKillEvent(Event):
     id: int | None
     bounty = models.PositiveSmallIntegerField()
-    shutdown_bounty = models.PositiveIntegerField(default=0, blank=True)
+    shutdown_bounty = models.IntegerField(default=0, blank=True)
     kill_streak_length = models.PositiveSmallIntegerField()
     killer_id = models.PositiveSmallIntegerField()
     victim_id = models.PositiveSmallIntegerField()
