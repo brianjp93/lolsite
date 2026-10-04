@@ -93,7 +93,7 @@ export default function MatchCard({
               <div
                 className={clsx(
                   "text-xs font-bold",
-                  queueColor(match.queue_id),
+                  queueColor[match.queue_id],
                 )}
               >
                 {queue?.description || match.queue_id}

@@ -11,11 +11,15 @@ FALSEY = ["false", "False", "FALSE", False]
 
 
 def is_truthy(val):
-    return val is True or (isinstance(val, str) and val.lower() == "true")
+    return (isinstance(val, bool) and val) or (
+        isinstance(val, str) and val.lower() == "true"
+    )
 
 
 def is_falsey(val):
-    return val is False or (isinstance(val, str) and val.lower() == "false")
+    return (isinstance(val, bool) and not val) or (
+        isinstance(val, str) and val.lower() == "false"
+    )
 
 
 def get_null_bool(val):
@@ -178,6 +182,7 @@ QUEUES = [
     {"_id": 600, "_map": "Summoner's Rift", "description": "Blood Hunt Assassin games"},
     {"_id": 610, "_map": "Cosmic Ruins", "description": "Dark Star: Singularity games"},
     {"_id": 700, "_map": "Summoner's Rift", "description": "Clash games"},
+    {"_id": 710, "_map": "Summoner's Rift", "description": "Ranked 5v5s"},
     {"_id": 720, "_map": "Summoner's Rift", "description": "ARAM Clash games"},
     {
         "_id": 800,
@@ -283,14 +288,17 @@ QUEUES = [
     {"_id": 2010, "_map": "Summoner's Rift", "description": "Tutorial Part 2"},
     {"_id": 2020, "_map": "Summoner's Rift", "description": "Tutorial Part 3"},
 ]
-QUEUE_DICT = {x['_id']: x for x in QUEUES}
-QUEUE_SELECT_OPTIONS = [QUEUE_DICT[x] for x in [
-    420,
-    400,
-    450,
-    1700,
-    0,
-]]
+QUEUE_DICT = {x["_id"]: x for x in QUEUES}
+QUEUE_SELECT_OPTIONS = [
+    QUEUE_DICT[x]
+    for x in [
+        420,
+        400,
+        450,
+        1700,
+        0,
+    ]
+]
 
 MAPS = [
     {
@@ -517,7 +525,7 @@ RANKS = {
             "challenger",
         ],
         "DIVISIONS": ["I", "II", "III", "IV"],
-    }
+    },
 }
 
 
@@ -636,6 +644,7 @@ SEASON_PATCHES = {
     },
 }
 
+
 class ItemStatCosts(TypedDict):
     flat_armor: float
     percent_crit: float
@@ -660,44 +669,46 @@ class ItemStatCosts(TypedDict):
     percent_crit_damage: float
     flat_magic_penetration: float
 
+
 # gold per stat
 ITEM_STAT_COSTS: ItemStatCosts = {
-    'flat_armor': 300 / 15,
-    'percent_crit': 600 / 15,
-    'flat_health': 400 / 150,
-    'percent_health_regen': 300 / 100,
-    'flat_ability_power': 400 / 20,
-    'flat_movement_speed': 300 / 25,
-    'flat_mana': 300 / 300,
-    'flat_attack_damage': 350 / 10,
-    'flat_magic_resist': 400 / 20,
-    'percent_attack_speed': 300 / 12,
-    'percent_movement_speed': 284 / 5,  # calculated from aether wisp
-    'percent_life_steal': 375 / 7,  # calculated from vampiric scepter
-    'flat_lethality': 1000 / 30,
-    'flat_ability_haste': 250 / 5,
-    'percent_heal_and_shield_power': 550 / 8,
-    'percent_base_mana_regen': 200 / 50,
-    'percent_omnivamp': 220.57 / 5,
-    'percent_armor_penetration': 41.6666667,  # value from https://leagueoflegends.fandom.com/wiki/Armor_penetration
-    'percent_tenacity': 15,  # completely arbitrary (don't know how this should be calculated)
-    'percent_crit_damage': 4.5,  # calculated from IE as 100% efficient
-    'percent_magic_penetration': 46.15,  # value from https://leagueoflegends.fandom.com/wiki/Magic_penetration
-    'flat_magic_penetration': 31.11,
+    "flat_armor": 300 / 15,
+    "percent_crit": 600 / 15,
+    "flat_health": 400 / 150,
+    "percent_health_regen": 300 / 100,
+    "flat_ability_power": 400 / 20,
+    "flat_movement_speed": 300 / 25,
+    "flat_mana": 300 / 300,
+    "flat_attack_damage": 350 / 10,
+    "flat_magic_resist": 400 / 20,
+    "percent_attack_speed": 300 / 12,
+    "percent_movement_speed": 284 / 5,  # calculated from aether wisp
+    "percent_life_steal": 375 / 7,  # calculated from vampiric scepter
+    "flat_lethality": 1000 / 30,
+    "flat_ability_haste": 250 / 5,
+    "percent_heal_and_shield_power": 550 / 8,
+    "percent_base_mana_regen": 200 / 50,
+    "percent_omnivamp": 220.57 / 5,
+    "percent_armor_penetration": 41.6666667,  # value from https://leagueoflegends.fandom.com/wiki/Armor_penetration
+    "percent_tenacity": 15,  # completely arbitrary (don't know how this should be calculated)
+    "percent_crit_damage": 4.5,  # calculated from IE as 100% efficient
+    "percent_magic_penetration": 46.15,  # value from https://leagueoflegends.fandom.com/wiki/Magic_penetration
+    "flat_magic_penetration": 31.11,
 }
 
+
 class Region(StrEnum):
-    NA = 'na'
-    EUW = 'euw'
-    EUNE = 'eune'
-    KR = 'kr'
-    JP = 'jp'
-    LAN = 'lan'
-    LAS = 'las'
-    BR = 'br'
-    OCE  = 'oce'
-    TR = 'tr'
-    RU = 'ru'
+    NA = "na"
+    EUW = "euw"
+    EUNE = "eune"
+    KR = "kr"
+    JP = "jp"
+    LAN = "lan"
+    LAS = "las"
+    BR = "br"
+    OCE = "oce"
+    TR = "tr"
+    RU = "ru"
 
 
 class Structure(BaseModel):
@@ -706,46 +717,38 @@ class Structure(BaseModel):
     x: int
     y: int
 
+
 STRUCTURES = [
     # blue team
-    Structure(key='bt1_top', name='Tier 1 Top', x=981, y=10441),
-    Structure(key='bt2_top', name='Tier 2 Top', x=1512, y=6699),
-    Structure(key='bt3_top', name='Tier 3 Top', x=1169, y=4287),
-
-    Structure(key='bt1_mid', name='Tier 1 Mid', x=5846, y=6396),
-    Structure(key='bt2_mid', name='Tier 2 Mid', x=5048, y=4812),
-    Structure(key='bt3_mid', name='Tier 3 Mid', x=3651, y=3696),
-
-    Structure(key='bt1_bot', name='Tier 1 Bot', x=10504, y=1029),
-    Structure(key='bt2_bot', name='Tier 2 Bot', x=6919, y=1483),
-    Structure(key='bt3_bot', name='Tier 3 Bot', x=4281, y=1253),
-
-    Structure(key='bi_top', name='Top Inhibitor', x=1169, y=3573),
-    Structure(key='bi_mid', name='Mid Inhibitor', x=3203, y=3208),
-    Structure(key='bi_bot', name='Bot Inhibitor', x=3454, y=1241),
-
-    Structure(key='bn1', name='Nexus Turret 1', x=1748, y=2270),
-    Structure(key='bn2', name='Nexus Turret 2', x=2177, y=1807),
-
+    Structure(key="bt1_top", name="Tier 1 Top", x=981, y=10441),
+    Structure(key="bt2_top", name="Tier 2 Top", x=1512, y=6699),
+    Structure(key="bt3_top", name="Tier 3 Top", x=1169, y=4287),
+    Structure(key="bt1_mid", name="Tier 1 Mid", x=5846, y=6396),
+    Structure(key="bt2_mid", name="Tier 2 Mid", x=5048, y=4812),
+    Structure(key="bt3_mid", name="Tier 3 Mid", x=3651, y=3696),
+    Structure(key="bt1_bot", name="Tier 1 Bot", x=10504, y=1029),
+    Structure(key="bt2_bot", name="Tier 2 Bot", x=6919, y=1483),
+    Structure(key="bt3_bot", name="Tier 3 Bot", x=4281, y=1253),
+    Structure(key="bi_top", name="Top Inhibitor", x=1169, y=3573),
+    Structure(key="bi_mid", name="Mid Inhibitor", x=3203, y=3208),
+    Structure(key="bi_bot", name="Bot Inhibitor", x=3454, y=1241),
+    Structure(key="bn1", name="Nexus Turret 1", x=1748, y=2270),
+    Structure(key="bn2", name="Nexus Turret 2", x=2177, y=1807),
     # red team
-    Structure(key='rt1_top', name='Tier 1 Top', x=4318, y=13875),
-    Structure(key='rt2_top', name='Tier 2 Top', x=7943, y=13411),
-    Structure(key='rt3_top', name='Tier 3 Top', x=10481, y=13650),
-
-    Structure(key='rt1_mid', name='Tier 1 Mid', x=8955, y=8510),
-    Structure(key='rt2_mid', name='Tier 2 Mid', x=9767, y=10113),
-    Structure(key='rt3_mid', name='Tier 3 Mid', x=8955, y=8510),
-
-    Structure(key='rt1_bot', name='Tier 1 Bot', x=13866, y=4505),
-    Structure(key='rt2_bot', name='Tier 2 Bot', x=13327, y=8226),
-    Structure(key='rt3_bot', name='Tier 3 Bot', x=13624, y=10572),
-
-    Structure(key='ri_top', name='Top Inhibitor', x=11261, y=13659),
-    Structure(key='ri_mid', name='Mid Inhibitor', x=11603, y=11667),
-    Structure(key='ri_bot', name='Bot Inhibitor', x=13598, y=11316),
-
-    Structure(key='rn1', name='Nexus Turret 1', x=12611, y=13084),
-    Structure(key='rn2', name='Nexus Turret 2', x=13052, y=12612),
+    Structure(key="rt1_top", name="Tier 1 Top", x=4318, y=13875),
+    Structure(key="rt2_top", name="Tier 2 Top", x=7943, y=13411),
+    Structure(key="rt3_top", name="Tier 3 Top", x=10481, y=13650),
+    Structure(key="rt1_mid", name="Tier 1 Mid", x=8955, y=8510),
+    Structure(key="rt2_mid", name="Tier 2 Mid", x=9767, y=10113),
+    Structure(key="rt3_mid", name="Tier 3 Mid", x=8955, y=8510),
+    Structure(key="rt1_bot", name="Tier 1 Bot", x=13866, y=4505),
+    Structure(key="rt2_bot", name="Tier 2 Bot", x=13327, y=8226),
+    Structure(key="rt3_bot", name="Tier 3 Bot", x=13624, y=10572),
+    Structure(key="ri_top", name="Top Inhibitor", x=11261, y=13659),
+    Structure(key="ri_mid", name="Mid Inhibitor", x=11603, y=11667),
+    Structure(key="ri_bot", name="Bot Inhibitor", x=13598, y=11316),
+    Structure(key="rn1", name="Nexus Turret 1", x=12611, y=13084),
+    Structure(key="rn2", name="Nexus Turret 2", x=13052, y=12612),
 ]
 
 STRUCTURES_DICT = [x.model_dump() for x in STRUCTURES]

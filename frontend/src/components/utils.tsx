@@ -157,12 +157,6 @@ export function stripHtml(html: string) {
   return html.replace(/<(?!br\s*\/?)[^>]+>/g, "");
 }
 
-export function stripHtmlFull(html: string) {
-  const elt = document.createElement("div");
-  elt.innerHTML = html;
-  return elt.textContent;
-}
-
 export function ErrorField({ message }: { message?: string }) {
   if (!message) return null;
   return <div className="my-1 text-sm font-bold text-red-600">{message}</div>;
@@ -172,20 +166,12 @@ export function mediaUrl(filePath: string | null | undefined) {
   return filePath || "";
 }
 
-export function queueColor(queue_id: number) {
-  // ranked 5v5 solo
-  if (queue_id === 420) {
-    return "text-cyan-600";
-  }
-  // ranked 5v5 flex
-  else if (queue_id === 440) {
-    return "text-emerald-600";
-  }
-  // aram
-  else if ([100, 450].includes(queue_id)) {
-    return "text-red-400";
-  } else if ([900, 1010].includes(queue_id)) {
-    return "text-black";
-  }
-  return "";
-}
+export const queueColor: Record<number, string> = {
+  420: "text-cyan-600",
+  440: "text-emerald-600",
+  710: "text-orange-600",
+  100: "text-red-400",
+  450: "text-red-400",
+  900: "text-black",
+  1010: "text-black",
+};
