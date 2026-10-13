@@ -28,19 +28,19 @@ export default function ItemsPage() {
 
 const orderByOptions = ["price desc", "price asc"] as const;
 
-const LoginSchema = z.object({
+const ItemFormSchema = z.object({
   search: z.string(),
   order_by: z.string(),
 });
-type LoginSchema = z.infer<typeof LoginSchema>;
+type ItemFormSchema = z.infer<typeof ItemFormSchema>;
 
 function ItemsPageInner({ items }: { items: ItemType[] }) {
   const {
     register,
     watch,
     formState: { errors },
-  } = useForm<LoginSchema>({
-    resolver: zodResolver(LoginSchema),
+  } = useForm<ItemFormSchema>({
+    resolver: zodResolver(ItemFormSchema),
     defaultValues: {
       order_by: "price desc",
       search: "",
