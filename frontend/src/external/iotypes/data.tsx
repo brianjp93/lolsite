@@ -17,10 +17,13 @@ export const ItemGold = z.object({
   item: z.number(),
 });
 
-export const StatEfficiency = z.record(z.object({
+export const StatEfficiency = z.object({
+  calculated_cost: z.number(),
+  gold_efficiency: z.number(),
+}).catchall(z.object({
   amount: z.number(),
   gold_value: z.number(),
-}).or(z.number()))
+}).or(z.number()));
 
 export const SimpleItem = z.object({
   id: z.number(),
