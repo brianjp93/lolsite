@@ -32,13 +32,15 @@ dependencies = [
     "sentry-sdk>=2.16.0",
     "werkzeug>=3.1.3",
     "whitenoise>=6.8.2",
+    # not a direct dependency
+    "certifi>=2026.10.19",
 ]
 
 [tool.uv.sources]
 lolwrapper = { git = "https://github.com/brianjp93/lolapi.git", rev = "c84841786484f7e0b844fa203c06f8bdea54647f" }
 
 [tool.uv]
-exclude-newer = "P14D"
+# exclude-newer = "P14D"
 
 [tool.black]
 exclude = '/*migrations*/'
