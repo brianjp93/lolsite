@@ -20,6 +20,7 @@ import { PlayerMultiSelect } from "@/components/general/PlayerMultiSelect";
 import { ProfileCardInner } from "@/components/summoner/matchDetails/profileCard";
 import { RecentlyPlayedWith } from "@/components/summoner/recentlyPlayedWith";
 import { PlayerChampionSummary } from "@/components/summoner/PlayerChampionSummary";
+import { ChampionMatchups } from "@/components/summoner/ChampionMatchups";
 import { MatchListSummary } from "@/components/summoner/SummonerSummary";
 import { SummonerNote } from "@/components/summoner/summonerNote";
 import { keepPreviousData } from "@tanstack/react-query";
@@ -158,112 +159,119 @@ function Summoner() {
 
   return (
     <Skeleton topPad={0}>
-      <div style={{ minHeight: 1000 }} className="mx-auto flex-col">
-        {searchName.indexOf("-") === -1 && (
-          <div className="mt-4 flex flex-col gap-y-2">
-            <div className="mb-4">Error while searching for summoner.</div>
-            <div>
-              Riot has updated summoner names to use your RiotIdName +
-              RiotTagline.
-            </div>
-            <div>
-              Make sure to search for your name, using a &quot;#&quot; between
-              your name and tagline.
-            </div>
-            <div className="mt-4">
-              Ex:
-              <span className="ml-2 font-bold">yourName#tagline</span>
-            </div>
-          </div>
+      <div className="mx-auto flex w-full flex-col items-start gap-2 xl:flex-row">
+        {matchQuery.isSuccess && summonerQuery.isSuccess && summoner && (
+          <aside className="hidden w-72 shrink-0 xl:block">
+            <ChampionMatchups key={summoner.puuid} puuid={summoner.puuid} />
+          </aside>
         )}
-        {!isLoading && summoner && (
-          <div className="flex">
-            <ProfileCardInner
-              summoner={summoner}
-              positions={positionsQuery.data || []}
-              nameChanges={nameChangesQuery.data || []}
-            />
-            <SummonerNote summoner={summoner} />
-          </div>
-        )}
-
-        {summonerQuery.isError && !summonerQuery.isFetching && (
-          <SummonerNotFound />
-        )}
-
-        {matchQuery.isSuccess && summonerQuery.isSuccess && (
-          <div className="flex">
-            <div>
-              {!isLoading && summoner && (
-                <>
-                  <div className="max-w-237.5 my-2 w-full rounded-md bg-zinc-800 p-4">
-                    <PlayerChampionSummary puuid={summoner.puuid} />
-                  </div>
-                </>
-              )}
-              <div className="my-2 w-full">
-                <MatchFilter
-                  region={region}
-                  onSubmit={(data) => {
-                    const queue = data.queue ? Number(data.queue) : undefined;
-                    setSearch({
-                      queue: Number.isFinite(queue) ? queue : undefined,
-                      playedWith: data.playedWith || undefined,
-                    });
-                  }}
-                />
+        <div style={{ minHeight: 1000 }} className="min-w-0">
+          {searchName.indexOf("-") === -1 && (
+            <div className="mt-4 flex flex-col gap-y-2">
+              <div className="mb-4">Error while searching for summoner.</div>
+              <div>
+                Riot has updated summoner names to use your RiotIdName +
+                RiotTagline.
               </div>
               <div>
-                <Pagination
-                  page={page}
-                  loading={matchQuery.isFetching}
-                  onPageChange={(p) => setSearch({ page: p })}
-                />
-                {isLoading && (
-                  <div style={{ width: 600 }}>
-                    <Orbit size={200} className="m-auto" />
-                  </div>
-                )}
-                {!isLoading && summoner && (
-                  <div className="flex">
-                    <div>
-                      <div className="my-2 w-full">
-                        <MatchListSummary
-                          matches={matches}
-                          summoner={summoner}
-                          champCount={5}
-                        />
-                      </div>
-                      {matches.map((match: BasicMatchType, key: number) => {
-                        return (
-                          <MatchCard
-                            key={`${key}-${match._id}`}
-                            match={match}
-                            summoner={summoner}
-                          />
-                        );
-                      })}
-                    </div>
-                    <div>
-                      <div className="ml-2 hidden rounded-md bg-zinc-800 md:block">
-                        <RecentlyPlayedWith
-                          summoner={summoner}
-                          matches={matches}
-                          region={region}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <Pagination
-                  page={page}
-                  loading={matchQuery.isFetching}
-                  onPageChange={(p) => setSearch({ page: p })}
-                />
+                Make sure to search for your name, using a &quot;#&quot; between
+                your name and tagline.
+              </div>
+              <div className="mt-4">
+                Ex:
+                <span className="ml-2 font-bold">yourName#tagline</span>
               </div>
             </div>
-          </div>
-        )}
+          )}
+          {!isLoading && summoner && (
+            <div className="flex">
+              <ProfileCardInner
+                summoner={summoner}
+                positions={positionsQuery.data || []}
+                nameChanges={nameChangesQuery.data || []}
+              />
+              <SummonerNote summoner={summoner} />
+            </div>
+          )}
+
+          {summonerQuery.isError && !summonerQuery.isFetching && (
+            <SummonerNotFound />
+          )}
+
+          {matchQuery.isSuccess && summonerQuery.isSuccess && (
+            <div className="flex">
+              <div>
+                {!isLoading && summoner && (
+                  <>
+                    <div className="max-w-237.5 my-2 w-full rounded-md bg-zinc-800 p-4">
+                      <PlayerChampionSummary puuid={summoner.puuid} />
+                    </div>
+                  </>
+                )}
+                <div className="my-2 w-full">
+                  <MatchFilter
+                    region={region}
+                    onSubmit={(data) => {
+                      const queue = data.queue ? Number(data.queue) : undefined;
+                      setSearch({
+                        queue: Number.isFinite(queue) ? queue : undefined,
+                        playedWith: data.playedWith || undefined,
+                      });
+                    }}
+                  />
+                </div>
+                <div>
+                  <Pagination
+                    page={page}
+                    loading={matchQuery.isFetching}
+                    onPageChange={(p) => setSearch({ page: p })}
+                  />
+                  {isLoading && (
+                    <div style={{ width: 600 }}>
+                      <Orbit size={200} className="m-auto" />
+                    </div>
+                  )}
+                  {!isLoading && summoner && (
+                    <div className="flex">
+                      <div>
+                        <div className="my-2 w-full">
+                          <MatchListSummary
+                            matches={matches}
+                            summoner={summoner}
+                            champCount={5}
+                          />
+                        </div>
+                        {matches.map((match: BasicMatchType, key: number) => {
+                          return (
+                            <MatchCard
+                              key={`${key}-${match._id}`}
+                              match={match}
+                              summoner={summoner}
+                            />
+                          );
+                        })}
+                      </div>
+                      <div>
+                        <div className="ml-2 hidden rounded-md bg-zinc-800 md:block">
+                          <RecentlyPlayedWith
+                            summoner={summoner}
+                            matches={matches}
+                            region={region}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <Pagination
+                    page={page}
+                    loading={matchQuery.isFetching}
+                    onPageChange={(p) => setSearch({ page: p })}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </Skeleton>
   );

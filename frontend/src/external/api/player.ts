@@ -12,6 +12,7 @@ import {
   PaginatedResponse,
 } from "../types";
 import {
+  ChampionMatchup,
   Comment,
   PlayerChampionSummaryResponse,
   Position,
@@ -101,6 +102,24 @@ async function getChampionsOverview(data: any) {
       data: z.array(PlayerChampionSummaryResponse),
     })
     .parse(response.data);
+}
+
+async function getChampionMatchups({
+  puuid,
+  start_dt,
+  end_dt,
+  queue_ids,
+}: {
+  puuid: string;
+  start_dt?: string;
+  end_dt?: string;
+  queue_ids?: number[];
+}) {
+  const url = `${base}/champion-matchups/${encodeURIComponent(puuid)}/`;
+  const response = await axios.get(url, {
+    params: { start_dt, end_dt, queue_ids: queue_ids?.join(",") },
+  });
+  return z.array(ChampionMatchup).parse(response.data);
 }
 
 async function summonerSearch(params: {
@@ -398,6 +417,7 @@ const exports = {
   login,
   verify,
   getChampionsOverview,
+  getChampionMatchups,
   summonerSearch,
   isLoggedIn,
   getRankHistory,

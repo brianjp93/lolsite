@@ -135,6 +135,16 @@ export type PlayerChampionSummaryResponse = z.infer<
   typeof PlayerChampionSummaryResponse
 >;
 
+export const ChampionMatchup = z.object({
+  champion_id: z.number(),
+  opponent_champion_id: z.number(),
+  individual_position: z.string(),
+  game_count: z.number(),
+  win_count: z.number(),
+  win_percentage: z.number(),
+});
+export type ChampionMatchupType = z.infer<typeof ChampionMatchup>;
+
 export const SuspiciousPlayer = z.object({
   quick_ff_count: z.number(),
   total: z.number(),

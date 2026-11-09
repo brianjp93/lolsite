@@ -42,6 +42,7 @@ export {
   Comment,
   Position,
   SummonerNote,
+  ChampionMatchup,
 } from './iotypes/player'
 export type {
   SummonerType,
@@ -53,6 +54,7 @@ export type {
   NameChangeType,
   PositionType,
   SummonerNoteType,
+  ChampionMatchupType,
 } from './iotypes/player'
 
 export {

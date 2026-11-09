@@ -551,6 +551,23 @@ export function usePlayerSummary({
   });
 }
 
+export function useChampionMatchups({
+  puuid,
+  start_dt,
+  end_dt,
+  queue_ids,
+}: Parameters<typeof api.player.getChampionMatchups>[0]) {
+  return useQuery({
+    queryKey: ["champion-matchups", puuid, start_dt, end_dt, queue_ids],
+    queryFn: () =>
+      api.player.getChampionMatchups({ puuid, start_dt, end_dt, queue_ids }),
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 60,
+    enabled: !!puuid,
+  });
+}
+
 export function useSimpleSpectate(puuid: string, region: string) {
   return useQuery({
     queryKey: ["simple-spectate", puuid, region],
