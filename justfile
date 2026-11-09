@@ -1,3 +1,4 @@
+import 'local.justfile'
 pyright:
     uv run pyright
 ruff:
