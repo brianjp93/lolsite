@@ -28,6 +28,11 @@ urlpatterns = [
     path("summoners/", player_views.get_summoners),
     path("summoner-search/", player_views.summoner_search),
     path("champions-overview/", player_views.get_summoner_champions_overview),
+    path(
+        "champion-matchups/<str:puuid>/",
+        player_views.ChampionMatchupListView.as_view(),
+        name="champion-matchups",
+    ),
     path("positions/", player_views.RankPositionListView.as_view()),
     path("sign-up/", player_views.sign_up),
     path("verify/", player_views.verify_email),

@@ -138,6 +138,15 @@ class SummonerSerializer(DynamicSerializer):
         return None
 
 
+class ChampionMatchupSerializer(serializers.Serializer):
+    champion_id = serializers.IntegerField()
+    opponent_champion_id = serializers.IntegerField()
+    individual_position = serializers.CharField(allow_blank=True)
+    game_count = serializers.IntegerField()
+    win_count = serializers.IntegerField()
+    win_percentage = serializers.FloatField()
+
+
 class RankPositionSerializer(DynamicSerializer):
     class Meta:  # type: ignore[override]
         model = RankPosition

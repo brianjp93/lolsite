@@ -10,6 +10,7 @@ from player.models import (
 )
 from match.models import Participant, Stats
 
+from django import forms
 from django.db.models import Exists, Sum, Count, F, FloatField
 from django.db.models import ExpressionWrapper, Value, Case, When
 from django.db.models import Subquery, OuterRef
@@ -285,6 +286,24 @@ class SummonerMatchFilter(django_filters.FilterSet):
         if value:
             return qs.filter(queue_id=value)
         return qs
+
+
+class IntegerInFilter(django_filters.BaseInFilter):
+    field_class = forms.IntegerField
+
+
+class ChampionMatchupFilter(django_filters.FilterSet):
+    start_dt = django_filters.IsoDateTimeFilter(
+        field_name="match__game_creation_dt", lookup_expr="gte"
+    )
+    end_dt = django_filters.IsoDateTimeFilter(
+        field_name="match__game_creation_dt", lookup_expr="lte"
+    )
+    queue_ids = IntegerInFilter(field_name="match__queue_id")
+
+    class Meta:
+        model = Participant
+        fields = ["start_dt", "end_dt", "queue_ids"]
 
 
 class RankPositionFilter(django_filters.FilterSet):

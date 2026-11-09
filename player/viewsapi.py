@@ -54,6 +54,7 @@ from .serializers import (
     CommentCreateSerializer,
     CommentUpdateSerializer,
     SummonerSerializer,
+    ChampionMatchupSerializer,
     RankPositionSerializer,
     FavoriteSerializer,
     CommentSerializer,
@@ -200,6 +201,17 @@ def get_summoners(request, format=None):
         serializer = SummonerSerializer(query, many=True)
         data = {"data": serializer.data}
     return Response(data, status=status_code)
+
+
+class ChampionMatchupListView(ListAPIView):
+    serializer_class = ChampionMatchupSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = player_filters.ChampionMatchupFilter
+    pagination_class = None
+
+    def get_queryset(self):
+        summoner = get_object_or_404(Summoner, puuid=self.kwargs["puuid"])
+        return Summoner.objects.get_champion_matchups(summoner)
 
 
 class RankPositionListView(ListAPIView):
